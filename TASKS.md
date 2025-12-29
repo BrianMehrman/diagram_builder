@@ -90,10 +90,10 @@
 - [x] Write integration tests
 
 ### 2.7 Export Pipeline - Images
-- [ ] Set up headless rendering (puppeteer or similar)
-- [ ] Implement PNG export from 3D scene
-- [ ] Implement SVG export for 2D diagrams
-- [ ] Write integration tests
+- [x] Set up headless rendering (puppeteer or similar)
+- [x] Implement PNG export from 3D scene
+- [x] Implement SVG export for 2D diagrams
+- [x] Write integration tests
 
 ---
 

@@ -59,3 +59,30 @@ export {
   exportToGLTF,
   DEFAULT_GLTF_OPTIONS,
 } from './gltf.js';
+
+// SVG exporter
+export type { SVGExportOptions, SVGNodeShape } from './svg.js';
+
+export {
+  SVGExporter,
+  createSVGExporter,
+  exportToSVG,
+  DEFAULT_SVG_OPTIONS,
+} from './svg.js';
+
+// PNG exporter
+export type {
+  PNGExportOptions,
+  PNGRenderer,
+  PNGRenderOptions,
+} from './png.js';
+
+export {
+  PNGExporter,
+  createPNGExporter,
+  exportToPNG,
+  exportToPNGAsync,
+  DEFAULT_PNG_OPTIONS,
+  DataURLRenderer,
+  createPuppeteerRenderer,
+} from './png.js';
