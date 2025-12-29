@@ -1,0 +1,45 @@
+# Sprint Status Tracking
+# Generated: 2025-12-29
+# Project: Diagram Builder - 3D Codebase Visualization Tool
+
+project_name: diagram_builder
+sprint_start: "2025-12-29"
+current_phase: "Phase 3: Parser Package"
+
+# Epic and Story Status Tracking
+development_status:
+  # Epic 3: Parser Package (@diagram-builder/parser)
+  epic-3: not-started
+  3-1-tree-sitter-integration: review
+  3-2-ast-analysis: not-started
+  3-3-dependency-graph: not-started
+  3-4-repository-integration: not-started
+  3-5-ivm-conversion: not-started
+
+# Status Definitions:
+# - not-started: Story exists but work hasn't begun
+# - ready-for-dev: Story validated and ready for implementation
+# - in-progress: Developer actively working on story
+# - review: Implementation complete, awaiting code review
+# - done: Code review passed, story complete
+# - blocked: Story blocked by dependency or external issue
+
+# Epic Mapping
+epics:
+  epic-3:
+    name: "Parser Package (@diagram-builder/parser)"
+    description: "Implement Tree-sitter integration, AST analysis, dependency graph construction, repository integration, and IVM conversion for JavaScript/TypeScript codebases"
+    stories:
+      - 3-1-tree-sitter-integration
+      - 3-2-ast-analysis
+      - 3-3-dependency-graph
+      - 3-4-repository-integration
+      - 3-5-ivm-conversion
+    dependencies:
+      - "Phase 1: Project Infrastructure (Complete)"
+      - "Phase 2: Core Package (Complete)"
+
+# Notes:
+# - Phase 1 (Project Infrastructure): 100% Complete
+# - Phase 2 (Core Package): 100% Complete
+# - Phase 3 (Parser Package): Starting now
