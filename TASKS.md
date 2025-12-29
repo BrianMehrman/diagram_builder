@@ -62,12 +62,12 @@
 - [x] Write unit tests for layout algorithms
 
 ### 2.3 Export Pipeline - PlantUML
-- [ ] Create PlantUML exporter interface
-- [ ] Implement node-to-component mapping
-- [ ] Implement edge-to-relationship mapping
-- [ ] Support LOD-level filtering
-- [ ] Generate valid PlantUML syntax
-- [ ] Write integration tests with sample graphs
+- [x] Create PlantUML exporter interface
+- [x] Implement node-to-component mapping
+- [x] Implement edge-to-relationship mapping
+- [x] Support LOD-level filtering
+- [x] Generate valid PlantUML syntax
+- [x] Write integration tests with sample graphs
 
 ### 2.4 Export Pipeline - Mermaid
 - [ ] Create Mermaid exporter interface
