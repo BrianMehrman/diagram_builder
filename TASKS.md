@@ -41,13 +41,13 @@
 ## Phase 2: Core Package (`@diagram-builder/core`)
 
 ### 2.1 Internal Visualization Model (IVM)
-- [ ] Define IVM TypeScript interfaces
+- [x] Define IVM TypeScript interfaces
   - Node interface (id, type, metadata, position)
   - Edge interface (source, target, type, metadata)
   - Graph interface (nodes, edges, metadata)
-- [ ] Create IVM builder utilities
-- [ ] Implement IVM validation functions
-- [ ] Write unit tests for IVM types (Vitest)
+- [x] Create IVM builder utilities
+- [x] Implement IVM validation functions
+- [x] Write unit tests for IVM types (Vitest)
 
 ### 2.2 Layout Engine
 - [ ] Implement force-directed layout algorithm
