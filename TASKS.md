@@ -99,27 +99,27 @@
 
 ## Phase 3: Parser Package (`@diagram-builder/parser`)
 
-### 3.1 Tree-sitter Integration
-- [ ] Install tree-sitter and language bindings
+### 3.1 Tree-sitter Integration ✅
+- [x] Install tree-sitter and language bindings
   - tree-sitter-javascript
   - tree-sitter-typescript
-- [ ] Create parser initialization utilities
-- [ ] Implement file parsing functions
-- [ ] Write unit tests for parser setup
+- [x] Create parser initialization utilities
+- [x] Implement file parsing functions
+- [x] Write unit tests for parser setup
 
-### 3.2 AST Analysis - JavaScript/TypeScript
-- [ ] Extract class definitions (name, methods, properties)
-- [ ] Extract function declarations
-- [ ] Extract import/export statements
-- [ ] Calculate code metrics (LOC, complexity)
-- [ ] Write comprehensive unit tests
+### 3.2 AST Analysis - JavaScript/TypeScript ✅
+- [x] Extract class definitions (name, methods, properties)
+- [x] Extract function declarations
+- [x] Extract import/export statements
+- [x] Calculate code metrics (LOC, complexity)
+- [x] Write comprehensive unit tests
 
-### 3.3 Dependency Graph Construction
-- [ ] Parse import statements to build dependency edges
-- [ ] Extract function call relationships
-- [ ] Extract class inheritance relationships
-- [ ] Create dependency graph data structure
-- [ ] Write integration tests with real JS/TS files
+### 3.3 Dependency Graph Construction ✅
+- [x] Parse import statements to build dependency edges
+- [x] Extract function call relationships
+- [x] Extract class inheritance relationships
+- [x] Create dependency graph data structure
+- [x] Write integration tests with real JS/TS files
 
 ### 3.4 Repository Integration
 - [ ] Implement local directory scanning

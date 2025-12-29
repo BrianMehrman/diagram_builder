@@ -11,8 +11,8 @@ development_status:
   # Epic 3: Parser Package (@diagram-builder/parser)
   epic-3: not-started
   3-1-tree-sitter-integration: review
-  3-2-ast-analysis: not-started
-  3-3-dependency-graph: not-started
+  3-2-ast-analysis: review
+  3-3-dependency-graph: review
   3-4-repository-integration: not-started
   3-5-ivm-conversion: not-started
 
