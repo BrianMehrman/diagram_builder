@@ -39,3 +39,13 @@ export {
   exportToMermaid,
   DEFAULT_MERMAID_OPTIONS,
 } from './mermaid.js';
+
+// Draw.io exporter
+export type { DrawioExportOptions, DrawioShape } from './drawio.js';
+
+export {
+  DrawioExporter,
+  createDrawioExporter,
+  exportToDrawio,
+  DEFAULT_DRAWIO_OPTIONS,
+} from './drawio.js';

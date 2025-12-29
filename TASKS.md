@@ -77,11 +77,11 @@
 - [x] Write integration tests
 
 ### 2.5 Export Pipeline - Draw.io
-- [ ] Create Draw.io XML exporter
-- [ ] Map IVM nodes to Draw.io shapes
-- [ ] Map IVM edges to connectors
-- [ ] Apply consistent styling from project context
-- [ ] Write integration tests
+- [x] Create Draw.io XML exporter
+- [x] Map IVM nodes to Draw.io shapes
+- [x] Map IVM edges to connectors
+- [x] Apply consistent styling from project context
+- [x] Write integration tests
 
 ### 2.6 Export Pipeline - GLTF
 - [ ] Create GLTF exporter for 3D model export
