@@ -70,11 +70,11 @@
 - [x] Write integration tests with sample graphs
 
 ### 2.4 Export Pipeline - Mermaid
-- [ ] Create Mermaid exporter interface
-- [ ] Implement graph-to-Mermaid syntax conversion
-- [ ] Support class diagrams, flowcharts, C4 diagrams
-- [ ] Apply LOD filtering
-- [ ] Write integration tests
+- [x] Create Mermaid exporter interface
+- [x] Implement graph-to-Mermaid syntax conversion
+- [x] Support class diagrams, flowcharts, C4 diagrams
+- [x] Apply LOD filtering
+- [x] Write integration tests
 
 ### 2.5 Export Pipeline - Draw.io
 - [ ] Create Draw.io XML exporter

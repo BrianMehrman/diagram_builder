@@ -29,3 +29,13 @@ export {
   exportToPlantUML,
   DEFAULT_PLANTUML_OPTIONS,
 } from './plantuml.js';
+
+// Mermaid exporter
+export type { MermaidExportOptions, MermaidDiagramType, FlowchartDirection } from './mermaid.js';
+
+export {
+  MermaidExporter,
+  createMermaidExporter,
+  exportToMermaid,
+  DEFAULT_MERMAID_OPTIONS,
+} from './mermaid.js';
