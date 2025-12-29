@@ -49,3 +49,13 @@ export {
   exportToDrawio,
   DEFAULT_DRAWIO_OPTIONS,
 } from './drawio.js';
+
+// GLTF exporter
+export type { GLTFExportOptions, GLTFNodeShape } from './gltf.js';
+
+export {
+  GLTFExporter,
+  createGLTFExporter,
+  exportToGLTF,
+  DEFAULT_GLTF_OPTIONS,
+} from './gltf.js';

@@ -84,10 +84,10 @@
 - [x] Write integration tests
 
 ### 2.6 Export Pipeline - GLTF
-- [ ] Create GLTF exporter for 3D model export
-- [ ] Convert IVM 3D positions to GLTF nodes
-- [ ] Apply materials and styling
-- [ ] Write integration tests
+- [x] Create GLTF exporter for 3D model export
+- [x] Convert IVM 3D positions to GLTF nodes
+- [x] Apply materials and styling
+- [x] Write integration tests
 
 ### 2.7 Export Pipeline - Images
 - [ ] Set up headless rendering (puppeteer or similar)
