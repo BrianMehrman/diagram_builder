@@ -29,12 +29,12 @@
 - [x] Configure debugging configurations
 
 ### 1.3 CI/CD Pipeline
-- [ ] GitHub Actions workflow for automated testing
-- [ ] TypeScript type checking in CI
-- [ ] ESLint validation in CI
-- [ ] Automated test execution (Vitest)
-- [ ] Build validation for all packages
-- [ ] Docker image builds (production)
+- [x] GitHub Actions workflow for automated testing
+- [x] TypeScript type checking in CI
+- [x] ESLint validation in CI
+- [x] Automated test execution (Vitest)
+- [x] Build validation for all packages
+- [x] Docker image builds (production)
 
 ---
 
@@ -463,6 +463,26 @@ All tests must follow these rules:
 7. **Multi-level error boundaries** (global + feature-level)
 8. **TypeScript strict mode** (NO `any` types)
 9. **Read architecture.md BEFORE implementing** any feature
+
+---
+
+## Post-MVP: External Setup
+
+> These tasks require external services or repository configuration after pushing to GitHub.
+
+### GitHub Repository Setup
+- [ ] Push repository to GitHub
+- [ ] Configure GitHub Actions secrets:
+  - `DOCKER_USERNAME` - Docker Hub username
+  - `DOCKER_PASSWORD` - Docker Hub access token
+- [ ] Verify CI workflow runs on push/PR
+- [ ] Verify Docker build workflow runs on tags
+
+### Production Deployment
+- [ ] Set up Docker Hub repository for images
+- [ ] Configure production environment variables
+- [ ] Set up production Neo4j instance
+- [ ] Set up production Redis instance
 
 ---
 
