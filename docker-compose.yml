@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+  neo4j:
+    image: neo4j:latest
+    container_name: diagram-builder-neo4j
+    ports:
+      - '7474:7474'  # HTTP
+      - '7687:7687'  # Bolt
+    environment:
+      - NEO4J_AUTH=neo4j/password123
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_memory_heap_max__size=2G
+      - NEO4J_dbms_memory_pagecache_size=1G
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: diagram-builder-redis
+    ports:
+      - '6379:6379'
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
+
+volumes:
+  neo4j-data:
+  neo4j-logs:
+  redis-data:
+
+networks:
+  diagram-builder-network:
+    driver: bridge

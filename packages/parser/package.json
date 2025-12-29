@@ -1,0 +1,24 @@
+{
+  "name": "@diagram-builder/parser",
+  "version": "0.1.0",
+  "description": "Parser engine (Tree-sitter)",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "test": "vitest",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "@diagram-builder/core": "*",
+    "tree-sitter": "^0.21.0",
+    "tree-sitter-javascript": "^0.21.0",
+    "tree-sitter-typescript": "^0.21.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0"
+  }
+}

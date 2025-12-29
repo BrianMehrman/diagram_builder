@@ -1,0 +1,27 @@
+{
+  "name": "@diagram-builder/cli",
+  "version": "0.1.0",
+  "description": "CLI tool",
+  "bin": {
+    "diagram-builder": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc && chmod +x dist/index.js",
+    "test": "vitest",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "@diagram-builder/core": "*",
+    "@diagram-builder/parser": "*",
+    "commander": "^12.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0"
+  }
+}
