@@ -50,16 +50,16 @@
 - [x] Write unit tests for IVM types (Vitest)
 
 ### 2.2 Layout Engine
-- [ ] Implement force-directed layout algorithm
+- [x] Implement force-directed layout algorithm
   - Position calculation for nodes
   - Edge tension/repulsion physics
   - Convergence detection
-- [ ] Create 3D coordinate system utilities
-- [ ] Implement LOD (Level of Detail) system
+- [x] Create 3D coordinate system utilities
+- [x] Implement LOD (Level of Detail) system
   - LOD level calculation based on graph query depth
   - Node filtering by LOD threshold
   - Edge simplification strategies
-- [ ] Write unit tests for layout algorithms
+- [x] Write unit tests for layout algorithms
 
 ### 2.3 Export Pipeline - PlantUML
 - [ ] Create PlantUML exporter interface

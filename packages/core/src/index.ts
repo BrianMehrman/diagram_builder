@@ -9,3 +9,6 @@
 
 // IVM exports
 export * from './ivm/index.js';
+
+// Layout exports
+export * from './layout/index.js';
