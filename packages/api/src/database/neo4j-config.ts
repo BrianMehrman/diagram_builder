@@ -18,11 +18,11 @@ let driver: Driver | null = null;
 export function getDriver(): Driver {
   if (!driver) {
     const uri = process.env.NEO4J_URI;
-    const username = process.env.NEO4J_USERNAME;
+    const username = process.env.NEO4J_USERNAME || process.env.NEO4J_USER;
     const password = process.env.NEO4J_PASSWORD;
 
     if (!uri || !username || !password) {
-      throw new Error('Neo4j configuration is missing. Ensure NEO4J_URI, NEO4J_USERNAME, and NEO4J_PASSWORD are set.');
+      throw new Error('Neo4j configuration is missing. Ensure NEO4J_URI, NEO4J_USERNAME (or NEO4J_USER), and NEO4J_PASSWORD are set.');
     }
 
     driver = neo4j.driver(
@@ -51,4 +51,5 @@ export async function closeDriver(): Promise<void> {
   }
 }
 
-export default getDriver();
+// Export the driver getter as default for convenience
+export default { getDriver, closeDriver };

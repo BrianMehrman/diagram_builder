@@ -3,12 +3,13 @@
  * Separate from app.ts to allow testing without starting the server
  */
 
-// Load environment variables first, before any other imports
-import { config } from 'dotenv';
+// Load environment variables from .env file in project root
+import dotenv from 'dotenv';
 import { resolve } from 'path';
 
-// Load .env from project root (two levels up from this file)
-config({ path: resolve(__dirname, '../../../.env') });
+// When running via npm workspaces, cwd is the package dir, so go up 2 levels to project root
+const envPath = resolve(process.cwd(), '../../.env');
+dotenv.config({ path: envPath });
 
 import { createServer } from 'http';
 import app from './index';

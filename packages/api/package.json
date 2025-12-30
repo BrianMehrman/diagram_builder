@@ -5,9 +5,10 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx src/server.ts",
+    "dev:watch": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node -r dotenv/config dist/server.js",
     "test": "vitest",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts"

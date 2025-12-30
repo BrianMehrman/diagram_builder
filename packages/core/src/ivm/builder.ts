@@ -266,15 +266,20 @@ export function createEdge(input: EdgeInput, nodeMap: Map<string, IVMNode>): IVM
   const sourceLod = sourceNode?.lod ?? DEFAULT_LOD;
   const targetLod = targetNode?.lod ?? DEFAULT_LOD;
 
-  return {
+  const edge: IVMEdge = {
     id: input.id ?? generateEdgeId(input.source, input.target, input.type),
     source: input.source,
     target: input.target,
     type: input.type,
     lod: assignEdgeLOD(sourceLod, targetLod),
     metadata: input.metadata ?? {},
-    style: input.style,
   };
+
+  if (input.style !== undefined) {
+    edge.style = input.style;
+  }
+
+  return edge;
 }
 
 /**
@@ -494,8 +499,12 @@ export class IVMBuilder {
    */
   withRepository(url: string, branch?: string, commit?: string): this {
     this.graphMetadata.repositoryUrl = url;
-    this.graphMetadata.branch = branch;
-    this.graphMetadata.commit = commit;
+    if (branch !== undefined) {
+      this.graphMetadata.branch = branch;
+    }
+    if (commit !== undefined) {
+      this.graphMetadata.commit = commit;
+    }
     return this;
   }
 
