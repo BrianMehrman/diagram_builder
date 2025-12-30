@@ -13,6 +13,10 @@ export interface EnvironmentConfig {
   NEO4J_URI: string;
   NEO4J_USERNAME: string;
   NEO4J_PASSWORD: string;
+  REDIS_HOST: string;
+  REDIS_PORT: number;
+  REDIS_PASSWORD: string | undefined;
+  REDIS_DB: number;
 }
 
 /**
@@ -27,7 +31,11 @@ export function validateEnvironment(): EnvironmentConfig {
     JWT_SECRET: process.env.JWT_SECRET || '',
     NEO4J_URI: process.env.NEO4J_URI || 'bolt://localhost:7687',
     NEO4J_USERNAME: process.env.NEO4J_USERNAME || 'neo4j',
-    NEO4J_PASSWORD: process.env.NEO4J_PASSWORD || ''
+    NEO4J_PASSWORD: process.env.NEO4J_PASSWORD || '',
+    REDIS_HOST: process.env.REDIS_HOST || 'localhost',
+    REDIS_PORT: parseInt(process.env.REDIS_PORT || '6379', 10),
+    REDIS_PASSWORD: process.env.REDIS_PASSWORD || undefined,
+    REDIS_DB: parseInt(process.env.REDIS_DB || '0', 10)
   };
 
   // Validate PORT

@@ -3,6 +3,7 @@ import { loggerMiddleware } from './middleware/logger';
 import { corsMiddleware } from './middleware/cors-config';
 import { errorHandler } from './middleware/error-handler';
 import { authRouter } from './routes/auth';
+import { repositoriesRouter } from './routes/repositories';
 
 const app = express();
 
@@ -18,6 +19,9 @@ app.get('/health', (_req, res) => {
 
 // Authentication routes
 app.use('/api/auth', authRouter);
+
+// Repository parsing routes
+app.use('/api/repositories', repositoriesRouter);
 
 // Error handling middleware (MUST be last)
 app.use(errorHandler);

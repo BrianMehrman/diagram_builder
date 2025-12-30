@@ -7,6 +7,7 @@ import app from './index';
 import { validateEnvironment } from './config/environment';
 import { connectDatabase, disconnectDatabase } from './database/neo4j-client';
 import { initializeDatabase } from './database/init-db';
+import { connectRedis, disconnectRedis } from './cache/redis-client';
 
 // Validate environment configuration
 const config = validateEnvironment();
@@ -19,13 +20,14 @@ const server = app.listen(config.PORT, () => {
     console.warn(`   CORS origins: ${config.CORS_ORIGIN}`);
   }
 
-  // Connect to Neo4j database
+  // Connect to Neo4j database and Redis cache
   void (async () => {
     try {
       await connectDatabase();
       await initializeDatabase();
+      await connectRedis();
     } catch (error) {
-      console.error('Failed to connect to database on startup:', error);
+      console.error('Failed to connect to services on startup:', error);
       process.exit(1);
     }
   })();
@@ -37,12 +39,13 @@ function shutdown(signal: string) {
   server.close(() => {
     console.warn('Server closed.');
 
-    // Disconnect from database
+    // Disconnect from database and cache
     void (async () => {
       try {
         await disconnectDatabase();
+        await disconnectRedis();
       } catch (error) {
-        console.error('Error disconnecting from database:', error);
+        console.error('Error disconnecting from services:', error);
       }
 
       console.warn('Exiting process.');

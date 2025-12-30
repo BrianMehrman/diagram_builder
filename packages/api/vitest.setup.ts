@@ -10,3 +10,9 @@ process.env.JWT_SECRET = 'test-secret-key-at-least-32-characters-long-for-testin
 process.env.NEO4J_URI = 'bolt://localhost:7687';
 process.env.NEO4J_USERNAME = 'neo4j';
 process.env.NEO4J_PASSWORD = 'test-password';
+
+// Set Redis configuration for all tests
+process.env.REDIS_HOST = 'localhost';
+process.env.REDIS_PORT = '6379';
+process.env.REDIS_PASSWORD = '';
+process.env.REDIS_DB = '0';

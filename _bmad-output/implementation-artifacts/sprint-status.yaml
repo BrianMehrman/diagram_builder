@@ -21,8 +21,8 @@ development_status:
   4-1-express-server-setup: review
   4-2-jwt-authentication: review
   4-3-neo4j-integration: review
-  4-4-redis-integration: ready-for-dev
-  4-5-rest-api-parsing-endpoints: ready-for-dev
+  4-4-redis-integration: review
+  4-5-rest-api-parsing-endpoints: in-progress
   4-6-rest-api-graph-query-endpoints: ready-for-dev
   4-7-rest-api-viewpoint-endpoints: ready-for-dev
   4-8-rest-api-export-endpoints: ready-for-dev

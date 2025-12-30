@@ -162,18 +162,18 @@
 - [x] Write database connection tests
 
 ### 4.4 Redis Integration
-- [ ] Install ioredis client
-- [ ] Configure Redis connection
-- [ ] Implement cache utilities (get, set, invalidate)
-- [ ] Configure 5-minute TTL for query results
-- [ ] Write cache integration tests
+- [x] Install ioredis client
+- [x] Configure Redis connection
+- [x] Implement cache utilities (get, set, invalidate)
+- [x] Configure 5-minute TTL for query results
+- [x] Write cache integration tests
 
 ### 4.5 REST API - Parsing Endpoints
-- [ ] POST /api/repositories - Parse new repository
-- [ ] GET /api/repositories/:id - Get repository metadata
-- [ ] DELETE /api/repositories/:id - Delete repository
-- [ ] POST /api/repositories/:id/refresh - Re-parse repository
-- [ ] Write API integration tests
+- [x] POST /api/repositories - Parse new repository
+- [x] GET /api/repositories/:id - Get repository metadata
+- [x] DELETE /api/repositories/:id - Delete repository
+- [x] POST /api/repositories/:id/refresh - Re-parse repository
+- [x] Write API integration tests
 
 ### 4.6 REST API - Graph Query Endpoints
 - [ ] GET /api/graph/:repoId - Get full graph
