@@ -7,6 +7,7 @@ import { repositoriesRouter } from './routes/repositories';
 import { graphRouter } from './routes/graph';
 import { viewpointsRouter } from './routes/viewpoints';
 import { exportRouter } from './routes/export';
+import { workspacesRouter } from './routes/workspaces';
 
 const app = express();
 
@@ -34,6 +35,9 @@ app.use('/api/viewpoints', viewpointsRouter);
 
 // Export routes
 app.use('/api/export', exportRouter);
+
+// Workspace routes
+app.use('/api/workspaces', workspacesRouter);
 
 // Error handling middleware (MUST be last)
 app.use(errorHandler);

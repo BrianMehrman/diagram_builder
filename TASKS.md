@@ -204,12 +204,19 @@
 - [ ] Write export API integration tests
 - [ ] Fix core package TypeScript errors to enable full exporter integration
 
-### 4.9 REST API - Workspace Endpoints
-- [ ] POST /api/workspaces - Create workspace
-- [ ] GET /api/workspaces/:id - Get workspace
-- [ ] PUT /api/workspaces/:id - Update workspace
-- [ ] DELETE /api/workspaces/:id - Delete workspace
-- [ ] Write workspace API tests
+### 4.9 REST API - Workspace Endpoints ✅
+- [x] POST /api/workspaces - Create workspace
+- [x] GET /api/workspaces - List user's workspaces
+- [x] GET /api/workspaces/:id - Get workspace
+- [x] PUT /api/workspaces/:id - Update workspace
+- [x] DELETE /api/workspaces/:id - Delete workspace
+- [x] POST /api/workspaces/:id/members - Add member
+- [x] DELETE /api/workspaces/:id/members/:userId - Remove member
+- [x] PUT /api/workspaces/:id/members/:userId - Update member role
+- [x] Create workspace data model with role-based access control
+- [x] Create workspace service with Neo4j storage and caching
+- [x] Register routes in main app
+- [ ] Write workspace API integration tests
 
 ### 4.10 WebSocket Server
 - [ ] Install Socket.io
