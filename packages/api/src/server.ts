@@ -3,19 +3,35 @@
  * Separate from app.ts to allow testing without starting the server
  */
 
+// Load environment variables first, before any other imports
+import { config } from 'dotenv';
+import { resolve } from 'path';
+
+// Load .env from project root (two levels up from this file)
+config({ path: resolve(__dirname, '../../../.env') });
+
+import { createServer } from 'http';
 import app from './index';
 import { validateEnvironment } from './config/environment';
 import { connectDatabase, disconnectDatabase } from './database/neo4j-client';
 import { initializeDatabase } from './database/init-db';
 import { connectRedis, disconnectRedis } from './cache/redis-client';
+import { createWebSocketServer, shutdownWebSocketServer } from './websocket/server';
 
 // Validate environment configuration
 const config = validateEnvironment();
 
+// Create HTTP server
+const httpServer = createServer(app);
+
+// Create WebSocket server
+const io = createWebSocketServer(httpServer);
+
 // Start server and connect to database
-const server = app.listen(config.PORT, () => {
+const server = httpServer.listen(config.PORT, () => {
   console.warn(`🚀 Server running on port ${config.PORT} in ${config.NODE_ENV} mode`);
   console.warn(`   Health check: http://localhost:${config.PORT}/health`);
+  console.warn(`   WebSocket server: ws://localhost:${config.PORT}`);
   if (config.CORS_ORIGIN) {
     console.warn(`   CORS origins: ${config.CORS_ORIGIN}`);
   }
@@ -36,21 +52,31 @@ const server = app.listen(config.PORT, () => {
 // Graceful shutdown handlers
 function shutdown(signal: string) {
   console.warn(`\n${signal} received. Shutting down gracefully...`);
-  server.close(() => {
-    console.warn('Server closed.');
 
-    // Disconnect from database and cache
-    void (async () => {
-      try {
-        await disconnectDatabase();
-        await disconnectRedis();
-      } catch (error) {
-        console.error('Error disconnecting from services:', error);
-      }
+  // Flush WebSocket batches and cleanup
+  shutdownWebSocketServer();
 
-      console.warn('Exiting process.');
-      process.exit(0);
-    })();
+  // Close WebSocket server
+  io.close(() => {
+    console.warn('WebSocket server closed.');
+
+    // Then close HTTP server
+    server.close(() => {
+      console.warn('HTTP server closed.');
+
+      // Disconnect from database and cache
+      void (async () => {
+        try {
+          await disconnectDatabase();
+          await disconnectRedis();
+        } catch (error) {
+          console.error('Error disconnecting from services:', error);
+        }
+
+        console.warn('Exiting process.');
+        process.exit(0);
+      })();
+    });
   });
 
   // Force exit after 10 seconds if graceful shutdown fails
