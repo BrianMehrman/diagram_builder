@@ -9,12 +9,12 @@ current_phase: "Phase 3: Parser Package"
 # Epic and Story Status Tracking
 development_status:
   # Epic 3: Parser Package (@diagram-builder/parser)
-  epic-3: not-started
+  epic-3: review
   3-1-tree-sitter-integration: review
   3-2-ast-analysis: review
   3-3-dependency-graph: review
   3-4-repository-integration: review
-  3-5-ivm-conversion: not-started
+  3-5-ivm-conversion: review
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun

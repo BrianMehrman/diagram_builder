@@ -65,3 +65,12 @@ export type { ScanOptions } from './repository/directory-scanner'
 // Git Cloner
 export { cloneRepository, listRemoteBranches, cloneAtCommit, cloneAtTag } from './repository/git-cloner'
 export type { CloneOptions } from './repository/git-cloner'
+
+// IVM Conversion
+export { convertToIVM } from './ivm/ivm-converter'
+export type { IVMConversionOptions } from './ivm/ivm-converter'
+export { convertNode, convertNodes } from './ivm/node-converter'
+export { convertEdge, convertEdges } from './ivm/edge-converter'
+export { enrichGraphMetadata } from './ivm/metadata-enricher'
+export { validateIVM } from './ivm/validator'
+export type { ValidationError, ValidationResult } from './ivm/validator'

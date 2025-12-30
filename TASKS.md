@@ -129,11 +129,11 @@
 - [x] Branch-specific parsing support
 - [x] Write integration tests
 
-### 3.5 IVM Conversion
-- [ ] Convert AST nodes to IVM nodes
-- [ ] Convert dependencies to IVM edges
-- [ ] Add metadata (file paths, line numbers, metrics)
-- [ ] Write unit tests for conversion
+### 3.5 IVM Conversion ✅
+- [x] Convert AST nodes to IVM nodes
+- [x] Convert dependencies to IVM edges
+- [x] Add metadata (file paths, line numbers, metrics)
+- [x] Write unit tests for conversion
 
 ---
 
