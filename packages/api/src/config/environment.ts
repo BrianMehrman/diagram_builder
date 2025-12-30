@@ -9,6 +9,10 @@ export interface EnvironmentConfig {
   PORT: number;
   NODE_ENV: 'development' | 'production' | 'test';
   CORS_ORIGIN: string | undefined;
+  JWT_SECRET: string;
+  NEO4J_URI: string;
+  NEO4J_USERNAME: string;
+  NEO4J_PASSWORD: string;
 }
 
 /**
@@ -19,7 +23,11 @@ export function validateEnvironment(): EnvironmentConfig {
   const config: EnvironmentConfig = {
     PORT: parseInt(process.env.PORT || '3000', 10),
     NODE_ENV: (process.env.NODE_ENV as EnvironmentConfig['NODE_ENV']) || 'development',
-    CORS_ORIGIN: process.env.CORS_ORIGIN
+    CORS_ORIGIN: process.env.CORS_ORIGIN,
+    JWT_SECRET: process.env.JWT_SECRET || '',
+    NEO4J_URI: process.env.NEO4J_URI || 'bolt://localhost:7687',
+    NEO4J_USERNAME: process.env.NEO4J_USERNAME || 'neo4j',
+    NEO4J_PASSWORD: process.env.NEO4J_PASSWORD || ''
   };
 
   // Validate PORT
@@ -31,6 +39,28 @@ export function validateEnvironment(): EnvironmentConfig {
   if (!['development', 'production', 'test'].includes(config.NODE_ENV)) {
     console.warn(`Warning: NODE_ENV="${config.NODE_ENV}" is not standard. Using "development".`);
     config.NODE_ENV = 'development';
+  }
+
+  // Validate JWT_SECRET
+  if (!config.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+
+  if (config.JWT_SECRET.length < 32) {
+    console.warn('Warning: JWT_SECRET should be at least 32 characters for security');
+  }
+
+  // Validate Neo4j configuration
+  if (!config.NEO4J_PASSWORD) {
+    throw new Error('NEO4J_PASSWORD environment variable is required');
+  }
+
+  if (!config.NEO4J_URI) {
+    throw new Error('NEO4J_URI environment variable is required');
+  }
+
+  if (!config.NEO4J_USERNAME) {
+    throw new Error('NEO4J_USERNAME environment variable is required');
   }
 
   return config;

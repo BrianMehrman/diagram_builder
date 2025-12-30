@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
+
+// Set JWT_SECRET before importing app (which validates environment)
+process.env.JWT_SECRET = 'test-secret-key-at-least-32-characters-long-for-testing';
+
 import app from './index';
 
 describe('Server', () => {
