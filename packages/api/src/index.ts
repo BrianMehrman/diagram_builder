@@ -4,6 +4,9 @@ import { corsMiddleware } from './middleware/cors-config';
 import { errorHandler } from './middleware/error-handler';
 import { authRouter } from './routes/auth';
 import { repositoriesRouter } from './routes/repositories';
+import { graphRouter } from './routes/graph';
+import { viewpointsRouter } from './routes/viewpoints';
+import { exportRouter } from './routes/export';
 
 const app = express();
 
@@ -22,6 +25,15 @@ app.use('/api/auth', authRouter);
 
 // Repository parsing routes
 app.use('/api/repositories', repositoriesRouter);
+
+// Graph query routes
+app.use('/api/graph', graphRouter);
+
+// Viewpoint management routes
+app.use('/api/viewpoints', viewpointsRouter);
+
+// Export routes
+app.use('/api/export', exportRouter);
 
 // Error handling middleware (MUST be last)
 app.use(errorHandler);

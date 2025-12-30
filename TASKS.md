@@ -176,28 +176,33 @@
 - [x] Write API integration tests
 
 ### 4.6 REST API - Graph Query Endpoints
-- [ ] GET /api/graph/:repoId - Get full graph
-- [ ] GET /api/graph/:repoId/node/:nodeId - Get node details
-- [ ] GET /api/graph/:repoId/dependencies/:nodeId - Get dependencies
-- [ ] POST /api/graph/:repoId/query - Custom Cypher query
-- [ ] Implement Redis caching for all queries
-- [ ] Write API integration tests
+- [x] GET /api/graph/:repoId - Get full graph
+- [x] GET /api/graph/:repoId/node/:nodeId - Get node details
+- [x] GET /api/graph/:repoId/dependencies/:nodeId - Get dependencies
+- [x] POST /api/graph/:repoId/query - Custom Cypher query
+- [x] Implement Redis caching for all queries
+- [x] Write API integration tests
 
-### 4.7 REST API - Viewpoint Endpoints
-- [ ] POST /api/viewpoints - Create viewpoint
-- [ ] GET /api/viewpoints/:id - Get viewpoint
-- [ ] PUT /api/viewpoints/:id - Update viewpoint
-- [ ] DELETE /api/viewpoints/:id - Delete viewpoint
-- [ ] GET /api/viewpoints/share/:id - Generate share URL
-- [ ] Write API integration tests
+### 4.7 REST API - Viewpoint Endpoints ✅
+- [x] POST /api/viewpoints - Create viewpoint
+- [x] GET /api/viewpoints/:id - Get viewpoint
+- [x] PUT /api/viewpoints/:id - Update viewpoint
+- [x] DELETE /api/viewpoints/:id - Delete viewpoint
+- [x] POST /api/viewpoints/:id/share - Generate share token
+- [x] GET /api/viewpoints/share/:token - Get by share token
+- [x] GET /api/viewpoints/repository/:repositoryId - List viewpoints
+- [x] Write API integration tests
 
-### 4.8 REST API - Export Endpoints
-- [ ] POST /api/export/plantuml - Export as PlantUML
-- [ ] POST /api/export/mermaid - Export as Mermaid
-- [ ] POST /api/export/drawio - Export as Draw.io
-- [ ] POST /api/export/gltf - Export as GLTF
-- [ ] POST /api/export/image - Export as PNG/SVG
-- [ ] Write export API tests
+### 4.8 REST API - Export Endpoints ✅
+- [x] POST /api/export/plantuml - Export as PlantUML
+- [x] POST /api/export/mermaid - Export as Mermaid
+- [x] POST /api/export/drawio - Export as Draw.io
+- [x] POST /api/export/gltf - Export as GLTF
+- [x] POST /api/export/image - Export as PNG/SVG
+- [x] Create export service with LOD filtering and graph filters
+- [x] Register routes in main app
+- [ ] Write export API integration tests
+- [ ] Fix core package TypeScript errors to enable full exporter integration
 
 ### 4.9 REST API - Workspace Endpoints
 - [ ] POST /api/workspaces - Create workspace
