@@ -140,12 +140,12 @@
 ## Phase 4: API Package (`@diagram-builder/api`)
 
 ### 4.1 Express Server Setup
-- [ ] Initialize Express application
-- [ ] Configure TypeScript compilation
-- [ ] Set up error handling middleware (RFC 7807 format)
-- [ ] Configure CORS for frontend
-- [ ] Add request logging middleware
-- [ ] Write server startup tests
+- [x] Initialize Express application
+- [x] Configure TypeScript compilation
+- [x] Set up error handling middleware (RFC 7807 format)
+- [x] Configure CORS for frontend
+- [x] Add request logging middleware
+- [x] Write server startup tests
 
 ### 4.2 JWT Authentication
 - [ ] Implement JWT token generation

@@ -14,6 +14,21 @@ export default [
         sourceType: 'module',
         project: ['./tsconfig.json', './packages/*/tsconfig.json'],
       },
+      globals: {
+        // Node.js globals
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        setTimeout: 'readonly',
+        setInterval: 'readonly',
+        setImmediate: 'readonly',
+        clearTimeout: 'readonly',
+        clearInterval: 'readonly',
+        clearImmediate: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        NodeJS: 'readonly',
+      },
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
@@ -42,6 +57,15 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
+      },
+      globals: {
+        // Node.js globals for tests
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        setTimeout: 'readonly',
+        setInterval: 'readonly',
+        NodeJS: 'readonly',
       },
     },
     plugins: {

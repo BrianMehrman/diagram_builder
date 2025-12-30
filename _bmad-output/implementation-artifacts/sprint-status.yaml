@@ -4,7 +4,7 @@
 
 project_name: diagram_builder
 sprint_start: "2025-12-29"
-current_phase: "Phase 3: Parser Package"
+current_phase: "Phase 4: API Package"
 
 # Epic and Story Status Tracking
 development_status:
@@ -15,6 +15,39 @@ development_status:
   3-3-dependency-graph: review
   3-4-repository-integration: review
   3-5-ivm-conversion: review
+
+  # Epic 4: API Package (@diagram-builder/api)
+  epic-4: in-progress
+  4-1-express-server-setup: review
+  4-2-jwt-authentication: ready-for-dev
+  4-3-neo4j-integration: ready-for-dev
+  4-4-redis-integration: ready-for-dev
+  4-5-rest-api-parsing-endpoints: ready-for-dev
+  4-6-rest-api-graph-query-endpoints: ready-for-dev
+  4-7-rest-api-viewpoint-endpoints: ready-for-dev
+  4-8-rest-api-export-endpoints: ready-for-dev
+  4-9-rest-api-workspace-endpoints: ready-for-dev
+  4-10-websocket-server: ready-for-dev
+  4-11-websocket-position-updates: ready-for-dev
+  4-12-websocket-viewpoint-events: ready-for-dev
+  4-13-websocket-session-events: ready-for-dev
+
+  # Epic 5: UI Package (@diagram-builder/ui)
+  epic-5: not-started
+  5-1-vite-react-setup: ready-for-dev
+  5-2-feature-structure-setup: ready-for-dev
+  5-3-error-boundary-system: ready-for-dev
+  5-4-feature-canvas-3d: ready-for-dev
+  5-5-feature-canvas-rendering: ready-for-dev
+  5-6-feature-canvas-selection: ready-for-dev
+  5-7-feature-minimap: ready-for-dev
+  5-8-feature-navigation: ready-for-dev
+  5-9-feature-viewpoints: ready-for-dev
+  5-10-feature-workspace-management: ready-for-dev
+  5-11-feature-export: ready-for-dev
+  5-12-feature-collaboration: ready-for-dev
+  5-13-api-client: ready-for-dev
+  5-14-routing: ready-for-dev
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun
@@ -39,7 +72,53 @@ epics:
       - "Phase 1: Project Infrastructure (Complete)"
       - "Phase 2: Core Package (Complete)"
 
+  epic-4:
+    name: "API Package (@diagram-builder/api)"
+    description: "Implement Express REST API with JWT authentication, Neo4j integration, Redis caching, WebSocket server, and endpoints for parsing, graph queries, viewpoints, exports, and workspaces"
+    stories:
+      - 4-1-express-server-setup
+      - 4-2-jwt-authentication
+      - 4-3-neo4j-integration
+      - 4-4-redis-integration
+      - 4-5-rest-api-parsing-endpoints
+      - 4-6-rest-api-graph-query-endpoints
+      - 4-7-rest-api-viewpoint-endpoints
+      - 4-8-rest-api-export-endpoints
+      - 4-9-rest-api-workspace-endpoints
+      - 4-10-websocket-server
+      - 4-11-websocket-position-updates
+      - 4-12-websocket-viewpoint-events
+      - 4-13-websocket-session-events
+    dependencies:
+      - "Phase 1: Project Infrastructure (Complete)"
+      - "Phase 2: Core Package (Complete)"
+      - "Phase 3: Parser Package (Complete)"
+
+  epic-5:
+    name: "UI Package (@diagram-builder/ui)"
+    description: "Implement Vite + React 19 frontend with 3D visualization (Three.js), feature-based organization, Zustand state management, React Router, Tailwind CSS, and comprehensive component testing"
+    stories:
+      - 5-1-vite-react-setup
+      - 5-2-feature-structure-setup
+      - 5-3-error-boundary-system
+      - 5-4-feature-canvas-3d
+      - 5-5-feature-canvas-rendering
+      - 5-6-feature-canvas-selection
+      - 5-7-feature-minimap
+      - 5-8-feature-navigation
+      - 5-9-feature-viewpoints
+      - 5-10-feature-workspace-management
+      - 5-11-feature-export
+      - 5-12-feature-collaboration
+      - 5-13-api-client
+      - 5-14-routing
+    dependencies:
+      - "Phase 1: Project Infrastructure (Complete)"
+      - "Phase 2: Core Package (Complete)"
+      - "Phase 4: API Package (In Progress - for API integration in later stories)"
+
 # Notes:
 # - Phase 1 (Project Infrastructure): 100% Complete
 # - Phase 2 (Core Package): 100% Complete
-# - Phase 3 (Parser Package): Starting now
+# - Phase 3 (Parser Package): 100% Complete (pending code review)
+# - Phase 4 (API Package): Starting now
