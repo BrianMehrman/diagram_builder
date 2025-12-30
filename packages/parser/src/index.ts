@@ -53,3 +53,15 @@ export type { FunctionCall } from './graph/call-extractor'
 // Inheritance Extraction
 export { extractInheritance } from './graph/inheritance-extractor'
 export type { InheritanceRelationship } from './graph/inheritance-extractor'
+
+// Repository Loading
+export { loadRepository } from './repository/repository-loader'
+export type { RepositoryConfig, RepositoryContext } from './repository/repository-loader'
+
+// Directory Scanner
+export { scanDirectory } from './repository/directory-scanner'
+export type { ScanOptions } from './repository/directory-scanner'
+
+// Git Cloner
+export { cloneRepository, listRemoteBranches, cloneAtCommit, cloneAtTag } from './repository/git-cloner'
+export type { CloneOptions } from './repository/git-cloner'

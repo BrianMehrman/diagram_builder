@@ -121,13 +121,13 @@
 - [x] Create dependency graph data structure
 - [x] Write integration tests with real JS/TS files
 
-### 3.4 Repository Integration
-- [ ] Implement local directory scanning
-- [ ] Implement Git repository cloning
-- [ ] Support GitHub, GitLab, Bitbucket URLs
-- [ ] Handle authentication (OAuth tokens, SSH keys)
-- [ ] Branch-specific parsing support
-- [ ] Write integration tests
+### 3.4 Repository Integration ✅
+- [x] Implement local directory scanning
+- [x] Implement Git repository cloning
+- [x] Support GitHub, GitLab, Bitbucket URLs
+- [x] Handle authentication (OAuth tokens, SSH keys)
+- [x] Branch-specific parsing support
+- [x] Write integration tests
 
 ### 3.5 IVM Conversion
 - [ ] Convert AST nodes to IVM nodes
