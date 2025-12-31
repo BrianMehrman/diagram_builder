@@ -12,9 +12,8 @@
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts"
   },
-  "dependencies": {},
   "devDependencies": {
     "typescript": "^5.6.0",
-    "vitest": "^2.0.0"
+    "vitest": "^4.0.16"
   }
 }

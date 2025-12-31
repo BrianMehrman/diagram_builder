@@ -1,0 +1,27 @@
+# Data Factories Directory
+
+Place test data factory files here.
+
+## Pattern
+
+```typescript
+import { faker } from '@faker-js/faker';
+
+export const createUser = (overrides = {}) => ({
+  id: faker.number.int(),
+  email: faker.internet.email(),
+  name: faker.person.fullName(),
+  ...overrides,
+});
+
+export const createUsers = (count: number) =>
+  Array.from({ length: count }, () => createUser());
+```
+
+## Key Principles
+
+- Use `@faker-js/faker` for random data (install: `npm install -D @faker-js/faker`)
+- Support overrides for specific test scenarios
+- Generate complete valid objects
+- Include helper functions for bulk creation
+- Auto-cleanup in fixture teardown

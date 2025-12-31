@@ -1,0 +1,9 @@
+# Test Helpers Directory
+
+Place utility functions and helper modules here.
+
+Examples:
+- API client wrappers
+- Common test actions (login, navigation)
+- Data transformation utilities
+- Assertion helpers
