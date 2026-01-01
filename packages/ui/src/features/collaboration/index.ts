@@ -5,14 +5,9 @@
  * real-time position synchronization, and user presence indicators.
  */
 
-// Components will be exported here
-// export { SessionControl } from './SessionControl';
-// export { UserPresence } from './UserPresence';
-// export { SpatialAvatar } from './SpatialAvatar';
-
-// Hooks will be exported here
-// export { useWebSocket } from './hooks/useWebSocket';
-// export { useSession } from './hooks/useSession';
-
-// Store will be exported here
-// export { useCollaborationStore } from './store';
+export { default as SessionControl } from './SessionControl'
+export { default as UserPresence } from './UserPresence'
+export { default as SpatialAvatar } from './SpatialAvatar'
+export { default as useWebSocket } from './useWebSocket'
+export { useCollaborationStore } from './store'
+export type { User, Session, CollaborationState } from './store'

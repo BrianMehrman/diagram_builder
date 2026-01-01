@@ -17,7 +17,7 @@ development_status:
   3-5-ivm-conversion: review
 
   # Epic 4: API Package (@diagram-builder/api)
-  epic-4: in-progress
+  epic-4: review
   4-1-express-server-setup: review
   4-2-jwt-authentication: review
   4-3-neo4j-integration: review
@@ -27,27 +27,27 @@ development_status:
   4-7-rest-api-viewpoint-endpoints: review
   4-8-rest-api-export-endpoints: review
   4-9-rest-api-workspace-endpoints: review
-  4-10-websocket-server: ready-for-dev
-  4-11-websocket-position-updates: ready-for-dev
-  4-12-websocket-viewpoint-events: ready-for-dev
-  4-13-websocket-session-events: ready-for-dev
+  4-10-websocket-server: review
+  4-11-websocket-position-updates: review
+  4-12-websocket-viewpoint-events: review
+  4-13-websocket-session-events: review
 
   # Epic 5: UI Package (@diagram-builder/ui)
-  epic-5: not-started
-  5-1-vite-react-setup: ready-for-dev
-  5-2-feature-structure-setup: ready-for-dev
-  5-3-error-boundary-system: ready-for-dev
-  5-4-feature-canvas-3d: ready-for-dev
-  5-5-feature-canvas-rendering: ready-for-dev
-  5-6-feature-canvas-selection: ready-for-dev
-  5-7-feature-minimap: ready-for-dev
-  5-8-feature-navigation: ready-for-dev
-  5-9-feature-viewpoints: ready-for-dev
-  5-10-feature-workspace-management: ready-for-dev
-  5-11-feature-export: ready-for-dev
-  5-12-feature-collaboration: ready-for-dev
-  5-13-api-client: ready-for-dev
-  5-14-routing: ready-for-dev
+  epic-5: done
+  5-1-vite-react-setup: done
+  5-2-feature-structure-setup: done
+  5-3-error-boundary-system: done
+  5-4-feature-canvas-3d: done
+  5-5-feature-canvas-rendering: done
+  5-6-feature-canvas-selection: done
+  5-7-feature-minimap: done
+  5-8-feature-navigation: done
+  5-9-feature-viewpoints: done
+  5-10-feature-workspace-management: done
+  5-11-feature-export: done
+  5-12-feature-collaboration: done
+  5-13-api-client: done
+  5-14-routing: done
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun

@@ -93,7 +93,7 @@ export class PositionBatcher {
       this.batchTimers.delete(sessionId);
     }
 
-    // Broadcast the batch (Socket.io handles serialization)
+    // Broadcast the batch (Socket.io with MessagePack binary serialization)
     this.io.to(sessionId).emit('positions.sync', { positions });
   }
 

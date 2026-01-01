@@ -11,6 +11,7 @@
 
 import { Server as SocketIOServer } from 'socket.io';
 import type { Server as HTTPServer } from 'http';
+import msgpackParser from 'socket.io-msgpack-parser';
 import { authenticateSocket, type AuthenticatedSocket } from './auth';
 import { sessionManager, type UserPosition } from './session-manager';
 import { PositionBatcher } from './position-batcher';
@@ -86,6 +87,8 @@ export function createWebSocketServer(httpServer: HTTPServer): SocketIOServer<
     },
     pingTimeout: 60000,
     pingInterval: 25000,
+    // Use MessagePack for binary serialization (AC-3)
+    parser: msgpackParser,
   });
 
   // Create position batcher for performance optimization
