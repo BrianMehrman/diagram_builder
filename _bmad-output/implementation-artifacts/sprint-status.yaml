@@ -17,7 +17,7 @@ development_status:
   3-5-ivm-conversion: review
 
   # Epic 4: API Package (@diagram-builder/api)
-  epic-4: review
+  epic-4: in-progress
   4-1-express-server-setup: review
   4-2-jwt-authentication: review
   4-3-neo4j-integration: review
@@ -31,9 +31,10 @@ development_status:
   4-11-websocket-position-updates: review
   4-12-websocket-viewpoint-events: review
   4-13-websocket-session-events: review
+  4-14-codebase-import-api: review
 
   # Epic 5: UI Package (@diagram-builder/ui)
-  epic-5: done
+  epic-5: in-progress
   5-1-vite-react-setup: done
   5-2-feature-structure-setup: done
   5-3-error-boundary-system: done
@@ -48,6 +49,7 @@ development_status:
   5-12-feature-collaboration: done
   5-13-api-client: done
   5-14-routing: done
+  5-15-codebase-import-ui: ready-for-dev
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun
@@ -89,6 +91,7 @@ epics:
       - 4-11-websocket-position-updates
       - 4-12-websocket-viewpoint-events
       - 4-13-websocket-session-events
+      - 4-14-codebase-import-api
     dependencies:
       - "Phase 1: Project Infrastructure (Complete)"
       - "Phase 2: Core Package (Complete)"
@@ -112,6 +115,7 @@ epics:
       - 5-12-feature-collaboration
       - 5-13-api-client
       - 5-14-routing
+      - 5-15-codebase-import-ui
     dependencies:
       - "Phase 1: Project Infrastructure (Complete)"
       - "Phase 2: Core Package (Complete)"

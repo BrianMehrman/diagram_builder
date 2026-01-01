@@ -24,6 +24,12 @@ import {
   removeWorkspaceMember,
   updateMemberRole,
 } from '../services/workspace-service';
+import {
+  importCodebase,
+  listWorkspaceCodebases,
+  getCodebaseById,
+  deleteCodebase,
+} from '../services/codebase-service';
 import { ValidationError, NotFoundError, ForbiddenError } from '../errors';
 import { asyncHandler } from '../utils/async-handler';
 import type {
@@ -32,6 +38,7 @@ import type {
   AddMemberInput,
   UpdateMemberInput,
 } from '../types/workspace';
+import type { CreateCodebaseInput } from '../types/codebase';
 
 const workspacesRouter = Router();
 
@@ -366,6 +373,147 @@ workspacesRouter.put('/:id/members/:userId', authenticate, asyncHandler(async (r
     }
     throw error;
   }
+}));
+
+/**
+ * POST /api/workspaces/:workspaceId/codebases
+ * Import a codebase into a workspace
+ */
+workspacesRouter.post('/:workspaceId/codebases', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const { workspaceId } = req.params;
+  const { source, type, branch, credentials } = req.body;
+
+  if (!workspaceId) {
+    throw new ValidationError('Invalid request', 'Workspace ID is required');
+  }
+
+  if (!source || typeof source !== 'string' || source.trim().length === 0) {
+    throw new ValidationError('Invalid request', 'Source path or URL is required');
+  }
+
+  if (!type || !['local', 'git'].includes(type)) {
+    throw new ValidationError('Invalid request', 'Type must be either local or git');
+  }
+
+  const userId = req.user?.userId;
+  if (!userId) {
+    throw new ValidationError('Invalid request', 'User ID not found in token');
+  }
+
+  const input: CreateCodebaseInput = {
+    source: source.trim(),
+    type,
+    ...(branch && { branch }),
+    ...(credentials && { credentials }),
+  };
+
+  const codebase = await importCodebase(workspaceId, userId, input);
+
+  res.status(201).json({
+    codebaseId: codebase.id,
+    workspaceId: codebase.workspaceId,
+    source: codebase.source,
+    type: codebase.type,
+    ...(codebase.branch && { branch: codebase.branch }),
+    status: codebase.status,
+    importedAt: codebase.importedAt,
+    ...(codebase.error && { error: codebase.error }),
+    ...(codebase.repositoryId && { repositoryId: codebase.repositoryId }),
+  });
+}));
+
+/**
+ * GET /api/workspaces/:workspaceId/codebases
+ * List all codebases in a workspace
+ */
+workspacesRouter.get('/:workspaceId/codebases', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const { workspaceId } = req.params;
+
+  if (!workspaceId) {
+    throw new ValidationError('Invalid request', 'Workspace ID is required');
+  }
+
+  const userId = req.user?.userId;
+  if (!userId) {
+    throw new ValidationError('Invalid request', 'User ID not found in token');
+  }
+
+  const codebases = await listWorkspaceCodebases(workspaceId);
+
+  res.json({
+    count: codebases.length,
+    codebases: codebases.map(c => ({
+      codebaseId: c.id,
+      workspaceId: c.workspaceId,
+      source: c.source,
+      type: c.type,
+      ...(c.branch && { branch: c.branch }),
+      status: c.status,
+      importedAt: c.importedAt,
+      ...(c.error && { error: c.error }),
+      ...(c.repositoryId && { repositoryId: c.repositoryId }),
+    })),
+  });
+}));
+
+/**
+ * GET /api/workspaces/:workspaceId/codebases/:codebaseId
+ * Get a specific codebase
+ */
+workspacesRouter.get('/:workspaceId/codebases/:codebaseId', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const { workspaceId, codebaseId } = req.params;
+
+  if (!workspaceId) {
+    throw new ValidationError('Invalid request', 'Workspace ID is required');
+  }
+
+  if (!codebaseId) {
+    throw new ValidationError('Invalid request', 'Codebase ID is required');
+  }
+
+  const userId = req.user?.userId;
+  if (!userId) {
+    throw new ValidationError('Invalid request', 'User ID not found in token');
+  }
+
+  const codebase = await getCodebaseById(workspaceId, codebaseId);
+
+  res.json({
+    codebaseId: codebase.id,
+    workspaceId: codebase.workspaceId,
+    source: codebase.source,
+    type: codebase.type,
+    ...(codebase.branch && { branch: codebase.branch }),
+    status: codebase.status,
+    importedAt: codebase.importedAt,
+    ...(codebase.error && { error: codebase.error }),
+    ...(codebase.repositoryId && { repositoryId: codebase.repositoryId }),
+  });
+}));
+
+/**
+ * DELETE /api/workspaces/:workspaceId/codebases/:codebaseId
+ * Delete a codebase from a workspace
+ */
+workspacesRouter.delete('/:workspaceId/codebases/:codebaseId', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const { workspaceId, codebaseId } = req.params;
+
+  if (!workspaceId) {
+    throw new ValidationError('Invalid request', 'Workspace ID is required');
+  }
+
+  if (!codebaseId) {
+    throw new ValidationError('Invalid request', 'Codebase ID is required');
+  }
+
+  const userId = req.user?.userId;
+  if (!userId) {
+    throw new ValidationError('Invalid request', 'User ID not found in token');
+  }
+
+  await deleteCodebase(workspaceId, codebaseId);
+
+  res.status(204).send();
 }));
 
 export { workspacesRouter };

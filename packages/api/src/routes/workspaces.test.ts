@@ -22,6 +22,9 @@ import { generateToken } from '../auth/jwt';
 // Mock data store for workspaces
 const mockWorkspaces = new Map<string, Record<string, unknown>>();
 
+// Mock data store for codebases
+const mockCodebases = new Map<string, Record<string, unknown>>();
+
 // Mock Neo4j
 vi.mock('../database/query-utils', () => {
   return {
@@ -135,9 +138,98 @@ vi.mock('../database/query-utils', () => {
       }
 
       // Mock DELETE
-      if (query.includes('DETACH DELETE')) {
+      if (query.includes('DETACH DELETE') && !query.includes('Codebase')) {
         const id = params.id as string;
         mockWorkspaces.delete(id);
+        return [];
+      }
+
+      // Mock CREATE Codebase
+      if (query.includes('CREATE (c:Codebase')) {
+        const id = params.id as string;
+        mockCodebases.set(id, {
+          id,
+          workspaceId: params.workspaceId,
+          source: params.source,
+          type: params.type,
+          branch: params.branch || null,
+          status: params.status || 'pending',
+          error: params.error || null,
+          repositoryId: params.repositoryId || null,
+          importedAt: params.importedAt || new Date().toISOString(),
+          updatedAt: params.updatedAt || new Date().toISOString(),
+        });
+        return [];
+      }
+
+      // Mock GET codebases by workspace
+      if (query.includes('MATCH (w:Workspace') && query.includes('[:CONTAINS]->(c:Codebase)')) {
+        const workspaceId = params.workspaceId as string;
+        const workspaceCodebases = Array.from(mockCodebases.values()).filter(
+          (c) => c.workspaceId === workspaceId
+        );
+
+        return workspaceCodebases.map(c => ({
+          id: c.id,
+          workspaceId: c.workspaceId,
+          source: c.source,
+          type: c.type,
+          branch: c.branch,
+          status: c.status,
+          error: c.error,
+          repositoryId: c.repositoryId,
+          importedAt: c.importedAt,
+          updatedAt: c.updatedAt,
+        }));
+      }
+
+      // Mock GET codebase by ID
+      if (query.includes('MATCH (c:Codebase {id: $codebaseId})') && !query.includes('DETACH DELETE')) {
+        const codebaseId = params.codebaseId as string;
+        const codebase = mockCodebases.get(codebaseId);
+        if (!codebase) {
+          return [];
+        }
+        return [{
+          id: codebase.id,
+          workspaceId: codebase.workspaceId,
+          source: codebase.source,
+          type: codebase.type,
+          branch: codebase.branch,
+          status: codebase.status,
+          error: codebase.error,
+          repositoryId: codebase.repositoryId,
+          importedAt: codebase.importedAt,
+          updatedAt: codebase.updatedAt,
+        }];
+      }
+
+      // Mock UPDATE codebase status
+      if (query.includes('SET c.status') || query.includes('SET c.error')) {
+        const codebaseId = params.codebaseId as string;
+        const codebase = mockCodebases.get(codebaseId);
+        if (!codebase) {
+          return [];
+        }
+
+        const updated = { ...codebase };
+        if (params.status !== undefined) updated.status = params.status;
+        if (params.error !== undefined) updated.error = params.error;
+        if (params.repositoryId !== undefined) updated.repositoryId = params.repositoryId;
+        updated.updatedAt = new Date().toISOString();
+
+        mockCodebases.set(codebaseId, updated);
+        return [];
+      }
+
+      // Mock DELETE Codebase
+      if (query.includes('MATCH (c:Codebase') && query.includes('DETACH DELETE')) {
+        const codebaseId = params.codebaseId as string;
+        const codebase = mockCodebases.get(codebaseId);
+        if (!codebase) {
+          return [];
+        }
+        mockCodebases.delete(codebaseId);
         return [];
       }
 
@@ -758,6 +850,257 @@ describe('Workspace Endpoints', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.detail).toContain('admin, editor, or viewer');
+    });
+  });
+
+  describe('POST /api/workspaces/:workspaceId/codebases', () => {
+    let workspaceId: string;
+
+    beforeEach(async () => {
+      const response = await request(app)
+        .post('/api/workspaces')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'Test Workspace' });
+      workspaceId = response.body.id;
+    });
+
+    it('should import a local codebase', async () => {
+      const response = await request(app)
+        .post(`/api/workspaces/${workspaceId}/codebases`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          source: '/path/to/local/repo',
+          type: 'local',
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty('codebaseId');
+      expect(response.body).toHaveProperty('workspaceId', workspaceId);
+      expect(response.body).toHaveProperty('source', '/path/to/local/repo');
+      expect(response.body).toHaveProperty('type', 'local');
+      expect(response.body).toHaveProperty('status', 'pending');
+      expect(response.body).toHaveProperty('importedAt');
+    });
+
+    it('should import a Git repository', async () => {
+      const response = await request(app)
+        .post(`/api/workspaces/${workspaceId}/codebases`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          source: 'https://github.com/user/repo.git',
+          type: 'git',
+          branch: 'main',
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty('codebaseId');
+      expect(response.body).toHaveProperty('source', 'https://github.com/user/repo.git');
+      expect(response.body).toHaveProperty('type', 'git');
+      expect(response.body).toHaveProperty('branch', 'main');
+      expect(response.body).toHaveProperty('status', 'pending');
+    });
+
+    it('should return 400 when source is missing', async () => {
+      const response = await request(app)
+        .post(`/api/workspaces/${workspaceId}/codebases`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          type: 'local',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.detail).toContain('Source');
+    });
+
+    it('should return 400 when type is missing', async () => {
+      const response = await request(app)
+        .post(`/api/workspaces/${workspaceId}/codebases`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          source: '/path/to/repo',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.detail).toContain('Type');
+    });
+
+    it('should return 400 when type is invalid', async () => {
+      const response = await request(app)
+        .post(`/api/workspaces/${workspaceId}/codebases`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          source: '/path/to/repo',
+          type: 'invalid',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.detail).toContain('local or git');
+    });
+
+    it('should require authentication', async () => {
+      const response = await request(app)
+        .post(`/api/workspaces/${workspaceId}/codebases`)
+        .send({
+          source: '/path/to/repo',
+          type: 'local',
+        });
+
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('GET /api/workspaces/:workspaceId/codebases', () => {
+    let workspaceId: string;
+    let codebase1Id: string;
+    let codebase2Id: string;
+
+    beforeEach(async () => {
+      const workspaceResponse = await request(app)
+        .post('/api/workspaces')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'Test Workspace' });
+      workspaceId = workspaceResponse.body.id;
+
+      // Create two codebases
+      const codebase1Response = await request(app)
+        .post(`/api/workspaces/${workspaceId}/codebases`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ source: '/path/1', type: 'local' });
+      codebase1Id = codebase1Response.body.codebaseId;
+
+      const codebase2Response = await request(app)
+        .post(`/api/workspaces/${workspaceId}/codebases`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ source: 'https://github.com/user/repo.git', type: 'git' });
+      codebase2Id = codebase2Response.body.codebaseId;
+    });
+
+    it('should list all codebases in workspace', async () => {
+      const response = await request(app)
+        .get(`/api/workspaces/${workspaceId}/codebases`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('count', 2);
+      expect(response.body).toHaveProperty('codebases');
+      expect(response.body.codebases).toHaveLength(2);
+    });
+
+    it('should return empty array for workspace with no codebases', async () => {
+      // Create new empty workspace
+      const emptyWorkspaceResponse = await request(app)
+        .post('/api/workspaces')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'Empty Workspace' });
+
+      const response = await request(app)
+        .get(`/api/workspaces/${emptyWorkspaceResponse.body.id}/codebases`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.count).toBe(0);
+      expect(response.body.codebases).toHaveLength(0);
+    });
+
+    it('should require authentication', async () => {
+      const response = await request(app)
+        .get(`/api/workspaces/${workspaceId}/codebases`);
+
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('GET /api/workspaces/:workspaceId/codebases/:codebaseId', () => {
+    let workspaceId: string;
+    let codebaseId: string;
+
+    beforeEach(async () => {
+      const workspaceResponse = await request(app)
+        .post('/api/workspaces')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'Test Workspace' });
+      workspaceId = workspaceResponse.body.id;
+
+      const codebaseResponse = await request(app)
+        .post(`/api/workspaces/${workspaceId}/codebases`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ source: '/path/to/repo', type: 'local' });
+      codebaseId = codebaseResponse.body.codebaseId;
+    });
+
+    it('should get a specific codebase', async () => {
+      const response = await request(app)
+        .get(`/api/workspaces/${workspaceId}/codebases/${codebaseId}`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('codebaseId', codebaseId);
+      expect(response.body).toHaveProperty('workspaceId', workspaceId);
+      expect(response.body).toHaveProperty('source', '/path/to/repo');
+    });
+
+    it('should return 404 for non-existent codebase', async () => {
+      const response = await request(app)
+        .get(`/api/workspaces/${workspaceId}/codebases/00000000-0000-4000-8000-000000000000`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(404);
+    });
+
+    it('should require authentication', async () => {
+      const response = await request(app)
+        .get(`/api/workspaces/${workspaceId}/codebases/${codebaseId}`);
+
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('DELETE /api/workspaces/:workspaceId/codebases/:codebaseId', () => {
+    let workspaceId: string;
+    let codebaseId: string;
+
+    beforeEach(async () => {
+      const workspaceResponse = await request(app)
+        .post('/api/workspaces')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ name: 'Test Workspace' });
+      workspaceId = workspaceResponse.body.id;
+
+      const codebaseResponse = await request(app)
+        .post(`/api/workspaces/${workspaceId}/codebases`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ source: '/path/to/repo', type: 'local' });
+      codebaseId = codebaseResponse.body.codebaseId;
+    });
+
+    it('should delete a codebase', async () => {
+      const response = await request(app)
+        .delete(`/api/workspaces/${workspaceId}/codebases/${codebaseId}`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(204);
+
+      // Verify it's deleted
+      const getResponse = await request(app)
+        .get(`/api/workspaces/${workspaceId}/codebases/${codebaseId}`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(getResponse.status).toBe(404);
+    });
+
+    it('should return 404 when deleting non-existent codebase', async () => {
+      const response = await request(app)
+        .delete(`/api/workspaces/${workspaceId}/codebases/00000000-0000-4000-8000-000000000000`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(404);
+    });
+
+    it('should require authentication', async () => {
+      const response = await request(app)
+        .delete(`/api/workspaces/${workspaceId}/codebases/${codebaseId}`);
+
+      expect(response.status).toBe(401);
     });
   });
 
