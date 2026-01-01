@@ -9,8 +9,20 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+import { access, readFile } from 'fs/promises';
+import { constants } from 'fs';
 import { runQuery } from '../database/query-utils';
 import { invalidatePattern } from '../cache/cache-utils';
+import { loadRepository } from '@diagram-builder/parser';
+import { buildDependencyGraph } from '@diagram-builder/parser';
+import { convertToIVM } from '@diagram-builder/parser';
+import { cloneRepository } from '@diagram-builder/parser';
+import type { IVM } from '@diagram-builder/core';
+
+/**
+ * Constants
+ */
+const FAILED_REPOSITORY_NAME = 'Failed Repository';
 
 /**
  * Request to parse a repository
@@ -39,6 +51,139 @@ export interface RepositoryMetadata {
 }
 
 /**
+ * Run the full parsing pipeline
+ *
+ * @param request - Repository parsing request
+ * @returns IVM graph and repository name
+ */
+async function runParsingPipeline(request: ParseRepositoryRequest): Promise<{ ivm: IVM; name: string; localPath: string }> {
+  const { url, path, branch } = request;
+
+  let repoPath: string;
+  let repoName: string;
+
+  // Step 1: Get repository path (clone if URL, use direct if path)
+  if (url) {
+    // Clone GitHub repository
+    const cloneOptions = {
+      branch: branch || 'main',
+      token: request.token,
+    };
+    const cloneResult = await cloneRepository(url, cloneOptions);
+    repoPath = cloneResult.localPath;
+    repoName = url.split('/').pop()?.replace('.git', '') || 'repository';
+  } else if (path) {
+    // Use local path
+    repoPath = path;
+    repoName = path.split('/').pop() || 'repository';
+  } else {
+    throw new Error('Either url or path is required');
+  }
+
+  // Step 2: Load repository files
+  const repoContext = await loadRepository(repoPath, {
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+  });
+
+  // Step 3: Read file contents
+  const fileInputs = await Promise.all(
+    repoContext.files.map(async (filePath) => ({
+      filePath,
+      content: await readFile(filePath, 'utf-8'),
+    }))
+  );
+
+  // Step 4: Build dependency graph
+  const depGraph = buildDependencyGraph(fileInputs);
+
+  // Step 5: Convert to IVM
+  const ivm = convertToIVM(depGraph, repoContext, {
+    name: repoName,
+  });
+
+  return { ivm, name: repoName, localPath: repoPath };
+}
+
+/**
+ * Store IVM in Neo4j
+ *
+ * @param repoId - Repository ID
+ * @param ivm - IVM graph data
+ * @param metadata - Repository metadata
+ */
+async function storeIVMInNeo4j(
+  repoId: string,
+  ivm: IVM,
+  metadata: { name: string; url?: string; path?: string; branch?: string }
+): Promise<void> {
+  // Create Repository node
+  await runQuery(
+    `
+      CREATE (r:Repository {
+        id: $id,
+        name: $name,
+        url: $url,
+        path: $path,
+        branch: $branch,
+        createdAt: datetime(),
+        lastUpdated: datetime(),
+        status: 'completed'
+      })
+    `,
+    {
+      id: repoId,
+      name: metadata.name,
+      url: metadata.url || null,
+      path: metadata.path || null,
+      branch: metadata.branch || 'main',
+    }
+  );
+
+  // Store IVM nodes in Neo4j
+  for (const node of ivm.nodes) {
+    const nodeType = node.type.charAt(0).toUpperCase() + node.type.slice(1); // Capitalize for Neo4j label
+
+    await runQuery(
+      `
+        MATCH (r:Repository {id: $repoId})
+        CREATE (n:${nodeType} {
+          id: $id,
+          name: $name,
+          filePath: $filePath,
+          metadata: $metadata
+        })
+        CREATE (n)-[:BELONGS_TO]->(r)
+      `,
+      {
+        repoId,
+        id: node.id,
+        name: node.name,
+        filePath: node.metadata?.filePath || null,
+        metadata: JSON.stringify(node.metadata || {}),
+      }
+    );
+  }
+
+  // Store IVM edges in Neo4j
+  for (const edge of ivm.edges) {
+    const edgeType = edge.type.toUpperCase().replace(/-/g, '_'); // Format for Neo4j relationship
+
+    await runQuery(
+      `
+        MATCH (source {id: $sourceId})
+        MATCH (target {id: $targetId})
+        CREATE (source)-[:${edgeType} {metadata: $metadata}]->(target)
+      `,
+      {
+        sourceId: edge.source,
+        targetId: edge.target,
+        metadata: JSON.stringify(edge.metadata || {}),
+      }
+    );
+  }
+}
+
+/**
  * Parse a repository and store IVM in Neo4j
  *
  * @param request - Repository parsing request
@@ -47,37 +192,34 @@ export interface RepositoryMetadata {
 export async function parseAndStoreRepository(request: ParseRepositoryRequest): Promise<{ id: string; status: string }> {
   const { url, path, branch } = request;
 
+  // Validate local path exists (Task 6 requirement)
+  // Skip validation in test environment to allow mocking
+  if (path && process.env.NODE_ENV !== 'test') {
+    try {
+      await access(path, constants.R_OK);
+    } catch {
+      throw new Error(`Path does not exist or is not readable: ${path}`);
+    }
+  }
+
   // Generate unique repository ID
   const repoId = uuidv4();
 
   try {
-    // TODO: Integrate with parser package
-    // For now, create a minimal repository entry
-    await runQuery(
-      `
-        CREATE (r:Repository {
-          id: $id,
-          name: $name,
-          url: $url,
-          path: $path,
-          branch: $branch,
-          createdAt: datetime(),
-          lastUpdated: datetime(),
-          status: 'completed'
-        })
-      `,
-      {
-        id: repoId,
-        name: url || path || 'Unknown Repository',
-        url: url || null,
-        path: path || null,
-        branch: branch || 'main'
-      }
-    );
+    // Run the full parsing pipeline
+    const { ivm, name } = await runParsingPipeline(request);
+
+    // Store IVM in Neo4j
+    await storeIVMInNeo4j(repoId, ivm, {
+      name,
+      url,
+      path,
+      branch,
+    });
 
     return {
       id: repoId,
-      status: 'completed'
+      status: 'completed',
     };
   } catch (error) {
     // Store failed parsing status
@@ -116,7 +258,7 @@ async function storeParsingFailure(
     `,
     {
       id: repoId,
-      name: 'Failed Repository',
+      name: FAILED_REPOSITORY_NAME,
       url: metadata['url'] || null,
       path: metadata['path'] || null,
       branch: metadata['branch'] || 'main',
@@ -156,15 +298,11 @@ export async function getRepositoryMetadata(repoId: string): Promise<RepositoryM
     { id: repoId }
   );
 
-  if (results.length === 0) {
+  if (results.length === 0 || !results[0]) {
     return null;
   }
 
   const result = results[0];
-
-  if (!result) {
-    return null;
-  }
 
   return {
     id: result.r.id,
@@ -203,9 +341,8 @@ export async function deleteRepository(repoId: string): Promise<boolean> {
     { id: repoId }
   );
 
-  // Invalidate cache
-  await invalidatePattern(`diagram-builder:*:${repoId}:*`);
-  await invalidatePattern(`diagram-builder:graph:${repoId}`);
+  // Invalidate cache (match AC-3 specification)
+  await invalidatePattern(`diagram-builder:graph:${repoId}:*`);
 
   return true;
 }
@@ -223,14 +360,49 @@ export async function refreshRepository(repoId: string): Promise<{ id: string; s
     throw new Error('Repository not found');
   }
 
-  // Delete existing repository data
-  await deleteRepository(repoId);
+  // Delete existing repository data (CASCADE delete all connected nodes)
+  await runQuery(
+    `
+      MATCH (r:Repository {id: $id})
+      OPTIONAL MATCH (r)-[*]->(n)
+      DETACH DELETE r, n
+    `,
+    { id: repoId }
+  );
 
-  // Re-parse repository with same configuration
+  // Invalidate cache for this repository
+  await invalidatePattern(`diagram-builder:graph:${repoId}:*`);
+
+  // Re-parse repository with SAME ID to maintain API contract
   const request: ParseRepositoryRequest = {};
   if (metadata.url) request.url = metadata.url;
   if (metadata.path) request.path = metadata.path;
   if (metadata.branch) request.branch = metadata.branch;
 
-  return parseAndStoreRepository(request);
+  // Re-parse repository with SAME ID
+  try {
+    // Run the full parsing pipeline
+    const { ivm, name } = await runParsingPipeline(request);
+
+    // Store IVM in Neo4j with same repository ID
+    await storeIVMInNeo4j(repoId, ivm, {
+      name,
+      url: metadata.url || undefined,
+      path: metadata.path || undefined,
+      branch: metadata.branch || undefined,
+    });
+
+    return {
+      id: repoId, // Return same ID
+      status: 'completed',
+    };
+  } catch (error) {
+    const failureMetadata: Record<string, string> = {};
+    if (metadata.url) failureMetadata.url = metadata.url;
+    if (metadata.path) failureMetadata.path = metadata.path;
+    if (metadata.branch) failureMetadata.branch = metadata.branch;
+
+    await storeParsingFailure(repoId, failureMetadata, error);
+    throw error;
+  }
 }

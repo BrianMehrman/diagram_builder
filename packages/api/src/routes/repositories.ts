@@ -10,12 +10,17 @@
 
 import { Router, Request, Response } from 'express';
 import { authenticate } from '../middleware/auth';
-import { parseAndStoreRepository, getRepositoryMetadata, deleteRepository, refreshRepository } from '../services/repository-service';
+import { parseAndStoreRepository, getRepositoryMetadata, deleteRepository, refreshRepository, ParseRepositoryRequest } from '../services/repository-service';
 import { parseRepositorySchema } from '../validation/repository-schemas';
 import { ValidationError, NotFoundError } from '../errors';
 import { asyncHandler } from '../utils/async-handler';
 
 const repositoriesRouter = Router();
+
+/**
+ * UUID validation regex (accepts all UUID versions)
+ */
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * POST /api/repositories
@@ -34,8 +39,8 @@ repositoriesRouter.post('/', authenticate, asyncHandler(async (req: Request, res
 
   const { url, path, branch, token } = validation.data;
 
-  // Build request object with only defined properties
-  const request: Record<string, string> = {};
+  // Build request object with proper type
+  const request: ParseRepositoryRequest = {};
   if (url) request.url = url;
   if (path) request.path = path;
   if (branch) request.branch = branch;
@@ -58,8 +63,8 @@ repositoriesRouter.post('/', authenticate, asyncHandler(async (req: Request, res
 repositoriesRouter.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  if (!id) {
-    throw new ValidationError('Invalid request', 'Repository ID is required');
+  if (!id || !UUID_REGEX.test(id)) {
+    throw new ValidationError('Invalid request', 'Valid UUID repository ID is required');
   }
 
   const metadata = await getRepositoryMetadata(id);
@@ -81,8 +86,8 @@ repositoriesRouter.get('/:id', authenticate, asyncHandler(async (req: Request, r
 repositoriesRouter.delete('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  if (!id) {
-    throw new ValidationError('Invalid request', 'Repository ID is required');
+  if (!id || !UUID_REGEX.test(id)) {
+    throw new ValidationError('Invalid request', 'Valid UUID repository ID is required');
   }
 
   const deleted = await deleteRepository(id);
@@ -104,8 +109,8 @@ repositoriesRouter.delete('/:id', authenticate, asyncHandler(async (req: Request
 repositoriesRouter.post('/:id/refresh', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  if (!id) {
-    throw new ValidationError('Invalid request', 'Repository ID is required');
+  if (!id || !UUID_REGEX.test(id)) {
+    throw new ValidationError('Invalid request', 'Valid UUID repository ID is required');
   }
 
   try {
@@ -117,6 +122,7 @@ repositoriesRouter.post('/:id/refresh', authenticate, asyncHandler(async (req: R
       message: 'Repository refresh initiated'
     });
   } catch (error) {
+    // Convert generic error to NotFoundError for consistency
     if (error instanceof Error && error.message === 'Repository not found') {
       throw new NotFoundError(
         'Repository not found',

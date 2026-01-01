@@ -63,12 +63,14 @@ export default defineConfig({
     },
   ],
 
-  // Dev server (optional: auto-start UI server before tests)
-  // Uncomment if you want Playwright to automatically start the dev server
+  // Dev server: Auto-start disabled - start manually with `npm run dev`
+  // To enable auto-start, uncomment below and ensure PORT=4000 in .env
   // webServer: {
   //   command: 'npm run dev',
   //   url: 'http://localhost:3000',
   //   reuseExistingServer: !process.env.CI,
   //   timeout: 120 * 1000,
+  //   stdout: 'pipe',
+  //   stderr: 'pipe',
   // },
 });

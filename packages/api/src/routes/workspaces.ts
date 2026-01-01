@@ -40,7 +40,7 @@ const workspacesRouter = Router();
  * Create a new workspace
  */
 workspacesRouter.post('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
-  const { name, description, repositories, settings } = req.body;
+  const { name, description, repositories, settings, sessionState } = req.body;
 
   if (!name || typeof name !== 'string' || name.trim().length === 0) {
     throw new ValidationError('Invalid request', 'Workspace name is required');
@@ -60,6 +60,7 @@ workspacesRouter.post('/', authenticate, asyncHandler(async (req: Request, res: 
     ...(description && { description }),
     ...(repositories && { repositories }),
     ...(settings && { settings }),
+    ...(sessionState && { sessionState }),
   };
 
   const workspace = await createWorkspace(input, userId);
@@ -125,7 +126,7 @@ workspacesRouter.get('/:id', authenticate, asyncHandler(async (req: Request, res
  */
 workspacesRouter.put('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, description, repositories, settings } = req.body;
+  const { name, description, repositories, settings, sessionState } = req.body;
 
   if (!id) {
     throw new ValidationError('Invalid request', 'Workspace ID is required');
@@ -150,6 +151,7 @@ workspacesRouter.put('/:id', authenticate, asyncHandler(async (req: Request, res
   if (description !== undefined) input.description = description;
   if (repositories !== undefined) input.repositories = repositories;
   if (settings !== undefined) input.settings = settings;
+  if (sessionState !== undefined) input.sessionState = sessionState;
 
   try {
     const workspace = await updateWorkspace(id, input, userId);

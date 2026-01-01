@@ -46,6 +46,7 @@ export async function createWorkspace(
       },
     ],
     settings: input.settings || {},
+    sessionState: input.sessionState || {},
     createdAt: now,
     updatedAt: now,
   };
@@ -60,6 +61,7 @@ export async function createWorkspace(
       repositories: $repositories,
       members: $members,
       settings: $settings,
+      sessionState: $sessionState,
       createdAt: $createdAt,
       updatedAt: $updatedAt
     })
@@ -74,6 +76,7 @@ export async function createWorkspace(
     repositories: JSON.stringify(workspace.repositories),
     members: JSON.stringify(workspace.members),
     settings: JSON.stringify(workspace.settings),
+    sessionState: JSON.stringify(workspace.sessionState),
     createdAt: workspace.createdAt,
     updatedAt: workspace.updatedAt,
   });
@@ -100,6 +103,7 @@ export async function getWorkspace(workspaceId: string): Promise<Workspace | nul
     RETURN w.id as id, w.name as name, w.description as description,
            w.ownerId as ownerId, w.repositories as repositories,
            w.members as members, w.settings as settings,
+           w.sessionState as sessionState,
            w.createdAt as createdAt, w.updatedAt as updatedAt,
            w.lastAccessedAt as lastAccessedAt
   `;
@@ -112,6 +116,7 @@ export async function getWorkspace(workspaceId: string): Promise<Workspace | nul
     repositories: string;
     members: string;
     settings: string;
+    sessionState: string;
     createdAt: string;
     updatedAt: string;
     lastAccessedAt: string | null;
@@ -130,6 +135,7 @@ export async function getWorkspace(workspaceId: string): Promise<Workspace | nul
     repositories: JSON.parse(result.repositories),
     members: JSON.parse(result.members),
     settings: JSON.parse(result.settings),
+    sessionState: JSON.parse(result.sessionState),
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
     ...(result.lastAccessedAt && { lastAccessedAt: result.lastAccessedAt }),
@@ -214,6 +220,11 @@ export async function updateWorkspace(
     params.settings = JSON.stringify(input.settings);
   }
 
+  if (input.sessionState !== undefined) {
+    setClauses.push('w.sessionState = $sessionState');
+    params.sessionState = JSON.stringify(input.sessionState);
+  }
+
   const query = `
     MATCH (w:Workspace {id: $id})
     SET ${setClauses.join(', ')}
@@ -283,6 +294,7 @@ export async function listUserWorkspaces(userId: string): Promise<Workspace[]> {
     RETURN w.id as id, w.name as name, w.description as description,
            w.ownerId as ownerId, w.repositories as repositories,
            w.members as members, w.settings as settings,
+           w.sessionState as sessionState,
            w.createdAt as createdAt, w.updatedAt as updatedAt,
            w.lastAccessedAt as lastAccessedAt
     ORDER BY w.lastAccessedAt DESC, w.updatedAt DESC
@@ -296,6 +308,7 @@ export async function listUserWorkspaces(userId: string): Promise<Workspace[]> {
     repositories: string;
     members: string;
     settings: string;
+    sessionState: string;
     createdAt: string;
     updatedAt: string;
     lastAccessedAt: string | null;
@@ -309,6 +322,7 @@ export async function listUserWorkspaces(userId: string): Promise<Workspace[]> {
     repositories: JSON.parse(result.repositories),
     members: JSON.parse(result.members),
     settings: JSON.parse(result.settings),
+    sessionState: JSON.parse(result.sessionState),
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
     ...(result.lastAccessedAt && { lastAccessedAt: result.lastAccessedAt }),

@@ -38,6 +38,18 @@ vi.mock('../database/query-utils', () => {
         return [];
       }
 
+      // Mock CREATE IVM nodes
+      if (query.includes('CREATE (n:')) {
+        // Store IVM nodes (simplified - just acknowledge creation)
+        return [];
+      }
+
+      // Mock CREATE IVM edges/relationships
+      if (query.includes('CREATE (source)-[')) {
+        // Store IVM edges (simplified - just acknowledge creation)
+        return [];
+      }
+
       // Mock MATCH Repository for GET
       if (query.includes('MATCH (r:Repository {id: $id})') && !query.includes('DETACH DELETE')) {
         const id = params.id as string;
@@ -72,6 +84,44 @@ vi.mock('../cache/cache-utils', () => ({
   invalidate: vi.fn().mockResolvedValue(undefined),
   invalidatePattern: vi.fn().mockResolvedValue(undefined),
   DEFAULT_CACHE_TTL: 300,
+}));
+
+// Mock parser package
+vi.mock('@diagram-builder/parser', () => ({
+  loadRepository: vi.fn().mockResolvedValue({
+    files: ['/test/file1.ts', '/test/file2.ts'],
+    metadata: { type: 'local', name: 'test-repo' },
+  }),
+  buildDependencyGraph: vi.fn().mockReturnValue({
+    getNodes: () => [
+      { id: 'file1', type: 'file', name: 'file1.ts', metadata: {} },
+      { id: 'func1', type: 'function', name: 'testFunc', metadata: {} },
+    ],
+    getEdges: () => [
+      { source: 'func1', target: 'file1', type: 'contains', metadata: {} },
+    ],
+  }),
+  convertToIVM: vi.fn().mockReturnValue({
+    nodes: [
+      { id: 'file1', type: 'file', name: 'file1.ts', metadata: {} },
+      { id: 'func1', type: 'function', name: 'testFunc', metadata: {} },
+    ],
+    edges: [
+      { source: 'func1', target: 'file1', type: 'contains', metadata: {} },
+    ],
+    metadata: { name: 'test-repo', version: '1.0.0' },
+  }),
+  cloneRepository: vi.fn().mockResolvedValue({
+    localPath: '/tmp/test-repo',
+    branch: 'main',
+  }),
+}));
+
+// Mock file system operations
+vi.mock('fs/promises', () => ({
+  access: vi.fn().mockResolvedValue(undefined),
+  readFile: vi.fn().mockResolvedValue('export function test() {}'),
+  constants: { R_OK: 4 },
 }));
 
 describe('Repository Parsing Endpoints', () => {
@@ -232,7 +282,7 @@ describe('Repository Parsing Endpoints', () => {
 
     it('should return 404 for non-existent repository', async () => {
       const response = await request(app)
-        .get('/api/repositories/non-existent-id')
+        .get('/api/repositories/00000000-0000-4000-8000-000000000000')
         .set('Authorization', `Bearer ${authToken}`);
 
       expect(response.status).toBe(404);
@@ -264,7 +314,7 @@ describe('Repository Parsing Endpoints', () => {
 
     it('should return 404 for non-existent repository', async () => {
       const response = await request(app)
-        .delete('/api/repositories/non-existent-id')
+        .delete('/api/repositories/00000000-0000-4000-8000-000000000000')
         .set('Authorization', `Bearer ${authToken}`);
 
       expect(response.status).toBe(404);
@@ -309,7 +359,7 @@ describe('Repository Parsing Endpoints', () => {
 
     it('should return 404 for non-existent repository', async () => {
       const response = await request(app)
-        .post('/api/repositories/non-existent-id/refresh')
+        .post('/api/repositories/00000000-0000-4000-8000-000000000000/refresh')
         .set('Authorization', `Bearer ${authToken}`);
 
       expect(response.status).toBe(404);
@@ -333,7 +383,7 @@ describe('Repository Parsing Endpoints', () => {
 
     it('should return RFC 7807 format for not found errors', async () => {
       const response = await request(app)
-        .get('/api/repositories/non-existent-id')
+        .get('/api/repositories/00000000-0000-4000-8000-000000000000')
         .set('Authorization', `Bearer ${authToken}`);
 
       expect(response.status).toBe(404);

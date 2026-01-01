@@ -38,6 +38,26 @@ export interface WorkspaceSettings {
 }
 
 /**
+ * Workspace session state
+ * Stores runtime session data that changes during user interactions
+ */
+export interface WorkspaceSessionState {
+  /** Current camera position (runtime state) */
+  currentCamera?: {
+    position: { x: number; y: number; z: number };
+    target: { x: number; y: number; z: number };
+  };
+  /** Currently selected node IDs */
+  selectedNodes?: string[];
+  /** Active filters */
+  filters?: Record<string, unknown>;
+  /** Current LOD level */
+  currentLodLevel?: number;
+  /** Custom session data */
+  [key: string]: unknown;
+}
+
+/**
  * Complete workspace definition
  */
 export interface Workspace {
@@ -55,6 +75,8 @@ export interface Workspace {
   members: WorkspaceMember[];
   /** Workspace settings */
   settings: WorkspaceSettings;
+  /** Session state (runtime data) */
+  sessionState: WorkspaceSessionState;
   /** Creation timestamp */
   createdAt: string;
   /** Last update timestamp */
@@ -75,6 +97,8 @@ export interface CreateWorkspaceInput {
   repositories?: string[];
   /** Initial settings (optional) */
   settings?: WorkspaceSettings;
+  /** Initial session state (optional) */
+  sessionState?: WorkspaceSessionState;
 }
 
 /**
@@ -89,6 +113,8 @@ export interface UpdateWorkspaceInput {
   repositories?: string[];
   /** Settings */
   settings?: WorkspaceSettings;
+  /** Session state */
+  sessionState?: WorkspaceSessionState;
 }
 
 /**
