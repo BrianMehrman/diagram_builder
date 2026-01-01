@@ -121,13 +121,16 @@
 - [x] Create dependency graph data structure
 - [x] Write integration tests with real JS/TS files
 
-### 3.4 Repository Integration ✅
+### 3.4 Repository Integration ✅ ⚠️ VERIFICATION NEEDED
 - [x] Implement local directory scanning
 - [x] Implement Git repository cloning
 - [x] Support GitHub, GitLab, Bitbucket URLs
 - [x] Handle authentication (OAuth tokens, SSH keys)
 - [x] Branch-specific parsing support
 - [x] Write integration tests
+- [ ] **VERIFY:** Supports on-demand loading triggered by API calls (for story 4-14)
+- [ ] **VERIFY:** Can accept repository source as input parameter
+- [ ] **VERIFY:** Returns loading status and handles errors appropriately
 
 ### 3.5 IVM Conversion ✅
 - [x] Convert AST nodes to IVM nodes
@@ -250,6 +253,19 @@
 - [x] Implement spatial avatar positioning (via session-manager)
 - [ ] Write session management tests
 
+### 4.14 Codebase Import API ⚠️ NEW - HIGH PRIORITY
+- [ ] Create POST /api/workspace/:workspaceId/codebases endpoint
+- [ ] Implement input validation (local path OR Git URL)
+- [ ] Add authentication support for private repositories
+- [ ] Integrate with parser (story 3-4) for on-demand loading
+- [ ] Create/update Neo4j schema for workspace-codebase relationships
+- [ ] Implement error handling (invalid paths, clone failures, parsing errors)
+- [ ] Return codebase metadata (ID, source, import timestamp, status)
+- [ ] Write API integration tests
+- [ ] Update API documentation
+
+**Dependencies:** Epic 3 story 3-4 must support on-demand loading
+
 ---
 
 ## Phase 5: UI Package (`@diagram-builder/ui`)
@@ -359,6 +375,22 @@
 - [ ] Implement code splitting per route
 - [ ] Create route guards for authentication
 - [ ] Write routing tests
+
+### 5.15 Codebase Import UI ⚠️ NEW - HIGH PRIORITY
+- [ ] Create UX specification document (ux-codebase-import.md)
+- [ ] Add import button/interface to workspace management view
+- [ ] Create import modal/dialog with form
+- [ ] Implement input type selection (Local Path OR Git URL)
+- [ ] Add input validation (path format, URL format)
+- [ ] Implement authentication input for private repositories
+- [ ] Add loading state with progress feedback
+- [ ] Display success message with codebase details
+- [ ] Show clear error messages with retry option
+- [ ] Update workspace view to display imported codebases
+- [ ] Integrate with API endpoint POST /api/workspace/:workspaceId/codebases
+- [ ] Write component tests for import UI
+
+**Dependencies:** Epic 4 story 4-14 must be complete, UX design must be created
 
 ---
 
