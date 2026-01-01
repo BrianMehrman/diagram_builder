@@ -18,14 +18,20 @@ import type {
   Workspace,
   CreateWorkspaceRequest,
   UpdateWorkspaceRequest,
+  Codebase,
+  CreateCodebaseRequest,
+  CodebasesListResponse,
 } from '../types/api'
 
 /**
  * Authentication endpoints
  */
 export const auth = {
-  login: (credentials: { username: string; password: string }) =>
-    apiClient.post<{ token: string }>('/api/auth/login', credentials),
+  login: (credentials: { email: string; password: string }) =>
+    apiClient.post<{ token: string; expiresIn: number; user: { userId: string; email: string } }>(
+      '/api/auth/login',
+      credentials
+    ),
 
   register: (userData: { username: string; password: string; email: string }) =>
     apiClient.post<{ token: string }>('/api/auth/register', userData),
@@ -47,6 +53,8 @@ export const parsing = {
  * Graph query endpoints
  */
 export const graph = {
+  getFullGraph: (repoId: string) => apiClient.get<any>(`/api/graph/${repoId}`),
+
   query: (request: GraphQueryRequest) =>
     apiClient.post<GraphQueryResponse>('/api/graph/query', request),
 
@@ -89,7 +97,12 @@ export const exports = {
  * Workspace endpoints
  */
 export const workspaces = {
-  list: () => apiClient.get<Workspace[]>('/api/workspaces'),
+  list: async () => {
+    const response = await apiClient.get<{ count: number; workspaces: Workspace[] }>(
+      '/api/workspaces'
+    )
+    return response.workspaces
+  },
 
   get: (id: string) => apiClient.get<Workspace>(`/api/workspaces/${id}`),
 
@@ -110,4 +123,21 @@ export const collaboration = {
 
   getSessionUsers: (sessionId: string) =>
     apiClient.get<any[]>(`/api/collaboration/sessions/${sessionId}/users`),
+}
+
+/**
+ * Codebase endpoints
+ */
+export const codebases = {
+  list: (workspaceId: string) =>
+    apiClient.get<CodebasesListResponse>(`/api/workspaces/${workspaceId}/codebases`),
+
+  get: (workspaceId: string, codebaseId: string) =>
+    apiClient.get<Codebase>(`/api/workspaces/${workspaceId}/codebases/${codebaseId}`),
+
+  create: (workspaceId: string, request: CreateCodebaseRequest) =>
+    apiClient.post<Codebase>(`/api/workspaces/${workspaceId}/codebases`, request),
+
+  delete: (workspaceId: string, codebaseId: string) =>
+    apiClient.delete(`/api/workspaces/${workspaceId}/codebases/${codebaseId}`),
 }

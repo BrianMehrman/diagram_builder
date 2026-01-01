@@ -60,6 +60,22 @@ npm run dev --workspace=@diagram-builder/api
 npm run dev --workspace=@diagram-builder/ui
 ```
 
+### 5. Access the Application
+
+Once the services are running:
+
+- **UI**: http://localhost:3000
+- **API**: http://localhost:4000
+- **Neo4j Browser**: http://localhost:7474
+
+**Development Mode:**
+- Authentication is **optional** in development (both UI and API)
+- Click "Skip Login" button to bypass authentication
+- A default workspace will be auto-created on first visit
+- Or use test credentials: `test@example.com` / `testpassword123`
+
+> **Note**: In production, authentication will be required for all endpoints.
+
 ## Project Structure
 
 ```

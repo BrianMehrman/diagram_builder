@@ -12,7 +12,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { runQuery } from '../database/query-utils';
 import { NotFoundError, ValidationError } from '../errors';
-import { loadRepository, type RepositoryConfig } from '@diagram-builder/parser';
+import { loadRepository, buildDependencyGraph, convertToIVM, type RepositoryConfig } from '@diagram-builder/parser';
+import { readFile } from 'fs/promises';
 import * as cache from '../cache/cache-utils';
 import { buildCacheKey } from '../cache/cache-keys';
 import type {
@@ -112,29 +113,117 @@ async function triggerParserImport(
     // Load repository (clone if Git, scan if local)
     const repoContext = await loadRepository(repoConfig);
 
+    // Read file contents
+    const fileInputs = await Promise.all(
+      repoContext.files.map(async (filePath) => ({
+        filePath,
+        content: await readFile(filePath, 'utf-8'),
+      }))
+    );
+
+    // Build dependency graph
+    const depGraph = buildDependencyGraph(fileInputs);
+
+    // Convert to IVM
+    const ivm = convertToIVM(depGraph, repoContext, {
+      name: input.source.split('/').pop() || 'repository',
+    });
+
     // Create Repository node in Neo4j
     const repositoryId = uuidv4();
     await runQuery(
       `
       CREATE (r:Repository {
         id: $id,
-        type: $type,
-        source: $source,
+        name: $name,
+        rootPath: $rootPath,
+        repositoryUrl: $repositoryUrl,
         branch: $branch,
-        fileCount: $fileCount,
-        scannedAt: $scannedAt
+        parsedAt: datetime(),
+        type: $type,
+        fileCount: $fileCount
       })
       RETURN r
       `,
       {
         id: repositoryId,
-        type: repoContext.metadata.type,
-        source: repoContext.metadata.type === 'git' ? repoContext.metadata.url : input.source,
+        name: ivm.metadata.name,
+        rootPath: repoContext.path,
+        repositoryUrl: repoContext.metadata.type === 'git' ? repoContext.metadata.url : null,
         branch: repoContext.metadata.branch || null,
+        type: repoContext.metadata.type,
         fileCount: repoContext.metadata.fileCount,
-        scannedAt: repoContext.metadata.scannedAt.toISOString(),
       }
     );
+
+    // Store IVM nodes in Neo4j
+    for (const node of ivm.nodes) {
+      const nodeType = node.type.charAt(0).toUpperCase() + node.type.slice(1); // Capitalize for Neo4j label
+
+      await runQuery(
+        `
+        MATCH (r:Repository {id: $repoId})
+        CREATE (n:${nodeType} {
+          id: $id,
+          label: $label,
+          path: $path,
+          type: $type,
+          x: $x,
+          y: $y,
+          z: $z,
+          lod: $lod,
+          parentId: $parentId,
+          language: $language,
+          loc: $loc,
+          complexity: $complexity,
+          metadata: $metadata
+        })
+        CREATE (n)-[:BELONGS_TO]->(r)
+        `,
+        {
+          repoId: repositoryId,
+          id: node.id,
+          label: node.metadata.label,
+          path: node.metadata.path,
+          type: node.type,
+          x: node.position.x,
+          y: node.position.y,
+          z: node.position.z,
+          lod: node.lod,
+          parentId: node.parentId || null,
+          language: node.metadata.language || null,
+          loc: node.metadata.loc || null,
+          complexity: node.metadata.complexity || null,
+          metadata: JSON.stringify(node.metadata || {}),
+        }
+      );
+    }
+
+    // Store IVM edges in Neo4j
+    for (const edge of ivm.edges) {
+      const edgeType = edge.type.toUpperCase().replace(/-/g, '_'); // Format for Neo4j relationship
+
+      await runQuery(
+        `
+        MATCH (source {id: $sourceId})
+        MATCH (target {id: $targetId})
+        CREATE (source)-[:${edgeType} {
+          id: $id,
+          label: $label,
+          lod: $lod,
+          metadata: $metadata
+        }]->(target)
+        `,
+        {
+          id: edge.id,
+          sourceId: edge.source,
+          targetId: edge.target,
+          label: edge.metadata.label || null,
+          lod: edge.lod || null,
+          metadata: JSON.stringify(edge.metadata || {}),
+        }
+      );
+    }
 
     // Link Codebase to Repository
     await runQuery(

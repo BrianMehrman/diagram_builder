@@ -9,7 +9,8 @@ import { useExportStore, EXPORT_FORMATS, getFormatInfo } from './store';
 import type { GraphFilters } from './types';
 
 interface ExportDialogProps {
-  repositoryId: string;
+  repositoryId?: string;
+  isOpen?: boolean;
   onClose?: () => void;
   className?: string;
 }
@@ -44,7 +45,8 @@ function downloadFile(content: string | Buffer, filename: string, mimeType: stri
  * ExportDialog component
  */
 export function ExportDialog({
-  repositoryId,
+  repositoryId = 'default',
+  isOpen = true,
   onClose,
   className = '',
 }: ExportDialogProps) {
@@ -93,8 +95,11 @@ export function ExportDialog({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className={`bg-white rounded-lg shadow-lg ${className}`}>
+    <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50`}>
+      <div className={`bg-white rounded-lg shadow-lg max-w-2xl w-full m-4 ${className}`} data-testid="export-dialog" role="dialog" aria-modal="true">
       {/* Header */}
       <div className="border-b border-gray-200 p-4">
         <div className="flex items-center justify-between">
@@ -103,6 +108,7 @@ export function ExportDialog({
             onClick={handleClose}
             className="p-1.5 text-gray-400 hover:text-gray-600 rounded transition-colors"
             title="Close"
+            data-testid="close-export-dialog"
           >
             <svg
               className="w-5 h-5"
@@ -133,6 +139,7 @@ export function ExportDialog({
                 key={format.id}
                 onClick={() => setFormat(format.id)}
                 disabled={isExporting}
+                data-testid={`export-format-${format.id}`}
                 className={`p-3 border rounded-lg text-left transition-colors ${
                   selectedFormat === format.id
                     ? 'border-primary-500 bg-primary-50'
@@ -166,6 +173,7 @@ export function ExportDialog({
             value={selectedLodLevel}
             onChange={(e) => setLodLevel(parseInt(e.target.value))}
             disabled={isExporting}
+            data-testid="lod-level-select"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
           >
             <option value={0}>Level 0 - Minimal</option>
@@ -279,6 +287,7 @@ export function ExportDialog({
               <button
                 onClick={handleExport}
                 disabled={isExporting}
+                data-testid="export-submit-button"
                 className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold rounded-md transition-colors"
               >
                 {isExporting ? 'Exporting...' : 'Export'}
@@ -286,6 +295,7 @@ export function ExportDialog({
               <button
                 onClick={handleClose}
                 disabled={isExporting}
+                data-testid="export-cancel-button"
                 className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:opacity-50 text-gray-700 font-semibold rounded-md transition-colors"
               >
                 Cancel
@@ -314,6 +324,7 @@ export function ExportDialog({
             </>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

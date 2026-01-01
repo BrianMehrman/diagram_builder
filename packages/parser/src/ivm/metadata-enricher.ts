@@ -7,7 +7,8 @@ import { fileURLToPath } from 'url'
 // Read package version at module load time
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-const packageJsonPath = join(__dirname, '../../package.json')
+// Navigate to package root from dist/parser/src/ivm
+const packageJsonPath = join(__dirname, '../../../../package.json')
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as { version: string }
 const PARSER_VERSION = packageJson.version
 

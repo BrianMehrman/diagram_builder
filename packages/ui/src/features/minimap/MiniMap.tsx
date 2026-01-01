@@ -4,37 +4,35 @@
  * Combines file tree view and 3D spatial overview
  */
 
-import { useState } from 'react';
-import { FileTreeView } from './FileTreeView';
-import { SpatialOverview } from './SpatialOverview';
-import { useCanvasStore } from '../canvas/store';
-import type { GraphNode } from '../../shared/types';
+import { useState } from 'react'
+import { FileTreeView } from './FileTreeView'
+import { SpatialOverview } from './SpatialOverview'
+import { useCanvasStore } from '../canvas/store'
+import type { GraphNode } from '../../shared/types'
 
 interface MiniMapProps {
-  nodes: GraphNode[];
-  className?: string;
+  nodes?: GraphNode[]
+  className?: string
 }
 
-type ViewMode = 'tree' | 'spatial';
+type ViewMode = 'tree' | 'spatial'
 
 /**
  * MiniMap component
  */
-export function MiniMap({ nodes, className = '' }: MiniMapProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('tree');
+export function MiniMap({ nodes = [], className = '' }: MiniMapProps) {
+  const [viewMode, setViewMode] = useState<ViewMode>('tree')
 
-  const selectedNodeId = useCanvasStore((state) => state.selectedNodeId);
-  const selectNode = useCanvasStore((state) => state.selectNode);
-  const camera = useCanvasStore((state) => state.camera);
+  const selectedNodeId = useCanvasStore((state) => state.selectedNodeId)
+  const selectNode = useCanvasStore((state) => state.selectNode)
+  const camera = useCanvasStore((state) => state.camera)
 
   const handleNodeClick = (nodeId: string) => {
-    selectNode(nodeId);
-  };
+    selectNode(nodeId)
+  }
 
   return (
-    <div
-      className={`bg-white rounded-lg shadow-lg overflow-hidden flex flex-col ${className}`}
-    >
+    <div className={`bg-white rounded-lg shadow-lg overflow-hidden flex flex-col ${className}`}>
       {/* Header with toggle */}
       <div className="bg-gray-100 px-4 py-3 border-b border-gray-200">
         <div className="flex items-center justify-between">
@@ -89,5 +87,5 @@ export function MiniMap({ nodes, className = '' }: MiniMapProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }

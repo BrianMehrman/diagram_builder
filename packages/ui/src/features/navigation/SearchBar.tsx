@@ -4,88 +4,88 @@
  * Search interface for finding nodes in the graph
  */
 
-import { useState, useMemo } from 'react';
-import { useDebounce } from '../../shared/hooks';
-import type { GraphNode } from '../../shared/types';
+import { useState, useMemo } from 'react'
+import { useDebounce } from '../../shared/hooks'
+import type { GraphNode } from '../../shared/types'
 
 interface SearchBarProps {
-  nodes: GraphNode[];
-  onNodeSelect: (nodeId: string) => void;
-  className?: string;
+  nodes?: GraphNode[]
+  onNodeSelect?: (nodeId: string) => void
+  className?: string
 }
 
 /**
  * SearchBar component
  */
-export function SearchBar({ nodes, onNodeSelect, className = '' }: SearchBarProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
-  const debouncedSearch = useDebounce(searchTerm, 300);
+export function SearchBar({ nodes = [], onNodeSelect = () => {}, className = '' }: SearchBarProps) {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [isOpen, setIsOpen] = useState(false)
+  const debouncedSearch = useDebounce(searchTerm, 300)
 
   // Filter nodes based on search term
   const filteredNodes = useMemo(() => {
     if (!debouncedSearch.trim()) {
-      return [];
+      return []
     }
 
-    const term = debouncedSearch.toLowerCase();
+    const term = debouncedSearch.toLowerCase()
     return nodes
       .filter((node) => {
         // Search by label
         if (node.label.toLowerCase().includes(term)) {
-          return true;
+          return true
         }
         // Search by ID
         if (node.id.toLowerCase().includes(term)) {
-          return true;
+          return true
         }
         // Search by type
         if (node.type.toLowerCase().includes(term)) {
-          return true;
+          return true
         }
-        return false;
+        return false
       })
-      .slice(0, 10); // Limit to 10 results
-  }, [nodes, debouncedSearch]);
+      .slice(0, 10) // Limit to 10 results
+  }, [nodes, debouncedSearch])
 
   const handleNodeClick = (nodeId: string) => {
-    onNodeSelect(nodeId);
-    setSearchTerm('');
-    setIsOpen(false);
-  };
+    onNodeSelect(nodeId)
+    setSearchTerm('')
+    setIsOpen(false)
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setIsOpen(true);
-  };
+    setSearchTerm(e.target.value)
+    setIsOpen(true)
+  }
 
   const handleInputFocus = () => {
     if (searchTerm.trim()) {
-      setIsOpen(true);
+      setIsOpen(true)
     }
-  };
+  }
 
   const handleInputBlur = () => {
     // Delay to allow click events on results
-    setTimeout(() => setIsOpen(false), 200);
-  };
+    setTimeout(() => setIsOpen(false), 200)
+  }
 
   const getNodeIcon = (type: GraphNode['type']): string => {
     switch (type) {
       case 'file':
-        return '📄';
+        return '📄'
       case 'class':
-        return '🏛️';
+        return '🏛️'
       case 'function':
-        return '⚡';
+        return '⚡'
       case 'method':
-        return '🔧';
+        return '🔧'
       case 'variable':
-        return '📦';
+        return '📦'
       default:
-        return '•';
+        return '•'
     }
-  };
+  }
 
   return (
     <div className={`relative ${className}`}>
@@ -100,12 +100,7 @@ export function SearchBar({ nodes, onNodeSelect, className = '' }: SearchBarProp
           className="w-full px-4 py-2 pl-10 pr-4 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
         <div className="absolute left-3 top-2.5 text-gray-400">
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -128,9 +123,7 @@ export function SearchBar({ nodes, onNodeSelect, className = '' }: SearchBarProp
               <div className="flex items-center gap-3">
                 <span className="text-xl">{getNodeIcon(node.type)}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 truncate">
-                    {node.label}
-                  </div>
+                  <div className="font-medium text-gray-900 truncate">{node.label}</div>
                   <div className="text-xs text-gray-500 flex items-center gap-2">
                     <span className="capitalize">{node.type}</span>
                     <span>•</span>
@@ -152,5 +145,5 @@ export function SearchBar({ nodes, onNodeSelect, className = '' }: SearchBarProp
         </div>
       )}
     </div>
-  );
+  )
 }

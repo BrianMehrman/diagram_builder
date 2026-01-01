@@ -10,7 +10,7 @@ import { auth, setToken } from '../shared/api'
 import { getErrorMessage } from '../shared/api/errors'
 
 export function LoginPage() {
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -19,8 +19,8 @@ export function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!username || !password) {
-      setError('Please enter username and password')
+    if (!email || !password) {
+      setError('Please enter email and password')
       return
     }
 
@@ -28,7 +28,7 @@ export function LoginPage() {
       setLoading(true)
       setError(null)
 
-      const response = await auth.login({ username, password })
+      const response = await auth.login({ email, password })
       setToken(response.token)
 
       navigate('/')
@@ -47,6 +47,9 @@ export function LoginPage() {
             Sign in to Diagram Builder
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">3D Codebase Visualization Tool</p>
+          <p className="mt-2 text-center text-xs text-gray-500">
+            Test credentials: test@example.com / testpassword123
+          </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -58,19 +61,19 @@ export function LoginPage() {
 
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="username" className="sr-only">
-                Username
+              <label htmlFor="email" className="sr-only">
+                Email address
               </label>
               <input
-                id="username"
-                name="username"
-                type="text"
-                autoComplete="username"
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
+                placeholder="Email address"
               />
             </div>
             <div>
@@ -91,7 +94,7 @@ export function LoginPage() {
             </div>
           </div>
 
-          <div>
+          <div className="space-y-3">
             <button
               type="submit"
               disabled={loading}
@@ -99,6 +102,18 @@ export function LoginPage() {
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              Skip Login (Development)
+            </button>
+
+            <p className="text-xs text-center text-gray-500 mt-2">
+              Authentication is optional in development mode
+            </p>
           </div>
         </form>
       </div>

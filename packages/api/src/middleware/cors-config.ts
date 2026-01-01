@@ -1,4 +1,4 @@
-import cors from 'cors';
+import cors from 'cors'
 
 /**
  * CORS middleware configuration for frontend integration
@@ -8,8 +8,8 @@ import cors from 'cors';
  * - Configures allowed methods and headers
  */
 export const corsMiddleware = cors({
-  // Allow origins from environment or default to localhost:5173 (Vite default)
-  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173'],
+  // Allow origins from environment or default to localhost:3000 and 5173
+  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000', 'http://localhost:5173'],
 
   // Enable credentials for JWT cookie/auth handling
   credentials: true,
@@ -18,5 +18,5 @@ export const corsMiddleware = cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 
   // Allowed headers
-  allowedHeaders: ['Authorization', 'Content-Type', 'X-Request-ID']
-});
+  allowedHeaders: ['Authorization', 'Content-Type', 'X-Request-ID'],
+})

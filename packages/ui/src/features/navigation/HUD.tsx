@@ -4,57 +4,57 @@
  * Heads-up display showing real-time canvas information
  */
 
-import { useEffect, useState } from 'react';
-import { useCanvasStore } from '../canvas/store';
-import type { GraphNode } from '../../shared/types';
+import { useEffect, useState } from 'react'
+import { useCanvasStore } from '../canvas/store'
+import type { GraphNode } from '../../shared/types'
 
 interface HUDProps {
-  nodes: GraphNode[];
-  className?: string;
+  nodes?: GraphNode[]
+  className?: string
 }
 
 /**
  * Calculate visible node count based on LOD level
  */
 function getVisibleNodeCount(nodes: GraphNode[], lodLevel: number): number {
-  return nodes.filter((node) => node.lodLevel <= lodLevel).length;
+  return nodes.filter((node) => node.lodLevel <= lodLevel).length
 }
 
 /**
  * HUD component
  */
-export function HUD({ nodes, className = '' }: HUDProps) {
-  const camera = useCanvasStore((state) => state.camera);
-  const selectedNodeId = useCanvasStore((state) => state.selectedNodeId);
-  const lodLevel = useCanvasStore((state) => state.lodLevel);
-  const [fps, setFps] = useState(0);
+export function HUD({ nodes = [], className = '' }: HUDProps) {
+  const camera = useCanvasStore((state) => state.camera)
+  const selectedNodeId = useCanvasStore((state) => state.selectedNodeId)
+  const lodLevel = useCanvasStore((state) => state.lodLevel)
+  const [fps, setFps] = useState(0)
 
   // FPS counter
   useEffect(() => {
-    let frameCount = 0;
-    let lastTime = performance.now();
+    let frameCount = 0
+    let lastTime = performance.now()
 
     const measureFps = () => {
-      frameCount++;
-      const currentTime = performance.now();
-      const elapsed = currentTime - lastTime;
+      frameCount++
+      const currentTime = performance.now()
+      const elapsed = currentTime - lastTime
 
       if (elapsed >= 1000) {
-        setFps(Math.round((frameCount * 1000) / elapsed));
-        frameCount = 0;
-        lastTime = currentTime;
+        setFps(Math.round((frameCount * 1000) / elapsed))
+        frameCount = 0
+        lastTime = currentTime
       }
 
-      requestAnimationFrame(measureFps);
-    };
+      requestAnimationFrame(measureFps)
+    }
 
-    const rafId = requestAnimationFrame(measureFps);
+    const rafId = requestAnimationFrame(measureFps)
 
-    return () => cancelAnimationFrame(rafId);
-  }, []);
+    return () => cancelAnimationFrame(rafId)
+  }, [])
 
-  const selectedNode = nodes.find((n) => n.id === selectedNodeId);
-  const visibleCount = getVisibleNodeCount(nodes, lodLevel);
+  const selectedNode = nodes.find((n) => n.id === selectedNodeId)
+  const visibleCount = getVisibleNodeCount(nodes, lodLevel)
 
   return (
     <div
@@ -79,8 +79,7 @@ export function HUD({ nodes, className = '' }: HUDProps) {
       <div className="flex justify-between gap-4">
         <span className="text-gray-400">Target:</span>
         <span className="font-semibold">
-          ({camera.target.x.toFixed(1)}, {camera.target.y.toFixed(1)},{' '}
-          {camera.target.z.toFixed(1)})
+          ({camera.target.x.toFixed(1)}, {camera.target.y.toFixed(1)}, {camera.target.z.toFixed(1)})
         </span>
       </div>
 
@@ -104,9 +103,7 @@ export function HUD({ nodes, className = '' }: HUDProps) {
           <div className="border-t border-gray-600 my-1 pt-1" />
           <div className="flex justify-between gap-4">
             <span className="text-gray-400">Selected:</span>
-            <span className="font-semibold truncate max-w-[150px]">
-              {selectedNode.label}
-            </span>
+            <span className="font-semibold truncate max-w-[150px]">{selectedNode.label}</span>
           </div>
           <div className="flex justify-between gap-4">
             <span className="text-gray-400">Type:</span>
@@ -116,8 +113,7 @@ export function HUD({ nodes, className = '' }: HUDProps) {
             <div className="flex justify-between gap-4">
               <span className="text-gray-400">Position:</span>
               <span className="font-semibold">
-                ({selectedNode.position.x.toFixed(1)},{' '}
-                {selectedNode.position.y.toFixed(1)},{' '}
+                ({selectedNode.position.x.toFixed(1)}, {selectedNode.position.y.toFixed(1)},{' '}
                 {selectedNode.position.z.toFixed(1)})
               </span>
             </div>
@@ -125,5 +121,5 @@ export function HUD({ nodes, className = '' }: HUDProps) {
         </>
       )}
     </div>
-  );
+  )
 }

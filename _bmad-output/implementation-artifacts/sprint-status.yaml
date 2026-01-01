@@ -49,7 +49,7 @@ development_status:
   5-12-feature-collaboration: done
   5-13-api-client: done
   5-14-routing: done
-  5-15-codebase-import-ui: ready-for-dev
+  5-15-codebase-import-ui: review
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun

@@ -4,8 +4,9 @@
  * Components and utilities for exporting graphs to various formats
  */
 
-export { ExportDialog } from './ExportDialog';
-export { useExportStore, EXPORT_FORMATS, getFormatInfo } from './store';
+export { ExportButton } from './ExportButton'
+export { ExportDialog } from './ExportDialog'
+export { useExportStore, EXPORT_FORMATS, getFormatInfo } from './store'
 export type {
   ExportFormat,
   ExportFormatInfo,
@@ -14,4 +15,4 @@ export type {
   ExportStatus,
   ExportState,
   GraphFilters,
-} from './types';
+} from './types'

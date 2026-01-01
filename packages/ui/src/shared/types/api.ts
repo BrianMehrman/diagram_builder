@@ -41,3 +41,37 @@ export interface PaginatedResponse<T> {
   pageSize: number;
   hasMore: boolean;
 }
+
+/**
+ * Codebase types
+ */
+export type CodebaseStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type CodebaseType = 'local' | 'git';
+
+export interface Codebase {
+  codebaseId: string;
+  workspaceId: string;
+  source: string;
+  type: CodebaseType;
+  branch?: string;
+  status: CodebaseStatus;
+  error?: string;
+  repositoryId?: string;
+  importedAt: string;
+}
+
+export interface CreateCodebaseRequest {
+  source: string;
+  type: CodebaseType;
+  branch?: string;
+  credentials?: {
+    type: 'oauth' | 'ssh';
+    token?: string;
+    sshKeyPath?: string;
+  };
+}
+
+export interface CodebasesListResponse {
+  count: number;
+  codebases: Codebase[];
+}
