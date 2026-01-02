@@ -214,9 +214,27 @@ docker compose down -v
 
 ## Documentation
 
-- **Architecture**: `_bmad-output/planning-artifacts/architecture.md`
-- **Project Context**: `_bmad-output/project-context.md`
-- **Implementation Tasks**: `TASKS.md`
+### Quick Navigation
+
+- 📖 **[Architecture](/_bmad-output/planning-artifacts/architecture.md)** - System design, technology stack, and architectural decisions
+- 📋 **[Product Requirements](/_bmad-output/planning-artifacts/prd.md)** - Features, user stories, and acceptance criteria
+- 📊 **[Sprint Status](/_bmad-output/implementation-artifacts/sprint-status.yaml)** - Current epic and story progress
+- 📝 **[Planning Guide](/PLANNING.md)** - How documentation is organized and where to find things
+- 🤖 **[LLM Instructions](/CLAUDE.md)** - Context loading guide for AI assistants
+
+### Implementation Artifacts
+
+All epics and stories are documented in `_bmad-output/implementation-artifacts/`:
+- **Epic 3**: Parser Package (`3-*.md`)
+- **Epic 4**: API Package (`4-*.md`)
+- **Epic 5**: UI Package (`5-*.md`)
+- **Epic 5.5**: Foundation Cleanup (`5.5-*.md`)
+
+### Key Project Context
+
+For a deep dive into project history, conventions, and lessons learned:
+- 🔍 **[Project Context](/_bmad-output/project-context.md)** - Comprehensive project guide
+- 📚 **[Implementation Tasks](/TASKS.md)** - Phase-by-phase task breakdown
 
 ## CI/CD
 

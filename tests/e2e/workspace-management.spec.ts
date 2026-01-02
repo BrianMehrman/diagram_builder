@@ -14,31 +14,33 @@ test.describe('Workspace Management @P1', () => {
       route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([{
-          id: 'test-workspace-1',
-          name: 'Test Workspace',
-          description: 'Test workspace',
-          settings: {
-            defaultLodLevel: 2,
-            autoRefresh: false,
-            collaborationEnabled: false,
+        body: JSON.stringify([
+          {
+            id: 'test-workspace-1',
+            name: 'Test Workspace',
+            description: 'Test workspace',
+            settings: {
+              defaultLodLevel: 2,
+              autoRefresh: false,
+              collaborationEnabled: false,
+            },
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }]),
+        ]),
       })
     })
 
     await page.route('**/api/workspaces/*', (route) => {
       const url = route.request().url()
       const method = route.request().method()
-      
+
       // Let test-specific codebases POST mocks handle those
       if (method === 'POST' && url.includes('/codebases')) {
         route.fallback()
         return
       }
-      
+
       if (method === 'GET' && url.includes('/codebases')) {
         // Return empty codebases list
         route.fulfill({
@@ -70,7 +72,10 @@ test.describe('Workspace Management @P1', () => {
     })
   })
 
-  test.skip('[P1] should display workspace switcher on canvas page', async ({ page, mockGraph }) => {
+  test.skip('[P1] should display workspace switcher on canvas page', async ({
+    page,
+    mockGraph,
+  }) => {
     // SKIP: /canvas route doesn't exist, workspace switcher is in workspace page
     // GIVEN: User is on canvas
     await mockGraph()
@@ -215,7 +220,7 @@ test.describe('Workspace Management @P1', () => {
 
     // Unroute the beforeEach handler that might interfere
     await page.unroute('**/api/workspaces/*')
-    
+
     // Re-add basic workspace mocks
     await page.route('**/api/workspaces/test-workspace-1', async (route) => {
       if (route.request().method() === 'GET') {
@@ -267,30 +272,31 @@ test.describe('Workspace Management @P1', () => {
     await page.locator('[data-testid="toggle-left-panel"]').click()
     await page.waitForTimeout(300)
     await page.locator('[data-testid="import-codebase-button"]').click()
-    
+
     // Wait for modal to be fully visible
     const modal = page.locator('[data-testid="import-codebase-modal"]')
     await expect(modal).toBeVisible()
 
     // WHEN: User enters local path and submits
     await page.locator('[data-testid="source-input"]').fill('/path/to/repo')
-    
+
     // Wait for the POST request to complete
-    const responsePromise = page.waitForResponse(resp => 
-      resp.url().includes('/api/workspaces/') && 
-      resp.url().includes('/codebases') && 
-      resp.request().method() === 'POST'
+    const responsePromise = page.waitForResponse(
+      (resp) =>
+        resp.url().includes('/api/workspaces/') &&
+        resp.url().includes('/codebases') &&
+        resp.request().method() === 'POST'
     )
-    
+
     await page.locator('[data-testid="submit-button"]').click()
     const response = await responsePromise
-    
+
     console.log('API Response:', response.status(), await response.text())
-    
+
     // THEN: API call was successful
     expect(response.status()).toBe(200)
     expect(response.ok()).toBe(true)
-    
+
     // Modal may close automatically - that's expected behavior
   })
 
@@ -333,14 +339,15 @@ test.describe('Workspace Management @P1', () => {
     // WHEN: User enters git URL, branch, and submits
     await page.locator('[data-testid="source-input"]').fill('https://github.com/user/repo.git')
     await page.locator('[data-testid="branch-input"]').fill('develop')
-    
+
     // Wait for the POST request to complete
-    const responsePromise = page.waitForResponse(resp => 
-      resp.url().includes('/api/workspaces/') && 
-      resp.url().includes('/codebases') && 
-      resp.request().method() === 'POST'
+    const responsePromise = page.waitForResponse(
+      (resp) =>
+        resp.url().includes('/api/workspaces/') &&
+        resp.url().includes('/codebases') &&
+        resp.request().method() === 'POST'
     )
-    
+
     await page.locator('[data-testid="submit-button"]').click()
     const response = await responsePromise
 
@@ -380,19 +387,20 @@ test.describe('Workspace Management @P1', () => {
 
     // WHEN: User submits form
     await page.locator('[data-testid="source-input"]').fill('/path/to/repo')
-    
-    const responsePromise = page.waitForResponse(resp => 
-      resp.url().includes('/api/workspaces/') && 
-      resp.url().includes('/codebases') && 
-      resp.request().method() === 'POST'
+
+    const responsePromise = page.waitForResponse(
+      (resp) =>
+        resp.url().includes('/api/workspaces/') &&
+        resp.url().includes('/codebases') &&
+        resp.request().method() === 'POST'
     )
-    
+
     await page.locator('[data-testid="submit-button"]').click()
     const response = await responsePromise
 
     // THEN: API returned error
     expect(response.status()).toBe(500)
-    
+
     // Error message should appear in modal
     await page.waitForTimeout(500)
     const errorMessage = page.locator('[data-testid="error-message"]')

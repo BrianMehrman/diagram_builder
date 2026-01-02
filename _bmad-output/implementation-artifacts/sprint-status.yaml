@@ -56,10 +56,10 @@ development_status:
   epic-5.5: in-progress
   5.5-1-database-seed-data: done
   5.5-2-authentication-dev-mode: done
-  5.5-3-e2e-test-validation: in-progress
+  5.5-3-e2e-test-validation: done
   5.5-4-complete-codebase-import-api: done
   5.5-5-complete-codebase-import-ui: done
-  5.5-6-documentation-reorganization: not-started
+  5.5-6-documentation-reorganization: done
   5.5-7-ux-standards-cli: not-started
   5.5-8-sprint-status-epic-closure: not-started
 

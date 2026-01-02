@@ -233,7 +233,66 @@
 
 ---
 
-## 🔄 Common Workflows
+## � _bmad-output Folder Organization
+
+The `_bmad-output/` directory contains all project planning and implementation documentation. It's organized into three main areas:
+
+### Structure Overview
+
+```
+_bmad-output/
+├── planning-artifacts/          # Strategic planning documents
+│   ├── architecture.md          # Technical architecture and decisions
+│   ├── prd.md                   # Product requirements document
+│   ├── sprint-change-*.md       # Sprint change proposals
+│   └── ux-*.md                  # UX specifications
+│
+├── implementation-artifacts/    # Tactical implementation tracking
+│   ├── sprint-status.yaml       # Current sprint progress
+│   ├── 3-*.md                   # Epic 3 stories (Parser)
+│   ├── 4-*.md                   # Epic 4 stories (API)
+│   ├── 5-*.md                   # Epic 5 stories (UI)
+│   └── 5.5-*.md                 # Epic 5.5 stories (Foundation Cleanup)
+│
+└── project-context.md           # Critical rules and conventions
+```
+
+### Document Relationships
+
+**Planning Flow:**
+1. **PRD** defines what to build → Features and requirements
+2. **Architecture** defines how to build it → Technical approach
+3. **Sprint Change Proposals** adapt the plan → New stories added
+4. **Sprint Status** tracks progress → Story-by-story completion
+5. **Story Files** detail implementation → Acceptance criteria and tasks
+
+**File Naming Conventions:**
+- Sprint changes: `sprint-change-proposal-YYYY-MM-DD.md`
+- Story files: `{epic}-{story}-{short-name}.md` (e.g., `4-14-codebase-import-api.md`)
+- UX specs: `ux-{feature-name}.md` (e.g., `ux-codebase-import.md`)
+
+### Documentation Lifecycle
+
+**Creation:**
+- Planning docs created during sprint planning
+- Story files generated via `create-story` workflow
+- Change proposals created via `correct-course` workflow
+
+**Updates:**
+- Sprint-status.yaml: Updated when story status changes
+- Story files: Dev agent populates during implementation
+- Architecture: Updated when system design changes
+- Project context: Updated when conventions evolve
+
+**Source of Truth:**
+- Sprint status → `sprint-status.yaml`
+- Story requirements → Individual story files in implementation-artifacts
+- Technical design → `architecture.md`
+- Project rules → `project-context.md`
+
+---
+
+## �🔄 Common Workflows
 
 ### Starting a New Work Session
 1. Read `PLANNING.md` (this document) for navigation

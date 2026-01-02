@@ -12,6 +12,63 @@ completedAt: '2025-12-29'
 
 # Architecture Decision Document
 
+## 🎯 Project Overview (Quick Start)
+
+**Diagram Builder** is a 3D codebase visualization tool that transforms JavaScript/TypeScript codebases into interactive 3D graphs for exploration, collaboration, and documentation generation.
+
+### Core Capabilities
+
+- 📦 **Parse Codebases**: Tree-sitter-based parsing (supports local directories and Git repositories)
+- 🗄️ **Store Graphs**: Neo4j graph database for relationship queries
+- 🎨 **Render 3D**: Three.js/WebGL browser visualization with LOD system
+- 📤 **Export Diagrams**: Multiple formats (PlantUML, Mermaid, Draw.io, GLTF, images)
+- 👥 **Collaborate**: Real-time multi-user sessions via WebSockets
+- 🤖 **Automate**: CLI tool for CI/CD integration
+
+### Technology Stack
+
+```
+Frontend:  React 19, Vite, @react-three/fiber, Tailwind CSS
+Backend:   Node.js, TypeScript, Express, WebSockets
+Database:  Neo4j (graph), Redis (cache)
+Parser:    Tree-sitter (multi-language support)
+Testing:   Vitest (unit), Playwright (e2e)
+Deploy:    Docker Compose (dev), Kubernetes + Helm (prod)
+```
+
+### Project Structure
+
+```
+packages/
+  ├── core/           # Shared types, IVM, layout engine, exporters
+  ├── parser/         # Tree-sitter parsing, AST analysis, dependency graphs
+  ├── api/            # Express REST API + WebSocket server
+  ├── ui/             # React 3D visualization frontend
+  └── cli/            # Command-line tool (planned)
+```
+
+### Development Workflow
+
+1. **Epics** define major features (e.g., Epic 3: Parser Package)
+2. **Stories** break epics into implementable units (e.g., 3-4: Repository Integration)
+3. **Sprint Status** tracks progress (`sprint-status.yaml`)
+4. **Implementation** follows feature-based organization with co-located tests
+
+### Key Architecture Decisions
+
+- **State Management**: Zustand (NO Redux, NO Context API)
+- **Organization**: Feature-based (NOT type-based)
+- **Neo4j Naming**: PascalCase labels, camelCase properties, UPPER_SNAKE_CASE relationships
+- **Error Format**: RFC 7807 Problem Details for ALL API errors
+- **Authentication**: JWT tokens (REST + WebSocket + CLI)
+- **Testing**: Co-located unit tests (`.test.ts`), E2E via Playwright
+
+---
+
+_Full architectural details continue below..._
+
+---
+
 _This document builds collaboratively through step-by-step discovery. Sections are appended as we work through each architectural decision together._
 
 ## Project Context Analysis
