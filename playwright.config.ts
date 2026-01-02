@@ -28,7 +28,7 @@ export default defineConfig({
   // Test execution settings
   use: {
     // Base URL from environment or default to local dev server
-    baseURL: process.env.BASE_URL || 'http://localhost:5173',
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
 
     // Action and navigation timeouts
     actionTimeout: 15 * 1000, // 15s for user interactions
@@ -66,7 +66,7 @@ export default defineConfig({
   // Dev server: Auto-start using init script
   webServer: {
     command: './scripts/init.sh',
-    url: 'http://localhost:5173',
+    url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },

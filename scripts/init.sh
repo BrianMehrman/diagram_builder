@@ -35,32 +35,30 @@ echo -e "  ${GREEN}✓${NC} Database seeded"
 
 # Start API server if not running
 echo "🔧 Checking API server..."
-if lsof -ti:3001 > /dev/null 2>&1; then
-  echo -e "  ${GREEN}✓${NC} API server already running on port 3001"
+if lsof -ti:4000 > /dev/null 2>&1; then
+  echo -e "  ${GREEN}✓${NC} API server already running on port 4000"
 else
   echo "  Starting API server..."
   npm run dev:watch --workspace=@diagram-builder/api > /dev/null 2>&1 &
   sleep 3
-  echo -e "  ${GREEN}✓${NC} API server started on port 3001"
+  echo -e "  ${GREEN}✓${NC} API server started on port 4000"
 fi
 
 # Start UI server if not running
 echo "🎨 Checking UI server..."
-if lsof -ti:5173 > /dev/null 2>&1; then
-  echo -e "  ${GREEN}✓${NC} UI server already running on port 5173"
-elif lsof -ti:3000 > /dev/null 2>&1; then
+if lsof -ti:3000 > /dev/null 2>&1; then
   echo -e "  ${GREEN}✓${NC} UI server already running on port 3000"
 else
   echo "  Starting UI server..."
   npm run dev --workspace=@diagram-builder/ui > /dev/null 2>&1 &
   sleep 5
-  echo -e "  ${GREEN}✓${NC} UI server started"
+  echo -e "  ${GREEN}✓${NC} UI server started on port 3000"
 fi
 
 echo -e "${GREEN}✅ Environment ready!${NC}"
 echo ""
 echo "Services:"
-echo "  UI:    http://localhost:5173 or http://localhost:3000"
-echo "  API:   http://localhost:3001"
+echo "  UI:    http://localhost:3000"
+echo "  API:   http://localhost:4000"
 echo "  Neo4j: http://localhost:7474"
 echo "  Redis: localhost:6379"

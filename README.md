@@ -51,8 +51,8 @@ cp .env.example .env
 This script will:
 - Start Neo4j and Redis (if not running)
 - Seed the database with test data
-- Start the API server on port 3001
-- Start the UI server on port 5173
+- Start the API server on port 4000
+- Start the UI server on port 3000
 
 **Option B: Manual Start**
 
@@ -71,8 +71,8 @@ npm run dev
 
 Once the services are running:
 
-- **UI**: http://localhost:5173 (or http://localhost:3000)
-- **API**: http://localhost:3001
+- **UI**: http://localhost:3000
+- **API**: http://localhost:4000
 - **Neo4j Browser**: http://localhost:7474
 
 **Development Mode:**

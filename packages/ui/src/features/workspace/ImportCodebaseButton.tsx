@@ -19,7 +19,7 @@ export function ImportCodebaseButton({
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleSuccess = () => {
-    setIsModalOpen(false)
+    // Don't close modal here - let the modal handle its own closing after showing success message
     if (onImportSuccess) {
       onImportSuccess()
     }

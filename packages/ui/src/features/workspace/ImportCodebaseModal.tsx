@@ -89,10 +89,10 @@ export function ImportCodebaseModal({
         onSuccess()
       }
 
-      // Close modal after brief success message
+      // Close modal after brief success message (3s for better UX and test stability)
       setTimeout(() => {
         onClose()
-      }, 1500)
+      }, 3000)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to import codebase'
       setError(errorMessage)

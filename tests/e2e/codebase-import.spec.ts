@@ -9,17 +9,36 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Codebase Import @P1', () => {
   test.beforeEach(async ({ page }) => {
-    // Skip authentication
+    // Skip authentication in dev mode
     await page.goto('/login')
-    await page.getByRole('button', { name: /skip login/i }).click()
-    await page.waitForLoadState('networkidle')
+    const skipButton = page.getByRole('button', { name: /skip login/i })
+    await skipButton.click()
 
-    // Wait for workspace to be created/loaded
-    await page.waitForTimeout(2000)
-    const currentUrl = page.url()
-    if (!currentUrl.includes('/workspace/')) {
-      await page.waitForURL(/\/workspace\/.*/, { timeout: 10000 })
+    // Wait for redirect to home page
+    await page.waitForURL('/')
+
+    // Wait for workspace list to load
+    await page.waitForSelector('[data-testid="page-title"]', { timeout: 10000 })
+
+    // Wait for workspace card or create button to appear
+    await page.waitForSelector('a[href^="/workspace/"], button:has-text("Create Workspace")', {
+      timeout: 10000,
+    })
+
+    // If there's a workspace card, click it; otherwise create one
+    const workspaceCard = page.locator('a[href^="/workspace/"]').first()
+    const createButton = page.locator('button:has-text("Create Workspace")')
+
+    if (await workspaceCard.isVisible().catch(() => false)) {
+      await workspaceCard.click()
+    } else if (await createButton.isVisible().catch(() => false)) {
+      await createButton.click()
+      // Wait for workspace to be created and navigated to
+      await page.waitForTimeout(2000)
     }
+
+    // Now we should be on a workspace page
+    await page.waitForURL(/\/workspace\/.*/, { timeout: 10000 })
 
     // Open left panel to access Import Codebase button
     const menuButton = page
@@ -224,7 +243,9 @@ test.describe('Codebase Import @P1', () => {
     await gitUrlInput.fill('https://github.com/ShiftLeftSecurity/x42.git')
 
     // Clear the branch field to use repository's default branch (master for x42 repo)
-    const branchInput = page.locator('input[placeholder*="main"]').or(page.locator('input[name="branch"]'))
+    const branchInput = page
+      .locator('input[placeholder*="main"]')
+      .or(page.locator('input[name="branch"]'))
     if (await branchInput.isVisible()) {
       await branchInput.clear()
     }

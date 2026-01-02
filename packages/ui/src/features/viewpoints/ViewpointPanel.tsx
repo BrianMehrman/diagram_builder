@@ -4,22 +4,22 @@
  * Combined panel for viewpoint creation and management
  */
 
-import { useState } from 'react';
-import { ViewpointCreator } from './ViewpointCreator';
-import { ViewpointList } from './ViewpointList';
+import { useState } from 'react'
+import { ViewpointCreator } from './ViewpointCreator'
+import { ViewpointList } from './ViewpointList'
 
 interface ViewpointPanelProps {
-  className?: string;
+  className?: string
 }
 
 /**
  * ViewpointPanel component
  */
 export function ViewpointPanel({ className = '' }: ViewpointPanelProps) {
-  const [showCreator, setShowCreator] = useState(false);
+  const [showCreator, setShowCreator] = useState(false)
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg ${className}`}>
+    <div className={`bg-white rounded-lg shadow-lg ${className}`} data-testid="viewpoint-panel">
       {/* Header */}
       <div className="border-b border-gray-200 p-4">
         <div className="flex items-center justify-between">
@@ -38,14 +38,11 @@ export function ViewpointPanel({ className = '' }: ViewpointPanelProps) {
       {/* Content */}
       <div className="p-4">
         {showCreator ? (
-          <ViewpointCreator
-            onViewpointCreated={() => setShowCreator(false)}
-            className="mb-4"
-          />
+          <ViewpointCreator onViewpointCreated={() => setShowCreator(false)} className="mb-4" />
         ) : null}
 
         <ViewpointList />
       </div>
     </div>
-  );
+  )
 }
