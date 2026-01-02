@@ -23,20 +23,25 @@ export interface JWTPayload {
 export const TOKEN_EXPIRATION = '24h';
 
 /**
- * Generate a JWT token for the given user ID
+ * Generate a JWT token for the given user ID or payload
  *
- * @param userId - Unique identifier for the user
+ * @param userIdOrPayload - User ID string or payload object with userId
  * @param secret - JWT secret key (defaults to environment variable)
  * @returns Signed JWT token string
  */
-export function generateToken(userId: string, secret?: string): string {
+export function generateToken(userIdOrPayload: string | Omit<JWTPayload, 'iat' | 'exp'> & Record<string, unknown>, secret?: string): string {
   const jwtSecret = secret || process.env.JWT_SECRET;
 
   if (!jwtSecret) {
     throw new Error('JWT_SECRET is not configured');
   }
 
-  const payload = { userId };
+  // If it's a string, wrap it in an object
+  // If it's already an object, use it directly
+  const payload = typeof userIdOrPayload === 'string'
+    ? { userId: userIdOrPayload }
+    : userIdOrPayload;
+
   return jwt.sign(payload, jwtSecret, { expiresIn: TOKEN_EXPIRATION });
 }
 

@@ -41,31 +41,38 @@ cp .env.example .env
 
 ### 3. Start Services
 
+**Option A: Quick Start (Recommended)**
+
+```bash
+# Idempotently start all services (Docker, API, UI)
+./scripts/init.sh
+```
+
+This script will:
+- Start Neo4j and Redis (if not running)
+- Seed the database with test data
+- Start the API server on port 3001
+- Start the UI server on port 5173
+
+**Option B: Manual Start**
+
 ```bash
 # Start Neo4j and Redis
 docker compose up -d
 
-# Verify services are running
-docker compose ps
-```
+# Seed database
+cd packages/api && npx tsx src/database/seed-db.ts && cd ../..
 
-### 4. Development
-
-```bash
-# Start all packages in dev mode
+# Start development servers
 npm run dev
-
-# Or start individual packages
-npm run dev --workspace=@diagram-builder/api
-npm run dev --workspace=@diagram-builder/ui
 ```
 
-### 5. Access the Application
+### 4. Access the Application
 
 Once the services are running:
 
-- **UI**: http://localhost:3000
-- **API**: http://localhost:4000
+- **UI**: http://localhost:5173 (or http://localhost:3000)
+- **API**: http://localhost:3001
 - **Neo4j Browser**: http://localhost:7474
 
 **Development Mode:**
@@ -99,12 +106,30 @@ diagram-builder/
 ### Running Tests
 
 ```bash
-# Run all tests
+# Run all unit tests
 npm test
 
 # Run tests for specific package
 npm test --workspace=@diagram-builder/core
+
+# Run E2E tests (Playwright)
+npm run test:e2e
+
+# Run E2E tests with UI
+npm run test:e2e:ui
+
+# Run E2E tests in headed mode
+npm run test:e2e:headed
+
+# Debug E2E tests
+npm run test:e2e:debug
 ```
+
+**E2E Test Setup:**
+- Playwright automatically starts all required services via `./scripts/init.sh`
+- Tests run against the full stack (UI, API, Neo4j, Redis)
+- Database is seeded with test data before tests run
+- Services are reused if already running for faster test execution
 
 ### Type Checking
 

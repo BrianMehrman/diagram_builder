@@ -35,6 +35,7 @@ development_status:
 
   # Epic 5: UI Package (@diagram-builder/ui)
   epic-5: in-progress
+  epic-5-retrospective: done
   5-1-vite-react-setup: done
   5-2-feature-structure-setup: done
   5-3-error-boundary-system: done
@@ -50,6 +51,17 @@ development_status:
   5-13-api-client: done
   5-14-routing: done
   5-15-codebase-import-ui: review
+
+  # Epic 5.5: Foundation Cleanup
+  epic-5.5: in-progress
+  5.5-1-database-seed-data: done
+  5.5-2-authentication-dev-mode: done
+  5.5-3-e2e-test-validation: not-started
+  5.5-4-complete-codebase-import-api: not-started
+  5.5-5-complete-codebase-import-ui: not-started
+  5.5-6-documentation-reorganization: not-started
+  5.5-7-ux-standards-cli: not-started
+  5.5-8-sprint-status-epic-closure: not-started
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun
@@ -120,6 +132,23 @@ epics:
       - "Phase 1: Project Infrastructure (Complete)"
       - "Phase 2: Core Package (Complete)"
       - "Phase 4: API Package (In Progress - for API integration in later stories)"
+
+  epic-5.5:
+    name: "Foundation Cleanup"
+    description: "Address critical foundation gaps identified in Epic 5 retrospective: authentication, e2e testing, documentation organization, database seeding, and epic closure"
+    stories:
+      - 5.5-1-database-seed-data
+      - 5.5-2-authentication-dev-mode
+      - 5.5-3-e2e-test-validation
+      - 5.5-4-complete-codebase-import-api
+      - 5.5-5-complete-codebase-import-ui
+      - 5.5-6-documentation-reorganization
+      - 5.5-7-ux-standards-cli
+      - 5.5-8-sprint-status-epic-closure
+    dependencies:
+      - "Epic 5: UI Package (14/15 stories complete)"
+      - "Epic 4: API Package (13/14 stories complete)"
+      - "Epic 5 Retrospective findings"
 
 # Notes:
 # - Phase 1 (Project Infrastructure): 100% Complete

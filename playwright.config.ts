@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 /**
  * Playwright Configuration for Diagram Builder
@@ -28,7 +28,7 @@ export default defineConfig({
   // Test execution settings
   use: {
     // Base URL from environment or default to local dev server
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    baseURL: process.env.BASE_URL || 'http://localhost:5173',
 
     // Action and navigation timeouts
     actionTimeout: 15 * 1000, // 15s for user interactions
@@ -63,14 +63,11 @@ export default defineConfig({
     },
   ],
 
-  // Dev server: Auto-start disabled - start manually with `npm run dev`
-  // To enable auto-start, uncomment below and ensure PORT=4000 in .env
-  // webServer: {
-  //   command: 'npm run dev',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  //   timeout: 120 * 1000,
-  //   stdout: 'pipe',
-  //   stderr: 'pipe',
-  // },
-});
+  // Dev server: Auto-start using init script
+  webServer: {
+    command: './scripts/init.sh',
+    url: 'http://localhost:5173',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
+  },
+})

@@ -41,7 +41,7 @@ export function WorkspacePage() {
       setLoading(true)
       const data = await workspaces.get(workspaceId)
       setWorkspace(data)
-      
+
       // Load graph data from codebases
       await loadGraphData(workspaceId)
     } catch (err) {
@@ -56,12 +56,12 @@ export function WorkspacePage() {
     try {
       // Get codebases for this workspace
       const codebasesList = await codebases.list(workspaceId)
-      
+
       // Find the first completed codebase with a repository
       const completedCodebase = codebasesList.codebases?.find(
         (cb: any) => cb.status === 'completed' && cb.repositoryId
       )
-      
+
       if (completedCodebase?.repositoryId) {
         // Fetch the graph data for this repository
         const graphResponse = await graph.getFullGraph(completedCodebase.repositoryId)
@@ -97,7 +97,10 @@ export function WorkspacePage() {
   return (
     <div className="h-screen flex flex-col bg-gray-900">
       {/* Compact Top Bar */}
-      <header className="bg-gray-800 border-b border-gray-700 px-3 py-2 flex items-center justify-between" data-testid="workspace-header">
+      <header
+        className="bg-gray-800 border-b border-gray-700 px-3 py-2 flex items-center justify-between"
+        data-testid="workspace-header"
+      >
         <div className="flex items-center gap-3">
           {/* Left Panel Toggle */}
           <button
@@ -116,7 +119,12 @@ export function WorkspacePage() {
             </svg>
           </button>
 
-          <h1 className="text-sm font-semibold text-white truncate max-w-xs" data-testid="workspace-name">{workspace.name}</h1>
+          <h1
+            className="text-sm font-semibold text-white truncate max-w-xs"
+            data-testid="workspace-name"
+          >
+            {workspace.name}
+          </h1>
         </div>
 
         <div className="flex items-center gap-2">

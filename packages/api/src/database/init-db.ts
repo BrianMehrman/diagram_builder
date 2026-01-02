@@ -39,6 +39,7 @@ export async function initializeDatabase(): Promise<void> {
  */
 async function createConstraints(): Promise<void> {
   const constraints = [
+    'CREATE CONSTRAINT IF NOT EXISTS FOR (w:Workspace) REQUIRE w.id IS UNIQUE',
     'CREATE CONSTRAINT IF NOT EXISTS FOR (r:Repository) REQUIRE r.id IS UNIQUE',
     'CREATE CONSTRAINT IF NOT EXISTS FOR (f:File) REQUIRE f.id IS UNIQUE',
     'CREATE CONSTRAINT IF NOT EXISTS FOR (c:Class) REQUIRE c.id IS UNIQUE',

@@ -16,6 +16,7 @@ import app from './index';
 import { validateEnvironment } from './config/environment';
 import { connectDatabase, disconnectDatabase } from './database/neo4j-client';
 import { initializeDatabase } from './database/init-db';
+import { seedDatabase } from './database/seed-db';
 import { connectRedis, disconnectRedis } from './cache/redis-client';
 import { createWebSocketServer, shutdownWebSocketServer } from './websocket/server';
 
@@ -42,6 +43,7 @@ const server = httpServer.listen(config.PORT, () => {
     try {
       await connectDatabase();
       await initializeDatabase();
+      await seedDatabase();
       await connectRedis();
     } catch (error) {
       console.error('Failed to connect to services on startup:', error);

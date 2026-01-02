@@ -40,7 +40,7 @@ describe('Routing', () => {
         {
           path: '/',
           element: (
-            <ProtectedRoute>
+            <ProtectedRoute skipAuth={false}>
               <div>Home Page</div>
             </ProtectedRoute>
           ),
@@ -62,7 +62,7 @@ describe('Routing', () => {
         {
           path: '/',
           element: (
-            <ProtectedRoute>
+            <ProtectedRoute skipAuth={false}>
               <div>Home Page</div>
             </ProtectedRoute>
           ),
@@ -92,7 +92,7 @@ describe('Routing', () => {
         {
           path: '/workspace/:id',
           element: (
-            <ProtectedRoute>
+            <ProtectedRoute skipAuth={false}>
               <div>Workspace Page</div>
             </ProtectedRoute>
           ),

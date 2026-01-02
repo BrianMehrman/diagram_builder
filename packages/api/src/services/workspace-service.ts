@@ -290,7 +290,7 @@ export async function listUserWorkspaces(userId: string): Promise<Workspace[]> {
 
   const query = `
     MATCH (w:Workspace)
-    WHERE w.ownerId = $userId OR $userId IN [m IN w.members | m.userId]
+    WHERE w.ownerId = $userId
     RETURN w.id as id, w.name as name, w.description as description,
            w.ownerId as ownerId, w.repositories as repositories,
            w.members as members, w.settings as settings,

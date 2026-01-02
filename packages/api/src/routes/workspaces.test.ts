@@ -18,6 +18,7 @@ import express, { Express } from 'express';
 import { workspacesRouter } from './workspaces';
 import { errorHandler } from '../middleware/error-handler';
 import { generateToken } from '../auth/jwt';
+import * as cacheUtils from '../cache/cache-utils';
 
 // Mock data store for workspaces
 const mockWorkspaces = new Map<string, Record<string, unknown>>();
@@ -676,13 +677,14 @@ describe('Workspace Endpoints', () => {
     });
 
     it('should invalidate cache after deletion', async () => {
-      const { invalidatePattern } = await import('../cache/cache-utils');
+      const invalidate = vi.mocked(cacheUtils.invalidate);
+      invalidate.mockClear(); // Clear any previous calls
 
       await request(app)
         .delete(`/api/workspaces/${workspaceId}`)
         .set('Authorization', `Bearer ${authToken}`);
 
-      expect(invalidatePattern).toHaveBeenCalled();
+      expect(invalidate).toHaveBeenCalled();
     });
   });
 
