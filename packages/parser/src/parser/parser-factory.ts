@@ -3,7 +3,7 @@ import JavaScript from 'tree-sitter-javascript'
 import TypeScript from 'tree-sitter-typescript'
 import { ParserInitError, UnsupportedLanguageError } from './errors'
 
-export type Language = 'javascript' | 'typescript' | 'tsx'
+export type Language = 'javascript' | 'typescript' | 'tsx' | 'python' | 'java' | 'go' | 'c' | 'cpp'
 
 export interface ParserInstance {
   parser: Parser
@@ -31,7 +31,13 @@ export function createParser(language: Language): ParserInstance {
 
   try {
     const grammar = getLanguageGrammar(language)
-    parser.setLanguage(grammar)
+
+    // For unsupported languages, we'll still return a parser instance
+    // but it won't have a valid grammar. This allows basic file scanning
+    // without full AST parsing
+    if (grammar) {
+      parser.setLanguage(grammar)
+    }
 
     return {
       parser,
@@ -59,6 +65,15 @@ function getLanguageGrammar(language: Language): unknown {
       return TypeScript.typescript
     case 'tsx':
       return TypeScript.tsx
+    case 'python':
+    case 'java':
+    case 'go':
+    case 'c':
+    case 'cpp':
+      // These languages are recognized but don't have parsers installed yet
+      // Return null to indicate no grammar available - files will still be scanned
+      // but won't be fully parsed
+      return null
     default:
       throw new UnsupportedLanguageError(language)
   }

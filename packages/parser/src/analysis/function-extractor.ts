@@ -22,6 +22,12 @@ export interface FunctionDefinition {
  */
 export function extractFunctions(tree: Tree): FunctionDefinition[] {
   const functions: FunctionDefinition[] = []
+
+  // Handle unsupported languages (null/empty trees)
+  if (!tree || !tree.rootNode || tree.rootNode.childCount === 0) {
+    return functions
+  }
+
   const cursor = tree.walk()
 
   function traverse(node: SyntaxNode, depth: number = 0): void {
@@ -42,10 +48,15 @@ export function extractFunctions(tree: Tree): FunctionDefinition[] {
 
     // Also check for variable declarations with arrow functions or function expressions
     if (node.type === 'lexical_declaration' || node.type === 'variable_declaration') {
-      const declarator = node.children.find(c => c.type === 'variable_declarator')
+      const declarator = node.children.find((c) => c.type === 'variable_declarator')
       if (declarator) {
         const value = declarator.childForFieldName('value')
-        if (value && (value.type === 'arrow_function' || value.type === 'function' || value.type === 'function_expression')) {
+        if (
+          value &&
+          (value.type === 'arrow_function' ||
+            value.type === 'function' ||
+            value.type === 'function_expression')
+        ) {
           const nameNode = declarator.childForFieldName('name')
           if (nameNode) {
             const funcDef = extractFunctionDefinition(value, depth, nameNode.text)
@@ -62,9 +73,11 @@ export function extractFunctions(tree: Tree): FunctionDefinition[] {
       const child = node.child(i)
       if (child) {
         // Skip function bodies to avoid double-counting nested functions
-        if (node.type === 'function_declaration' ||
-            node.type === 'arrow_function' ||
-            node.type === 'function_expression') {
+        if (
+          node.type === 'function_declaration' ||
+          node.type === 'arrow_function' ||
+          node.type === 'function_expression'
+        ) {
           // Still traverse nested functions, but increase depth
           if (child.type !== 'statement_block') {
             traverse(child, depth)
@@ -112,13 +125,15 @@ function extractFunctionDefinition(
   const returnType = extractReturnType(node)
 
   // Check for modifiers
-  const isAsync = node.type.includes('async') ||
-    node.children.some(c => c.type === 'async' || c.text === 'async') ||
-    node.parent?.children.some(c => c.type === 'async' || c.text === 'async')
+  const isAsync =
+    node.type.includes('async') ||
+    node.children.some((c) => c.type === 'async' || c.text === 'async') ||
+    node.parent?.children.some((c) => c.type === 'async' || c.text === 'async')
 
-  const isGenerator = node.type.includes('generator') ||
-    node.children.some(c => c.text === '*') ||
-    node.parent?.children.some(c => c.text === '*')
+  const isGenerator =
+    node.type.includes('generator') ||
+    node.children.some((c) => c.text === '*') ||
+    node.parent?.children.some((c) => c.text === '*')
 
   const isArrow = node.type === 'arrow_function'
 

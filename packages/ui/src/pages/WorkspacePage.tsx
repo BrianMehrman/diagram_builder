@@ -66,6 +66,17 @@ export function WorkspacePage() {
         // Fetch the graph data for this repository
         const graphResponse = await graph.getFullGraph(completedCodebase.repositoryId)
         setGraphData(graphResponse)
+      } else {
+        // TEMP FIX (Story 5.5-9): If no completed codebase yet, poll for updates
+        // This handles the race condition where import is still processing
+        const hasPendingCodebase = codebasesList.codebases?.some(
+          (cb: any) => cb.status === 'pending' || cb.status === 'processing'
+        )
+
+        if (hasPendingCodebase) {
+          // Poll again in 2 seconds to check for completion
+          setTimeout(() => loadGraphData(workspaceId), 2000)
+        }
       }
     } catch (err) {
       console.error('Failed to load graph data:', err)

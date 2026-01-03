@@ -27,9 +27,16 @@ describe('Parser Factory', () => {
       expect(jsParser.language).not.toBe(tsParser.language)
     })
 
-    it('should throw error for unsupported language', () => {
-      // @ts-expect-error Testing invalid language
-      expect(() => createParser('python')).toThrow()
+    it('should create parser for multi-language support (python, java, go, c, cpp)', () => {
+      // Multi-language support: Python, Java, Go, C, C++
+      const pythonParser = createParser('python')
+      expect(pythonParser.language).toBe('python')
+
+      const javaParser = createParser('java')
+      expect(javaParser.language).toBe('java')
+
+      const goParser = createParser('go')
+      expect(goParser.language).toBe('go')
     })
   })
 })

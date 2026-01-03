@@ -129,6 +129,12 @@ async function triggerParserImport(
       name: input.source.split('/').pop() || 'repository',
     });
 
+    // Debug: Log IVM structure
+    console.log(`[Import Debug] IVM for ${input.source}:`);
+    console.log(`  Files parsed: ${fileInputs.length}`);
+    console.log(`  IVM nodes: ${ivm.nodes.length}`);
+    console.log(`  IVM edges: ${ivm.edges.length}`);
+
     // Create Repository node in Neo4j
     const repositoryId = uuidv4();
     await runQuery(
@@ -178,7 +184,7 @@ async function triggerParserImport(
           complexity: $complexity,
           metadata: $metadata
         })
-        CREATE (n)-[:BELONGS_TO]->(r)
+        CREATE (r)-[:CONTAINS]->(n)
         `,
         {
           repoId: repositoryId,

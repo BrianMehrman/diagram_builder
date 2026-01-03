@@ -56,14 +56,15 @@ development_status:
   epic-5.5: in-progress
   epic-5.5-retrospective: done
   5.5-1-database-seed-data: done
-  5.5-2-authentication-dev-mode: not-started
-  5.5-3-e2e-test-validation: review
+  5.5-2-authentication-dev-mode: done  # Dev mode auto-auth implemented, 13 tests passing
+  5.5-3-e2e-test-validation: done  # Code review complete - 7 follow-ups deferred to Epic 6
   5.5-4-complete-codebase-import-api: review  # Code exists but needs end-to-end validation
   5.5-5-complete-codebase-import-ui: review  # Code exists but needs end-to-end validation
   5.5-6-documentation-reorganization: done
   5.5-7-ux-standards-cli: done
   5.5-8-sprint-status-epic-closure: done
-  5.5-9-codebase-import-validation: not-started  # End-to-end validation of Stories 3-4, 5.5-4, 5.5-5
+  5.5-9-codebase-import-validation: in-progress  # End-to-end validation - discovered parser bug
+  5.5-10-fix-parser-file-discovery: in-progress  # CRITICAL: Parser finds 0 files - blocks Stories 3-4, 5.5-4, 5.5-5, 5.5-9
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun
@@ -148,6 +149,7 @@ epics:
       - 5.5-7-ux-standards-cli
       - 5.5-8-sprint-status-epic-closure
       - 5.5-9-codebase-import-validation
+      - 5.5-10-fix-parser-file-discovery
     dependencies:
       - "Epic 5: UI Package (14/15 stories complete)"
       - "Epic 4: API Package (13/14 stories complete)"

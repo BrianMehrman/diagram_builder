@@ -38,6 +38,21 @@ export function parseContent(content: string, language: Language): ParseResult {
   const { parser } = createParser(language)
 
   try {
+    // For languages without full parser support, create a minimal tree
+    // This allows file discovery without full AST parsing
+    const unsupportedLanguages: Language[] = ['python', 'java', 'go', 'c', 'cpp']
+
+    if (unsupportedLanguages.includes(language)) {
+      // Create a minimal parse result for unsupported languages
+      // The tree will be empty, but we can still track the file
+      const emptyTree = parser.parse('')
+      return {
+        tree: emptyTree,
+        language,
+        hasErrors: false,
+      }
+    }
+
     const tree = parser.parse(content)
     const hasErrors = checkForErrors(tree)
 
@@ -73,6 +88,20 @@ function detectLanguageFromExtension(filePath: string): Language {
     case '.mts':
     case '.cts':
       return 'typescript'
+    case '.py':
+      return 'python'
+    case '.java':
+      return 'java'
+    case '.go':
+      return 'go'
+    case '.c':
+    case '.h':
+      return 'c'
+    case '.cpp':
+    case '.cc':
+    case '.cxx':
+    case '.hpp':
+      return 'cpp'
     default:
       throw new UnsupportedFileExtensionError(filePath, ext)
   }

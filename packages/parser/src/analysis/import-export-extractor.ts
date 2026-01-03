@@ -31,6 +31,12 @@ export interface ExportStatement {
  */
 export function extractImports(tree: Tree): ImportStatement[] {
   const imports: ImportStatement[] = []
+
+  // Handle unsupported languages (null/empty trees)
+  if (!tree || !tree.rootNode || tree.rootNode.childCount === 0) {
+    return imports
+  }
+
   const cursor = tree.walk()
 
   function traverse(node: SyntaxNode): void {
@@ -61,6 +67,12 @@ export function extractImports(tree: Tree): ImportStatement[] {
  */
 export function extractExports(tree: Tree): ExportStatement[] {
   const exports: ExportStatement[] = []
+
+  // Handle unsupported languages (null/empty trees)
+  if (!tree || !tree.rootNode || tree.rootNode.childCount === 0) {
+    return exports
+  }
+
   const cursor = tree.walk()
 
   function traverse(node: SyntaxNode): void {
@@ -100,27 +112,27 @@ function extractImportStatement(node: SyntaxNode): ImportStatement | undefined {
 
   // Check for import clause
   const importClause = node.children.find(
-    c => c.type === 'import_clause' || c.type === 'named_imports'
+    (c) => c.type === 'import_clause' || c.type === 'named_imports'
   )
 
   if (importClause) {
     // Check for default import (identifier before curly braces or alone)
-    const defaultId = importClause.children.find(c => c.type === 'identifier')
+    const defaultId = importClause.children.find((c) => c.type === 'identifier')
     if (defaultId) {
       defaultImport = defaultId.text
     }
 
     // Check for namespace import (* as name)
-    const namespaceClause = importClause.children.find(c => c.type === 'namespace_import')
+    const namespaceClause = importClause.children.find((c) => c.type === 'namespace_import')
     if (namespaceClause) {
-      const nameId = namespaceClause.children.find(c => c.type === 'identifier')
+      const nameId = namespaceClause.children.find((c) => c.type === 'identifier')
       if (nameId) {
         namespaceImport = nameId.text
       }
     }
 
     // Check for named imports
-    const namedImports = importClause.children.find(c => c.type === 'named_imports')
+    const namedImports = importClause.children.find((c) => c.type === 'named_imports')
     if (namedImports) {
       for (const child of namedImports.children) {
         if (child.type === 'import_specifier') {
@@ -162,18 +174,18 @@ function extractExportStatement(node: SyntaxNode): ExportStatement | undefined {
   }
 
   // Check for default export
-  if (node.children.some(c => c.type === 'default' || c.text === 'default')) {
+  if (node.children.some((c) => c.type === 'default' || c.text === 'default')) {
     isDefault = true
   }
 
   // Check for export all (export *)
-  if (node.children.some(c => c.text === '*')) {
+  if (node.children.some((c) => c.text === '*')) {
     exportAll = true
     return { source, isDefault, exportAll, specifiers }
   }
 
   // Check for export clause (named exports)
-  const exportClause = node.children.find(c => c.type === 'export_clause')
+  const exportClause = node.children.find((c) => c.type === 'export_clause')
   if (exportClause) {
     for (const child of exportClause.children) {
       if (child.type === 'export_specifier') {
@@ -201,7 +213,10 @@ function extractExportStatement(node: SyntaxNode): ExportStatement | undefined {
       if (nameNode) {
         declarationName = nameNode.text
       }
-    } else if (declaration.type === 'lexical_declaration' || declaration.type === 'variable_declaration') {
+    } else if (
+      declaration.type === 'lexical_declaration' ||
+      declaration.type === 'variable_declaration'
+    ) {
       // Extract variable names
       for (const child of declaration.children) {
         if (child.type === 'variable_declarator') {

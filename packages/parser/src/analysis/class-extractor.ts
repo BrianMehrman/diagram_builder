@@ -39,6 +39,12 @@ export interface ClassDefinition {
  */
 export function extractClasses(tree: Tree): ClassDefinition[] {
   const classes: ClassDefinition[] = []
+
+  // Handle unsupported languages (null/empty trees)
+  if (!tree || !tree.rootNode || tree.rootNode.childCount === 0) {
+    return classes
+  }
+
   const cursor = tree.walk()
 
   function traverse(node: SyntaxNode): void {
@@ -82,21 +88,22 @@ function extractClassDefinition(node: SyntaxNode): ClassDefinition | undefined {
     // In JavaScript, class_heritage contains "extends" keyword followed by identifier
     // In TypeScript, it may also contain implements clause
     const extendsIdentifier = heritageNode.children.find(
-      c => c.type === 'identifier' || c.type === 'type_identifier'
+      (c) => c.type === 'identifier' || c.type === 'type_identifier'
     )
     if (extendsIdentifier) {
       extendsName = extendsIdentifier.text
     }
 
     // Look for implements clause in TypeScript
-    const implementsClause = findChildByType(heritageNode, 'implements_clause') ||
+    const implementsClause =
+      findChildByType(heritageNode, 'implements_clause') ||
       findChildByType(heritageNode, 'class_implements_clause')
 
     if (implementsClause) {
       const typeList = implementsClause.children.filter(
-        c => c.type === 'type_identifier' || c.type === 'identifier'
+        (c) => c.type === 'type_identifier' || c.type === 'identifier'
       )
-      implementsList.push(...typeList.map(t => t.text))
+      implementsList.push(...typeList.map((t) => t.text))
     }
   }
 
@@ -129,7 +136,7 @@ function extractClassDefinition(node: SyntaxNode): ClassDefinition | undefined {
   }
 
   // Check for abstract modifier
-  const isAbstract = node.children.some(c => c.type === 'abstract' || c.text === 'abstract')
+  const isAbstract = node.children.some((c) => c.type === 'abstract' || c.text === 'abstract')
 
   return {
     name,
@@ -154,9 +161,9 @@ function extractMethodDefinition(node: SyntaxNode): MethodDefinition | undefined
   const visibility = extractVisibility(node)
 
   // Check for async/generator/static modifiers
-  const isAsync = node.children.some(c => c.type === 'async' || c.text === 'async')
-  const isGenerator = node.children.some(c => c.type === 'generator' || c.text === '*')
-  const isStatic = node.children.some(c => c.type === 'static' || c.text === 'static')
+  const isAsync = node.children.some((c) => c.type === 'async' || c.text === 'async')
+  const isGenerator = node.children.some((c) => c.type === 'generator' || c.text === '*')
+  const isStatic = node.children.some((c) => c.type === 'static' || c.text === 'static')
 
   return {
     name,
@@ -180,8 +187,8 @@ function extractPropertyDefinition(node: SyntaxNode): PropertyDefinition | undef
   const type = extractTypeAnnotation(node)
   const visibility = extractVisibility(node)
 
-  const isStatic = node.children.some(c => c.type === 'static' || c.text === 'static')
-  const isReadonly = node.children.some(c => c.type === 'readonly' || c.text === 'readonly')
+  const isStatic = node.children.some((c) => c.type === 'static' || c.text === 'static')
+  const isReadonly = node.children.some((c) => c.type === 'readonly' || c.text === 'readonly')
 
   return {
     name,
@@ -233,7 +240,7 @@ function extractReturnType(node: SyntaxNode): string | undefined {
   if (!typeNode) return undefined
 
   // Skip the colon and get the actual type
-  const typeChild = typeNode.children.find(c => c.type !== ':')
+  const typeChild = typeNode.children.find((c) => c.type !== ':')
   return typeChild?.text
 }
 
@@ -245,18 +252,16 @@ function extractTypeAnnotation(node: SyntaxNode): string | undefined {
   if (!typeNode) return undefined
 
   // Skip the colon and get the actual type
-  const typeChild = typeNode.children.find(c => c.type !== ':')
+  const typeChild = typeNode.children.find((c) => c.type !== ':')
   return typeChild?.text
 }
 
 /**
  * Extract visibility modifier (public/private/protected)
  */
-function extractVisibility(
-  node: SyntaxNode
-): 'public' | 'private' | 'protected' | undefined {
+function extractVisibility(node: SyntaxNode): 'public' | 'private' | 'protected' | undefined {
   const accessibilityModifier = node.children.find(
-    c =>
+    (c) =>
       c.type === 'accessibility_modifier' ||
       c.text === 'public' ||
       c.text === 'private' ||
@@ -277,5 +282,5 @@ function extractVisibility(
  * Find a child node by type
  */
 function findChildByType(node: SyntaxNode, type: string): SyntaxNode | undefined {
-  return node.children.find(c => c.type === type)
+  return node.children.find((c) => c.type === type)
 }

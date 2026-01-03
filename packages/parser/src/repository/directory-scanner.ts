@@ -17,7 +17,29 @@ export interface ScanOptions {
 /**
  * Default file extensions to scan
  */
-const DEFAULT_EXTENSIONS = ['.js', '.ts', '.tsx', '.jsx', '.d.ts']
+const DEFAULT_EXTENSIONS = [
+  // JavaScript/TypeScript
+  '.js',
+  '.ts',
+  '.tsx',
+  '.jsx',
+  '.d.ts',
+  '.mjs',
+  '.cjs',
+  // Python
+  '.py',
+  // Java
+  '.java',
+  // Go
+  '.go',
+  // C/C++
+  '.c',
+  '.cpp',
+  '.cc',
+  '.cxx',
+  '.h',
+  '.hpp',
+]
 
 /**
  * Default ignore patterns
@@ -41,10 +63,7 @@ const DEFAULT_IGNORE_PATTERNS = [
  * @param options - Scan options
  * @returns Array of absolute file paths
  */
-export async function scanDirectory(
-  dirPath: string,
-  options: ScanOptions = {}
-): Promise<string[]> {
+export async function scanDirectory(dirPath: string, options: ScanOptions = {}): Promise<string[]> {
   const extensions = options.extensions || DEFAULT_EXTENSIONS
   const maxDepth = options.maxDepth
 
@@ -163,7 +182,7 @@ async function scanRecursive(
  */
 function matchesExtension(filename: string, extensions: string[]): boolean {
   const ext = path.extname(filename)
-  return extensions.some(targetExt => {
+  return extensions.some((targetExt) => {
     // Handle both .d.ts and .ts cases
     if (targetExt === '.d.ts' && filename.endsWith('.d.ts')) {
       return true

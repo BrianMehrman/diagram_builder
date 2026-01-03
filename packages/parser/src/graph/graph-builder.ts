@@ -59,8 +59,8 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
         name: classInfo.name,
         path: file.filePath,
         metadata: {
-          methods: classInfo.methods.map(m => m.name),
-          properties: classInfo.properties.map(p => p.name),
+          methods: classInfo.methods.map((m) => m.name),
+          properties: classInfo.properties.map((p) => p.name),
           isAbstract: classInfo.isAbstract,
         },
       }
@@ -76,7 +76,7 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
     }
 
     // Create function nodes (only top-level functions)
-    for (const functionInfo of analysis.functions.filter(f => f.isTopLevel)) {
+    for (const functionInfo of analysis.functions.filter((f) => f.isTopLevel)) {
       const functionNodeId = createNodeId('function', `${file.filePath}:${functionInfo.name}`)
       const functionNode: DependencyNode = {
         id: functionNodeId,
@@ -185,8 +185,26 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
  */
 function detectLanguage(filePath: string): Language {
   const ext = path.extname(filePath)
+
+  // TypeScript/JavaScript
   if (ext === '.tsx') return 'tsx'
-  if (ext === '.ts') return 'typescript'
+  if (ext === '.ts' || ext === '.d.ts') return 'typescript'
+  if (ext === '.js' || ext === '.jsx' || ext === '.mjs' || ext === '.cjs') return 'javascript'
+
+  // Python
+  if (ext === '.py') return 'python'
+
+  // Java
+  if (ext === '.java') return 'java'
+
+  // Go
+  if (ext === '.go') return 'go'
+
+  // C/C++
+  if (ext === '.c' || ext === '.h') return 'c'
+  if (ext === '.cpp' || ext === '.cc' || ext === '.cxx' || ext === '.hpp') return 'cpp'
+
+  // Default to javascript for unknown extensions
   return 'javascript'
 }
 
@@ -217,13 +235,13 @@ function findNodeIdByName(
   const nodes = graph.getNodes()
 
   // First try to find in the same file
-  const sameFileNode = nodes.find(n => n.name === name && n.path === filePath)
+  const sameFileNode = nodes.find((n) => n.name === name && n.path === filePath)
   if (sameFileNode) {
     return sameFileNode.id
   }
 
   // Then try to find in any file
-  const anyNode = nodes.find(n => n.name === name)
+  const anyNode = nodes.find((n) => n.name === name)
   if (anyNode) {
     return anyNode.id
   }

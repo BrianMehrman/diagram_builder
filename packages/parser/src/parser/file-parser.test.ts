@@ -99,11 +99,14 @@ export function Greeting({ name }: { name: string }) {
       await expect(parseFile('/nonexistent/file.js')).rejects.toThrow()
     })
 
-    it('should throw error for unsupported file extension', async () => {
+    it('should parse Python file without throwing (limited support)', async () => {
       const pythonFile = path.join(testDir, 'test.py')
       await fs.writeFile(pythonFile, 'def hello(): pass')
 
-      await expect(parseFile(pythonFile)).rejects.toThrow(/Unsupported/)
+      // Python is now supported but returns minimal tree (no grammar installed)
+      const result = await parseFile(pythonFile)
+      expect(result.language).toBe('python')
+      expect(result.tree).toBeDefined()
 
       await fs.unlink(pythonFile)
     })

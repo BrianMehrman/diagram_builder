@@ -24,6 +24,12 @@ export interface InheritanceRelationship {
  */
 export function extractInheritance(tree: Tree): InheritanceRelationship[] {
   const relationships: InheritanceRelationship[] = []
+
+  // Handle unsupported languages (null/empty trees)
+  if (!tree || !tree.rootNode || tree.rootNode.childCount === 0) {
+    return relationships
+  }
+
   const cursor = tree.walk()
 
   function traverse(node: SyntaxNode): void {
@@ -198,7 +204,8 @@ function extractInterfaceExtendsParents(node: SyntaxNode): string[] {
   const parents: string[] = []
 
   // Look for extends_clause or extends_type_clause
-  const extendsClause = findChildByType(node, 'extends_clause') || findChildByType(node, 'extends_type_clause')
+  const extendsClause =
+    findChildByType(node, 'extends_clause') || findChildByType(node, 'extends_type_clause')
   if (!extendsClause) {
     return parents
   }

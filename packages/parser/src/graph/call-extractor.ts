@@ -28,6 +28,10 @@ export interface FunctionCall {
  */
 export function extractFunctionCalls(tree: Tree): FunctionCall[] {
   const calls: FunctionCall[] = []
+  // Handle unsupported languages (null/empty trees)
+  if (!tree || !tree.rootNode || tree.rootNode.childCount === 0) {
+    return calls
+  }
   const cursor = tree.walk()
 
   function traverse(node: SyntaxNode): void {
@@ -72,7 +76,11 @@ function extractCallInfo(node: SyntaxNode, isConstructor: boolean): FunctionCall
   let functionNode: SyntaxNode | undefined
 
   for (const child of node.children) {
-    if (child.type === 'identifier' || child.type === 'member_expression' || child.type === 'call_expression') {
+    if (
+      child.type === 'identifier' ||
+      child.type === 'member_expression' ||
+      child.type === 'call_expression'
+    ) {
       functionNode = child
       break
     }
