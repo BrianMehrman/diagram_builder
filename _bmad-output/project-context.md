@@ -375,6 +375,48 @@ MATCH (r:Repository)-[:CONTAINS]->(f:File)
 - No `any` types allowed
 - Strict mode enabled
 
+### Story Completion Requirements (CRITICAL - Epic 5.5 Retrospective Decision)
+
+**NEVER mark a story as "done" without validation:**
+
+1. **Test-First Development:**
+   - Write failing test BEFORE implementation
+   - Implement feature until test passes
+   - Story is NOT complete until test passes
+
+2. **Validation Requirements:**
+   - **Unit tests:** All new functions/components tested
+   - **Integration tests:** API endpoints validated with real requests
+   - **E2E tests:** Critical user flows validated end-to-end
+   - **All tests passing:** 100% pass rate required
+
+3. **Story Status Transitions:**
+   - `not-started` → Implementation begins
+   - `in-progress` → Implementation ongoing, tests written but failing
+   - `review` → Implementation complete, tests passing, awaiting code review
+   - `done` → Code reviewed, all tests passing, validated working
+
+4. **Validation Checklist:**
+   - [ ] Tests written (unit, integration, e2e as appropriate)
+   - [ ] All tests passing (`npm test` succeeds)
+   - [ ] E2E tests passing with ≥95% pass rate (`npm run test:e2e`)
+   - [ ] E2E stability verified (no flaky tests across multiple runs)
+   - [ ] Feature manually tested (if UI component)
+   - [ ] Acceptance criteria verified
+   - [ ] Story tasks checked off
+   - [ ] Files listed in story file
+   - [ ] Sprint-status.yaml updated
+
+5. **E2E Test Requirements (Added 2026-01-03):**
+   - **When to run:** Before marking story as "review" or "done"
+   - **Pass criteria:** ≥95% pass rate required
+   - **Stability:** No flaky tests - must pass consistently
+   - **Scope:** Run full suite (`npm run test:e2e`) for UI changes
+   - **Integration:** E2E validation gates story completion in sprint-status workflow
+
+**Rule Established:** 2026-01-03 (Epic 5.5 Retrospective)
+**Reason:** Prevent false completion - Stories 3-4, 4-14, 5-15 showed "done" but weren't validated
+
 ---
 
 ## Critical Reminders for AI Agents
@@ -389,6 +431,7 @@ MATCH (r:Repository)-[:CONTAINS]->(f:File)
 8. **JWT everywhere** - REST, WebSocket, CLI all use JWT
 9. **No time estimates** - AI development speed has fundamentally changed
 10. **TypeScript strict mode** - No `any`, use `unknown` with type guards
+11. **NEVER mark story complete without validation** - Tests must pass BEFORE marking done
 
 ---
 

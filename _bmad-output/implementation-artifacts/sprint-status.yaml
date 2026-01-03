@@ -4,7 +4,7 @@
 
 project_name: diagram_builder
 sprint_start: "2025-12-29"
-current_phase: "Phase 6: CLI Package (Ready to Begin)"
+current_phase: "Phase 5.5: Foundation Cleanup (In Progress - 6/9 stories complete)"
 
 # Epic and Story Status Tracking
 development_status:
@@ -53,15 +53,17 @@ development_status:
   5-15-codebase-import-ui: done
 
   # Epic 5.5: Foundation Cleanup
-  epic-5.5: done
+  epic-5.5: in-progress
+  epic-5.5-retrospective: done
   5.5-1-database-seed-data: done
-  5.5-2-authentication-dev-mode: done
-  5.5-3-e2e-test-validation: done
-  5.5-4-complete-codebase-import-api: done
-  5.5-5-complete-codebase-import-ui: done
+  5.5-2-authentication-dev-mode: not-started
+  5.5-3-e2e-test-validation: review
+  5.5-4-complete-codebase-import-api: review  # Code exists but needs end-to-end validation
+  5.5-5-complete-codebase-import-ui: review  # Code exists but needs end-to-end validation
   5.5-6-documentation-reorganization: done
   5.5-7-ux-standards-cli: done
   5.5-8-sprint-status-epic-closure: done
+  5.5-9-codebase-import-validation: not-started  # End-to-end validation of Stories 3-4, 5.5-4, 5.5-5
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun
@@ -145,6 +147,7 @@ epics:
       - 5.5-6-documentation-reorganization
       - 5.5-7-ux-standards-cli
       - 5.5-8-sprint-status-epic-closure
+      - 5.5-9-codebase-import-validation
     dependencies:
       - "Epic 5: UI Package (14/15 stories complete)"
       - "Epic 4: API Package (13/14 stories complete)"
@@ -156,5 +159,5 @@ epics:
 # - Phase 3 (Parser Package): 100% Complete
 # - Phase 4 (API Package): 100% Complete
 # - Phase 5 (UI Package): 100% Complete
-# - Phase 5.5 (Foundation Cleanup): 100% Complete
-# - Phase 6 (CLI Package): Ready to begin (all prerequisites met)
+# - Phase 5.5 (Foundation Cleanup): 67% Complete (6/9 stories done, 3 critical stories remaining: auth, e2e, validation)
+# - Phase 6 (CLI Package): BLOCKED - Cannot start until Epic 5.5 complete (Stories 5.5-2 and 5.5-3)

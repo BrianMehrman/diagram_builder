@@ -360,14 +360,18 @@ test.describe('Workspace Management @P1', () => {
     // GIVEN: Import modal is open
     await mockGraph()
 
-    // Mock the import API endpoint to return error
+    // Mock the import API endpoint to return error (RFC 7807 format)
     await page.route('**/api/workspaces/test-workspace-1/codebases', async (route) => {
       if (route.request().method() === 'POST') {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
           body: JSON.stringify({
-            error: 'Repository not found',
+            type: 'https://diagram-builder.io/errors/import-failed',
+            title: 'Repository not found',
+            status: 500,
+            detail: 'The specified repository could not be found or accessed',
+            instance: '/api/workspaces/test-workspace-1/codebases',
           }),
         })
       } else {
