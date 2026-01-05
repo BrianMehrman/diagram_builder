@@ -1,0 +1,12 @@
+{
+  "name": "test-codebase",
+  "version": "1.0.0",
+  "description": "Test fixture for E2E codebase import validation",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
