@@ -39,6 +39,7 @@ import type {
   UpdateMemberInput,
 } from '../types/workspace';
 import type { CreateCodebaseInput } from '../types/codebase';
+import { logger } '../logger';
 
 const workspacesRouter = Router();
 

@@ -29,6 +29,7 @@
     "socket.io": "^4.7.0",
     "socket.io-msgpack-parser": "^3.0.2",
     "uuid": "^13.0.0",
+    "winston": "^3.19.0",
     "zod": "^4.2.1"
   },
   "devDependencies": {

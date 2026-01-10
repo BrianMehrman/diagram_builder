@@ -67,11 +67,11 @@ development_status:
   5.5-10-fix-parser-file-discovery: done  # Resolved: Switched test repo to TypeScript (mitt), parser works correctly
 
   # Epic 6: Fix Parser & Complete Core Integration
-  epic-6: backlog
+  epic-6: in-progress
   epic-6-retrospective: optional
-  6-1-fix-parser-file-discovery: backlog  # CRITICAL: Fix loadRepository() returning 0 files (addresses 5.5-10)
-  6-2-add-observability-infrastructure: backlog  # Implement structured logging (Winston/Pino), parser progress tracking
-  6-3-implement-user-feedback-loading-states: backlog  # Parsing status indicators, graph loaded confirmation, empty state handling
+  6-1-fix-parser-file-discovery: done  # Completed via Story 5.5-10 - parser works correctly for JS/TS repos
+  6-2-add-observability-infrastructure: review  # MVP logging implemented - Winston, parser/API instrumentation, advanced features deferred
+  6-3-implement-user-feedback-loading-states: review  # Empty state, parsing indicators, success/error notifications - auto-focus deferred
   6-4-end-to-end-integration-testing: backlog  # Integration tests with real file systems, validate full upload → render flow (addresses 5.5-9)
   6-5-configuration-security: backlog  # File storage management, repo size limits, secret scanning, environment config
   6-6-codebase-management-ui: backlog  # View codebase list with status, delete codebases, retry failed imports

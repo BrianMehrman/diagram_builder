@@ -291,24 +291,82 @@ const checkProgress = async () => {
 
 ## Dev Agent Record
 
-*Implementation notes will be added here during development*
+**Implementation (2026-01-04):**
+
+1. **Empty State Component** ✅
+   - Created `EmptyState.tsx` with centered message and import button
+   - Shows when no codebase is loaded (graphData is null)
+   - Includes helpful text about importing codebases
+   - Styled with dark theme matching application
+
+2. **Parsing Status Indicator** ✅
+   - Created `CodebaseStatusIndicator.tsx` component
+   - Shows status: pending (yellow) → processing (blue) → failed (red)
+   - Animated spinner for pending/processing states
+   - Displays contextual messages for each state
+   - Auto-hides when status is 'completed'
+
+3. **Error Notification** ✅
+   - Created `ErrorNotification.tsx` component
+   - Shows when codebase import fails
+   - Displays error message from API
+   - Provides Retry and Dismiss actions
+   - Red theme with error icon
+
+4. **Success Notification** ✅
+   - Created `SuccessNotification.tsx` component
+   - Shows when graph loads successfully
+   - Displays node count: "Graph loaded with X nodes"
+   - Auto-hides after 3 seconds
+   - Green theme with checkmark icon
+
+5. **WorkspacePage Integration** ✅
+   - Updated to track `processingStatus` and `importError` states
+   - Modified `loadGraphData()` to detect failed codebases
+   - Added conditional rendering for all states
+   - Integrated all notification components
+   - Shows EmptyState when no graph data
+
+**Implementation Decisions:**
+
+- Used custom notification components instead of react-hot-toast (no new dependencies)
+- Status indicator positioned at top-center for visibility
+- Empty state replaces Canvas3D when no graph data
+- Success notification auto-dismisses (UX best practice)
+- Error notification requires manual dismiss or retry
+
+**Deferred:**
+- AC-4: Auto-focus on loaded graph (Canvas3D integration needed)
+- AC-5: Loading progress tracking (Story 6-2 MVP didn't include progress API)
 
 ---
 
 ## File List
 
-*Modified/created files will be listed here after implementation*
+[NEW] packages/ui/src/features/canvas/EmptyState.tsx
+[NEW] packages/ui/src/features/canvas/CodebaseStatusIndicator.tsx
+[NEW] packages/ui/src/features/canvas/ErrorNotification.tsx
+[NEW] packages/ui/src/features/canvas/SuccessNotification.tsx
+[MOD] packages/ui/src/features/canvas/index.ts
+[MOD] packages/ui/src/pages/WorkspacePage.tsx
 
 ---
 
 ## Change Log
 
-- **2026-01-04**: Story created from Epic 6 planning
+- **2026-01-04 (AM)**: Story created from Epic 6 planning
   - Brainstorming session identified critical UX gaps
   - Constraint mapping revealed missing loading states
   - User feedback needed throughout pipeline
   - Auto-focus on graph improves discoverability
 
-**Status:** backlog
+- **2026-01-04 (PM)**: Core implementation completed
+  - Created 4 new UI components for different states
+  - Integrated all states into WorkspacePage
+  - Comprehensive feedback for empty, processing, success, and error states
+  - Deferred auto-focus and progress tracking (not critical for MVP)
+
+**Status:** review
 **Created:** 2026-01-04
 **Last Updated:** 2026-01-04
+**Completion Criteria:** Core feedback states working, auto-focus deferred

@@ -6,7 +6,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
-import { Canvas3D } from '../features/canvas'
+import { Canvas3D, EmptyState, CodebaseStatusIndicator, ErrorNotification, SuccessNotification } from '../features/canvas'
 import { MiniMap } from '../features/minimap'
 import { Navigation } from '../features/navigation'
 import { ViewpointPanel } from '../features/viewpoints'
@@ -23,6 +23,9 @@ export function WorkspacePage() {
   const [graphData, setGraphData] = useState<Graph | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [processingStatus, setProcessingStatus] = useState<'pending' | 'processing' | 'completed' | 'failed' | null>(null)
+  const [importError, setImportError] = useState<string | null>(null)
+  const [showSuccess, setShowSuccess] = useState(false)
 
   // Panel states
   const [leftPanelOpen, setLeftPanelOpen] = useState(false)
@@ -66,16 +69,37 @@ export function WorkspacePage() {
         // Fetch the graph data for this repository
         const graphResponse = await graph.getFullGraph(completedCodebase.repositoryId)
         setGraphData(graphResponse)
+        setProcessingStatus('completed')
+        setImportError(null)
+        // Show success notification
+        setShowSuccess(true)
       } else {
-        // TEMP FIX (Story 5.5-9): If no completed codebase yet, poll for updates
-        // This handles the race condition where import is still processing
-        const hasPendingCodebase = codebasesList.codebases?.some(
-          (cb: any) => cb.status === 'pending' || cb.status === 'processing'
+        // Check for failed codebases
+        const failedCodebase = codebasesList.codebases?.find(
+          (cb: any) => cb.status === 'failed'
         )
 
-        if (hasPendingCodebase) {
-          // Poll again in 2 seconds to check for completion
-          setTimeout(() => loadGraphData(workspaceId), 2000)
+        if (failedCodebase) {
+          setProcessingStatus('failed')
+          setImportError(failedCodebase.error || 'Failed to import codebase')
+        } else {
+          // TEMP FIX (Story 5.5-9): If no completed codebase yet, poll for updates
+          // This handles the race condition where import is still processing
+          const processingCodebase = codebasesList.codebases?.find(
+            (cb: any) => cb.status === 'pending' || cb.status === 'processing'
+          )
+
+          if (processingCodebase) {
+            // Update status indicator
+            setProcessingStatus(processingCodebase.status)
+            setImportError(null)
+            // Poll again in 2 seconds to check for completion
+            setTimeout(() => loadGraphData(workspaceId), 2000)
+          } else {
+            // No codebases at all
+            setProcessingStatus(null)
+            setImportError(null)
+          }
         }
       }
     } catch (err) {
@@ -160,8 +184,34 @@ export function WorkspacePage() {
 
       {/* Main Content */}
       <div className="flex-1 relative overflow-hidden">
-        {/* 3D Canvas */}
-        <Canvas3D graph={graphData || undefined} />
+        {/* 3D Canvas or Empty State */}
+        {graphData ? (
+          <Canvas3D graph={graphData} />
+        ) : (
+          <EmptyState onImportClick={() => setLeftPanelOpen(true)} />
+        )}
+
+        {/* Processing Status Indicator */}
+        {processingStatus && processingStatus !== 'completed' && processingStatus !== 'failed' && (
+          <CodebaseStatusIndicator status={processingStatus} />
+        )}
+
+        {/* Error Notification */}
+        {importError && (
+          <ErrorNotification
+            message={importError}
+            onRetry={() => loadWorkspace(workspace?.id || '')}
+            onDismiss={() => setImportError(null)}
+          />
+        )}
+
+        {/* Success Notification */}
+        {showSuccess && graphData && (
+          <SuccessNotification
+            message={`Graph loaded with ${graphData.nodes?.length || 0} nodes`}
+            onDismiss={() => setShowSuccess(false)}
+          />
+        )}
 
         {/* Left Side Panel */}
         <div

@@ -5,6 +5,7 @@ import { extractFunctionCalls } from './call-extractor'
 import { extractInheritance } from './inheritance-extractor'
 import { DependencyGraph, type DependencyNode, type DependencyEdge } from './dependency-graph'
 import type { Language } from '../parser/parser-factory'
+import { logger } from '../logger'
 import path from 'path'
 
 /**
@@ -24,6 +25,8 @@ export interface GraphBuildInput {
  * @returns Dependency graph
  */
 export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph {
+  logger.debug('Building dependency graph', { fileCount: files.length });
+
   const graph = new DependencyGraph()
 
   // Map to store file path to file node ID
@@ -173,6 +176,11 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
       }
     }
   }
+
+  logger.debug('Dependency graph built', {
+    nodeCount: graph.getNodes().length,
+    edgeCount: graph.getEdges().length
+  });
 
   return graph
 }

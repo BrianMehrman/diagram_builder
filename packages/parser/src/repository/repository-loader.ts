@@ -2,6 +2,7 @@ import { scanDirectory, type ScanOptions } from './directory-scanner'
 import { cloneRepository, type CloneOptions } from './git-cloner'
 import fs from 'fs/promises'
 import path from 'path'
+import { logOperation } from '../logger'
 
 /**
  * Repository configuration for loading
@@ -60,16 +61,33 @@ export async function loadRepository(
   source: string | RepositoryConfig,
   options?: ScanOptions
 ): Promise<RepositoryContext> {
-  // Normalize source to config
-  const config = typeof source === 'string' ? parseSource(source) : source
+  const startTime = Date.now()
+  const op = logOperation('loadRepository', { source: typeof source === 'string' ? source : source.path || source.url, options })
 
-  // Determine if this is a local path or Git repository
-  if (config.url) {
-    return await loadGitRepository(config, options)
-  } else if (config.path) {
-    return await loadLocalDirectory(config.path, config, options)
-  } else {
-    throw new Error('Repository source must specify either path or url')
+  try {
+    // Normalize source to config
+    const config = typeof source === 'string' ? parseSource(source) : source
+
+    // Determine if this is a local path or Git repository
+    let result: RepositoryContext
+    if (config.url) {
+      result = await loadGitRepository(config, options)
+    } else if (config.path) {
+      result = await loadLocalDirectory(config.path, config, options)
+    } else {
+      throw new Error('Repository source must specify either path or url')
+    }
+
+    op.timing(startTime, {
+      fileCount: result.files.length,
+      type: result.metadata.type,
+      path: result.path
+    })
+
+    return result
+  } catch (error) {
+    op.fail(error as Error, { source: typeof source === 'string' ? source : source.path || source.url })
+    throw error
   }
 }
 

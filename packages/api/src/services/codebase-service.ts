@@ -16,6 +16,7 @@ import { loadRepository, buildDependencyGraph, convertToIVM, type RepositoryConf
 import { readFile } from 'fs/promises';
 import * as cache from '../cache/cache-utils';
 import { buildCacheKey } from '../cache/cache-keys';
+import { logger } from '../logger';
 import type {
   Codebase,
   CreateCodebaseInput,
@@ -30,6 +31,8 @@ export async function importCodebase(
   userId: string,
   input: CreateCodebaseInput
 ): Promise<Codebase> {
+  logger.info('Importing codebase', { workspaceId, userId, source: input.source, type: input.type });
+
   const codebaseId = uuidv4();
   const now = new Date().toISOString();
 
@@ -94,6 +97,9 @@ async function triggerParserImport(
   codebaseId: string,
   input: CreateCodebaseInput
 ): Promise<void> {
+  const startTime = Date.now();
+  logger.info('Starting parser import', { codebaseId, source: input.source, type: input.type });
+
   try {
     // Update status to processing
     await updateCodebaseStatus(codebaseId, { status: 'processing' });
@@ -112,6 +118,12 @@ async function triggerParserImport(
 
     // Load repository (clone if Git, scan if local)
     const repoContext = await loadRepository(repoConfig);
+    logger.info('Repository loaded', {
+      codebaseId,
+      fileCount: repoContext.files.length,
+      type: repoContext.metadata.type,
+      path: repoContext.path
+    });
 
     // Read file contents
     const fileInputs = await Promise.all(
@@ -120,20 +132,25 @@ async function triggerParserImport(
         content: await readFile(filePath, 'utf-8'),
       }))
     );
+    logger.debug('File contents read', { codebaseId, fileCount: fileInputs.length });
 
     // Build dependency graph
     const depGraph = buildDependencyGraph(fileInputs);
+    logger.info('Dependency graph built', {
+      codebaseId,
+      nodeCount: depGraph.getNodes().length,
+      edgeCount: depGraph.getEdges().length
+    });
 
     // Convert to IVM
     const ivm = convertToIVM(depGraph, repoContext, {
       name: input.source.split('/').pop() || 'repository',
     });
-
-    // Debug: Log IVM structure
-    console.log(`[Import Debug] IVM for ${input.source}:`);
-    console.log(`  Files parsed: ${fileInputs.length}`);
-    console.log(`  IVM nodes: ${ivm.nodes.length}`);
-    console.log(`  IVM edges: ${ivm.edges.length}`);
+    logger.info('IVM created', {
+      codebaseId,
+      ivmNodes: ivm.nodes.length,
+      ivmEdges: ivm.edges.length
+    });
 
     // Create Repository node in Neo4j
     const repositoryId = uuidv4();
@@ -244,6 +261,7 @@ async function triggerParserImport(
         repositoryId,
       }
     );
+    logger.info('Graph stored in Neo4j', { codebaseId, repositoryId });
 
     // Update codebase status to completed
     await updateCodebaseStatus(codebaseId, {
@@ -251,13 +269,30 @@ async function triggerParserImport(
       repositoryId,
     });
 
+    const duration = Date.now() - startTime;
+    logger.info('Parser import completed', {
+      codebaseId,
+      repositoryId,
+      duration: `${duration}ms`,
+      fileCount: repoContext.files.length,
+      nodeCount: ivm.nodes.length,
+      edgeCount: ivm.edges.length
+    });
+
     // Cleanup cloned repository if needed
     if (repoContext.cleanup) {
       await repoContext.cleanup();
+      logger.debug('Cleaned up temporary files', { codebaseId });
     }
   } catch (error) {
     // Update status to failed with error message
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Parser import failed', {
+      codebaseId,
+      error: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined
+    });
+
     await updateCodebaseStatus(codebaseId, {
       status: 'failed',
       error: errorMessage,
