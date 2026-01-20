@@ -22,7 +22,7 @@ export interface GraphNode {
   label: string;
   metadata: Record<string, unknown>;
   position?: Position3D;
-  lodLevel: number;
+  lod: number; // Changed from lodLevel to match IVM format
 }
 
 /**
@@ -60,7 +60,7 @@ export interface Viewpoint {
   cameraPosition: Position3D;
   cameraTarget: Position3D;
   filters?: {
-    lodLevel?: number;
+    lod?: number; // Changed from lodLevel to match IVM format
     nodeTypes?: string[];
     edgeTypes?: string[];
   };

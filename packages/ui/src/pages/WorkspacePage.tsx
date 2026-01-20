@@ -4,7 +4,7 @@
  * 3D visualization canvas for a workspace
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'react-router'
 import { Canvas3D, EmptyState, CodebaseStatusIndicator, ErrorNotification, SuccessNotification } from '../features/canvas'
 import { MiniMap } from '../features/minimap'
@@ -15,7 +15,7 @@ import { ExportButton } from '../features/export'
 import { SessionControl, UserPresence } from '../features/collaboration'
 import { HUD } from '../features/navigation/HUD'
 import { workspaces, codebases, graph } from '../shared/api/endpoints'
-import type { Workspace, Graph, GraphNode } from '../shared/types'
+import type { Workspace, Graph } from '../shared/types'
 
 export function WorkspacePage() {
   const { id } = useParams<{ id: string }>()
@@ -33,11 +33,61 @@ export function WorkspacePage() {
   const [miniMapCollapsed, setMiniMapCollapsed] = useState(false)
   const [hudCollapsed, setHudCollapsed] = useState(false)
 
+  // Track if we've loaded graph data for completed status
+  const loadedForCompletedRef = useRef(false)
+
+  // Debug: Log graphData changes
   useEffect(() => {
+    console.log('[WorkspacePage] graphData state changed:', {
+      hasData: !!graphData,
+      nodeCount: graphData?.nodes?.length || 0,
+      actualNodes: graphData?.nodes || 'undefined',
+      graphDataKeys: graphData ? Object.keys(graphData) : 'null'
+    })
+  }, [graphData])
+
+  useEffect(() => {
+    console.log('[WorkspacePage] Mount effect - workspace ID:', id)
     if (id) {
       loadWorkspace(id)
     }
   }, [id])
+
+  // Polling effect: automatically refresh when processing
+  useEffect(() => {
+    if (!id) return
+
+    // If status just became 'completed' and we haven't loaded yet, load graph data
+    if (processingStatus === 'completed' && !loadedForCompletedRef.current) {
+      console.log('[WorkspacePage] Status completed, loading graph data...')
+      loadedForCompletedRef.current = true
+      loadGraphData(id)
+      return
+    }
+
+    // Reset the ref if status goes back to pending/processing
+    if (processingStatus && processingStatus !== 'completed' && processingStatus !== 'failed') {
+      loadedForCompletedRef.current = false
+    }
+
+    // Stop polling if status is null, completed, or failed
+    if (!processingStatus || processingStatus === 'completed' || processingStatus === 'failed') {
+      return
+    }
+
+    // Poll every 2 seconds while processing
+    console.log('[WorkspacePage] Starting poll interval for status:', processingStatus)
+    const pollInterval = setInterval(() => {
+      console.log('[WorkspacePage] Polling for codebase status...')
+      loadGraphData(id)
+    }, 2000)
+
+    return () => {
+      console.log('[WorkspacePage] Clearing poll interval')
+      clearInterval(pollInterval)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, processingStatus]) // Intentionally excluding loadGraphData to prevent loops
 
   const loadWorkspace = async (workspaceId: string) => {
     try {
@@ -55,24 +105,44 @@ export function WorkspacePage() {
     }
   }
 
-  const loadGraphData = async (workspaceId: string) => {
+  const loadGraphData = useCallback(async (workspaceId: string) => {
+    console.log('[WorkspacePage] ========== loadGraphData called ==========')
+    console.log('[WorkspacePage] Workspace ID:', workspaceId)
     try {
       // Get codebases for this workspace
+      console.log('[WorkspacePage] Fetching codebases list...')
       const codebasesList = await codebases.list(workspaceId)
+      console.log('[WorkspacePage] Codebases response:', { count: codebasesList.codebases?.length || 0 })
 
       // Find the first completed codebase with a repository
       const completedCodebase = codebasesList.codebases?.find(
         (cb: any) => cb.status === 'completed' && cb.repositoryId
       )
+      console.log('[WorkspacePage] Completed codebase found:', !!completedCodebase)
+      if (completedCodebase) {
+        console.log('[WorkspacePage] Codebase details:', {
+          id: completedCodebase.codebaseId,
+          repositoryId: completedCodebase.repositoryId,
+          source: completedCodebase.source
+        })
+      }
 
       if (completedCodebase?.repositoryId) {
         // Fetch the graph data for this repository
+        console.log('[WorkspacePage] Loading graph for repository:', completedCodebase.repositoryId)
         const graphResponse = await graph.getFullGraph(completedCodebase.repositoryId)
+        console.log('[WorkspacePage] Graph loaded:', {
+          nodes: graphResponse.nodes?.length || 0,
+          edges: graphResponse.edges?.length || 0
+        })
+        console.log('[WorkspacePage] Calling setGraphData with:', graphResponse ? 'valid data' : 'null')
         setGraphData(graphResponse)
+        console.log('[WorkspacePage] setGraphData called')
         setProcessingStatus('completed')
         setImportError(null)
         // Show success notification
         setShowSuccess(true)
+        console.log('[WorkspacePage] All state updates queued')
       } else {
         // Check for failed codebases
         const failedCodebase = codebasesList.codebases?.find(
@@ -83,22 +153,21 @@ export function WorkspacePage() {
           setProcessingStatus('failed')
           setImportError(failedCodebase.error || 'Failed to import codebase')
         } else {
-          // TEMP FIX (Story 5.5-9): If no completed codebase yet, poll for updates
-          // This handles the race condition where import is still processing
+          // Check if there's a processing codebase
           const processingCodebase = codebasesList.codebases?.find(
             (cb: any) => cb.status === 'pending' || cb.status === 'processing'
           )
 
           if (processingCodebase) {
-            // Update status indicator
+            // Update status indicator - polling will happen via useEffect
             setProcessingStatus(processingCodebase.status)
             setImportError(null)
-            // Poll again in 2 seconds to check for completion
-            setTimeout(() => loadGraphData(workspaceId), 2000)
+            console.log('[WorkspacePage] Codebase processing, status:', processingCodebase.status)
           } else {
             // No codebases at all
             setProcessingStatus(null)
             setImportError(null)
+            console.log('[WorkspacePage] No codebases found')
           }
         }
       }
@@ -106,7 +175,7 @@ export function WorkspacePage() {
       console.error('Failed to load graph data:', err)
       // Don't set error state - just log it (workspace can load without graph)
     }
-  }
+  }, []) // Empty dependencies - function is stable
 
   if (loading) {
     return (

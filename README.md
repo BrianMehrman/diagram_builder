@@ -83,6 +83,54 @@ Once the services are running:
 
 > **Note**: In production, authentication will be required for all endpoints.
 
+## 3D Canvas Navigation
+
+The 3D visualization canvas supports two navigation modes that you can toggle between:
+
+### Control Modes
+
+Press **'C'** to toggle between control modes. The current mode is displayed in the HUD (heads-up display) in the top-left corner.
+
+#### Orbit Mode (Default) 🔄
+
+Best for examining specific areas of the graph from different angles.
+
+- **Left Click + Drag**: Rotate camera around the center point
+- **Right Click + Drag**: Pan (move sideways/up/down)
+- **Scroll Wheel**: Zoom in/out
+- **Zoom Range**: 0.1 to 5000 units
+
+#### Fly Mode ✈️
+
+Best for navigating through the graph like a flight simulator.
+
+- **W**: Move forward
+- **S**: Move backward
+- **A**: Strafe left
+- **D**: Strafe right
+- **R**: Move up
+- **F**: Move down
+- **Mouse**: Look around
+- **Movement Speed**: 10 units/second
+
+### HUD (Heads-Up Display)
+
+The HUD shows real-time information:
+- **FPS**: Frame rate
+- **Camera**: Current camera position (x, y, z)
+- **Target**: Camera target point (orbit mode)
+- **LOD**: Level of detail (affects visible node count)
+- **Controls**: Current control mode (Orbit 🔄 or Fly ✈️)
+- **Nodes**: Visible nodes / Total nodes
+- **Selected Node**: Details of selected node (if any)
+
+### Tips
+
+- **Auto-Fit**: When a graph loads, the camera automatically positions itself to show all nodes
+- **Toggle Controls**: Press 'C' anytime to switch between orbit and fly modes
+- **Large Graphs**: Use fly mode to navigate through dense node clusters
+- **Detailed Inspection**: Switch to orbit mode to rotate around specific nodes
+
 ## Project Structure
 
 ```

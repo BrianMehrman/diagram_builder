@@ -17,6 +17,11 @@ export interface CameraState {
 }
 
 /**
+ * Control mode
+ */
+export type ControlMode = 'orbit' | 'fly';
+
+/**
  * Canvas store state
  */
 interface CanvasState {
@@ -26,6 +31,11 @@ interface CanvasState {
   setCameraPosition: (position: Position3D) => void;
   setCameraTarget: (target: Position3D) => void;
   setZoom: (zoom: number) => void;
+
+  // Control mode
+  controlMode: ControlMode;
+  setControlMode: (mode: ControlMode) => void;
+  toggleControlMode: () => void;
 
   // Selection state
   selectedNodeId: string | null;
@@ -80,6 +90,14 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       camera: { ...state.camera, zoom },
     })),
 
+  // Control mode
+  controlMode: 'orbit',
+  setControlMode: (mode) => set({ controlMode: mode }),
+  toggleControlMode: () =>
+    set((state) => ({
+      controlMode: state.controlMode === 'orbit' ? 'fly' : 'orbit',
+    })),
+
   // Selection state
   selectedNodeId: null,
   selectNode: (nodeId) => set({ selectedNodeId: nodeId }),
@@ -88,16 +106,17 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   hoveredNodeId: null,
   setHoveredNode: (nodeId) => set({ hoveredNodeId: nodeId }),
 
-  // LOD level
-  lodLevel: 2,
+  // LOD level (default to 4 to show most detail by default)
+  lodLevel: 4,
   setLodLevel: (level) => set({ lodLevel: level }),
 
   // Reset
   reset: () =>
     set({
       camera: DEFAULT_CAMERA,
+      controlMode: 'orbit',
       selectedNodeId: null,
       hoveredNodeId: null,
-      lodLevel: 2,
+      lodLevel: 4,
     }),
 }));

@@ -22,7 +22,7 @@ export function GraphRenderer({ graph }: GraphRendererProps) {
 
   // Filter nodes by LOD level
   const visibleNodes = useMemo(() => {
-    return graph.nodes.filter((node) => node.lodLevel <= lodLevel);
+    return graph.nodes.filter((node) => node.lod <= lodLevel);
   }, [graph.nodes, lodLevel]);
 
   // Filter edges - only show edges where both nodes are visible

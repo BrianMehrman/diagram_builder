@@ -18,7 +18,7 @@ export const sampleGraph: Graph = {
       label: 'app.ts',
       metadata: { path: 'src/app.ts', loc: 150 },
       position: { x: 0, y: 0, z: 0 },
-      lodLevel: 0,
+      lod: 0,
     },
     {
       id: 'file-2',
@@ -26,7 +26,7 @@ export const sampleGraph: Graph = {
       label: 'utils.ts',
       metadata: { path: 'src/utils.ts', loc: 80 },
       position: { x: 5, y: 0, z: 0 },
-      lodLevel: 0,
+      lod: 0,
     },
     {
       id: 'file-3',
@@ -34,7 +34,7 @@ export const sampleGraph: Graph = {
       label: 'types.ts',
       metadata: { path: 'src/types.ts', loc: 50 },
       position: { x: -5, y: 0, z: 0 },
-      lodLevel: 0,
+      lod: 0,
     },
 
     // Class nodes (LOD 1)
@@ -44,7 +44,7 @@ export const sampleGraph: Graph = {
       label: 'Application',
       metadata: { methods: 5, properties: 3 },
       position: { x: 0, y: 1.5, z: 0 },
-      lodLevel: 1,
+      lod: 1,
     },
     {
       id: 'class-2',
@@ -52,7 +52,7 @@ export const sampleGraph: Graph = {
       label: 'Logger',
       metadata: { methods: 3, properties: 1 },
       position: { x: 5, y: 1.5, z: 0 },
-      lodLevel: 1,
+      lod: 1,
     },
 
     // Function nodes (LOD 2)
@@ -62,7 +62,7 @@ export const sampleGraph: Graph = {
       label: 'initialize',
       metadata: { params: 2, returns: 'Promise<void>' },
       position: { x: -2, y: 1.5, z: 2 },
-      lodLevel: 2,
+      lod: 2,
     },
     {
       id: 'func-2',
@@ -70,7 +70,7 @@ export const sampleGraph: Graph = {
       label: 'parseConfig',
       metadata: { params: 1, returns: 'Config' },
       position: { x: 2, y: 1.5, z: 2 },
-      lodLevel: 2,
+      lod: 2,
     },
 
     // Method nodes (LOD 3)
@@ -80,7 +80,7 @@ export const sampleGraph: Graph = {
       label: 'start',
       metadata: { class: 'Application' },
       position: { x: -1, y: 3, z: 0 },
-      lodLevel: 3,
+      lod: 3,
     },
     {
       id: 'method-2',
@@ -88,7 +88,7 @@ export const sampleGraph: Graph = {
       label: 'stop',
       metadata: { class: 'Application' },
       position: { x: 1, y: 3, z: 0 },
-      lodLevel: 3,
+      lod: 3,
     },
     {
       id: 'method-3',
@@ -96,7 +96,7 @@ export const sampleGraph: Graph = {
       label: 'log',
       metadata: { class: 'Logger' },
       position: { x: 5, y: 3, z: 0 },
-      lodLevel: 3,
+      lod: 3,
     },
 
     // Variable nodes (LOD 4)
@@ -106,7 +106,7 @@ export const sampleGraph: Graph = {
       label: 'config',
       metadata: { type: 'Config' },
       position: { x: 0, y: 4, z: 0 },
-      lodLevel: 4,
+      lod: 4,
     },
   ],
   edges: [

@@ -76,27 +76,27 @@ This story supersedes and completes Story 5.5-9 (codebase-import-validation).
 ## Tasks/Subtasks
 
 ### Task 1: Audit existing test coverage
-- [ ] Review all test files in packages/parser
-- [ ] Review all test files in packages/api
-- [ ] Review E2E tests in tests/e2e
-- [ ] Identify mocked vs real file system tests
-- [ ] Document gaps in integration coverage
+- [x] Review all test files in packages/parser
+- [x] Review all test files in packages/api
+- [x] Review E2E tests in tests/e2e
+- [x] Identify mocked vs real file system tests
+- [x] Document gaps in integration coverage
 
 ### Task 2: Create test fixture repositories
-- [ ] Create small-js-repo (5-10 .js files)
-- [ ] Create small-ts-repo (5-10 .ts files)
-- [ ] Create multi-language-repo (mix of languages)
-- [ ] Create empty-repo (0 code files)
+- [x] Create small-js-repo (5-10 .js files)
+- [x] Create small-ts-repo (5-10 .ts files)
+- [x] Create multi-language-repo (mix of languages)
+- [x] Create empty-repo (0 code files)
 - [ ] Create large-repo (100+ files - optional for performance testing)
-- [ ] Store in tests/fixtures/repositories/
+- [x] Store in tests/fixtures/repositories/
 
 ### Task 3: Write parser integration tests
-- [ ] Test loadRepository() with real directories
-- [ ] Test file discovery finds expected file count
-- [ ] Test buildDependencyGraph() with real files
-- [ ] Test convertToIVM() produces valid coordinates
-- [ ] Assert file count matches actual files in fixture
-- [ ] No mocking of file system operations
+- [x] Test loadRepository() with real directories
+- [x] Test file discovery finds expected file count
+- [x] Test buildDependencyGraph() with real files
+- [x] Test convertToIVM() produces valid coordinates
+- [x] Assert file count matches actual files in fixture
+- [x] No mocking of file system operations
 
 ### Task 4: Write API integration tests
 - [ ] Test POST /api/workspaces/:id/codebases with real repo

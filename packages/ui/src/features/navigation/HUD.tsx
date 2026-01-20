@@ -17,7 +17,7 @@ interface HUDProps {
  * Calculate visible node count based on LOD level
  */
 function getVisibleNodeCount(nodes: GraphNode[], lodLevel: number): number {
-  return nodes.filter((node) => node.lodLevel <= lodLevel).length
+  return nodes.filter((node) => node.lod <= lodLevel).length
 }
 
 /**
@@ -27,6 +27,7 @@ export function HUD({ nodes = [], className = '' }: HUDProps) {
   const camera = useCanvasStore((state) => state.camera)
   const selectedNodeId = useCanvasStore((state) => state.selectedNodeId)
   const lodLevel = useCanvasStore((state) => state.lodLevel)
+  const controlMode = useCanvasStore((state) => state.controlMode)
   const [fps, setFps] = useState(0)
 
   // FPS counter
@@ -87,6 +88,19 @@ export function HUD({ nodes = [], className = '' }: HUDProps) {
       <div className="flex justify-between gap-4">
         <span className="text-gray-400">LOD:</span>
         <span className="font-semibold">Level {lodLevel}</span>
+      </div>
+
+      {/* Control Mode */}
+      <div className="flex justify-between gap-4">
+        <span className="text-gray-400">Controls:</span>
+        <span className={`font-semibold capitalize ${controlMode === 'fly' ? 'text-green-400' : 'text-blue-400'}`}>
+          {controlMode} {controlMode === 'fly' ? '✈️' : '🔄'}
+        </span>
+      </div>
+
+      {/* Keyboard Hint */}
+      <div className="text-gray-500 text-[10px] italic">
+        Press 'C' to toggle
       </div>
 
       {/* Node Counts */}

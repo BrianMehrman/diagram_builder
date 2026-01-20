@@ -7,14 +7,15 @@
 import winston from 'winston'
 
 // Determine log level from environment
-const LOG_LEVEL = process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug')
+const LOG_LEVEL =
+  process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug')
 
 // Create logger instance
 export const logger = winston.createLogger({
   level: LOG_LEVEL,
   format: winston.format.combine(
     winston.format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss'
+      format: 'YYYY-MM-DD HH:mm:ss',
     }),
     winston.format.errors({ stack: true }),
     winston.format.splat(),
@@ -22,6 +23,10 @@ export const logger = winston.createLogger({
   ),
   defaultMeta: { service: 'api' },
   transports: [
+    // dev logs
+    new winston.transports.File({
+      filename: 'logs/development.log',
+    }),
     // Console transport for development
     new winston.transports.Console({
       format: winston.format.combine(
@@ -30,20 +35,37 @@ export const logger = winston.createLogger({
           const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : ''
           return `${timestamp} [${service}] ${level}: ${message}${metaStr}`
         })
-      )
-    })
-  ]
+      ),
+    }),
+  ],
 })
 
 // Add file transport in production
 if (process.env.NODE_ENV === 'production') {
-  logger.add(new winston.transports.File({
-    filename: 'logs/api-error.log',
-    level: 'error'
-  }))
-  logger.add(new winston.transports.File({
-    filename: 'logs/api-combined.log'
-  }))
+  logger.add(
+    new winston.transports.File({
+      filename: 'logs/api-error.log',
+      level: 'error',
+    })
+  )
+  logger.add(
+    new winston.transports.File({
+      filename: 'logs/api-combined.log',
+    })
+  )
+  // } else {
+  //   logger.add(
+  //     new winston.transports.File({
+  //       filename: 'logs/development.log',
+  //     })
+  //   )
+}
+
+// writing file
+logger.stream = {
+  write: (message: string) => {
+    logger.info(message)
+  },
 }
 
 // Helper function for HTTP request logging
@@ -64,6 +86,6 @@ export const logDbOperation = (operation: string, data?: Record<string, any>) =>
       } else {
         logger.error(`[DB FAIL] ${operation}`, { error })
       }
-    }
+    },
   }
 }

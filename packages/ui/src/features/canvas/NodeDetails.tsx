@@ -105,7 +105,7 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
             LOD Level
           </div>
           <div className="text-sm text-gray-900 mt-1">
-            {selectedNode.lodLevel}
+            {selectedNode.lod}
           </div>
         </div>
 
