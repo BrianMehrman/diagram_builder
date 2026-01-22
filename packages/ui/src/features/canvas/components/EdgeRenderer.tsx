@@ -5,7 +5,7 @@
  */
 
 import { useMemo } from 'react';
-import { BufferGeometry, Vector3 } from 'three';
+import { Vector3 } from 'three';
 import type { GraphEdge, GraphNode } from '../../../shared/types';
 
 interface EdgeRendererProps {
@@ -65,24 +65,18 @@ export function EdgeRenderer({ edge, nodes }: EdgeRendererProps) {
   }
 
   const color = getEdgeColor(edge.type);
-  const geometry = new BufferGeometry().setFromPoints(points);
 
   return (
-    <primitive object={new LineSegments(geometry)}>
-      <lineBasicMaterial
-        color={color}
-        transparent
-        opacity={0.7}
-      />
-    </primitive>
+    <line>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={points.length}
+          array={new Float32Array(points.flatMap((p) => [p.x, p.y, p.z]))}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <lineBasicMaterial color={color} transparent opacity={0.7} />
+    </line>
   );
-}
-
-// Simple line segments helper
-import { LineSegments as ThreeLineSegments } from 'three';
-
-class LineSegments extends ThreeLineSegments {
-  constructor(geometry: BufferGeometry) {
-    super(geometry);
-  }
 }
