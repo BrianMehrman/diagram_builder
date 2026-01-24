@@ -26,9 +26,30 @@ export function MiniMap({ nodes = [], className = '' }: MiniMapProps) {
   const selectedNodeId = useCanvasStore((state) => state.selectedNodeId)
   const selectNode = useCanvasStore((state) => state.selectNode)
   const camera = useCanvasStore((state) => state.camera)
+  const setCamera = useCanvasStore((state) => state.setCamera)
+  const setCameraTarget = useCanvasStore((state) => state.setCameraTarget)
 
   const handleNodeClick = (nodeId: string) => {
+    // Select the node
     selectNode(nodeId)
+
+    // Find the node to get its position
+    const node = nodes.find((n) => n.id === nodeId)
+    if (node?.position) {
+      // Set camera target to the node position
+      setCameraTarget(node.position)
+
+      // Position camera in front of and above the node
+      const offset = 10 // Distance from node
+      setCamera({
+        position: {
+          x: node.position.x + offset * 0.5,
+          y: node.position.y + offset * 0.5,
+          z: node.position.z + offset,
+        },
+        target: node.position,
+      })
+    }
   }
 
   return (
@@ -75,6 +96,7 @@ export function MiniMap({ nodes = [], className = '' }: MiniMapProps) {
             nodes={nodes}
             selectedNodeId={selectedNodeId}
             cameraPosition={camera.position}
+            onNodeClick={handleNodeClick}
           />
         )}
       </div>

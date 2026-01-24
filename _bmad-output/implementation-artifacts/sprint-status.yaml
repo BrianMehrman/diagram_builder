@@ -4,7 +4,7 @@
 
 project_name: diagram_builder
 sprint_start: "2025-12-29"
-current_phase: "Phase 5.5: Foundation Cleanup COMPLETE (10/10 stories done) | Epic 6: Parser & Integration ready"
+current_phase: "Epic 6: 4/6 done, 2 ready-for-dev (Config & Codebase UI) | Epic 7: Planned - 8 UX stories (Search-First Command Center)"
 
 # Epic and Story Status Tracking
 development_status:
@@ -70,11 +70,23 @@ development_status:
   epic-6: in-progress
   epic-6-retrospective: optional
   6-1-fix-parser-file-discovery: done  # Completed via Story 5.5-10 - parser works correctly for JS/TS repos
-  6-2-add-observability-infrastructure: review  # MVP logging implemented - Winston, parser/API instrumentation, advanced features deferred
-  6-3-implement-user-feedback-loading-states: review  # Empty state, parsing indicators, success/error notifications - auto-focus deferred
-  6-4-end-to-end-integration-testing: in-progress  # Integration tests with real file systems, validate full upload → render flow (addresses 5.5-9)
-  6-5-configuration-security: backlog  # File storage management, repo size limits, secret scanning, environment config
-  6-6-codebase-management-ui: backlog  # View codebase list with status, delete codebases, retry failed imports
+  6-2-add-observability-infrastructure: done  # MVP logging implemented - Winston, parser/API instrumentation, advanced features deferred
+  6-3-implement-user-feedback-loading-states: done  # Empty state, parsing indicators, success/error notifications - auto-focus deferred
+  6-4-end-to-end-integration-testing: done  # API integration tests (10), E2E pipeline tests (3), graph quality assertions, failure mode tests (21) - 54 total tests
+  6-5-configuration-security: review  # File storage management, repo size limits, secret scanning, environment config - COMPLETE (2026-01-24)
+  6-6-codebase-management-ui: ready-for-dev  # View codebase list with status, delete codebases, retry failed imports
+
+  # Epic 7: "Search-First Command Center" UX Implementation
+  epic-7: not-started
+  epic-7-retrospective: optional
+  7-1-implement-searchbar-modal-autocomplete: not-started  # SearchBar with ⌘K, fuzzy autocomplete, camera flight
+  7-2-enhance-empty-states-loading-indicators: not-started  # Empty states, progress bars, toast notifications
+  7-3-implement-camera-flight-animations: not-started  # Smooth camera flight with arrival feedback
+  7-4-add-keyboard-navigation-shortcuts: not-started  # Global keyboard shortcuts (⌘K, ESC, Home, C)
+  7-5-enhance-minimap-click-to-jump: not-started  # MiniMap click-to-jump, FOV indicator
+  7-6-implement-side-panels-workspace-switcher: not-started  # Left/right side panels with workspace switcher
+  7-7-enhance-hud-real-time-stats: not-started  # HUD with Nodes, Files, FPS, Mode stats
+  7-8-wcag-aa-compliance-accessibility: not-started  # WCAG AA compliance (keyboard, ARIA, reduced motion)
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun
@@ -195,3 +207,25 @@ epics:
 #   - Original Epic 6 "CLI Package" postponed - core feature must work first
 #   - Brainstorming revealed: integration layer exists and works, only parser file discovery broken
 #   - 6 stories defined to fix parser, add observability, improve UX, testing, security, and management UI
+
+  epic-7:
+    name: "\"Search-First Command Center\" UX Implementation"
+    description: "Transform the basic UI into the professional, data-rich experience defined in UX Design Specification: SearchBar with autocomplete, camera flight animations, keyboard shortcuts, enhanced MiniMap/HUD, side panels, and WCAG AA accessibility compliance"
+    stories:
+      - 7-1-implement-searchbar-modal-autocomplete
+      - 7-2-enhance-empty-states-loading-indicators
+      - 7-3-implement-camera-flight-animations
+      - 7-4-add-keyboard-navigation-shortcuts
+      - 7-5-enhance-minimap-click-to-jump
+      - 7-6-implement-side-panels-workspace-switcher
+      - 7-7-enhance-hud-real-time-stats
+      - 7-8-wcag-aa-compliance-accessibility
+    dependencies:
+      - "Epic 6: Fix Parser & Complete Core Integration (4/6 stories complete)"
+      - "UX Design Specification (Complete - 2026-01-24)"
+    notes:
+      - "Based on UX Design Specification 'Search-First Command Center' design direction"
+      - "Component roadmap: Phase 1 (Core Journey), Phase 2 (Core Interaction), Phase 3 (Spatial Awareness), Phase 4 (Accessibility)"
+      - "Priority: Story 7-1 (SearchBar) is CRITICAL - defines core 'Search → Fly → Understand' user journey"
+      - "WCAG AA compliance required for enterprise customers (Section 508, ADA)"
+

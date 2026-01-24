@@ -39,6 +39,45 @@ cp .env.example .env
 # Edit .env with your configuration
 ```
 
+#### Environment Variables
+
+The application uses environment variables for configuration. Three example files are provided:
+
+- **`.env.example`** - Base template with all available variables
+- **`.env.development`** - Development-specific settings (verbose logging, relaxed limits)
+- **`.env.production`** - Production-specific settings (strict security, minimal logging)
+
+**Required Variables:**
+- `JWT_SECRET` - Must be at least 32 characters (use a strong random string in production)
+- `NEO4J_PASSWORD` - Password for Neo4j database
+
+**Optional Variables:**
+
+| Category | Variable | Default | Description |
+|----------|----------|---------|-------------|
+| **Server** | `PORT` | `4000` | API server port |
+| | `NODE_ENV` | `development` | Environment: development\|production\|test |
+| | `CORS_ORIGIN` | - | Allowed CORS origin (e.g., http://localhost:3000) |
+| **Database** | `NEO4J_URI` | `bolt://localhost:7687` | Neo4j connection URI |
+| | `NEO4J_USER` | `neo4j` | Neo4j username |
+| **Cache** | `REDIS_HOST` | `localhost` | Redis host |
+| | `REDIS_PORT` | `6379` | Redis port |
+| | `REDIS_PASSWORD` | - | Redis password (if required) |
+| **Parser** | `PARSER_TEMP_DIR` | `/tmp/diagram-builder` | Temp directory for cloned repos |
+| | `MAX_REPO_SIZE_MB` | `500` | Max repository size (DoS prevention) |
+| | `MAX_FILE_COUNT` | `10000` | Max files per repository |
+| | `MAX_FILE_SIZE_MB` | `10` | Max individual file size |
+| | `PARSE_TIMEOUT_MS` | `300000` | Parser timeout (5 minutes) |
+| **Security** | `ENABLE_SECRET_SCANNING` | `true` | Scan files for secrets (API keys, passwords) |
+| | `SECRET_ACTION` | `warn` | Action on secrets: warn\|redact\|fail |
+| | `RATE_LIMIT_ENABLED` | `true` | Enable API rate limiting |
+| | `RATE_LIMIT_MAX_REQUESTS` | `100` | Max requests per window |
+| | `RATE_LIMIT_WINDOW_MS` | `60000` | Rate limit window (1 minute) |
+| **Logging** | `LOG_LEVEL` | `info` | Log level: debug\|info\|warn\|error |
+
+**Port Configuration:**
+- See [PORT-CONFIGURATION.md](./PORT-CONFIGURATION.md) for standard port assignments
+
 ### 3. Start Services
 
 **Option A: Quick Start (Recommended)**

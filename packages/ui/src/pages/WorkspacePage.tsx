@@ -31,7 +31,6 @@ export function WorkspacePage() {
   const [leftPanelOpen, setLeftPanelOpen] = useState(false)
   const [rightPanelOpen, setRightPanelOpen] = useState(false)
   const [miniMapCollapsed, setMiniMapCollapsed] = useState(false)
-  const [hudCollapsed, setHudCollapsed] = useState(false)
 
   // Track if we've loaded graph data for completed status
   const loadedForCompletedRef = useRef(false)
@@ -389,39 +388,14 @@ export function WorkspacePage() {
           </div>
         </div>
 
-        {/* Collapsible HUD (Top Left) */}
+        {/* HUD (Top Left) */}
         <div className="absolute top-4 left-4 z-20">
-          <div className="bg-black/75 backdrop-blur-sm rounded-lg overflow-hidden">
-            <button
-              onClick={() => setHudCollapsed(!hudCollapsed)}
-              className="w-full px-3 py-2 flex items-center justify-between text-white hover:bg-white/10 transition-colors"
-            >
-              <span className="text-xs font-semibold">HUD</span>
-              <svg
-                className={`w-4 h-4 transition-transform ${hudCollapsed ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-            {!hudCollapsed && (
-              <div className="border-t border-gray-700">
-                <HUD nodes={graphData?.nodes || []} />
-              </div>
-            )}
-          </div>
+          <HUD nodes={graphData?.nodes || []} />
         </div>
 
-        {/* Navigation Panel (Top Center-Left) */}
-        <div className="absolute top-4 left-1/4 z-20 max-w-md">
-          <Navigation nodes={graphData?.nodes || []} />
+        {/* Navigation Panel (Top Center) */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 max-w-md">
+          <Navigation />
         </div>
 
         {/* Collapsible MiniMap (Bottom Right) */}

@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>diagram_builder - Design Direction Mockups</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #f9fafb;
+      overflow-x: hidden;
+    }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(26, 31, 46, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 20px 40px;
+      border-bottom: 1px solid #374151;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #3b82f6;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .nav-links a {
+      color: #d1d5db;
+      text-decoration: none;
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .nav-links a:hover {
+      background: #374151;
+      color: #f9fafb;
+    }
+
+    .nav-links a.active {
+      background: #3b82f6;
+      color: white;
+    }
+
+    /* Main Container */
+    .container {
+      margin-top: 80px;
+      padding: 40px;
+      max-width: 1600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .intro {
+      margin-bottom: 60px;
+      text-align: center;
+    }
+
+    .intro h2 {
+      font-size: 36px;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .intro p {
+      font-size: 16px;
+      color: #9ca3af;
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Design Direction Card */
+    .direction {
+      margin-bottom: 80px;
+      background: #1a1f2e;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #374151;
+      transition: all 0.3s;
+    }
+
+    .direction:hover {
+      border-color: #3b82f6;
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(59, 130, 246, 0.1);
+    }
+
+    .direction-header {
+      padding: 32px;
+      border-bottom: 1px solid #374151;
+    }
+
+    .direction-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .direction-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-technical { background: #1e40af; color: #93c5fd; }
+    .badge-minimal { background: #6b7280; color: #d1d5db; }
+    .badge-familiar { background: #065f46; color: #6ee7b7; }
+    .badge-creative { background: #7c2d12; color: #fdba74; }
+    .badge-modern { background: #581c87; color: #e9d5ff; }
+    .badge-friendly { background: #0c4a6e; color: #7dd3fc; }
+
+    .direction-meta {
+      display: flex;
+      gap: 32px;
+      margin-top: 16px;
+      color: #9ca3af;
+      font-size: 14px;
+    }
+
+    .direction-meta div {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .direction-meta strong {
+      color: #d1d5db;
+      margin-bottom: 4px;
+    }
+
+    /* Mockup */
+    .mockup {
+      position: relative;
+      background: #0f1419;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+    }
+
+    /* Shared UI Elements */
+    .canvas-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, #1a2332 0%, #0f1419 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .canvas-placeholder {
+      color: #374151;
+      font-size: 14px;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    /* Nodes simulation */
+    .nodes {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .node {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Direction 1: Command Center */
+    .dir1-hud {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: rgba(26, 31, 46, 0.95);
+      border: 1px solid #374151;
+      border-radius: 8px;
+      padding: 16px;
+      min-width: 200px;
+    }
+
+    .dir1-hud-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #9ca3af;
+      margin-bottom: 12px;
+    }
+
+    .dir1-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .dir1-stat {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+
+    .dir1-stat-label {
+      color: #9ca3af;
+    }
+
+    .dir1-stat-value {
+      color: #3b82f6;
+      font-weight: 600;
+    }
+
+    .dir1-search {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 500px;
+      background: rgba(26, 31, 46, 0.95);
+      border: 2px solid #3b82f6;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #f9fafb;
+    }
+
+    .dir1-minimap {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      width: 200px;
+      height: 150px;
+      background: rgba(26, 31, 46, 0.95);
+      border: 1px solid #374151;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    /* Direction 2: Minimal Canvas */
+    .dir2-search {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      background: rgba(15, 20, 25, 0.98);
+      border: 1px solid #374151;
+      border-radius: 12px;
+      padding: 20px 24px;
+      font-size: 16px;
+      color: #f9fafb;
+      text-align: center;
+    }
+
+    .dir2-hud-minimal {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .dir2-icon-btn {
+      width: 36px;
+      height: 36px;
+      background: rgba(26, 31, 46, 0.8);
+      border: 1px solid #374151;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    /* Direction 3: Developer Tools */
+    .dir3-sidebar-left {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100%;
+      background: #1e1e1e;
+      border-right: 1px solid #2d2d2d;
+      padding: 16px;
+    }
+
+    .dir3-sidebar-right {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 250px;
+      height: 100%;
+      background: #1e1e1e;
+      border-left: 1px solid #2d2d2d;
+      padding: 16px;
+    }
+
+    .dir3-tab {
+      padding: 8px 12px;
+      background: #252526;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 8px;
+      color: #cccccc;
+    }
+
+    .dir3-toolbar {
+      position: absolute;
+      top: 0;
+      left: 250px;
+      right: 250px;
+      height: 48px;
+      background: #2d2d30;
+      border-bottom: 1px solid #3e3e42;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 8px;
+    }
+
+    .dir3-tool-btn {
+      width: 32px;
+      height: 32px;
+      background: #3e3e42;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Direction 4: 3D Editor */
+    .dir4-toolbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: #37474f;
+      border-bottom: 1px solid #546e7a;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 16px;
+    }
+
+    .dir4-tool-group {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      background: #263238;
+      border-radius: 6px;
+    }
+
+    .dir4-tool {
+      width: 36px;
+      height: 36px;
+      background: #37474f;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #b0bec5;
+    }
+
+    .dir4-tool.active {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .dir4-outliner {
+      position: absolute;
+      top: 56px;
+      left: 0;
+      width: 240px;
+      bottom: 0;
+      background: #263238;
+      border-right: 1px solid #37474f;
+      padding: 12px;
+    }
+
+    .dir4-properties {
+      position: absolute;
+      top: 56px;
+      right: 0;
+      width: 280px;
+      bottom: 0;
+      background: #263238;
+      border-left: 1px solid #37474f;
+      padding: 12px;
+    }
+
+    /* Direction 5: Spatial Dashboard */
+    .dir5-widget {
+      position: absolute;
+      background: rgba(37, 43, 59, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .dir5-search {
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 500px;
+      padding: 20px;
+    }
+
+    .dir5-stats {
+      top: 20px;
+      left: 20px;
+      width: 200px;
+    }
+
+    .dir5-graph {
+      bottom: 20px;
+      left: 20px;
+      width: 250px;
+      height: 120px;
+    }
+
+    .dir5-minimap {
+      bottom: 20px;
+      right: 20px;
+      width: 200px;
+      height: 150px;
+    }
+
+    /* Direction 6: Google Maps Style */
+    .dir6-search-bar {
+      position: absolute;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      background: white;
+      border-radius: 8px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dir6-search-icon {
+      font-size: 20px;
+      color: #6b7280;
+    }
+
+    .dir6-search-input {
+      flex: 1;
+      font-size: 16px;
+      color: #1a1f2e;
+    }
+
+    .dir6-menu {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      width: 48px;
+      height: 48px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #1a1f2e;
+    }
+
+    .dir6-minimap {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      width: 180px;
+      height: 140px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Comparison Section */
+    .comparison {
+      margin-top: 60px;
+      padding: 40px;
+      background: #1a1f2e;
+      border-radius: 12px;
+      border: 1px solid #374151;
+    }
+
+    .comparison h3 {
+      font-size: 24px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid #374151;
+    }
+
+    .comparison-table th {
+      background: #252b3b;
+      color: #9ca3af;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .comparison-table td:first-child {
+      color: #d1d5db;
+      font-weight: 600;
+    }
+
+    .score {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .score-high { background: #065f46; color: #6ee7b7; }
+    .score-med { background: #7c2d12; color: #fdba74; }
+    .score-low { background: #1e293b; color: #94a3b8; }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <div class="nav">
+    <h1>diagram_builder - Design Directions</h1>
+    <div class="nav-links">
+      <a href="#dir1">Command Center</a>
+      <a href="#dir2">Minimal Canvas</a>
+      <a href="#dir3">Developer Tools</a>
+      <a href="#dir4">3D Editor</a>
+      <a href="#dir5">Spatial Dashboard</a>
+      <a href="#dir6">Google Maps</a>
+      <a href="#comparison">Compare</a>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="container">
+    <div class="intro">
+      <h2>Explore 6 Design Directions</h2>
+      <p>Each mockup represents a complete visual approach for diagram_builder. Click through to explore different layout strategies, UI densities, and interaction patterns. All directions use our established visual foundation (dark theme, Inter typography, 8px spacing) but apply it in different ways.</p>
+    </div>
+
+    <!-- Direction 1: Command Center -->
+    <div class="direction" id="dir1">
+      <div class="direction-header">
+        <div class="direction-title">
+          Direction 1: Command Center
+          <span class="direction-badge badge-technical">Technical</span>
+        </div>
+        <div class="direction-meta">
+          <div>
+            <strong>Focus</strong>
+            <span>Professional, data-dense interface</span>
+          </div>
+          <div>
+            <strong>Best For</strong>
+            <span>Power users who want all information visible</span>
+          </div>
+          <div>
+            <strong>Style</strong>
+            <span>Technical, grid-aligned, informational</span>
+          </div>
+        </div>
+      </div>
+      <div class="mockup">
+        <div class="canvas-bg">
+          <div class="canvas-placeholder">3D Canvas (WebGL)</div>
+          <div class="nodes">
+            <div class="node" style="top: 20%; left: 30%; background: #0ea5e9;"></div>
+            <div class="node" style="top: 40%; left: 50%; background: #8b5cf6; animation-delay: 0.5s;"></div>
+            <div class="node" style="top: 60%; left: 70%; background: #10b981; animation-delay: 1s;"></div>
+            <div class="node" style="top: 30%; left: 80%; background: #f59e0b; animation-delay: 1.5s;"></div>
+          </div>
+        </div>
+
+        <!-- HUD Top-Left -->
+        <div class="dir1-hud">
+          <div class="dir1-hud-title">Workspace Stats</div>
+          <div class="dir1-stats">
+            <div class="dir1-stat">
+              <span class="dir1-stat-label">Nodes</span>
+              <span class="dir1-stat-value">1,248</span>
+            </div>
+            <div class="dir1-stat">
+              <span class="dir1-stat-label">Files</span>
+              <span class="dir1-stat-value">342</span>
+            </div>
+            <div class="dir1-stat">
+              <span class="dir1-stat-label">FPS</span>
+              <span class="dir1-stat-value">60</span>
+            </div>
+            <div class="dir1-stat">
+              <span class="dir1-stat-label">Mode</span>
+              <span class="dir1-stat-value">Orbit 🔄</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Top-Center -->
+        <div class="dir1-search">⌘K Search files, classes, methods...</div>
+
+        <!-- MiniMap Bottom-Right -->
+        <div class="dir1-minimap">
+          <div style="color: #9ca3af; font-size: 11px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">MiniMap</div>
+          <div style="width: 100%; height: 100px; background: #0f1419; border: 1px solid #374151; border-radius: 4px; position: relative;">
+            <div style="position: absolute; top: 50%; left: 50%; width: 30%; height: 30%; border: 2px solid #3b82f6; transform: translate(-50%, -50%);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Direction 2: Minimal Canvas -->
+    <div class="direction" id="dir2">
+      <div class="direction-header">
+        <div class="direction-title">
+          Direction 2: Minimal Canvas
+          <span class="direction-badge badge-minimal">Minimal</span>
+        </div>
+        <div class="direction-meta">
+          <div>
+            <strong>Focus</strong>
+            <span>Maximum 3D canvas, minimal UI</span>
+          </div>
+          <div>
+            <strong>Best For</strong>
+            <span>Focus on spatial exploration, less UI distraction</span>
+          </div>
+          <div>
+            <strong>Style</strong>
+            <span>Clean, spacious, UI-recedes approach</span>
+          </div>
+        </div>
+      </div>
+      <div class="mockup">
+        <div class="canvas-bg">
+          <div class="canvas-placeholder">Full Canvas Experience</div>
+          <div class="nodes">
+            <div class="node" style="top: 25%; left: 35%; background: #0ea5e9;"></div>
+            <div class="node" style="top: 45%; left: 55%; background: #8b5cf6; animation-delay: 0.5s;"></div>
+            <div class="node" style="top: 65%; left: 25%; background: #10b981; animation-delay: 1s;"></div>
+            <div class="node" style="top: 35%; left: 75%; background: #f59e0b; animation-delay: 1.5s;"></div>
+            <div class="node" style="top: 55%; left: 45%; background: #ef4444; animation-delay: 2s;"></div>
+          </div>
+        </div>
+
+        <!-- Tiny HUD Icons -->
+        <div class="dir2-hud-minimal">
+          <div class="dir2-icon-btn">🔍</div>
+          <div class="dir2-icon-btn">☰</div>
+        </div>
+
+        <!-- Search (appears on Cmd+K) -->
+        <div class="dir2-search" style="opacity: 0.3;">
+          Press ⌘K to search...
+        </div>
+      </div>
+    </div>
+
+    <!-- Direction 3: Developer Tools -->
+    <div class="direction" id="dir3">
+      <div class="direction-header">
+        <div class="direction-title">
+          Direction 3: Developer Tools
+          <span class="direction-badge badge-familiar">Familiar</span>
+        </div>
+        <div class="direction-meta">
+          <div>
+            <strong>Focus</strong>
+            <span>VS Code / Chrome DevTools aesthetic</span>
+          </div>
+          <div>
+            <strong>Best For</strong>
+            <span>Developers who want familiar patterns</span>
+          </div>
+          <div>
+            <strong>Style</strong>
+            <span>Utility-first, no-nonsense, professional</span>
+          </div>
+        </div>
+      </div>
+      <div class="mockup">
+        <div class="canvas-bg" style="left: 250px; right: 250px; top: 48px;">
+          <div class="canvas-placeholder">Canvas Viewport</div>
+          <div class="nodes">
+            <div class="node" style="top: 30%; left: 40%; background: #0ea5e9;"></div>
+            <div class="node" style="top: 50%; left: 60%; background: #8b5cf6; animation-delay: 0.5s;"></div>
+            <div class="node" style="top: 70%; left: 30%; background: #10b981; animation-delay: 1s;"></div>
+          </div>
+        </div>
+
+        <!-- Left Sidebar -->
+        <div class="dir3-sidebar-left">
+          <div style="color: #cccccc; font-size: 11px; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px;">Explorer</div>
+          <div class="dir3-tab">📁 Workspace</div>
+          <div class="dir3-tab">🔍 Search</div>
+          <div class="dir3-tab">🎯 Viewpoints</div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="dir3-sidebar-right">
+          <div style="color: #cccccc; font-size: 11px; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px;">Properties</div>
+          <div class="dir3-tab">ℹ️ Details</div>
+          <div class="dir3-tab">🔗 Connections</div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="dir3-toolbar">
+          <div class="dir3-tool-btn">🔍</div>
+          <div class="dir3-tool-btn">📐</div>
+          <div class="dir3-tool-btn">🎨</div>
+          <div class="dir3-tool-btn">⚙️</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Direction 4: 3D Editor -->
+    <div class="direction" id="dir4">
+      <div class="direction-header">
+        <div class="direction-title">
+          Direction 4: 3D Editor
+          <span class="direction-badge badge-creative">Creative</span>
+        </div>
+        <div class="direction-meta">
+          <div>
+            <strong>Focus</strong>
+            <span>Unity/Blender-inspired creative tool</span>
+          </div>
+          <div>
+            <strong>Best For</strong>
+            <span>Users comfortable with 3D software</span>
+          </div>
+          <div>
+            <strong>Style</strong>
+            <span>Pro 3D software aesthetic, icon-heavy</span>
+          </div>
+        </div>
+      </div>
+      <div class="mockup">
+        <div class="canvas-bg" style="left: 240px; right: 280px; top: 56px;">
+          <div class="canvas-placeholder">Viewport</div>
+          <div class="nodes">
+            <div class="node" style="top: 25%; left: 45%; background: #0ea5e9;"></div>
+            <div class="node" style="top: 50%; left: 65%; background: #8b5cf6; animation-delay: 0.5s;"></div>
+            <div class="node" style="top: 65%; left: 35%; background: #10b981; animation-delay: 1s;"></div>
+            <div class="node" style="top: 40%; left: 75%; background: #f59e0b; animation-delay: 1.5s;"></div>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="dir4-toolbar">
+          <div class="dir4-tool-group">
+            <div class="dir4-tool active">🔍</div>
+            <div class="dir4-tool">✋</div>
+            <div class="dir4-tool">🎯</div>
+          </div>
+          <div style="width: 1px; height: 32px; background: #546e7a;"></div>
+          <div class="dir4-tool-group">
+            <div class="dir4-tool">📐</div>
+            <div class="dir4-tool">🔲</div>
+            <div class="dir4-tool">⭕</div>
+          </div>
+          <div style="flex: 1;"></div>
+          <div style="color: #b0bec5; font-size: 13px;">diagram_builder.workspace</div>
+        </div>
+
+        <!-- Outliner Left -->
+        <div class="dir4-outliner">
+          <div style="color: #b0bec5; font-size: 11px; text-transform: uppercase; margin-bottom: 12px;">Outliner</div>
+          <div style="color: #90caf9; font-size: 13px; padding: 6px 8px; background: #37474f; border-radius: 4px; margin-bottom: 4px;">📦 Repository</div>
+          <div style="color: #ce93d8; font-size: 13px; padding: 6px 8px 6px 20px;">📁 src/</div>
+          <div style="color: #80cbc4; font-size: 13px; padding: 6px 8px 6px 32px;">📄 index.ts</div>
+        </div>
+
+        <!-- Properties Right -->
+        <div class="dir4-properties">
+          <div style="color: #b0bec5; font-size: 11px; text-transform: uppercase; margin-bottom: 12px;">Properties</div>
+          <div style="color: #90caf9; font-size: 12px; margin-bottom: 8px;">Transform</div>
+          <div style="color: #9ca3af; font-size: 12px;">X: 0.00</div>
+          <div style="color: #9ca3af; font-size: 12px;">Y: 0.00</div>
+          <div style="color: #9ca3af; font-size: 12px;">Z: 0.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Direction 5: Spatial Dashboard -->
+    <div class="direction" id="dir5">
+      <div class="direction-header">
+        <div class="direction-title">
+          Direction 5: Spatial Dashboard
+          <span class="direction-badge badge-modern">Modern</span>
+        </div>
+        <div class="direction-meta">
+          <div>
+            <strong>Focus</strong>
+            <span>Cards and widgets over 3D canvas</span>
+          </div>
+          <div>
+            <strong>Best For</strong>
+            <span>Users who want customizable workspace</span>
+          </div>
+          <div>
+            <strong>Style</strong>
+            <span>Modern SaaS dashboard meets 3D</span>
+          </div>
+        </div>
+      </div>
+      <div class="mockup">
+        <div class="canvas-bg">
+          <div class="canvas-placeholder">Interactive 3D Space</div>
+          <div class="nodes">
+            <div class="node" style="top: 35%; left: 50%; background: #0ea5e9;"></div>
+            <div class="node" style="top: 55%; left: 70%; background: #8b5cf6; animation-delay: 0.5s;"></div>
+            <div class="node" style="top: 45%; left: 30%; background: #10b981; animation-delay: 1s;"></div>
+            <div class="node" style="top: 65%; left: 55%; background: #f59e0b; animation-delay: 1.5s;"></div>
+          </div>
+        </div>
+
+        <!-- Floating Widgets -->
+        <div class="dir5-widget dir5-search">
+          <div style="font-size: 14px; color: #9ca3af;">⌘K Search anywhere...</div>
+        </div>
+
+        <div class="dir5-widget dir5-stats">
+          <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px; text-transform: uppercase;">Stats</div>
+          <div style="font-size: 20px; color: #3b82f6; margin-bottom: 4px;">1,248</div>
+          <div style="font-size: 11px; color: #6b7280;">Total Nodes</div>
+        </div>
+
+        <div class="dir5-widget dir5-graph">
+          <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px; text-transform: uppercase;">Activity</div>
+          <div style="height: 60px; display: flex; align-items: flex-end; gap: 4px;">
+            <div style="flex: 1; height: 40%; background: #3b82f6; border-radius: 2px;"></div>
+            <div style="flex: 1; height: 70%; background: #3b82f6; border-radius: 2px;"></div>
+            <div style="flex: 1; height: 50%; background: #3b82f6; border-radius: 2px;"></div>
+            <div style="flex: 1; height: 85%; background: #3b82f6; border-radius: 2px;"></div>
+            <div style="flex: 1; height: 60%; background: #3b82f6; border-radius: 2px;"></div>
+          </div>
+        </div>
+
+        <div class="dir5-widget dir5-minimap">
+          <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px; text-transform: uppercase;">Map</div>
+          <div style="width: 100%; height: 100px; background: rgba(15, 20, 25, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Direction 6: Google Maps Style -->
+    <div class="direction" id="dir6">
+      <div class="direction-header">
+        <div class="direction-title">
+          Direction 6: Google Maps Style
+          <span class="direction-badge badge-friendly">Friendly</span>
+        </div>
+        <div class="direction-meta">
+          <div>
+            <strong>Focus</strong>
+            <span>Navigation-first, search-dominant</span>
+          </div>
+          <div>
+            <strong>Best For</strong>
+            <span>Onboarding new users, ease of use</span>
+          </div>
+          <div>
+            <strong>Style</strong>
+            <span>Consumer-friendly, approachable, clean</span>
+          </div>
+        </div>
+      </div>
+      <div class="mockup">
+        <div class="canvas-bg">
+          <div class="canvas-placeholder">Explore Your Codebase</div>
+          <div class="nodes">
+            <div class="node" style="top: 40%; left: 45%; background: #0ea5e9;"></div>
+            <div class="node" style="top: 60%; left: 65%; background: #8b5cf6; animation-delay: 0.5s;"></div>
+            <div class="node" style="top: 30%; left: 70%; background: #10b981; animation-delay: 1s;"></div>
+            <div class="node" style="top: 50%; left: 35%; background: #f59e0b; animation-delay: 1.5s;"></div>
+          </div>
+        </div>
+
+        <!-- Menu Button -->
+        <div class="dir6-menu">☰</div>
+
+        <!-- Search Bar -->
+        <div class="dir6-search-bar">
+          <div class="dir6-search-icon">🔍</div>
+          <div class="dir6-search-input">Search for any code element...</div>
+        </div>
+
+        <!-- MiniMap -->
+        <div class="dir6-minimap">
+          <div style="width: 100%; height: 100%; padding: 12px;">
+            <div style="font-size: 12px; color: #1a1f2e; margin-bottom: 8px; font-weight: 600;">Overview</div>
+            <div style="width: 100%; height: 90px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; position: relative;">
+              <div style="position: absolute; top: 50%; left: 50%; width: 40%; height: 40%; border: 2px solid #3b82f6; transform: translate(-50%, -50%);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="comparison" id="comparison">
+      <h3>Design Direction Comparison</h3>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Criteria</th>
+            <th>Command Center</th>
+            <th>Minimal Canvas</th>
+            <th>Developer Tools</th>
+            <th>3D Editor</th>
+            <th>Spatial Dashboard</th>
+            <th>Google Maps</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Learning Curve</td>
+            <td><span class="score score-med">Medium</span></td>
+            <td><span class="score score-high">Easy</span></td>
+            <td><span class="score score-high">Easy</span></td>
+            <td><span class="score score-low">Hard</span></td>
+            <td><span class="score score-med">Medium</span></td>
+            <td><span class="score score-high">Easy</span></td>
+          </tr>
+          <tr>
+            <td>Power User Features</td>
+            <td><span class="score score-high">Excellent</span></td>
+            <td><span class="score score-low">Limited</span></td>
+            <td><span class="score score-high">Excellent</span></td>
+            <td><span class="score score-high">Excellent</span></td>
+            <td><span class="score score-med">Good</span></td>
+            <td><span class="score score-low">Limited</span></td>
+          </tr>
+          <tr>
+            <td>Canvas Focus</td>
+            <td><span class="score score-med">Medium</span></td>
+            <td><span class="score score-high">Maximum</span></td>
+            <td><span class="score score-low">Limited</span></td>
+            <td><span class="score score-med">Medium</span></td>
+            <td><span class="score score-med">Medium</span></td>
+            <td><span class="score score-high">High</span></td>
+          </tr>
+          <tr>
+            <td>Information Density</td>
+            <td><span class="score score-high">High</span></td>
+            <td><span class="score score-low">Low</span></td>
+            <td><span class="score score-high">High</span></td>
+            <td><span class="score score-high">High</span></td>
+            <td><span class="score score-med">Medium</span></td>
+            <td><span class="score score-low">Low</span></td>
+          </tr>
+          <tr>
+            <td>Developer Familiarity</td>
+            <td><span class="score score-med">Medium</span></td>
+            <td><span class="score score-low">Low</span></td>
+            <td><span class="score score-high">Very High</span></td>
+            <td><span class="score score-med">Medium</span></td>
+            <td><span class="score score-low">Low</span></td>
+            <td><span class="score score-high">High</span></td>
+          </tr>
+          <tr>
+            <td>Search Prominence</td>
+            <td><span class="score score-high">High</span></td>
+            <td><span class="score score-high">High</span></td>
+            <td><span class="score score-med">Medium</span></td>
+            <td><span class="score score-low">Low</span></td>
+            <td><span class="score score-high">High</span></td>
+            <td><span class="score score-high">Very High</span></td>
+          </tr>
+          <tr>
+            <td>Customization</td>
+            <td><span class="score score-low">Low</span></td>
+            <td><span class="score score-low">Low</span></td>
+            <td><span class="score score-med">Medium</span></td>
+            <td><span class="score score-med">Medium</span></td>
+            <td><span class="score score-high">High</span></td>
+            <td><span class="score score-low">Low</span></td>
+          </tr>
+          <tr>
+            <td>Best Use Case</td>
+            <td>Complex analysis</td>
+            <td>Exploration focus</td>
+            <td>Daily dev work</td>
+            <td>Arch modeling</td>
+            <td>Team dashboards</td>
+            <td>New user onboarding</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    // Smooth scroll to sections
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(link.getAttribute('href'));
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Update active state
+        document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+      });
+    });
+
+    // Update active nav on scroll
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('.direction, .comparison');
+      const navLinks = document.querySelectorAll('.nav-links a');
+
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        if (scrollY >= (sectionTop - 200)) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

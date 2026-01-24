@@ -1,0 +1,6 @@
+{
+  "name": "small-js-repo",
+  "version": "1.0.0",
+  "description": "Test fixture for JavaScript parsing",
+  "main": "index.js"
+}

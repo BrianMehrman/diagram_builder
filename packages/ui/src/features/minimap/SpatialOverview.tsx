@@ -4,14 +4,16 @@
  * 3D spatial minimap showing node positions
  */
 
+import { useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrthographicCamera } from '@react-three/drei';
+import { OrthographicCamera, Html } from '@react-three/drei';
 import type { GraphNode } from '../../shared/types';
 
 interface SpatialOverviewProps {
   nodes: GraphNode[];
   selectedNodeId?: string | null;
   cameraPosition?: { x: number; y: number; z: number };
+  onNodeClick?: (nodeId: string) => void;
 }
 
 /**
@@ -20,10 +22,13 @@ interface SpatialOverviewProps {
 function MiniNode({
   node,
   isSelected,
+  onClick,
 }: {
   node: GraphNode;
   isSelected: boolean;
+  onClick?: (nodeId: string) => void;
 }) {
+  const [hovered, setHovered] = useState(false);
   const position = node.position ?? { x: 0, y: 0, z: 0 };
 
   const getColor = (type: GraphNode['type']): string => {
@@ -44,14 +49,42 @@ function MiniNode({
   };
 
   return (
-    <mesh position={[position.x, position.y, position.z]}>
-      <sphereGeometry args={[0.2, 8, 8]} />
-      <meshBasicMaterial
-        color={getColor(node.type)}
-        opacity={isSelected ? 1 : 0.7}
-        transparent
-      />
-    </mesh>
+    <group position={[position.x, position.y, position.z]}>
+      <mesh
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick?.(node.id);
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHovered(true);
+        }}
+        onPointerOut={() => setHovered(false)}
+      >
+        <sphereGeometry args={[0.2, 8, 8]} />
+        <meshBasicMaterial
+          color={getColor(node.type)}
+          opacity={isSelected ? 1 : hovered ? 0.9 : 0.7}
+          transparent
+        />
+      </mesh>
+
+      {/* Show label on hover or when selected */}
+      {(hovered || isSelected) && (
+        <Html
+          position={[0, 0.5, 0]}
+          center
+          style={{
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
+        >
+          <div className="bg-black/90 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap">
+            {node.label || node.id}
+          </div>
+        </Html>
+      )}
+    </group>
   );
 }
 
@@ -78,6 +111,7 @@ export function SpatialOverview({
   nodes,
   selectedNodeId,
   cameraPosition,
+  onNodeClick,
 }: SpatialOverviewProps) {
   return (
     <div className="w-full h-full bg-gray-900">
@@ -101,6 +135,7 @@ export function SpatialOverview({
               key={node.id}
               node={node}
               isSelected={selectedNodeId === node.id}
+              onClick={onNodeClick}
             />
           ))}
 
