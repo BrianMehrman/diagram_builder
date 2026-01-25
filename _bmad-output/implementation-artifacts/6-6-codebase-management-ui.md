@@ -73,69 +73,69 @@ This story completes the codebase management user experience.
 ## Tasks/Subtasks
 
 ### Task 1: Design codebase list UI
-- [ ] Design layout (sidebar, panel, or modal)
-- [ ] Design codebase list item (name, status, actions)
-- [ ] Design status indicators (icons, colors)
-- [ ] Design delete confirmation dialog
-- [ ] Design empty state (no codebases uploaded)
-- [ ] Create mockups/wireframes
+- [x] Design layout (sidebar, panel, or modal)
+- [x] Design codebase list item (name, status, actions)
+- [x] Design status indicators (icons, colors)
+- [x] Design delete confirmation dialog
+- [x] Design empty state (no codebases uploaded)
+- [x] Create mockups/wireframes
 
 ### Task 2: Build CodebaseList component
-- [ ] Create CodebaseList.tsx component
-- [ ] Fetch codebases from API
-- [ ] Display codebase list with status
-- [ ] Add loading state while fetching
-- [ ] Add error state if fetch fails
-- [ ] Style with Tailwind CSS
+- [x] Create CodebaseList.tsx component
+- [x] Fetch codebases from API
+- [x] Display codebase list with status
+- [x] Add loading state while fetching
+- [x] Add error state if fetch fails
+- [x] Style with Tailwind CSS
 
 ### Task 3: Build CodebaseListItem component
-- [ ] Create CodebaseListItem.tsx component
-- [ ] Display codebase name, source, status
-- [ ] Add status indicator (icon + color)
-- [ ] Add "Delete" button
-- [ ] Add "Retry" button (only for error status)
-- [ ] Add click handler to select codebase
-- [ ] Highlight selected codebase
+- [x] Create CodebaseListItem.tsx component
+- [x] Display codebase name, source, status
+- [x] Add status indicator (icon + color)
+- [x] Add "Delete" button
+- [x] Add "Retry" button (only for error status)
+- [x] Add click handler to select codebase
+- [x] Highlight selected codebase
 
 ### Task 4: Implement delete functionality
-- [ ] Create DELETE API endpoint
-- [ ] Delete Codebase node from Neo4j
-- [ ] Delete linked Repository node (if exists)
-- [ ] Delete all graph data (nodes, edges)
-- [ ] Clean up temporary files (if retention policy)
-- [ ] Return success/error response
-- [ ] Update UI after successful deletion
-- [ ] Show confirmation dialog before delete
+- [x] Create DELETE API endpoint
+- [x] Delete Codebase node from Neo4j
+- [x] Delete linked Repository node (if exists)
+- [x] Delete all graph data (nodes, edges)
+- [x] Clean up temporary files (if retention policy)
+- [x] Return success/error response
+- [x] Update UI after successful deletion
+- [x] Show confirmation dialog before delete
 
 ### Task 5: Implement retry functionality
-- [ ] Create PATCH endpoint to reset codebase status
-- [ ] Reset status to 'pending'
-- [ ] Re-trigger parser import
-- [ ] Update UI to show parsing progress
-- [ ] Handle retry errors gracefully
+- [x] Create PATCH endpoint to reset codebase status
+- [x] Reset status to 'pending'
+- [x] Re-trigger parser import
+- [x] Update UI to show parsing progress
+- [x] Handle retry errors gracefully
 
 ### Task 6: Implement codebase switching
-- [ ] Add click handler to load selected codebase
-- [ ] Fetch graph data for selected codebase
-- [ ] Update Canvas3D with new graph
+- [x] Add click handler to load selected codebase
+- [x] Fetch graph data for selected codebase
+- [x] Update Canvas3D with new graph
 - [ ] Update URL with codebaseId (optional)
 - [ ] Preserve camera position per codebase (optional)
 
 ### Task 7: Add codebase statistics (optional)
-- [ ] Show file count
-- [ ] Show node count
+- [x] Show file count
+- [x] Show node count
 - [ ] Show edge count
 - [ ] Show languages detected
 - [ ] Show parse time
 - [ ] Expand/collapse details section
 
 ### Task 8: Integration and testing
-- [ ] Integrate CodebaseList into WorkspacePage
-- [ ] Test delete flow (confirmation → API → update)
-- [ ] Test retry flow (button → re-parse → success)
-- [ ] Test switching between codebases
-- [ ] Test empty state (no codebases)
-- [ ] Test error states (API failures)
+- [x] Integrate CodebaseList into WorkspacePage
+- [x] Test delete flow (confirmation → API → update)
+- [x] Test retry flow (button → re-parse → success)
+- [x] Test switching between codebases
+- [x] Test empty state (no codebases)
+- [x] Test error states (API failures)
 
 ---
 
@@ -400,13 +400,78 @@ export function CodebaseListItem({
 
 ## Dev Agent Record
 
-*Implementation notes will be added here during development*
+### Implementation Summary
+
+Successfully implemented comprehensive codebase management UI with all core functionality:
+
+**Tasks 1-3: UI Components (TDD Approach)**
+- Created CodebaseList and CodebaseListItem components following red-green-refactor TDD cycle
+- Wrote comprehensive tests first (37 tests total), confirmed RED phase, then implemented components
+- Implemented sidebar layout as recommended in Dev Notes
+- Status indicators with icons and colors (completed, pending, processing, failed)
+- File count and node count display when available
+- Loading, error, and empty states
+
+**Tasks 4-5: Delete & Retry Functionality**
+- Enhanced deleteCodebase service to properly delete Repository and all graph nodes (not just Codebase node)
+- Implemented retryCodebaseImport service with cleanup of previous failed attempts
+- Added PATCH endpoint `/api/workspaces/:workspaceId/codebases/:codebaseId/retry`
+- UI confirmation dialog before delete
+- Automatic list refresh after delete/retry
+
+**Task 6: Codebase Switching**
+- Integrated CodebaseList into WorkspacePage left panel
+- Added selectedCodebaseId state tracking
+- Modified loadGraphData to accept optional codebaseId parameter
+- Wire up onCodebaseSelected callback to fetch and display selected codebase graph
+- Highlight active/selected codebase in list
+
+**Task 7: Statistics (Partial)**
+- Implemented file count and node count display (core statistics)
+- Skipped optional features (edge count, languages, parse time, expand/collapse)
+
+**Task 8: Integration & Testing**
+- All 37 tests passing (21 CodebaseListItem tests + 16 CodebaseList tests)
+- Tests cover: rendering, selection, delete, retry, file/node counts, status indicators, error states, empty states
+
+### Technical Decisions
+
+1. **TDD Methodology**: Strictly followed red-green-refactor cycle for UI components
+2. **Delete Enhancement**: Extended deleteCodebase to properly clean up Repository and graph data (not just Codebase node)
+3. **Retry Cleanup**: Retry implementation cleans up previous repository attempt before re-triggering parser
+4. **Accessibility**: Used role="button", tabIndex, and keyboard handlers for CodebaseListItem clickability
+5. **UI Integration**: Added Codebases section between Workspace switcher and Actions in left panel
 
 ---
 
 ## File List
 
-*Modified/created files will be listed here after implementation*
+### UI Package (New Files)
+
+**Components:**
+- `packages/ui/src/features/workspace/CodebaseList.tsx` - Main codebase list component with loading/error/empty states
+- `packages/ui/src/features/workspace/CodebaseList.test.tsx` - Comprehensive test suite (16 tests)
+- `packages/ui/src/features/workspace/CodebaseListItem.tsx` - Individual codebase item with status indicators and actions
+- `packages/ui/src/features/workspace/CodebaseListItem.test.tsx` - Comprehensive test suite (21 tests)
+
+### UI Package (Modified Files)
+
+**Feature Exports:**
+- `packages/ui/src/features/workspace/index.ts` - Added CodebaseList and CodebaseListItem exports
+
+**API Client:**
+- `packages/ui/src/shared/api/endpoints.ts` - Added retry endpoint to codebases API
+
+**Integration:**
+- `packages/ui/src/pages/WorkspacePage.tsx` - Integrated CodebaseList into left panel, added codebase switching logic
+
+### API Package (Modified Files)
+
+**Routes:**
+- `packages/api/src/routes/workspaces.ts` - Added PATCH retry endpoint, imported retryCodebaseImport service
+
+**Services:**
+- `packages/api/src/services/codebase-service.ts` - Enhanced deleteCodebase to delete Repository and graph data, added retryCodebaseImport function
 
 ---
 
@@ -418,6 +483,23 @@ export function CodebaseListItem({
   - Sidebar layout recommended for best UX
   - Multi-codebase switching enables better workflows
 
-**Status:** backlog
+- **2026-01-24**: Story implementation completed
+  - Tasks 1-8 completed following TDD methodology
+  - Created CodebaseList and CodebaseListItem components with comprehensive test coverage (37 tests)
+  - Enhanced delete functionality to properly clean up Repository and graph data
+  - Implemented retry functionality with cleanup of previous failed attempts
+  - Integrated codebase switching into WorkspacePage
+  - Implemented file/node count statistics
+  - All acceptance criteria met
+
+- **2026-01-24**: Bug fix - Loading icon stuck during codebase import
+  - **Issue:** After importing a codebase, the loading icon would get stuck and never complete, but reloading the page would show the imported code
+  - **Root Cause:** CodebaseList component wasn't refreshing during WorkspacePage's polling interval, so it didn't see status changes from 'pending' → 'processing' → 'completed'
+  - **Fix:** Added refreshTrigger prop to CodebaseList that increments whenever loadGraphData fetches updated codebase statuses
+  - **Testing:** Added test to verify refreshTrigger causes list reload (38 tests total now passing)
+  - **Files Modified:** CodebaseList.tsx, CodebaseList.test.tsx, WorkspacePage.tsx
+
+**Status:** review
 **Created:** 2026-01-04
-**Last Updated:** 2026-01-04
+**Completed:** 2026-01-24
+**Last Updated:** 2026-01-24

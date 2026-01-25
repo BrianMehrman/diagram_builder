@@ -414,21 +414,113 @@ export async function getCodebaseById(
 
 /**
  * Delete a codebase
+ * Removes the codebase node, associated repository, and all graph data
  */
 export async function deleteCodebase(
   workspaceId: string,
   codebaseId: string
 ): Promise<void> {
   // First verify codebase exists and belongs to workspace
-  await getCodebaseById(workspaceId, codebaseId);
+  const codebase = await getCodebaseById(workspaceId, codebaseId);
 
-  // Delete codebase (cascade delete handled by DETACH)
+  // If codebase has a repository, delete the repository and all its graph data
+  if (codebase.repositoryId) {
+    logger.info('Deleting repository and graph data', {
+      codebaseId,
+      repositoryId: codebase.repositoryId
+    });
+
+    // Delete all nodes linked to the repository (File, Class, Function, etc.)
+    // and the repository itself
+    await runQuery(
+      `
+      MATCH (r:Repository {id: $repositoryId})-[:CONTAINS]->(n)
+      DETACH DELETE n, r
+      `,
+      { repositoryId: codebase.repositoryId }
+    );
+
+    logger.info('Repository and graph data deleted', {
+      codebaseId,
+      repositoryId: codebase.repositoryId
+    });
+  }
+
+  // Delete the codebase node
   await runQuery(
     `
     MATCH (c:Codebase {id: $codebaseId})
     DETACH DELETE c
     `,
     { codebaseId }
+  );
+
+  logger.info('Codebase deleted', { codebaseId, workspaceId });
+
+  // Invalidate caches
+  const codebaseCacheKey = buildCacheKey('codebase', codebaseId);
+  const workspaceCodebasesKey = buildCacheKey('workspace', `${workspaceId}:codebases`);
+  await Promise.all([
+    cache.invalidate(codebaseCacheKey),
+    cache.invalidate(workspaceCodebasesKey),
+  ]);
+}
+
+/**
+ * Retry a failed codebase import
+ * Resets the codebase status to pending and re-triggers the parser
+ */
+export async function retryCodebaseImport(
+  workspaceId: string,
+  codebaseId: string
+): Promise<{ success: boolean; status: string }> {
+  // Get the codebase to verify it exists and get import config
+  const codebase = await getCodebaseById(workspaceId, codebaseId);
+
+  // Verify codebase is in failed state
+  if (codebase.status !== 'failed') {
+    throw new ValidationError(
+      'Invalid request',
+      `Cannot retry codebase with status "${codebase.status}". Only failed imports can be retried.`
+    );
+  }
+
+  logger.info('Retrying codebase import', {
+    codebaseId,
+    workspaceId,
+    source: codebase.source
+  });
+
+  // If there's an existing repository from a previous attempt, clean it up
+  if (codebase.repositoryId) {
+    logger.info('Cleaning up previous repository attempt', {
+      codebaseId,
+      repositoryId: codebase.repositoryId
+    });
+
+    await runQuery(
+      `
+      MATCH (r:Repository {id: $repositoryId})-[:CONTAINS]->(n)
+      DETACH DELETE n, r
+      `,
+      { repositoryId: codebase.repositoryId }
+    );
+  }
+
+  // Reset codebase status to pending
+  await runQuery(
+    `
+    MATCH (c:Codebase {id: $codebaseId})
+    SET c.status = 'pending',
+        c.error = null,
+        c.repositoryId = null,
+        c.updatedAt = $updatedAt
+    RETURN c
+    `,
+    {
+      codebaseId,
+      updatedAt: new Date().toISOString(),
+    }
   );
 
   // Invalidate caches
@@ -438,6 +530,22 @@ export async function deleteCodebase(
     cache.invalidate(codebaseCacheKey),
     cache.invalidate(workspaceCodebasesKey),
   ]);
+
+  // Re-trigger parser import
+  const input: CreateCodebaseInput = {
+    source: codebase.source,
+    type: codebase.type,
+    ...(codebase.branch && { branch: codebase.branch }),
+  };
+
+  triggerParserImport(codebaseId, input).catch((error) => {
+    logger.error('Parser import retry failed', {
+      codebaseId,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  });
+
+  return { success: true, status: 'pending' };
 }
 
 /**

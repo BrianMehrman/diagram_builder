@@ -29,6 +29,7 @@ import {
   listWorkspaceCodebases,
   getCodebaseById,
   deleteCodebase,
+  retryCodebaseImport,
 } from '../services/codebase-service'
 import { ValidationError, NotFoundError, ForbiddenError } from '../errors'
 import { asyncHandler } from '../utils/async-handler'
@@ -555,6 +556,35 @@ workspacesRouter.delete(
     await deleteCodebase(workspaceId, codebaseId)
 
     res.status(204).send()
+  })
+)
+
+/**
+ * PATCH /api/workspaces/:workspaceId/codebases/:codebaseId/retry
+ * Retry a failed codebase import
+ */
+workspacesRouter.patch(
+  '/:workspaceId/codebases/:codebaseId/retry',
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { workspaceId, codebaseId } = req.params
+
+    if (!workspaceId) {
+      throw new ValidationError('Invalid request', 'Workspace ID is required')
+    }
+
+    if (!codebaseId) {
+      throw new ValidationError('Invalid request', 'Codebase ID is required')
+    }
+
+    const userId = req.user?.userId
+    if (!userId) {
+      throw new ValidationError('Invalid request', 'User ID not found in token')
+    }
+
+    const result = await retryCodebaseImport(workspaceId, codebaseId)
+
+    res.json(result)
   })
 )
 

@@ -10,7 +10,7 @@ import { Canvas3D, EmptyState, CodebaseStatusIndicator, ErrorNotification, Succe
 import { MiniMap } from '../features/minimap'
 import { Navigation } from '../features/navigation'
 import { ViewpointPanel } from '../features/viewpoints'
-import { WorkspaceSwitcher, ImportCodebaseButton } from '../features/workspace'
+import { WorkspaceSwitcher, ImportCodebaseButton, CodebaseList } from '../features/workspace'
 import { ExportButton } from '../features/export'
 import { SessionControl, UserPresence } from '../features/collaboration'
 import { HUD } from '../features/navigation/HUD'
@@ -26,6 +26,8 @@ export function WorkspacePage() {
   const [processingStatus, setProcessingStatus] = useState<'pending' | 'processing' | 'completed' | 'failed' | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [selectedCodebaseId, setSelectedCodebaseId] = useState<string | null>(null)
+  const [listRefreshTrigger, setListRefreshTrigger] = useState(0)
 
   // Panel states
   const [leftPanelOpen, setLeftPanelOpen] = useState(false)
@@ -104,26 +106,49 @@ export function WorkspacePage() {
     }
   }
 
-  const loadGraphData = useCallback(async (workspaceId: string) => {
+  const handleCodebaseSelected = async (codebaseId: string) => {
+    console.log('[WorkspacePage] Codebase selected:', codebaseId)
+    if (workspace?.id) {
+      await loadGraphData(workspace.id, codebaseId)
+    }
+  }
+
+  const loadGraphData = useCallback(async (workspaceId: string, codebaseId?: string) => {
     console.log('[WorkspacePage] ========== loadGraphData called ==========')
-    console.log('[WorkspacePage] Workspace ID:', workspaceId)
+    console.log('[WorkspacePage] Workspace ID:', workspaceId, 'Codebase ID:', codebaseId)
     try {
       // Get codebases for this workspace
       console.log('[WorkspacePage] Fetching codebases list...')
       const codebasesList = await codebases.list(workspaceId)
       console.log('[WorkspacePage] Codebases response:', { count: codebasesList.codebases?.length || 0 })
 
-      // Find the first completed codebase with a repository
-      const completedCodebase = codebasesList.codebases?.find(
-        (cb: any) => cb.status === 'completed' && cb.repositoryId
-      )
-      console.log('[WorkspacePage] Completed codebase found:', !!completedCodebase)
+      // Trigger CodebaseList refresh
+      setListRefreshTrigger(prev => prev + 1)
+
+      // Find the codebase to load
+      let completedCodebase
+      if (codebaseId) {
+        // Load specific codebase if ID provided
+        completedCodebase = codebasesList.codebases?.find(
+          (cb: any) => cb.codebaseId === codebaseId && cb.status === 'completed' && cb.repositoryId
+        )
+        console.log('[WorkspacePage] Requested codebase found:', !!completedCodebase)
+      } else {
+        // Find the first completed codebase with a repository
+        completedCodebase = codebasesList.codebases?.find(
+          (cb: any) => cb.status === 'completed' && cb.repositoryId
+        )
+        console.log('[WorkspacePage] First completed codebase found:', !!completedCodebase)
+      }
+
       if (completedCodebase) {
         console.log('[WorkspacePage] Codebase details:', {
           id: completedCodebase.codebaseId,
           repositoryId: completedCodebase.repositoryId,
           source: completedCodebase.source
         })
+        // Update selected codebase ID
+        setSelectedCodebaseId(completedCodebase.codebaseId)
       }
 
       if (completedCodebase?.repositoryId) {
@@ -312,6 +337,19 @@ export function WorkspacePage() {
                   Workspace
                 </h3>
                 <WorkspaceSwitcher />
+              </div>
+
+              {/* Codebases List */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Codebases
+                </h3>
+                <CodebaseList
+                  workspaceId={workspace.id}
+                  selectedId={selectedCodebaseId || undefined}
+                  onCodebaseSelected={handleCodebaseSelected}
+                  refreshTrigger={listRefreshTrigger}
+                />
               </div>
 
               {/* Import Section */}

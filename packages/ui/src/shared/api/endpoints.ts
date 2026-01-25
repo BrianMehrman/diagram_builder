@@ -140,4 +140,9 @@ export const codebases = {
 
   delete: (workspaceId: string, codebaseId: string) =>
     apiClient.delete(`/api/workspaces/${workspaceId}/codebases/${codebaseId}`),
+
+  retry: (workspaceId: string, codebaseId: string) =>
+    apiClient.patch<{ success: boolean; status: string }>(
+      `/api/workspaces/${workspaceId}/codebases/${codebaseId}/retry`
+    ),
 }
