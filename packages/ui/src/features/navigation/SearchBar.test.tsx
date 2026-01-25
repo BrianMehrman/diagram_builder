@@ -179,7 +179,7 @@ describe('SearchBar', () => {
 
     // Note: This might not work perfectly due to timing, but we're testing the behavior
     await waitFor(() => {
-      expect(onNodeSelect).toHaveBeenCalledWith('file-1');
+      expect(onNodeSelect).toHaveBeenCalledWith('file-1', { x: 0, y: 0, z: 0 });
     });
   });
 

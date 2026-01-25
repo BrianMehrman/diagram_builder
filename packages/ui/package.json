@@ -15,9 +15,11 @@
   "dependencies": {
     "@alloc/quick-lru": "^5.2.0",
     "@diagram-builder/core": "*",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
     "bidi-js": "^1.0.3",
+    "fuse.js": "^7.1.0",
     "potpack": "^1.0.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

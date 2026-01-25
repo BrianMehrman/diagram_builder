@@ -1,16 +1,24 @@
 /**
- * SearchBar Component
+ * SearchBar Component (Inline)
  *
- * Search interface for finding nodes in the graph
+ * Secondary search interface for finding nodes in the graph.
+ * Uses Fuse.js fuzzy search (shared with SearchBarModal).
+ *
+ * NOTE: The primary search interface is SearchBarModal (⌘K/Ctrl+K),
+ * which provides the same fuzzy search plus keyboard navigation and camera flight.
+ * This inline SearchBar is kept for quick filtering in specific contexts.
+ *
+ * @see SearchBarModal - Primary search interface with modal UI
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useDebounce } from '../../shared/hooks'
-import type { GraphNode } from '../../shared/types'
+import { searchNodes, initializeSearchIndex } from './fuzzySearch'
+import type { GraphNode, Position3D } from '../../shared/types'
 
 interface SearchBarProps {
   nodes?: GraphNode[]
-  onNodeSelect?: (nodeId: string) => void
+  onNodeSelect?: (nodeId: string, position?: Position3D) => void
   className?: string
 }
 
@@ -20,36 +28,28 @@ interface SearchBarProps {
 export function SearchBar({ nodes = [], onNodeSelect = () => {}, className = '' }: SearchBarProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [isOpen, setIsOpen] = useState(false)
-  const debouncedSearch = useDebounce(searchTerm, 300)
+  const [filteredNodes, setFilteredNodes] = useState<GraphNode[]>([])
+  const debouncedSearch = useDebounce(searchTerm, 50)
 
-  // Filter nodes based on search term
-  const filteredNodes = useMemo(() => {
-    if (!debouncedSearch.trim()) {
-      return []
+  // Initialize search index when nodes change
+  useEffect(() => {
+    if (nodes.length > 0) {
+      initializeSearchIndex(nodes)
     }
+  }, [nodes])
 
-    const term = debouncedSearch.toLowerCase()
-    return nodes
-      .filter((node) => {
-        // Search by label
-        if (node.label.toLowerCase().includes(term)) {
-          return true
-        }
-        // Search by ID
-        if (node.id.toLowerCase().includes(term)) {
-          return true
-        }
-        // Search by type
-        if (node.type.toLowerCase().includes(term)) {
-          return true
-        }
-        return false
-      })
-      .slice(0, 10) // Limit to 10 results
-  }, [nodes, debouncedSearch])
+  // Perform fuzzy search when debounced query changes
+  useEffect(() => {
+    if (debouncedSearch.trim()) {
+      const results = searchNodes(debouncedSearch)
+      setFilteredNodes(results)
+    } else {
+      setFilteredNodes([])
+    }
+  }, [debouncedSearch])
 
-  const handleNodeClick = (nodeId: string) => {
-    onNodeSelect(nodeId)
+  const handleNodeClick = (node: GraphNode) => {
+    onNodeSelect(node.id, node.position)
     setSearchTerm('')
     setIsOpen(false)
   }
@@ -117,7 +117,7 @@ export function SearchBar({ nodes = [], onNodeSelect = () => {}, className = '' 
           {filteredNodes.map((node) => (
             <button
               key={node.id}
-              onClick={() => handleNodeClick(node.id)}
+              onClick={() => handleNodeClick(node)}
               className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
             >
               <div className="flex items-center gap-3">

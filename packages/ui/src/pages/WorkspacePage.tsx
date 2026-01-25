@@ -8,14 +8,15 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'react-router'
 import { Canvas3D, EmptyState, CodebaseStatusIndicator, ErrorNotification, SuccessNotification } from '../features/canvas'
 import { MiniMap } from '../features/minimap'
-import { Navigation } from '../features/navigation'
+import { Navigation, SearchBarModal, useCameraFlight } from '../features/navigation'
 import { ViewpointPanel } from '../features/viewpoints'
 import { WorkspaceSwitcher, ImportCodebaseButton, CodebaseList } from '../features/workspace'
 import { ExportButton } from '../features/export'
 import { SessionControl, UserPresence } from '../features/collaboration'
 import { HUD } from '../features/navigation/HUD'
+import { useGlobalSearchShortcut } from '../shared/hooks'
 import { workspaces, codebases, graph } from '../shared/api/endpoints'
-import type { Workspace, Graph } from '../shared/types'
+import type { Workspace, Graph, Position3D } from '../shared/types'
 
 export function WorkspacePage() {
   const { id } = useParams<{ id: string }>()
@@ -36,6 +37,19 @@ export function WorkspacePage() {
 
   // Track if we've loaded graph data for completed status
   const loadedForCompletedRef = useRef(false)
+
+  // Global search shortcut (⌘K / Ctrl+K)
+  useGlobalSearchShortcut()
+
+  // Camera flight animation for search results
+  const { flyToNode } = useCameraFlight()
+
+  // Handle node selection from search modal
+  const handleSearchNodeSelect = useCallback((nodeId: string, position?: Position3D) => {
+    if (position) {
+      flyToNode(nodeId, position)
+    }
+  }, [flyToNode])
 
   // Debug: Log graphData changes
   useEffect(() => {
@@ -433,7 +447,10 @@ export function WorkspacePage() {
 
         {/* Navigation Panel (Top Center) */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 max-w-md">
-          <Navigation />
+          <Navigation
+            nodes={graphData?.nodes || []}
+            onNodeSelect={handleSearchNodeSelect}
+          />
         </div>
 
         {/* Collapsible MiniMap (Bottom Right) */}
@@ -477,6 +494,12 @@ export function WorkspacePage() {
           />
         )}
       </div>
+
+      {/* Global Search Modal (⌘K) */}
+      <SearchBarModal
+        nodes={graphData?.nodes || []}
+        onNodeSelect={handleSearchNodeSelect}
+      />
     </div>
   )
 }
