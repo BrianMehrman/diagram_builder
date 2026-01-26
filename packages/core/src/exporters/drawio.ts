@@ -5,7 +5,7 @@
  * Produces .drawio files that can be opened in diagrams.net or the Draw.io app.
  */
 
-import type { IVMGraph, IVMNode, IVMEdge, NodeType, EdgeType, LODLevel } from '../ivm/types.js';
+import type { IVMGraph, IVMNode, IVMEdge, NodeType, EdgeType } from '../ivm/types.js';
 import type {
   Exporter,
   BaseExportOptions,

@@ -61,10 +61,10 @@ if (process.env.NODE_ENV === 'production') {
   //   )
 }
 
-// writing file
-logger.stream = {
+// Stream interface for morgan integration
+export const loggerStream = {
   write: (message: string) => {
-    logger.info(message)
+    logger.info(message.trim())
   },
 }
 

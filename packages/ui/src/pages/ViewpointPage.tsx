@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { Canvas3D } from '../features/canvas'
 import { viewpoints } from '../shared/api/endpoints'
-import type { Viewpoint } from '../shared/types/api'
+import type { Viewpoint } from '../shared/types'
 
 export function ViewpointPage() {
   const { id } = useParams<{ id: string }>()

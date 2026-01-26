@@ -70,6 +70,10 @@ export function scanFileContent(filePath: string, content: string): SecretScanRe
   for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
     const line = lines[lineIndex];
 
+    if (typeof line !== 'string') {
+      continue;
+    }
+
     for (const { name, pattern } of SECRET_PATTERNS) {
       // Reset regex lastIndex for global patterns
       pattern.lastIndex = 0;

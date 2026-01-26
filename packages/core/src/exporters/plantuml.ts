@@ -5,7 +5,7 @@
  * Supports component diagrams with packages, classes, and relationships.
  */
 
-import type { IVMGraph, IVMNode, IVMEdge, NodeType, EdgeType, LODLevel } from '../ivm/types.js';
+import type { IVMGraph, IVMNode, IVMEdge, NodeType, EdgeType } from '../ivm/types.js';
 import type {
   Exporter,
   BaseExportOptions,

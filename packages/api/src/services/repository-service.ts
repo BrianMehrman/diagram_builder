@@ -17,7 +17,7 @@ import { loadRepository } from '@diagram-builder/parser';
 import { buildDependencyGraph } from '@diagram-builder/parser';
 import { convertToIVM } from '@diagram-builder/parser';
 import { cloneRepository } from '@diagram-builder/parser';
-import type { IVM } from '@diagram-builder/core';
+import type { IVMGraph } from '@diagram-builder/core';
 
 /**
  * Constants
@@ -56,7 +56,7 @@ export interface RepositoryMetadata {
  * @param request - Repository parsing request
  * @returns IVM graph and repository name
  */
-async function runParsingPipeline(request: ParseRepositoryRequest): Promise<{ ivm: IVM; name: string; localPath: string }> {
+async function runParsingPipeline(request: ParseRepositoryRequest): Promise<{ ivm: IVMGraph; name: string; localPath: string }> {
   const { url, path, branch } = request;
 
   let repoPath: string;
@@ -69,8 +69,7 @@ async function runParsingPipeline(request: ParseRepositoryRequest): Promise<{ iv
       branch: branch || 'main',
       token: request.token,
     };
-    const cloneResult = await cloneRepository(url, cloneOptions);
-    repoPath = cloneResult.localPath;
+    repoPath = await cloneRepository(url, cloneOptions);
     repoName = url.split('/').pop()?.replace('.git', '') || 'repository';
   } else if (path) {
     // Use local path
@@ -113,8 +112,8 @@ async function runParsingPipeline(request: ParseRepositoryRequest): Promise<{ iv
  */
 async function storeIVMInNeo4j(
   repoId: string,
-  ivm: IVM,
-  metadata: { name: string; url?: string; path?: string; branch?: string }
+  ivm: IVMGraph,
+  metadata: { name: string; url?: string | undefined; path?: string | undefined; branch?: string | undefined }
 ): Promise<void> {
   // Create Repository node
   await runQuery(
@@ -157,8 +156,8 @@ async function storeIVMInNeo4j(
       {
         repoId,
         id: node.id,
-        name: node.name,
-        filePath: node.metadata?.filePath || null,
+        name: node.metadata.label,
+        filePath: node.metadata.path || null,
         metadata: JSON.stringify(node.metadata || {}),
       }
     );
@@ -387,9 +386,9 @@ export async function refreshRepository(repoId: string): Promise<{ id: string; s
     // Store IVM in Neo4j with same repository ID
     await storeIVMInNeo4j(repoId, ivm, {
       name,
-      url: metadata.url || undefined,
-      path: metadata.path || undefined,
-      branch: metadata.branch || undefined,
+      url: metadata.url ?? undefined,
+      path: metadata.path ?? undefined,
+      branch: metadata.branch ?? undefined,
     });
 
     return {

@@ -4,7 +4,7 @@
  * Types for layout algorithms, configuration, and results.
  */
 
-import type { Position3D, IVMNode, IVMEdge, IVMGraph, BoundingBox, LODLevel } from '../ivm/types.js';
+import type { Position3D, IVMNode, IVMEdge, BoundingBox, LODLevel } from '../ivm/types.js';
 
 // =============================================================================
 // Layout Configuration Types

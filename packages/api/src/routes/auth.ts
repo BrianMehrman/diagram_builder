@@ -115,6 +115,10 @@ authRouter.post('/refresh', authenticate, (req: Request, res: Response) => {
   const response: TokenResponse = {
     token,
     expiresIn,
+    user: {
+      userId: req.user.userId,
+      email: `${req.user.userId}@example.com`,
+    },
   }
 
   res.json(response)

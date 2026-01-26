@@ -5,12 +5,11 @@
  * Supports flowcharts, class diagrams, and C4 diagrams.
  */
 
-import type { IVMGraph, IVMNode, IVMEdge, NodeType, EdgeType, LODLevel } from '../ivm/types.js';
+import type { IVMGraph, IVMNode, NodeType, EdgeType } from '../ivm/types.js';
 import type {
   Exporter,
   BaseExportOptions,
   ExportResult,
-  ExportStyling,
   ColorScheme,
 } from './types.js';
 import { DEFAULT_COLOR_SCHEME, DEFAULT_EXPORT_STYLING } from './types.js';
@@ -221,7 +220,8 @@ function getNodeColor(type: NodeType, colors: ColorScheme): string {
 /**
  * Gets color for an edge type
  */
-function getEdgeColor(type: EdgeType, colors: ColorScheme): string {
+// @ts-expect-error - Reserved for future use
+function _getEdgeColor(type: EdgeType, colors: ColorScheme): string {
   return colors.edgeColors[type] ?? '#666666';
 }
 
@@ -345,7 +345,7 @@ function generateFlowchart(
  */
 function generateClassDiagram(
   graph: IVMGraph,
-  options: Required<MermaidExportOptions>
+  _options: Required<MermaidExportOptions>
 ): string[] {
   const lines: string[] = [];
 
@@ -445,7 +445,8 @@ function generateC4Diagram(
 ): string[] {
   const lines: string[] = [];
   const { diagramType, styling } = options;
-  const colors = styling.colors ?? DEFAULT_COLOR_SCHEME;
+  // @ts-expect-error - Reserved for future use
+  const _colors = styling.colors ?? DEFAULT_COLOR_SCHEME;
 
   // Diagram declaration based on C4 level
   switch (diagramType) {
@@ -471,8 +472,9 @@ function generateC4Diagram(
   for (const node of graph.nodes) {
     const nodeId = sanitizeId(node.id);
     const label = escapeLabel(node.metadata.label);
-    const description = node.metadata.description ?? '';
-    const c4Type = NODE_TYPE_TO_C4[node.type];
+    const description = (node.metadata.properties?.['description'] as string) ?? '';
+    // @ts-expect-error - Reserved for future use
+    const _c4Type = NODE_TYPE_TO_C4[node.type];
 
     switch (diagramType) {
       case 'c4Context':

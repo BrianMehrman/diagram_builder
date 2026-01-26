@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { workspaces } from '../shared/api/endpoints'
-import type { Workspace } from '../shared/types/api'
+import type { Workspace } from '../shared/types'
 
 export function HomePage() {
   const [workspaceList, setWorkspaceList] = useState<Workspace[]>([])

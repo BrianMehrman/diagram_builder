@@ -32,10 +32,41 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
   // Map to store file path to file node ID
   const filePathToNodeId = new Map<string, string>()
 
+  // Track files that failed to parse (to skip in second pass)
+  const failedFiles = new Set<string>()
+
   // First pass: Create file nodes and analyze each file
   for (const file of files) {
     const language = detectLanguage(file.filePath)
-    const analysis = analyzeContent(file.content, language)
+
+    let analysis;
+    try {
+      analysis = analyzeContent(file.content, language)
+    } catch (err) {
+      logger.warn('Failed to analyze file, creating minimal node', {
+        filePath: file.filePath,
+        language,
+        error: (err as Error).message
+      });
+      // Track failed file to skip in second pass
+      failedFiles.add(file.filePath)
+      // Create minimal file node for failed analysis
+      const fileNodeId = createNodeId('file', file.filePath)
+      filePathToNodeId.set(file.filePath, fileNodeId)
+      const fileNode: DependencyNode = {
+        id: fileNodeId,
+        type: 'file',
+        name: path.basename(file.filePath),
+        path: file.filePath,
+        metadata: {
+          language,
+          metrics: { loc: file.content.split('\n').length, classCount: 0, functionCount: 0, averageComplexity: 1, maxComplexity: 1, maxNestingDepth: 0 },
+          parseError: (err as Error).message,
+        },
+      }
+      graph.addNode(fileNode)
+      continue;
+    }
 
     // Create file node
     const fileNodeId = createNodeId('file', file.filePath)
@@ -106,9 +137,27 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
 
   // Second pass: Create edges for dependencies
   for (const file of files) {
+    // Skip files that failed to parse in first pass
+    if (failedFiles.has(file.filePath)) {
+      continue
+    }
+
     const language = detectLanguage(file.filePath)
-    const parseResult = parseContent(file.content, language)
-    const analysis = analyzeContent(file.content, language)
+
+    let parseResult;
+    let analysis;
+    try {
+      parseResult = parseContent(file.content, language)
+      analysis = analyzeContent(file.content, language)
+    } catch (err) {
+      logger.warn('Failed to parse file in second pass, skipping edges', {
+        filePath: file.filePath,
+        language,
+        error: (err as Error).message
+      });
+      continue
+    }
+
     const fileNodeId = filePathToNodeId.get(file.filePath)
 
     if (!fileNodeId) continue

@@ -21,7 +21,7 @@ export interface Session {
   userCount: number
 }
 
-interface CollaborationState {
+export interface CollaborationState {
   // Connection state
   isConnected: boolean
   connectionError: string | null
@@ -79,11 +79,17 @@ export const useCollaborationStore = create<CollaborationState>((set) => ({
   ...INITIAL_STATE,
 
   setConnected: (connected: boolean) => {
-    set({ isConnected: connected, connectionError: connected ? null : undefined })
+    set((state) => ({
+      isConnected: connected,
+      connectionError: connected ? null : state.connectionError,
+    }))
   },
 
   setConnectionError: (error: string | null) => {
-    set({ connectionError: error, isConnected: error ? false : undefined })
+    set((state) => ({
+      connectionError: error,
+      isConnected: error ? false : state.isConnected,
+    }))
   },
 
   joinSession: (sessionId: string, userId: string, username: string) => {

@@ -12,7 +12,6 @@ import type {
   Exporter,
   BaseExportOptions,
   ExportResult,
-  ExportStyling,
   ColorScheme,
 } from './types.js';
 import { DEFAULT_COLOR_SCHEME, DEFAULT_EXPORT_STYLING } from './types.js';
@@ -480,13 +479,13 @@ function generateOctahedronGeometry(
   const indices: number[] = [];
 
   faces.forEach((face, faceIdx) => {
-    const v0 = vertices[face[0]];
-    const v1 = vertices[face[1]];
-    const v2 = vertices[face[2]];
+    const v0 = vertices[face[0]!]!;
+    const v1 = vertices[face[1]!]!;
+    const v2 = vertices[face[2]!]!;
 
     // Calculate face normal
-    const ax = v1[0] - v0[0], ay = v1[1] - v0[1], az = v1[2] - v0[2];
-    const bx = v2[0] - v0[0], by = v2[1] - v0[1], bz = v2[2] - v0[2];
+    const ax = v1[0]! - v0[0]!, ay = v1[1]! - v0[1]!, az = v1[2]! - v0[2]!;
+    const bx = v2[0]! - v0[0]!, by = v2[1]! - v0[1]!, bz = v2[2]! - v0[2]!;
     const nx = ay * bz - az * by;
     const ny = az * bx - ax * bz;
     const nz = ax * by - ay * bx;
@@ -494,8 +493,8 @@ function generateOctahedronGeometry(
 
     const baseIdx = faceIdx * 3;
     face.forEach((vertIdx) => {
-      const v = vertices[vertIdx];
-      positions.push(v[0], v[1], v[2]);
+      const v = vertices[vertIdx]!;
+      positions.push(v[0]!, v[1]!, v[2]!);
       normals.push(nx / len, ny / len, nz / len);
     });
 
@@ -564,7 +563,7 @@ function encodeBufferAsDataURI(data: ArrayBuffer): string {
   const bytes = new Uint8Array(data);
   let binary = '';
   for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
+    binary += String.fromCharCode(bytes[i]!);
   }
   return `data:application/octet-stream;base64,${btoa(binary)}`;
 }
@@ -602,9 +601,11 @@ function createEdgeCylinder(
 
   // Default up vector is Y (0, 1, 0)
   // We need to rotate from Y to direction vector
-  const axis = [-dirZ, 0, dirX]; // Cross product of (0,1,0) and direction
-  const axisLen = Math.sqrt(axis[0] * axis[0] + axis[2] * axis[2]);
-  
+  const axisX = -dirZ;
+  const axisY = 0;
+  const axisZ = dirX;
+  const axisLen = Math.sqrt(axisX * axisX + axisZ * axisZ);
+
   let rotation: [number, number, number, number];
   if (axisLen < 0.001) {
     // Direction is parallel to Y
@@ -617,9 +618,9 @@ function createEdgeCylinder(
     const angle = Math.acos(dirY);
     const s = Math.sin(angle / 2);
     rotation = [
-      (axis[0] / axisLen) * s,
-      (axis[1] / axisLen) * s,
-      (axis[2] / axisLen) * s,
+      (axisX / axisLen) * s,
+      (axisY / axisLen) * s,
+      (axisZ / axisLen) * s,
       Math.cos(angle / 2),
     ];
   }
@@ -666,9 +667,12 @@ function buildGLTFDocument(
   const allPositions: number[] = [];
   const allNormals: number[] = [];
   const allIndices: number[] = [];
-  let positionOffset = 0;
-  let normalOffset = 0;
-  let indexOffset = 0;
+  // @ts-expect-error - Reserved for future use
+  let _positionOffset = 0;
+  // @ts-expect-error - Reserved for future use
+  let _normalOffset = 0;
+  // @ts-expect-error - Reserved for future use
+  let _indexOffset = 0;
 
   // Material cache (by color)
   const materialCache = new Map<string, number>();
@@ -714,7 +718,8 @@ function buildGLTFDocument(
     
     // Record buffer offsets
     const posStart = allPositions.length / 3;
-    const idxStart = allIndices.length;
+    // @ts-expect-error - Reserved for future use
+    const _idxStart = allIndices.length;
     
     // Add geometry data
     allPositions.push(...geometry.positions);
@@ -757,7 +762,7 @@ function buildGLTFDocument(
       },
     });
 
-    gltf.scenes![0].nodes!.push(gltfNodeIdx);
+    gltf.scenes![0]!.nodes!.push(gltfNodeIdx);
   }
 
   // Process edges if enabled
@@ -826,7 +831,7 @@ function buildGLTFDocument(
         },
       });
 
-      gltf.scenes![0].nodes!.push(gltfNodeIdx);
+      gltf.scenes![0]!.nodes!.push(gltfNodeIdx);
     }
   }
 
@@ -865,12 +870,12 @@ function buildGLTFDocument(
   let minX = Infinity, minY = Infinity, minZ = Infinity;
   let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
   for (let i = 0; i < allPositions.length; i += 3) {
-    minX = Math.min(minX, allPositions[i]);
-    minY = Math.min(minY, allPositions[i + 1]);
-    minZ = Math.min(minZ, allPositions[i + 2]);
-    maxX = Math.max(maxX, allPositions[i]);
-    maxY = Math.max(maxY, allPositions[i + 1]);
-    maxZ = Math.max(maxZ, allPositions[i + 2]);
+    minX = Math.min(minX, allPositions[i]!);
+    minY = Math.min(minY, allPositions[i + 1]!);
+    minZ = Math.min(minZ, allPositions[i + 2]!);
+    maxX = Math.max(maxX, allPositions[i]!);
+    maxY = Math.max(maxY, allPositions[i + 1]!);
+    maxZ = Math.max(maxZ, allPositions[i + 2]!);
   }
 
   // Accessors

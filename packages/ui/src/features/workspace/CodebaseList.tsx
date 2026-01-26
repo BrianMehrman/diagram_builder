@@ -7,7 +7,9 @@
 import { useEffect, useState } from 'react'
 import { codebases } from '../../shared/api/endpoints'
 import { CodebaseListItem } from './CodebaseListItem'
+import type { Codebase as ApiCodebase } from '../../shared/types/api'
 
+/** Extended codebase type for UI display */
 export interface Codebase {
   codebaseId: string
   workspaceId: string
@@ -22,9 +24,22 @@ export interface Codebase {
 
 export interface CodebaseListProps {
   workspaceId: string
-  selectedId?: string
+  selectedId?: string | undefined
   onCodebaseSelected?: (codebaseId: string) => void
-  refreshTrigger?: number // Optional timestamp to force refresh
+  refreshTrigger?: number | undefined // Optional timestamp to force refresh
+}
+
+/** Transform API codebase to UI codebase */
+function transformCodebase(apiCodebase: ApiCodebase): Codebase {
+  return {
+    codebaseId: apiCodebase.codebaseId,
+    workspaceId: apiCodebase.workspaceId,
+    status: apiCodebase.status,
+    source: apiCodebase.source,
+    repositoryId: apiCodebase.repositoryId ?? null,
+    createdAt: new Date(apiCodebase.importedAt),
+    errorMessage: apiCodebase.error ?? null,
+  }
 }
 
 export function CodebaseList({
@@ -42,7 +57,8 @@ export function CodebaseList({
       setLoading(true)
       setError(null)
       const response = await codebases.list(workspaceId)
-      setCodebaseList(response.codebases || [])
+      const transformed = (response.codebases || []).map(transformCodebase)
+      setCodebaseList(transformed)
     } catch (err) {
       setError('Failed to load codebases')
       console.error('Failed to load codebases:', err)

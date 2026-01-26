@@ -5,6 +5,7 @@
 import { Suspense } from 'react'
 import { ErrorBoundary, GlobalErrorFallback } from './shared/components'
 import { AppRouter } from './routes'
+import { ToastProvider } from './features/feedback'
 
 function App() {
   return (
@@ -20,18 +21,20 @@ function App() {
         // Example: Sentry.captureException(error, { extra: errorInfo });
       }}
     >
-      <Suspense
-        fallback={
-          <div className="h-screen flex items-center justify-center bg-gray-900">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-              <p className="mt-4 text-white">Loading...</p>
+      <ToastProvider>
+        <Suspense
+          fallback={
+            <div className="h-screen flex items-center justify-center bg-gray-900">
+              <div className="text-center">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+                <p className="mt-4 text-white">Loading...</p>
+              </div>
             </div>
-          </div>
-        }
-      >
-        <AppRouter />
-      </Suspense>
+          }
+        >
+          <AppRouter />
+        </Suspense>
+      </ToastProvider>
     </ErrorBoundary>
   )
 }

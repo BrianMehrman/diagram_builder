@@ -8,14 +8,14 @@ import { useState } from 'react'
 import { ImportCodebaseModal } from './ImportCodebaseModal'
 
 interface ImportCodebaseButtonProps {
-  workspaceId?: string
+  workspaceId: string
   onImportSuccess?: () => void
 }
 
 export function ImportCodebaseButton({
   workspaceId,
   onImportSuccess,
-}: ImportCodebaseButtonProps = {}) {
+}: ImportCodebaseButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleSuccess = () => {

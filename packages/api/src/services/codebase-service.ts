@@ -77,16 +77,19 @@ export async function importCodebase(
     console.error(`Parser import failed for codebase ${codebaseId}:`, error);
   });
 
-  return {
+  const codebase: Codebase = {
     id: codebaseId,
     workspaceId,
     source: input.source,
     type: input.type,
-    branch: input.branch,
     status: 'pending',
     importedAt: now,
     updatedAt: now,
   };
+  if (input.branch) {
+    codebase.branch = input.branch;
+  }
+  return codebase;
 }
 
 /**
@@ -125,14 +128,31 @@ async function triggerParserImport(
       path: repoContext.path
     });
 
-    // Read file contents
-    const fileInputs = await Promise.all(
-      repoContext.files.map(async (filePath) => ({
-        filePath,
-        content: await readFile(filePath, 'utf-8'),
-      }))
-    );
-    logger.debug('File contents read', { codebaseId, fileCount: fileInputs.length });
+    // Read file contents, skipping files that can't be read
+    const fileInputs: Array<{ filePath: string; content: string }> = [];
+    const skippedFiles: string[] = [];
+
+    for (const filePath of repoContext.files) {
+      try {
+        const content = await readFile(filePath, 'utf-8');
+        // Skip files with null bytes (likely binary)
+        if (content.includes('\0')) {
+          logger.warn('Skipping binary file', { filePath, codebaseId });
+          skippedFiles.push(filePath);
+          continue;
+        }
+        fileInputs.push({ filePath, content });
+      } catch (err) {
+        logger.warn('Failed to read file, skipping', { filePath, codebaseId, error: (err as Error).message });
+        skippedFiles.push(filePath);
+      }
+    }
+
+    logger.debug('File contents read', {
+      codebaseId,
+      fileCount: fileInputs.length,
+      skippedCount: skippedFiles.length
+    });
 
     // Build dependency graph
     const depGraph = buildDependencyGraph(fileInputs);
@@ -152,20 +172,18 @@ async function triggerParserImport(
       ivmEdges: ivm.edges.length
     });
 
-    // Create Repository node in Neo4j
+    // Create Repository node in Neo4j (use MERGE for idempotency)
     const repositoryId = uuidv4();
     await runQuery(
       `
-      CREATE (r:Repository {
-        id: $id,
-        name: $name,
-        rootPath: $rootPath,
-        repositoryUrl: $repositoryUrl,
-        branch: $branch,
-        parsedAt: datetime(),
-        type: $type,
-        fileCount: $fileCount
-      })
+      MERGE (r:Repository {id: $id})
+      SET r.name = $name,
+          r.rootPath = $rootPath,
+          r.repositoryUrl = $repositoryUrl,
+          r.branch = $branch,
+          r.parsedAt = datetime(),
+          r.type = $type,
+          r.fileCount = $fileCount
       RETURN r
       `,
       {
@@ -179,29 +197,27 @@ async function triggerParserImport(
       }
     );
 
-    // Store IVM nodes in Neo4j
+    // Store IVM nodes in Neo4j (use MERGE to handle retries/duplicates)
     for (const node of ivm.nodes) {
       const nodeType = node.type.charAt(0).toUpperCase() + node.type.slice(1); // Capitalize for Neo4j label
 
       await runQuery(
         `
         MATCH (r:Repository {id: $repoId})
-        CREATE (n:${nodeType} {
-          id: $id,
-          label: $label,
-          path: $path,
-          type: $type,
-          x: $x,
-          y: $y,
-          z: $z,
-          lod: $lod,
-          parentId: $parentId,
-          language: $language,
-          loc: $loc,
-          complexity: $complexity,
-          metadata: $metadata
-        })
-        CREATE (r)-[:CONTAINS]->(n)
+        MERGE (n:${nodeType} {id: $id})
+        SET n.label = $label,
+            n.path = $path,
+            n.type = $type,
+            n.x = $x,
+            n.y = $y,
+            n.z = $z,
+            n.lod = $lod,
+            n.parentId = $parentId,
+            n.language = $language,
+            n.loc = $loc,
+            n.complexity = $complexity,
+            n.metadata = $metadata
+        MERGE (r)-[:CONTAINS]->(n)
         `,
         {
           repoId: repositoryId,
@@ -222,7 +238,7 @@ async function triggerParserImport(
       );
     }
 
-    // Store IVM edges in Neo4j
+    // Store IVM edges in Neo4j (use MERGE to handle retries/duplicates)
     for (const edge of ivm.edges) {
       const edgeType = edge.type.toUpperCase().replace(/-/g, '_'); // Format for Neo4j relationship
 
@@ -230,12 +246,10 @@ async function triggerParserImport(
         `
         MATCH (source {id: $sourceId})
         MATCH (target {id: $targetId})
-        CREATE (source)-[:${edgeType} {
-          id: $id,
-          label: $label,
-          lod: $lod,
-          metadata: $metadata
-        }]->(target)
+        MERGE (source)-[rel:${edgeType} {id: $id}]->(target)
+        SET rel.label = $label,
+            rel.lod = $lod,
+            rel.metadata = $metadata
         `,
         {
           id: edge.id,
@@ -248,12 +262,12 @@ async function triggerParserImport(
       );
     }
 
-    // Link Codebase to Repository
+    // Link Codebase to Repository (use MERGE for idempotency)
     await runQuery(
       `
       MATCH (c:Codebase {id: $codebaseId})
       MATCH (r:Repository {id: $repositoryId})
-      CREATE (c)-[:PARSED_INTO]->(r)
+      MERGE (c)-[:PARSED_INTO]->(r)
       RETURN c, r
       `,
       {
@@ -331,18 +345,34 @@ export async function listWorkspaceCodebases(workspaceId: string): Promise<Codeb
     { workspaceId }
   );
 
-  const codebases = rows.map((row) => ({
-    id: row.id as string,
-    workspaceId: row.workspaceId as string,
-    source: row.source as string,
-    type: row.type as 'local' | 'git',
-    branch: row.branch as string | undefined,
-    status: row.status as 'pending' | 'processing' | 'completed' | 'failed',
-    error: row.error as string | undefined,
-    repositoryId: row.repositoryId as string | undefined,
-    importedAt: row.importedAt as string,
-    updatedAt: row.updatedAt as string,
-  }));
+  interface CodebaseRow {
+    id: string;
+    workspaceId: string;
+    source: string;
+    type: 'local' | 'git';
+    branch: string | null;
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    error: string | null;
+    repositoryId: string | null;
+    importedAt: string;
+    updatedAt: string;
+  }
+
+  const codebases: Codebase[] = (rows as CodebaseRow[]).map((row) => {
+    const codebase: Codebase = {
+      id: row.id,
+      workspaceId: row.workspaceId,
+      source: row.source,
+      type: row.type,
+      status: row.status,
+      importedAt: row.importedAt,
+      updatedAt: row.updatedAt,
+    };
+    if (row.branch) codebase.branch = row.branch;
+    if (row.error) codebase.error = row.error;
+    if (row.repositoryId) codebase.repositoryId = row.repositoryId;
+    return codebase;
+  });
 
   // Cache results (5-minute TTL)
   await cache.set(cacheKey, codebases);
@@ -386,7 +416,20 @@ export async function getCodebaseById(
     throw new NotFoundError('Codebase not found', `Codebase with ID ${codebaseId} does not exist`);
   }
 
-  const row = rows[0];
+  interface CodebaseRow {
+    id: string;
+    workspaceId: string;
+    source: string;
+    type: 'local' | 'git';
+    branch: string | null;
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    error: string | null;
+    repositoryId: string | null;
+    importedAt: string;
+    updatedAt: string;
+  }
+
+  const row = rows[0] as CodebaseRow;
 
   // Verify codebase belongs to workspace
   if (row.workspaceId !== workspaceId) {
@@ -394,17 +437,17 @@ export async function getCodebaseById(
   }
 
   const codebase: Codebase = {
-    id: row.id as string,
-    workspaceId: row.workspaceId as string,
-    source: row.source as string,
-    type: row.type as 'local' | 'git',
-    branch: row.branch as string | undefined,
-    status: row.status as 'pending' | 'processing' | 'completed' | 'failed',
-    error: row.error as string | undefined,
-    repositoryId: row.repositoryId as string | undefined,
-    importedAt: row.importedAt as string,
-    updatedAt: row.updatedAt as string,
+    id: row.id,
+    workspaceId: row.workspaceId,
+    source: row.source,
+    type: row.type,
+    status: row.status,
+    importedAt: row.importedAt,
+    updatedAt: row.updatedAt,
   };
+  if (row.branch) codebase.branch = row.branch;
+  if (row.error) codebase.error = row.error;
+  if (row.repositoryId) codebase.repositoryId = row.repositoryId;
 
   // Cache result (5-minute TTL)
   await cache.set(cacheKey, codebase);
@@ -575,9 +618,9 @@ export async function updateCodebaseStatus(
 
   // Invalidate caches
   if (rows.length > 0) {
-    const workspaceId = rows[0].workspaceId as string;
+    const row = rows[0] as { workspaceId: string };
     const codebaseCacheKey = buildCacheKey('codebase', codebaseId);
-    const workspaceCodebasesKey = buildCacheKey('workspace', `${workspaceId}:codebases`);
+    const workspaceCodebasesKey = buildCacheKey('workspace', `${row.workspaceId}:codebases`);
     await Promise.all([
       cache.invalidate(codebaseCacheKey),
       cache.invalidate(workspaceCodebasesKey),

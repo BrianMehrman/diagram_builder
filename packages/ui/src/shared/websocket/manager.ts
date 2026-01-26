@@ -51,9 +51,9 @@ export class WebSocketManager {
         username,
       },
       transports: ['websocket'],
-      reconnection: this.config.reconnection,
-      reconnectionDelay: this.config.reconnectionDelay,
-      reconnectionAttempts: this.config.reconnectionAttempts,
+      reconnection: this.config.reconnection ?? true,
+      reconnectionDelay: this.config.reconnectionDelay ?? 1000,
+      reconnectionAttempts: this.config.reconnectionAttempts ?? 5,
     })
 
     return this.socket

@@ -1,5 +1,5 @@
 import morgan from 'morgan'
-import { logger } from '../logger'
+import { loggerStream } from '../logger'
 
 /**
  * Request logging middleware configuration
@@ -24,4 +24,4 @@ const productionFormat = ':timestamp :method :url :status :res[content-length] -
 
 const format = process.env.NODE_ENV === 'production' ? productionFormat : developmentFormat
 
-export const loggerMiddleware = morgan(format, { stream: logger.stream })
+export const loggerMiddleware = morgan(format, { stream: loggerStream })

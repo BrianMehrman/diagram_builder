@@ -20,7 +20,7 @@ interface Canvas3DProps {
  * Camera controller
  * Syncs Three.js camera with Zustand store
  */
-function CameraController({ graph }: { graph?: Graph }) {
+function CameraController({ graph }: { graph?: Graph | undefined }) {
   const camera = useCanvasStore((state) => state.camera);
   const setCamera = useCanvasStore((state) => state.setCamera);
   const setCameraTarget = useCanvasStore((state) => state.setCameraTarget);

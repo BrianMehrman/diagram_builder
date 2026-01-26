@@ -66,14 +66,14 @@ export function EdgeRenderer({ edge, nodes }: EdgeRendererProps) {
 
   const color = getEdgeColor(edge.type);
 
+  const positionsArray = new Float32Array(points.flatMap((p) => [p.x, p.y, p.z]));
+
   return (
     <line>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
-          count={points.length}
-          array={new Float32Array(points.flatMap((p) => [p.x, p.y, p.z]))}
-          itemSize={3}
+          args={[positionsArray, 3]}
         />
       </bufferGeometry>
       <lineBasicMaterial color={color} transparent opacity={0.7} />

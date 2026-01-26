@@ -5,7 +5,6 @@
  */
 
 import { ApiClientError } from './client'
-import type { ProblemDetails } from '../types/api'
 
 /**
  * Get user-friendly error message from API error

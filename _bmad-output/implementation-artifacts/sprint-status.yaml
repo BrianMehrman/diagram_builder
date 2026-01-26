@@ -80,7 +80,7 @@ development_status:
   epic-7: in-progress
   epic-7-retrospective: optional
   7-1-implement-searchbar-modal-autocomplete: done  # SearchBar with ⌘K, fuzzy autocomplete, camera flight - COMPLETE (2026-01-25)
-  7-2-enhance-empty-states-loading-indicators: not-started  # Empty states, progress bars, toast notifications
+  7-2-enhance-empty-states-loading-indicators: in-progress  # Empty states, progress bars, toast notifications
   7-3-implement-camera-flight-animations: not-started  # Smooth camera flight with arrival feedback
   7-4-add-keyboard-navigation-shortcuts: not-started  # Global keyboard shortcuts (⌘K, ESC, Home, C)
   7-5-enhance-minimap-click-to-jump: not-started  # MiniMap click-to-jump, FOV indicator

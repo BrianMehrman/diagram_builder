@@ -35,17 +35,41 @@ export async function parseFile(filePath: string): Promise<ParseResult> {
  * @returns ParseResult containing the syntax tree and metadata
  */
 export function parseContent(content: string, language: Language): ParseResult {
+  // For languages without full parser support, create a minimal tree
+  // This allows file discovery without full AST parsing
+  const unsupportedLanguages: Language[] = ['python', 'java', 'go', 'c', 'cpp']
+
+  if (unsupportedLanguages.includes(language)) {
+    // For unsupported languages, we can't parse - return a null tree placeholder
+    // The tree will be empty, but we can still track the file
+    // Use a JavaScript parser to create a valid empty tree structure
+    const jsParser = createParser('javascript')
+    const emptyTree = jsParser.parser.parse('')
+    return {
+      tree: emptyTree,
+      language,
+      hasErrors: false,
+    }
+  }
+
   const { parser } = createParser(language)
 
   try {
-    // For languages without full parser support, create a minimal tree
-    // This allows file discovery without full AST parsing
-    const unsupportedLanguages: Language[] = ['python', 'java', 'go', 'c', 'cpp']
+    // Defensive check for content type
+    if (typeof content !== 'string') {
+      console.error('[parseContent] Invalid content type:', typeof content, content)
+      throw new Error(`Invalid content type for parser: ${typeof content}`)
+    }
+    if (content.length === 0) {
+      console.warn('[parseContent] Empty content string passed to parser')
+    }
 
-    if (unsupportedLanguages.includes(language)) {
-      // Create a minimal parse result for unsupported languages
-      // The tree will be empty, but we can still track the file
-      const emptyTree = parser.parse('')
+    // Check for binary content (null bytes indicate binary)
+    if (content.includes('\0')) {
+      console.warn('[parseContent] Content contains null bytes, likely binary file')
+      // Return empty tree for binary files
+      const jsParser = createParser('javascript')
+      const emptyTree = jsParser.parser.parse('')
       return {
         tree: emptyTree,
         language,
@@ -53,7 +77,16 @@ export function parseContent(content: string, language: Language): ParseResult {
       }
     }
 
-    const tree = parser.parse(content)
+    let tree
+    try {
+      tree = parser.parse(content)
+    } catch (err) {
+      console.error('[parseContent] Error parsing content:', err, {
+        language,
+        contentSnippet: content.slice(0, 100),
+      })
+      throw err
+    }
     const hasErrors = checkForErrors(tree)
 
     return {

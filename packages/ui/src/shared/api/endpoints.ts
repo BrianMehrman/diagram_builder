@@ -10,18 +10,17 @@ import type {
   ParseResponse,
   GraphQueryRequest,
   GraphQueryResponse,
-  Viewpoint,
   CreateViewpointRequest,
   UpdateViewpointRequest,
   ExportRequest,
   ExportResponse,
-  Workspace,
   CreateWorkspaceRequest,
   UpdateWorkspaceRequest,
   Codebase,
   CreateCodebaseRequest,
   CodebasesListResponse,
 } from '../types/api'
+import type { Viewpoint, Workspace } from '../types'
 
 /**
  * Authentication endpoints

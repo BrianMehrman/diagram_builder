@@ -16,9 +16,9 @@ import { useDebounce } from '../../shared/hooks'
 import { searchNodes, initializeSearchIndex } from './fuzzySearch'
 import type { GraphNode, Position3D } from '../../shared/types'
 
-interface SearchBarProps {
+export interface SearchBarProps {
   nodes?: GraphNode[]
-  onNodeSelect?: (nodeId: string, position?: Position3D) => void
+  onNodeSelect?: ((nodeId: string, position?: Position3D) => void) | undefined
   className?: string
 }
 

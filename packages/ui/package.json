@@ -16,6 +16,7 @@
     "@alloc/quick-lru": "^5.2.0",
     "@diagram-builder/core": "*",
     "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-toast": "^1.2.15",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
     "bidi-js": "^1.0.3",

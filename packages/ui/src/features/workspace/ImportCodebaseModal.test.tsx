@@ -11,7 +11,41 @@ import { codebases } from '../../shared/api/endpoints'
 vi.mock('../../shared/api/endpoints', () => ({
   codebases: {
     create: vi.fn(),
+    get: vi.fn(),
   },
+}))
+
+// Mock the toast store and useImportProgress hook
+const mockShowSuccess = vi.fn()
+const mockShowError = vi.fn()
+const mockCancelProgress = vi.fn()
+
+vi.mock('../feedback', () => ({
+  useToastStore: (selector: (state: { showSuccess: () => void; showError: () => void }) => unknown) =>
+    selector({
+      showSuccess: mockShowSuccess,
+      showError: mockShowError,
+    }),
+  useImportProgress: () => ({
+    progress: 50,
+    status: 'Parsing codebase...',
+    stage: 'processing',
+    isComplete: false,
+    isError: false,
+    error: null,
+    repositoryId: null,
+    cancel: mockCancelProgress,
+  }),
+  ImportProgress: ({ open, progress, status, onCancel }: { open: boolean; progress: number; status: string; onCancel: () => void }) =>
+    open ? (
+      <div data-testid="import-progress-modal">
+        <div data-testid="progress-value">{progress}</div>
+        <div data-testid="status-text">{status}</div>
+        <button onClick={onCancel} data-testid="cancel-progress">
+          Cancel
+        </button>
+      </div>
+    ) : null,
 }))
 
 describe('ImportCodebaseModal', () => {
@@ -26,6 +60,9 @@ describe('ImportCodebaseModal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockShowSuccess.mockClear()
+    mockShowError.mockClear()
+    mockCancelProgress.mockClear()
   })
 
   it('should not render when isOpen is false', () => {
@@ -125,7 +162,7 @@ describe('ImportCodebaseModal', () => {
     })
   })
 
-  it('should successfully import local codebase', async () => {
+  it('should successfully submit import request', async () => {
     vi.mocked(codebases.create).mockResolvedValue({
       codebaseId: 'cb-123',
       workspaceId: 'test-workspace',
@@ -150,13 +187,10 @@ describe('ImportCodebaseModal', () => {
       })
     })
 
-    // Should show success message
+    // Should show progress modal after API call
     await waitFor(() => {
-      expect(screen.getByTestId('success-message')).toBeInTheDocument()
+      expect(screen.getByTestId('import-progress-modal')).toBeInTheDocument()
     })
-
-    // Should call onSuccess callback
-    expect(mockOnSuccess).toHaveBeenCalledTimes(1)
   })
 
   it('should successfully import git repository with branch', async () => {
@@ -213,6 +247,10 @@ describe('ImportCodebaseModal', () => {
     const sourceInput = screen.getByTestId('source-input')
     fireEvent.change(sourceInput, { target: { value: 'https://github.com/user/private-repo.git' } })
 
+    // Enable the token input by checking the checkbox
+    const showTokenCheckbox = screen.getByTestId('show-token-checkbox')
+    fireEvent.click(showTokenCheckbox)
+
     const tokenInput = screen.getByTestId('token-input')
     fireEvent.change(tokenInput, { target: { value: 'ghp_test_token_123' } })
 
@@ -263,9 +301,9 @@ describe('ImportCodebaseModal', () => {
     expect(submitButton).toBeDisabled()
     expect(screen.getByText('Importing...')).toBeInTheDocument()
 
-    // Should return to normal state after completion
+    // Should show progress modal after API completes
     await waitFor(() => {
-      expect(screen.getByTestId('success-message')).toBeInTheDocument()
+      expect(screen.getByTestId('import-progress-modal')).toBeInTheDocument()
     })
   })
 
@@ -335,5 +373,110 @@ describe('ImportCodebaseModal', () => {
     // Try to close while loading
     const closeButton = screen.getByTestId('close-modal-button')
     expect(closeButton).toBeDisabled()
+  })
+
+  describe('Toast Notifications', () => {
+    it('should show success toast when import starts', async () => {
+      vi.mocked(codebases.create).mockResolvedValue({
+        codebaseId: 'cb-123',
+        workspaceId: 'test-workspace',
+        source: '/path/to/repo',
+        type: 'local',
+        status: 'pending',
+        importedAt: new Date().toISOString(),
+      })
+
+      render(<ImportCodebaseModal {...defaultProps} />)
+
+      const sourceInput = screen.getByTestId('source-input')
+      fireEvent.change(sourceInput, { target: { value: '/path/to/repo' } })
+
+      const submitButton = screen.getByTestId('submit-button')
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(mockShowSuccess).toHaveBeenCalledWith(
+          'Import Started',
+          'Codebase import has started. Tracking progress...'
+        )
+      })
+    })
+
+    it('should show error toast on failed import', async () => {
+      const errorMessage = 'Network error occurred'
+      vi.mocked(codebases.create).mockRejectedValue(new Error(errorMessage))
+
+      render(<ImportCodebaseModal {...defaultProps} />)
+
+      const sourceInput = screen.getByTestId('source-input')
+      fireEvent.change(sourceInput, { target: { value: '/path/to/repo' } })
+
+      const submitButton = screen.getByTestId('submit-button')
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(mockShowError).toHaveBeenCalledWith(
+          'Import Failed',
+          `${errorMessage}. Please check your input and try again.`
+        )
+      })
+    })
+  })
+
+  describe('Progress Modal', () => {
+    it('should show progress modal after successful import request', async () => {
+      vi.mocked(codebases.create).mockResolvedValue({
+        codebaseId: 'cb-123',
+        workspaceId: 'test-workspace',
+        source: '/path/to/repo',
+        type: 'local',
+        status: 'pending',
+        importedAt: new Date().toISOString(),
+      })
+
+      render(<ImportCodebaseModal {...defaultProps} />)
+
+      const sourceInput = screen.getByTestId('source-input')
+      fireEvent.change(sourceInput, { target: { value: '/path/to/repo' } })
+
+      const submitButton = screen.getByTestId('submit-button')
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-progress-modal')).toBeInTheDocument()
+      })
+
+      // Should show progress value from hook
+      expect(screen.getByTestId('progress-value')).toHaveTextContent('50')
+      expect(screen.getByTestId('status-text')).toHaveTextContent('Parsing codebase...')
+    })
+
+    it('should cancel progress when cancel button is clicked', async () => {
+      vi.mocked(codebases.create).mockResolvedValue({
+        codebaseId: 'cb-123',
+        workspaceId: 'test-workspace',
+        source: '/path/to/repo',
+        type: 'local',
+        status: 'pending',
+        importedAt: new Date().toISOString(),
+      })
+
+      render(<ImportCodebaseModal {...defaultProps} />)
+
+      const sourceInput = screen.getByTestId('source-input')
+      fireEvent.change(sourceInput, { target: { value: '/path/to/repo' } })
+
+      const submitButton = screen.getByTestId('submit-button')
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(screen.getByTestId('import-progress-modal')).toBeInTheDocument()
+      })
+
+      const cancelButton = screen.getByTestId('cancel-progress')
+      fireEvent.click(cancelButton)
+
+      expect(mockCancelProgress).toHaveBeenCalled()
+    })
   })
 })

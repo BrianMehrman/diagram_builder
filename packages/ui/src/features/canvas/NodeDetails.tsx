@@ -122,13 +122,13 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
           </div>
         )}
 
-        {Object.keys(selectedNode.metadata).length > 0 && (
+        {selectedNode.metadata && Object.keys(selectedNode.metadata).length > 0 && (
           <div>
             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
               Metadata
             </div>
             <div className="text-sm text-gray-900 mt-1 space-y-1">
-              {Object.entries(selectedNode.metadata).map(([key, value]) => (
+              {Object.entries(selectedNode.metadata || {}).map(([key, value]) => (
                 <div key={key} className="flex justify-between">
                   <span className="text-gray-600">{key}:</span>
                   <span className="font-medium">

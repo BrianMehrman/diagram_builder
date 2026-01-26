@@ -12,11 +12,8 @@
 import type { IVMGraph } from '../ivm/types.js';
 import type {
   Exporter,
-  BaseExportOptions,
   ExportResult,
-  ExportStyling,
 } from './types.js';
-import { DEFAULT_EXPORT_STYLING } from './types.js';
 import { SVGExporter, SVGExportOptions, DEFAULT_SVG_OPTIONS } from './svg.js';
 
 // =============================================================================
@@ -74,12 +71,11 @@ export interface PNGRenderOptions {
 /**
  * Default PNG export options
  */
-export const DEFAULT_PNG_OPTIONS: Required<Omit<PNGExportOptions, 'renderer'>> & { renderer?: PNGRenderer } = {
+export const DEFAULT_PNG_OPTIONS: Required<Omit<PNGExportOptions, 'renderer'>> & { renderer?: PNGRenderer | undefined } = {
   ...DEFAULT_SVG_OPTIONS,
   quality: 100,
   deviceScaleFactor: 2,
   transparent: false,
-  renderer: undefined,
 };
 
 // =============================================================================
@@ -301,7 +297,10 @@ export class PNGExporter implements Exporter<PNGExportOptions> {
     const svgResult = this.svgExporter.export(graph, opts);
 
     // Render to PNG
-    const pngBuffer = await renderer.render(svgResult.content, {
+    const svgContent = typeof svgResult.content === 'string'
+      ? svgResult.content
+      : svgResult.content.toString('utf-8');
+    const pngBuffer = await renderer.render(svgContent, {
       width: opts.width,
       height: opts.height,
       deviceScaleFactor: opts.deviceScaleFactor,

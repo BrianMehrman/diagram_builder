@@ -17,7 +17,7 @@ interface ApiClientConfig {
 /**
  * API request options
  */
-interface RequestOptions extends RequestInit {
+export interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean>;
 }
 
@@ -104,6 +104,13 @@ export function createApiClient(config: ApiClientConfig) {
       request<T>(endpoint, {
         ...options,
         method: 'PUT',
+        ...(body !== undefined && { body: JSON.stringify(body) }),
+      }),
+
+    patch: <T>(endpoint: string, body?: unknown, options?: RequestOptions) =>
+      request<T>(endpoint, {
+        ...options,
+        method: 'PATCH',
         ...(body !== undefined && { body: JSON.stringify(body) }),
       }),
 

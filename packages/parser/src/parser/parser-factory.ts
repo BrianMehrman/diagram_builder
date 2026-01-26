@@ -36,7 +36,9 @@ export function createParser(language: Language): ParserInstance {
     // but it won't have a valid grammar. This allows basic file scanning
     // without full AST parsing
     if (grammar) {
-      parser.setLanguage(grammar)
+      parser.setLanguage(grammar as Parameters<typeof parser.setLanguage>[0])
+    } else {
+      console.warn(`[createParser] No grammar available for language: ${language}`)
     }
 
     return {
@@ -44,6 +46,7 @@ export function createParser(language: Language): ParserInstance {
       language,
     }
   } catch (error) {
+    console.error(`[createParser] Error creating parser for ${language}:`, error)
     if (error instanceof UnsupportedLanguageError) {
       throw error
     }

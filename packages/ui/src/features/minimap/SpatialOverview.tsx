@@ -26,7 +26,7 @@ function MiniNode({
 }: {
   node: GraphNode;
   isSelected: boolean;
-  onClick?: (nodeId: string) => void;
+  onClick?: ((nodeId: string) => void) | undefined;
 }) {
   const [hovered, setHovered] = useState(false);
   const position = node.position ?? { x: 0, y: 0, z: 0 };

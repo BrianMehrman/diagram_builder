@@ -8,7 +8,7 @@
  * - Velocity damping for stabilization
  */
 
-import type { Position3D, IVMGraph, IVMNode, IVMEdge, BoundingBox } from '../ivm/types.js';
+import type { Position3D, IVMGraph, IVMNode, IVMEdge } from '../ivm/types.js';
 import {
   ForceDirectedConfig,
   DEFAULT_FORCE_DIRECTED_CONFIG,
@@ -16,9 +16,7 @@ import {
   LayoutEdge,
   LayoutState,
   LayoutResult,
-  LayoutProgress,
   LayoutProgressCallback,
-  Velocity3D,
   Force3D,
 } from './types.js';
 import { calculateBounds } from '../ivm/builder.js';
@@ -61,7 +59,8 @@ function createLayoutEdge(edge: IVMEdge): LayoutEdge {
 /**
  * Calculates the distance between two positions
  */
-function distance(p1: Position3D, p2: Position3D): number {
+// @ts-expect-error - Reserved for future use
+function _distance(p1: Position3D, p2: Position3D): number {
   const dx = p2.x - p1.x;
   const dy = p2.y - p1.y;
   const dz = p2.z - p1.z;
