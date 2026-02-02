@@ -68,6 +68,23 @@ export interface UpdateWorkspaceRequest {
  */
 export type CodebaseStatus = 'pending' | 'processing' | 'completed' | 'failed';
 export type CodebaseType = 'local' | 'git';
+export type ImportStage = 'cloning' | 'parsing' | 'graph-building' | 'storing';
+
+/**
+ * Import progress information
+ */
+export interface ImportProgress {
+  /** Progress percentage (0-100) */
+  percentage: number;
+  /** Current stage of import */
+  stage: ImportStage;
+  /** Human-readable stage message */
+  message: string;
+  /** Number of files processed (optional) */
+  filesProcessed?: number;
+  /** Total files to process (optional) */
+  totalFiles?: number;
+}
 
 export interface Codebase {
   codebaseId: string;
@@ -79,6 +96,8 @@ export interface Codebase {
   error?: string;
   repositoryId?: string;
   importedAt: string;
+  /** Import progress (when processing) */
+  progress?: ImportProgress;
 }
 
 export interface CreateCodebaseRequest {

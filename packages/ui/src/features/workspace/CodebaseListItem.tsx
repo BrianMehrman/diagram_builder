@@ -90,7 +90,38 @@ export function CodebaseListItem({
         {/* Codebase Info */}
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-medium text-white truncate">{repoName}</h4>
-          <p className="text-xs text-gray-400">{status.label}</p>
+          <p className="text-xs text-gray-400">
+            {codebase.status === 'processing' && codebase.progress
+              ? codebase.progress.message
+              : status.label}
+          </p>
+
+          {/* Progress Bar (when processing) */}
+          {codebase.status === 'processing' && codebase.progress && (
+            <div className="mt-2">
+              <div className="flex justify-between items-center text-xs text-gray-400 mb-1">
+                <span>{codebase.progress.stage}</span>
+                <span>{codebase.progress.percentage}%</span>
+              </div>
+              <div className="w-full h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 transition-all duration-300 ease-out"
+                  style={{ width: `${codebase.progress.percentage}%` }}
+                  role="progressbar"
+                  aria-valuenow={codebase.progress.percentage}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Import progress"
+                />
+              </div>
+              {codebase.progress.filesProcessed !== undefined &&
+                codebase.progress.totalFiles !== undefined && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {codebase.progress.filesProcessed} / {codebase.progress.totalFiles} files
+                  </p>
+                )}
+            </div>
+          )}
 
           {/* File and Node Counts */}
           {(codebase.fileCount !== null || codebase.nodeCount !== null) && (

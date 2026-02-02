@@ -9,11 +9,13 @@ import { act } from 'react';
 import { ViewpointList } from './ViewpointList';
 import { useViewpointStore } from './store';
 import { useCanvasStore } from '../canvas/store';
+import { useToastStore } from '../feedback/toastStore';
 
 describe('ViewpointList', () => {
   beforeEach(() => {
     useViewpointStore.getState().reset();
     useCanvasStore.getState().reset();
+    useToastStore.getState().clearAllToasts();
   });
 
   it('shows empty state when no viewpoints', () => {
@@ -257,8 +259,11 @@ describe('ViewpointList', () => {
     const shareButton = screen.getAllByTitle('Share viewpoint')[0];
     await user.click(shareButton);
 
+    // Verify toast notification is shown instead of inline message
     await vi.waitFor(() => {
-      expect(screen.getByText(/url copied to clipboard/i)).toBeDefined();
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.length).toBeGreaterThan(0);
+      expect(toasts[0].type).toBe('success');
     });
   });
 
@@ -276,5 +281,68 @@ describe('ViewpointList', () => {
     // Should display a formatted date string
     const dateRegex = /\d{1,2}\/\d{1,2}\/\d{4}/;
     expect(screen.getByText(dateRegex)).toBeDefined();
+  });
+
+  it('shows toast notification when copying viewpoint URL', async () => {
+    const user = userEvent.setup();
+    const writeTextMock = vi.fn(() => Promise.resolve());
+
+    Object.defineProperty(global.navigator, 'clipboard', {
+      value: { writeText: writeTextMock },
+      writable: true,
+      configurable: true,
+    });
+
+    act(() => {
+      useViewpointStore.getState().createViewpoint({
+        name: 'Test Viewpoint',
+        cameraPosition: { x: 1, y: 2, z: 3 },
+        cameraTarget: { x: 0, y: 0, z: 0 },
+      });
+    });
+
+    render(<ViewpointList />);
+
+    const shareButton = screen.getAllByTitle('Share viewpoint')[0];
+    await user.click(shareButton);
+
+    await vi.waitFor(() => {
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.length).toBeGreaterThan(0);
+      expect(toasts[0].type).toBe('success');
+      expect(toasts[0].title).toContain('Copied');
+      expect(toasts[0].message).toContain('clipboard');
+    });
+  });
+
+  it('shows error toast when clipboard copy fails', async () => {
+    const user = userEvent.setup();
+    const writeTextMock = vi.fn(() => Promise.reject(new Error('Clipboard access denied')));
+
+    Object.defineProperty(global.navigator, 'clipboard', {
+      value: { writeText: writeTextMock },
+      writable: true,
+      configurable: true,
+    });
+
+    act(() => {
+      useViewpointStore.getState().createViewpoint({
+        name: 'Test Viewpoint',
+        cameraPosition: { x: 1, y: 2, z: 3 },
+        cameraTarget: { x: 0, y: 0, z: 0 },
+      });
+    });
+
+    render(<ViewpointList />);
+
+    const shareButton = screen.getAllByTitle('Share viewpoint')[0];
+    await user.click(shareButton);
+
+    await vi.waitFor(() => {
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.length).toBeGreaterThan(0);
+      expect(toasts[0].type).toBe('error');
+      expect(toasts[0].title).toContain('Failed');
+    });
   });
 });

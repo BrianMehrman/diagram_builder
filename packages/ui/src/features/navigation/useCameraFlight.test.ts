@@ -72,6 +72,14 @@ describe('useCameraFlight', () => {
     expect(window.requestAnimationFrame).toHaveBeenCalled();
   });
 
+  it('returns cancelFlight function and isFlying state', () => {
+    const { result } = renderHook(() => useCameraFlight());
+
+    expect(result.current.cancelFlight).toBeDefined();
+    expect(typeof result.current.cancelFlight).toBe('function');
+    expect(typeof result.current.isFlying).toBe('boolean');
+  });
+
   it('updates camera position during animation', () => {
     const { result } = renderHook(() => useCameraFlight());
 
@@ -83,12 +91,12 @@ describe('useCameraFlight', () => {
     });
 
     // Simulate partial progress through animation
-    vi.spyOn(performance, 'now').mockReturnValue(400); // 50% through 800ms
+    vi.spyOn(performance, 'now').mockReturnValue(750); // 50% through 1500ms
 
     // Execute the animation frame callback
     if (rafCallback) {
       act(() => {
-        rafCallback!(400);
+        rafCallback!(750);
       });
     }
 
@@ -140,12 +148,12 @@ describe('useCameraFlight', () => {
     });
 
     // Simulate animation completion (progress >= 1)
-    vi.spyOn(performance, 'now').mockReturnValue(1000); // Past 800ms duration
+    vi.spyOn(performance, 'now').mockReturnValue(1600); // Past 1500ms duration
 
     // Execute final animation frame
     if (rafCallback) {
       act(() => {
-        rafCallback!(1000);
+        rafCallback!(1600);
       });
     }
 
@@ -163,17 +171,148 @@ describe('useCameraFlight', () => {
     });
 
     // Simulate animation completion
-    vi.spyOn(performance, 'now').mockReturnValue(1000);
+    vi.spyOn(performance, 'now').mockReturnValue(1600);
 
     if (rafCallback) {
       act(() => {
-        rafCallback!(1000);
+        rafCallback!(1600);
       });
     }
 
     // Camera target should be the node position
     const cameraTarget = useCanvasStore.getState().camera.target;
     expect(cameraTarget).toEqual(targetPosition);
+  });
+
+  it('highlights node on arrival', () => {
+    const { result } = renderHook(() => useCameraFlight());
+
+    const targetPosition = { x: 10, y: 5, z: 20 };
+
+    act(() => {
+      result.current.flyToNode('node-123', targetPosition);
+    });
+
+    // Simulate animation completion
+    vi.spyOn(performance, 'now').mockReturnValue(1600);
+
+    if (rafCallback) {
+      act(() => {
+        rafCallback!(1600);
+      });
+    }
+
+    // Node should be highlighted
+    expect(useCanvasStore.getState().highlightedNodeId).toBe('node-123');
+  });
+
+  it('clears highlight after 2 seconds', () => {
+    const { result } = renderHook(() => useCameraFlight());
+
+    const targetPosition = { x: 10, y: 5, z: 20 };
+
+    act(() => {
+      result.current.flyToNode('node-123', targetPosition);
+    });
+
+    // Simulate animation completion
+    vi.spyOn(performance, 'now').mockReturnValue(1600);
+
+    if (rafCallback) {
+      act(() => {
+        rafCallback!(1600);
+      });
+    }
+
+    // Node should be highlighted
+    expect(useCanvasStore.getState().highlightedNodeId).toBe('node-123');
+
+    // Advance timers by 2 seconds (highlight duration)
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    // Highlight should be cleared
+    expect(useCanvasStore.getState().highlightedNodeId).toBeNull();
+  });
+
+  it('sets flight state during animation', () => {
+    const { result } = renderHook(() => useCameraFlight());
+
+    const targetPosition = { x: 10, y: 5, z: 20 };
+
+    act(() => {
+      result.current.flyToNode('node-123', targetPosition);
+    });
+
+    // Flight state should be set
+    expect(useCanvasStore.getState().isFlying).toBe(true);
+    expect(useCanvasStore.getState().flightTargetNodeId).toBe('node-123');
+  });
+
+  it('clears flight state on animation completion', () => {
+    const { result } = renderHook(() => useCameraFlight());
+
+    const targetPosition = { x: 10, y: 5, z: 20 };
+
+    act(() => {
+      result.current.flyToNode('node-123', targetPosition);
+    });
+
+    // Simulate animation completion
+    vi.spyOn(performance, 'now').mockReturnValue(1600);
+
+    if (rafCallback) {
+      act(() => {
+        rafCallback!(1600);
+      });
+    }
+
+    // Flight state should be cleared
+    expect(useCanvasStore.getState().isFlying).toBe(false);
+    expect(useCanvasStore.getState().flightTargetNodeId).toBeNull();
+  });
+
+  it('cancels flight when cancelFlight is called', () => {
+    const { result } = renderHook(() => useCameraFlight());
+
+    const targetPosition = { x: 10, y: 5, z: 20 };
+
+    act(() => {
+      result.current.flyToNode('node-123', targetPosition);
+    });
+
+    // Flight should be in progress
+    expect(useCanvasStore.getState().isFlying).toBe(true);
+
+    // Cancel the flight
+    act(() => {
+      result.current.cancelFlight();
+    });
+
+    // Flight state should be cleared
+    expect(useCanvasStore.getState().isFlying).toBe(false);
+  });
+
+  it('cancels flight on ESC key press', () => {
+    const { result } = renderHook(() => useCameraFlight());
+
+    const targetPosition = { x: 10, y: 5, z: 20 };
+
+    act(() => {
+      result.current.flyToNode('node-123', targetPosition);
+    });
+
+    // Flight should be in progress
+    expect(useCanvasStore.getState().isFlying).toBe(true);
+
+    // Simulate ESC key press
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+
+    // Flight state should be cleared
+    expect(useCanvasStore.getState().isFlying).toBe(false);
   });
 
   it('uses easing for smooth animation', () => {
@@ -188,22 +327,15 @@ describe('useCameraFlight', () => {
 
     // At 50% time, eased position should NOT be exactly 50% of the distance
     // (ease-in-out cubic makes progress slower at start/end, faster in middle)
-    vi.spyOn(performance, 'now').mockReturnValue(400); // 50% time
+    vi.spyOn(performance, 'now').mockReturnValue(750); // 50% time of 1500ms
 
     if (rafCallback) {
       act(() => {
-        rafCallback!(400);
+        rafCallback!(750);
       });
     }
 
     const currentTarget = useCanvasStore.getState().camera.target;
-
-    // Calculate what linear 50% would be
-    const linearMidpoint = {
-      x: startPosition.x + (targetPosition.x - startPosition.x) * 0.5,
-      y: startPosition.y + (targetPosition.y - startPosition.y) * 0.5,
-      z: startPosition.z + (targetPosition.z - startPosition.z) * 0.5,
-    };
 
     // At 50% time with ease-in-out cubic, eased progress is exactly 0.5
     // So this test just verifies the animation is running

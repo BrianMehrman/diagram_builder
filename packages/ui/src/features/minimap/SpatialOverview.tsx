@@ -4,15 +4,17 @@
  * 3D spatial minimap showing node positions
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrthographicCamera, Html } from '@react-three/drei';
+import { OrthographicCamera, Html, Line } from '@react-three/drei';
 import type { GraphNode } from '../../shared/types';
+import { calculateFovCorners } from './fovIndicator';
 
 interface SpatialOverviewProps {
   nodes: GraphNode[];
   selectedNodeId?: string | null;
   cameraPosition?: { x: number; y: number; z: number };
+  cameraTarget?: { x: number; y: number; z: number };
   onNodeClick?: (nodeId: string) => void;
 }
 
@@ -105,16 +107,50 @@ function CameraIndicator({
 }
 
 /**
+ * FOV indicator showing camera frustum projected onto XZ plane
+ */
+function FovIndicator({
+  cameraPosition,
+  cameraTarget,
+}: {
+  cameraPosition: { x: number; y: number; z: number };
+  cameraTarget: { x: number; y: number; z: number };
+}) {
+  const points = useMemo(() => {
+    const corners = calculateFovCorners(cameraPosition, cameraTarget);
+    const y = 0.05; // Slightly above ground
+    return [
+      [corners.topLeft.x, y, corners.topLeft.z] as [number, number, number],
+      [corners.topRight.x, y, corners.topRight.z] as [number, number, number],
+      [corners.bottomRight.x, y, corners.bottomRight.z] as [number, number, number],
+      [corners.bottomLeft.x, y, corners.bottomLeft.z] as [number, number, number],
+      [corners.topLeft.x, y, corners.topLeft.z] as [number, number, number], // close loop
+    ];
+  }, [cameraPosition, cameraTarget]);
+
+  return (
+    <Line
+      points={points}
+      color="#ffffff"
+      lineWidth={1.5}
+      opacity={0.4}
+      transparent
+    />
+  );
+}
+
+/**
  * SpatialOverview component
  */
 export function SpatialOverview({
   nodes,
   selectedNodeId,
   cameraPosition,
+  cameraTarget,
   onNodeClick,
 }: SpatialOverviewProps) {
   return (
-    <div className="w-full h-full bg-gray-900">
+    <div className="w-full h-full bg-gray-900 cursor-crosshair">
       <Canvas>
         <OrthographicCamera
           makeDefault
@@ -141,6 +177,11 @@ export function SpatialOverview({
 
         {/* Camera position indicator */}
         {cameraPosition && <CameraIndicator position={cameraPosition} />}
+
+        {/* FOV indicator */}
+        {cameraPosition && cameraTarget && (
+          <FovIndicator cameraPosition={cameraPosition} cameraTarget={cameraTarget} />
+        )}
 
         {/* Lighting */}
         <ambientLight intensity={0.8} />

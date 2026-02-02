@@ -1,7 +1,7 @@
 /**
  * Shared Module
  *
- * Central export for all shared code (types, utils, hooks, components)
+ * Central export for all shared code (types, utils, hooks, components, stores)
  */
 
 export * from './types'
@@ -10,3 +10,4 @@ export * from './hooks'
 export * from './components'
 export * from './api'
 export * from './websocket'
+export * from './stores'

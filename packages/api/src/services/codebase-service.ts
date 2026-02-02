@@ -21,6 +21,8 @@ import type {
   Codebase,
   CreateCodebaseInput,
   UpdateCodebaseStatusInput,
+  UpdateCodebaseProgressInput,
+  ImportProgress,
 } from '../types/codebase';
 
 /**
@@ -107,6 +109,13 @@ async function triggerParserImport(
     // Update status to processing
     await updateCodebaseStatus(codebaseId, { status: 'processing' });
 
+    // Stage 1: Cloning/Loading (0-30%)
+    await updateCodebaseProgress(codebaseId, {
+      percentage: 0,
+      stage: 'cloning',
+      message: input.type === 'git' ? 'Cloning repository...' : 'Scanning directory...',
+    });
+
     // Build parser config
     const repoConfig: RepositoryConfig = {
       ...(input.type === 'local' ? { path: input.source } : { url: input.source }),
@@ -128,11 +137,30 @@ async function triggerParserImport(
       path: repoContext.path
     });
 
+    await updateCodebaseProgress(codebaseId, {
+      percentage: 30,
+      stage: 'cloning',
+      message: `Found ${repoContext.files.length} files`,
+      totalFiles: repoContext.files.length,
+      filesProcessed: 0,
+    });
+
+    // Stage 2: Parsing files (30-70%)
+    await updateCodebaseProgress(codebaseId, {
+      percentage: 30,
+      stage: 'parsing',
+      message: 'Reading file contents...',
+      totalFiles: repoContext.files.length,
+      filesProcessed: 0,
+    });
+
     // Read file contents, skipping files that can't be read
     const fileInputs: Array<{ filePath: string; content: string }> = [];
     const skippedFiles: string[] = [];
+    const totalFiles = repoContext.files.length;
 
-    for (const filePath of repoContext.files) {
+    for (let i = 0; i < repoContext.files.length; i++) {
+      const filePath = repoContext.files[i]!;
       try {
         const content = await readFile(filePath, 'utf-8');
         // Skip files with null bytes (likely binary)
@@ -146,12 +174,33 @@ async function triggerParserImport(
         logger.warn('Failed to read file, skipping', { filePath, codebaseId, error: (err as Error).message });
         skippedFiles.push(filePath);
       }
+
+      // Update progress every 10 files or at the end
+      if ((i + 1) % 10 === 0 || i === repoContext.files.length - 1) {
+        const parsingProgress = 30 + Math.round(((i + 1) / totalFiles) * 30);
+        await updateCodebaseProgress(codebaseId, {
+          percentage: parsingProgress,
+          stage: 'parsing',
+          message: `Reading files (${i + 1}/${totalFiles})`,
+          totalFiles,
+          filesProcessed: i + 1,
+        });
+      }
     }
 
     logger.debug('File contents read', {
       codebaseId,
       fileCount: fileInputs.length,
       skippedCount: skippedFiles.length
+    });
+
+    // Stage 3: Building dependency graph (60-80%)
+    await updateCodebaseProgress(codebaseId, {
+      percentage: 60,
+      stage: 'graph-building',
+      message: 'Building dependency graph...',
+      totalFiles,
+      filesProcessed: totalFiles,
     });
 
     // Build dependency graph
@@ -162,6 +211,14 @@ async function triggerParserImport(
       edgeCount: depGraph.getEdges().length
     });
 
+    await updateCodebaseProgress(codebaseId, {
+      percentage: 70,
+      stage: 'graph-building',
+      message: `Found ${depGraph.getNodes().length} nodes, ${depGraph.getEdges().length} edges`,
+      totalFiles,
+      filesProcessed: totalFiles,
+    });
+
     // Convert to IVM
     const ivm = convertToIVM(depGraph, repoContext, {
       name: input.source.split('/').pop() || 'repository',
@@ -170,6 +227,23 @@ async function triggerParserImport(
       codebaseId,
       ivmNodes: ivm.nodes.length,
       ivmEdges: ivm.edges.length
+    });
+
+    await updateCodebaseProgress(codebaseId, {
+      percentage: 80,
+      stage: 'graph-building',
+      message: `Created ${ivm.nodes.length} visualization nodes`,
+      totalFiles,
+      filesProcessed: totalFiles,
+    });
+
+    // Stage 4: Storing in Neo4j (80-100%)
+    await updateCodebaseProgress(codebaseId, {
+      percentage: 80,
+      stage: 'storing',
+      message: 'Creating repository...',
+      totalFiles,
+      filesProcessed: totalFiles,
     });
 
     // Create Repository node in Neo4j (use MERGE for idempotency)
@@ -198,7 +272,19 @@ async function triggerParserImport(
     );
 
     // Store IVM nodes in Neo4j (use MERGE to handle retries/duplicates)
-    for (const node of ivm.nodes) {
+    const totalNodes = ivm.nodes.length;
+    const totalEdges = ivm.edges.length;
+
+    await updateCodebaseProgress(codebaseId, {
+      percentage: 85,
+      stage: 'storing',
+      message: `Storing ${totalNodes} nodes...`,
+      totalFiles,
+      filesProcessed: totalFiles,
+    });
+
+    for (let i = 0; i < ivm.nodes.length; i++) {
+      const node = ivm.nodes[i]!;
       const nodeType = node.type.charAt(0).toUpperCase() + node.type.slice(1); // Capitalize for Neo4j label
 
       await runQuery(
@@ -236,10 +322,31 @@ async function triggerParserImport(
           metadata: JSON.stringify(node.metadata || {}),
         }
       );
+
+      // Update progress every 20 nodes
+      if ((i + 1) % 20 === 0 || i === ivm.nodes.length - 1) {
+        const storingProgress = 85 + Math.round(((i + 1) / totalNodes) * 7);
+        await updateCodebaseProgress(codebaseId, {
+          percentage: storingProgress,
+          stage: 'storing',
+          message: `Storing nodes (${i + 1}/${totalNodes})`,
+          totalFiles,
+          filesProcessed: totalFiles,
+        });
+      }
     }
 
     // Store IVM edges in Neo4j (use MERGE to handle retries/duplicates)
-    for (const edge of ivm.edges) {
+    await updateCodebaseProgress(codebaseId, {
+      percentage: 92,
+      stage: 'storing',
+      message: `Storing ${totalEdges} edges...`,
+      totalFiles,
+      filesProcessed: totalFiles,
+    });
+
+    for (let i = 0; i < ivm.edges.length; i++) {
+      const edge = ivm.edges[i]!;
       const edgeType = edge.type.toUpperCase().replace(/-/g, '_'); // Format for Neo4j relationship
 
       await runQuery(
@@ -260,7 +367,27 @@ async function triggerParserImport(
           metadata: JSON.stringify(edge.metadata || {}),
         }
       );
+
+      // Update progress every 20 edges
+      if ((i + 1) % 20 === 0 || i === ivm.edges.length - 1) {
+        const storingProgress = 92 + Math.round(((i + 1) / Math.max(totalEdges, 1)) * 6);
+        await updateCodebaseProgress(codebaseId, {
+          percentage: storingProgress,
+          stage: 'storing',
+          message: `Storing edges (${i + 1}/${totalEdges})`,
+          totalFiles,
+          filesProcessed: totalFiles,
+        });
+      }
     }
+
+    await updateCodebaseProgress(codebaseId, {
+      percentage: 98,
+      stage: 'storing',
+      message: 'Linking codebase to repository...',
+      totalFiles,
+      filesProcessed: totalFiles,
+    });
 
     // Link Codebase to Repository (use MERGE for idempotency)
     await runQuery(
@@ -276,6 +403,14 @@ async function triggerParserImport(
       }
     );
     logger.info('Graph stored in Neo4j', { codebaseId, repositoryId });
+
+    await updateCodebaseProgress(codebaseId, {
+      percentage: 100,
+      stage: 'storing',
+      message: 'Import complete!',
+      totalFiles,
+      filesProcessed: totalFiles,
+    });
 
     // Update codebase status to completed
     await updateCodebaseStatus(codebaseId, {
@@ -339,7 +474,12 @@ export async function listWorkspaceCodebases(workspaceId: string): Promise<Codeb
            c.error as error,
            r.id as repositoryId,
            c.importedAt as importedAt,
-           c.updatedAt as updatedAt
+           c.updatedAt as updatedAt,
+           c.progressPercentage as progressPercentage,
+           c.progressStage as progressStage,
+           c.progressMessage as progressMessage,
+           c.progressFilesProcessed as progressFilesProcessed,
+           c.progressTotalFiles as progressTotalFiles
     ORDER BY c.importedAt DESC
     `,
     { workspaceId }
@@ -356,6 +496,11 @@ export async function listWorkspaceCodebases(workspaceId: string): Promise<Codeb
     repositoryId: string | null;
     importedAt: string;
     updatedAt: string;
+    progressPercentage: number | null;
+    progressStage: string | null;
+    progressMessage: string | null;
+    progressFilesProcessed: number | null;
+    progressTotalFiles: number | null;
   }
 
   const codebases: Codebase[] = (rows as CodebaseRow[]).map((row) => {
@@ -371,6 +516,15 @@ export async function listWorkspaceCodebases(workspaceId: string): Promise<Codeb
     if (row.branch) codebase.branch = row.branch;
     if (row.error) codebase.error = row.error;
     if (row.repositoryId) codebase.repositoryId = row.repositoryId;
+    if (row.progressPercentage !== null && row.progressStage && row.progressMessage) {
+      codebase.progress = {
+        percentage: row.progressPercentage,
+        stage: row.progressStage as ImportProgress['stage'],
+        message: row.progressMessage,
+        ...(row.progressFilesProcessed !== null && { filesProcessed: row.progressFilesProcessed }),
+        ...(row.progressTotalFiles !== null && { totalFiles: row.progressTotalFiles }),
+      };
+    }
     return codebase;
   });
 
@@ -407,7 +561,12 @@ export async function getCodebaseById(
            c.error as error,
            r.id as repositoryId,
            c.importedAt as importedAt,
-           c.updatedAt as updatedAt
+           c.updatedAt as updatedAt,
+           c.progressPercentage as progressPercentage,
+           c.progressStage as progressStage,
+           c.progressMessage as progressMessage,
+           c.progressFilesProcessed as progressFilesProcessed,
+           c.progressTotalFiles as progressTotalFiles
     `,
     { codebaseId }
   );
@@ -427,6 +586,11 @@ export async function getCodebaseById(
     repositoryId: string | null;
     importedAt: string;
     updatedAt: string;
+    progressPercentage: number | null;
+    progressStage: string | null;
+    progressMessage: string | null;
+    progressFilesProcessed: number | null;
+    progressTotalFiles: number | null;
   }
 
   const row = rows[0] as CodebaseRow;
@@ -448,6 +612,15 @@ export async function getCodebaseById(
   if (row.branch) codebase.branch = row.branch;
   if (row.error) codebase.error = row.error;
   if (row.repositoryId) codebase.repositoryId = row.repositoryId;
+  if (row.progressPercentage !== null && row.progressStage && row.progressMessage) {
+    codebase.progress = {
+      percentage: row.progressPercentage,
+      stage: row.progressStage as ImportProgress['stage'],
+      message: row.progressMessage,
+      ...(row.progressFilesProcessed !== null && { filesProcessed: row.progressFilesProcessed }),
+      ...(row.progressTotalFiles !== null && { totalFiles: row.progressTotalFiles }),
+    };
+  }
 
   // Cache result (5-minute TTL)
   await cache.set(cacheKey, codebase);
@@ -604,7 +777,12 @@ export async function updateCodebaseStatus(
     SET c.status = $status,
         c.error = $error,
         c.repositoryId = $repositoryId,
-        c.updatedAt = $updatedAt
+        c.updatedAt = $updatedAt,
+        c.progressPercentage = null,
+        c.progressStage = null,
+        c.progressMessage = null,
+        c.progressFilesProcessed = null,
+        c.progressTotalFiles = null
     RETURN c.workspaceId as workspaceId
     `,
     {
@@ -617,6 +795,47 @@ export async function updateCodebaseStatus(
   );
 
   // Invalidate caches
+  if (rows.length > 0) {
+    const row = rows[0] as { workspaceId: string };
+    const codebaseCacheKey = buildCacheKey('codebase', codebaseId);
+    const workspaceCodebasesKey = buildCacheKey('workspace', `${row.workspaceId}:codebases`);
+    await Promise.all([
+      cache.invalidate(codebaseCacheKey),
+      cache.invalidate(workspaceCodebasesKey),
+    ]);
+  }
+}
+
+/**
+ * Update codebase import progress (internal use during import)
+ */
+export async function updateCodebaseProgress(
+  codebaseId: string,
+  progressUpdate: UpdateCodebaseProgressInput
+): Promise<void> {
+  const rows = await runQuery(
+    `
+    MATCH (c:Codebase {id: $codebaseId})
+    SET c.progressPercentage = $percentage,
+        c.progressStage = $stage,
+        c.progressMessage = $message,
+        c.progressFilesProcessed = $filesProcessed,
+        c.progressTotalFiles = $totalFiles,
+        c.updatedAt = $updatedAt
+    RETURN c.workspaceId as workspaceId
+    `,
+    {
+      codebaseId,
+      percentage: progressUpdate.percentage,
+      stage: progressUpdate.stage,
+      message: progressUpdate.message,
+      filesProcessed: progressUpdate.filesProcessed ?? null,
+      totalFiles: progressUpdate.totalFiles ?? null,
+      updatedAt: new Date().toISOString(),
+    }
+  );
+
+  // Invalidate caches so clients get fresh progress
   if (rows.length > 0) {
     const row = rows[0] as { workspaceId: string };
     const codebaseCacheKey = buildCacheKey('codebase', codebaseId);

@@ -45,6 +45,15 @@ interface CanvasState {
   hoveredNodeId: string | null;
   setHoveredNode: (nodeId: string | null) => void;
 
+  // Highlighted node state (for arrival feedback)
+  highlightedNodeId: string | null;
+  setHighlightedNode: (nodeId: string | null) => void;
+
+  // Flight state (for breadcrumb updates during flight)
+  isFlying: boolean;
+  flightTargetNodeId: string | null;
+  setFlightState: (isFlying: boolean, targetNodeId?: string | null) => void;
+
   // LOD level
   lodLevel: number;
   setLodLevel: (level: number) => void;
@@ -106,6 +115,16 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   hoveredNodeId: null,
   setHoveredNode: (nodeId) => set({ hoveredNodeId: nodeId }),
 
+  // Highlighted node state (for arrival feedback)
+  highlightedNodeId: null,
+  setHighlightedNode: (nodeId) => set({ highlightedNodeId: nodeId }),
+
+  // Flight state (for breadcrumb updates during flight)
+  isFlying: false,
+  flightTargetNodeId: null,
+  setFlightState: (isFlying, targetNodeId = null) =>
+    set({ isFlying, flightTargetNodeId: targetNodeId }),
+
   // LOD level (default to 4 to show most detail by default)
   lodLevel: 4,
   setLodLevel: (level) => set({ lodLevel: level }),
@@ -117,6 +136,9 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       controlMode: 'orbit',
       selectedNodeId: null,
       hoveredNodeId: null,
+      highlightedNodeId: null,
+      isFlying: false,
+      flightTargetNodeId: null,
       lodLevel: 4,
     }),
 }));

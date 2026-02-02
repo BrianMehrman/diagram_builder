@@ -86,6 +86,61 @@ describe('useCanvasStore', () => {
     const state = useCanvasStore.getState();
     expect(state.camera.position).toEqual({ x: 0, y: 5, z: 10 });
     expect(state.selectedNodeId).toBeNull();
-    expect(state.lodLevel).toBe(2);
+    expect(state.lodLevel).toBe(4);
+  });
+
+  // Highlighted node state tests
+  describe('highlighted node state', () => {
+    it('has null highlighted node by default', () => {
+      expect(useCanvasStore.getState().highlightedNodeId).toBeNull();
+    });
+
+    it('sets highlighted node', () => {
+      useCanvasStore.getState().setHighlightedNode('node-789');
+      expect(useCanvasStore.getState().highlightedNodeId).toBe('node-789');
+    });
+
+    it('clears highlighted node', () => {
+      useCanvasStore.getState().setHighlightedNode('node-789');
+      useCanvasStore.getState().setHighlightedNode(null);
+      expect(useCanvasStore.getState().highlightedNodeId).toBeNull();
+    });
+
+    it('resets highlighted node on reset', () => {
+      useCanvasStore.getState().setHighlightedNode('node-789');
+      useCanvasStore.getState().reset();
+      expect(useCanvasStore.getState().highlightedNodeId).toBeNull();
+    });
+  });
+
+  // Flight state tests
+  describe('flight state', () => {
+    it('has false isFlying by default', () => {
+      expect(useCanvasStore.getState().isFlying).toBe(false);
+    });
+
+    it('has null flightTargetNodeId by default', () => {
+      expect(useCanvasStore.getState().flightTargetNodeId).toBeNull();
+    });
+
+    it('sets flight state', () => {
+      useCanvasStore.getState().setFlightState(true, 'target-node');
+      expect(useCanvasStore.getState().isFlying).toBe(true);
+      expect(useCanvasStore.getState().flightTargetNodeId).toBe('target-node');
+    });
+
+    it('clears flight state', () => {
+      useCanvasStore.getState().setFlightState(true, 'target-node');
+      useCanvasStore.getState().setFlightState(false, null);
+      expect(useCanvasStore.getState().isFlying).toBe(false);
+      expect(useCanvasStore.getState().flightTargetNodeId).toBeNull();
+    });
+
+    it('resets flight state on reset', () => {
+      useCanvasStore.getState().setFlightState(true, 'target-node');
+      useCanvasStore.getState().reset();
+      expect(useCanvasStore.getState().isFlying).toBe(false);
+      expect(useCanvasStore.getState().flightTargetNodeId).toBeNull();
+    });
   });
 });

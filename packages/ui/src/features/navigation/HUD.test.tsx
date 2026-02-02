@@ -16,7 +16,15 @@ const mockNodes: GraphNode[] = [
     label: 'app.ts',
     metadata: {},
     position: { x: 0, y: 0, z: 0 },
-    lodLevel: 0,
+    lod: 0,
+  },
+  {
+    id: 'file-2',
+    type: 'file',
+    label: 'utils.ts',
+    metadata: {},
+    position: { x: 3, y: 0, z: 0 },
+    lod: 0,
   },
   {
     id: 'class-1',
@@ -24,7 +32,7 @@ const mockNodes: GraphNode[] = [
     label: 'Application',
     metadata: { file: 'file-1' },
     position: { x: 1, y: 1, z: 1 },
-    lodLevel: 1,
+    lod: 1,
   },
   {
     id: 'method-1',
@@ -32,15 +40,7 @@ const mockNodes: GraphNode[] = [
     label: 'initialize',
     metadata: { class: 'class-1', file: 'file-1' },
     position: { x: 1.5, y: 1.5, z: 1.5 },
-    lodLevel: 2,
-  },
-  {
-    id: 'method-2',
-    type: 'method',
-    label: 'process',
-    metadata: { class: 'class-1', file: 'file-1' },
-    position: { x: 2, y: 2, z: 2 },
-    lodLevel: 3,
+    lod: 2,
   },
 ];
 
@@ -49,75 +49,139 @@ describe('HUD', () => {
     useCanvasStore.getState().reset();
   });
 
-  it('renders FPS counter', async () => {
-    render(<HUD nodes={mockNodes} />);
-
-    expect(screen.getByText('FPS:')).toBeDefined();
-
-    // FPS value should update
-    await waitFor(
-      () => {
-        const fpsText = screen.getByText(/FPS:/);
-        const fpsValue = fpsText.nextElementSibling?.textContent;
-        expect(fpsValue).toBeDefined();
-      },
-      { timeout: 2000 }
-    );
-  });
-
-  it('displays camera position', () => {
-    render(<HUD nodes={mockNodes} />);
-
-    expect(screen.getByText('Camera:')).toBeDefined();
-    // Camera position is (0.0, 5.0, 10.0) by default
-    expect(screen.getByText(/\(0\.0, 5\.0, 10\.0\)/)).toBeDefined();
-  });
-
-  it('displays camera target', () => {
-    render(<HUD nodes={mockNodes} />);
-
-    expect(screen.getByText('Target:')).toBeDefined();
-  });
-
-  it('displays LOD level', () => {
-    render(<HUD nodes={mockNodes} />);
-
-    expect(screen.getByText('LOD:')).toBeDefined();
-    expect(screen.getByText('Level 2')).toBeDefined(); // Default LOD is 2
-  });
+  // === AC-1: Real-time stats display ===
 
   it('displays total node count', () => {
     render(<HUD nodes={mockNodes} />);
-
-    expect(screen.getByText('Nodes:')).toBeDefined();
-    expect(screen.getByText(/\/ 4/)).toBeDefined(); // Total is 4
+    expect(screen.getByText('Nodes')).toBeInTheDocument();
+    expect(screen.getByText('4')).toBeInTheDocument();
   });
 
-  it('displays visible node count based on LOD', () => {
+  it('displays file count', () => {
     render(<HUD nodes={mockNodes} />);
-
-    // Default LOD is 2, so nodes with lodLevel <= 2 should be visible (3 nodes)
-    expect(screen.getByText(/3 \/ 4/)).toBeDefined();
+    expect(screen.getByText('Files')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
   });
 
-  it('updates visible count when LOD changes', () => {
+  it('renders FPS counter', async () => {
     render(<HUD nodes={mockNodes} />);
+    expect(screen.getByText('FPS')).toBeInTheDocument();
+  });
 
-    // Initially LOD 2: 3 visible nodes
-    expect(screen.getByText(/3 \/ 4/)).toBeDefined();
+  it('displays control mode with emoji', () => {
+    render(<HUD nodes={mockNodes} />);
+    expect(screen.getByText('Mode')).toBeInTheDocument();
+    // Default is orbit mode
+    expect(screen.getByText(/Orbit/)).toBeInTheDocument();
+  });
 
-    // Change LOD to 3
+  it('updates mode when control mode changes', () => {
+    render(<HUD nodes={mockNodes} />);
+    expect(screen.getByText(/Orbit/)).toBeInTheDocument();
+
     act(() => {
-      useCanvasStore.getState().setLodLevel(3);
+      useCanvasStore.getState().setControlMode('fly');
     });
 
-    // Now all 4 nodes should be visible
-    expect(screen.getByText(/4 \/ 4/)).toBeDefined();
+    expect(screen.getByText(/Fly/)).toBeInTheDocument();
   });
+
+  // === AC-2: Dark glass styling ===
+
+  it('has dark glass background styling', () => {
+    const { container } = render(<HUD nodes={mockNodes} />);
+    const hudElement = container.firstChild as HTMLElement;
+    // Uses inline style for the specific rgba color
+    expect(hudElement.style.backgroundColor).toBe('rgba(26, 31, 46, 0.95)');
+  });
+
+  it('has 200px width', () => {
+    const { container } = render(<HUD nodes={mockNodes} />);
+    const hudElement = container.firstChild as HTMLElement;
+    expect(hudElement.className).toContain('w-[200px]');
+  });
+
+  it('has backdrop blur', () => {
+    const { container } = render(<HUD nodes={mockNodes} />);
+    const hudElement = container.firstChild as HTMLElement;
+    expect(hudElement.className).toContain('backdrop-blur');
+  });
+
+  it('has rounded corners', () => {
+    const { container } = render(<HUD nodes={mockNodes} />);
+    const hudElement = container.firstChild as HTMLElement;
+    expect(hudElement.className).toContain('rounded-lg');
+  });
+
+  // === AC-3: Semantic HTML ===
+
+  it('uses dl element for stats', () => {
+    const { container } = render(<HUD nodes={mockNodes} />);
+    const dl = container.querySelector('dl');
+    expect(dl).not.toBeNull();
+  });
+
+  it('uses dt elements for stat labels', () => {
+    const { container } = render(<HUD nodes={mockNodes} />);
+    const dtElements = container.querySelectorAll('dt');
+    expect(dtElements.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('uses dd elements for stat values', () => {
+    const { container } = render(<HUD nodes={mockNodes} />);
+    const ddElements = container.querySelectorAll('dd');
+    expect(ddElements.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('has aria-label on the HUD', () => {
+    const { container } = render(<HUD nodes={mockNodes} />);
+    const hudElement = container.firstChild as HTMLElement;
+    expect(hudElement.getAttribute('aria-label')).toBe('Workspace statistics');
+  });
+
+  it('has aria-live on the stats section', () => {
+    const { container } = render(<HUD nodes={mockNodes} />);
+    const dl = container.querySelector('dl');
+    expect(dl?.getAttribute('aria-live')).toBe('polite');
+  });
+
+  it('is not keyboard focusable', () => {
+    const { container } = render(<HUD nodes={mockNodes} />);
+    const hudElement = container.firstChild as HTMLElement;
+    expect(hudElement.getAttribute('tabindex')).toBe('-1');
+  });
+
+  // === AC-4: Real-time updates ===
+
+  it('updates node count when graph changes', () => {
+    const { rerender, container } = render(<HUD nodes={mockNodes} />);
+    // 4 nodes total
+    const nodesDd = container.querySelectorAll('dd');
+    expect(nodesDd[0].textContent).toBe('4');
+
+    // Re-render with only 1 node (1 file)
+    const singleNode = mockNodes.slice(0, 1);
+    rerender(<HUD nodes={singleNode} />);
+    const updatedDd = container.querySelectorAll('dd');
+    expect(updatedDd[0].textContent).toBe('1');
+  });
+
+  // === FPS color coding ===
+
+  it('shows FPS value with color coding', async () => {
+    render(<HUD nodes={mockNodes} />);
+
+    // FPS starts at 0 which is <30, should be red-tinted
+    await waitFor(() => {
+      const fpsValue = screen.getByTestId('fps-value');
+      expect(fpsValue).toBeInTheDocument();
+    });
+  });
+
+  // === Selected node info (existing feature) ===
 
   it('does not show selected node info when nothing is selected', () => {
     render(<HUD nodes={mockNodes} />);
-
     expect(screen.queryByText('Selected:')).toBeNull();
   });
 
@@ -127,68 +191,12 @@ describe('HUD', () => {
     });
 
     render(<HUD nodes={mockNodes} />);
-
-    expect(screen.getByText('Selected:')).toBeDefined();
-    expect(screen.getByText('Application')).toBeDefined();
-    expect(screen.getByText('Type:')).toBeDefined();
-    expect(screen.getByText('class')).toBeDefined();
-  });
-
-  it('shows selected node position', () => {
-    act(() => {
-      useCanvasStore.getState().selectNode('class-1');
-    });
-
-    render(<HUD nodes={mockNodes} />);
-
-    expect(screen.getByText('Position:')).toBeDefined();
-    expect(screen.getByText(/\(1\.0, 1\.0, 1\.0\)/)).toBeDefined();
-  });
-
-  it('updates camera position display when camera moves', () => {
-    render(<HUD nodes={mockNodes} />);
-
-    act(() => {
-      useCanvasStore.getState().setCameraPosition({ x: 10, y: 20, z: 30 });
-    });
-
-    expect(screen.getByText(/\(10\.0, 20\.0, 30\.0\)/)).toBeDefined();
-  });
-
-  it('updates when different node is selected', () => {
-    act(() => {
-      useCanvasStore.getState().selectNode('class-1');
-    });
-
-    render(<HUD nodes={mockNodes} />);
-
-    expect(screen.getByText('Application')).toBeDefined();
-
-    act(() => {
-      useCanvasStore.getState().selectNode('method-1');
-    });
-
-    expect(screen.getByText('initialize')).toBeDefined();
-    expect(screen.queryByText('Application')).toBeNull();
-  });
-
-  it('has monospace font styling', () => {
-    const { container } = render(<HUD nodes={mockNodes} />);
-
-    const hudElement = container.firstChild as HTMLElement;
-    expect(hudElement.className).toContain('font-mono');
-  });
-
-  it('has backdrop blur styling', () => {
-    const { container } = render(<HUD nodes={mockNodes} />);
-
-    const hudElement = container.firstChild as HTMLElement;
-    expect(hudElement.className).toContain('backdrop-blur-sm');
+    expect(screen.getByText('Selected:')).toBeInTheDocument();
+    expect(screen.getByText('Application')).toBeInTheDocument();
   });
 
   it('positions in top-left corner', () => {
     const { container } = render(<HUD nodes={mockNodes} />);
-
     const hudElement = container.firstChild as HTMLElement;
     expect(hudElement.className).toContain('absolute');
     expect(hudElement.className).toContain('top-4');

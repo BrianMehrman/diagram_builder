@@ -7,7 +7,8 @@
 import { useEffect, useState } from 'react'
 import { codebases } from '../../shared/api/endpoints'
 import { CodebaseListItem } from './CodebaseListItem'
-import type { Codebase as ApiCodebase } from '../../shared/types/api'
+import { useToastStore } from '../feedback/toastStore'
+import type { Codebase as ApiCodebase, ImportProgress } from '../../shared/types/api'
 
 /** Extended codebase type for UI display */
 export interface Codebase {
@@ -20,6 +21,7 @@ export interface Codebase {
   fileCount?: number | null
   nodeCount?: number | null
   errorMessage?: string | null
+  progress?: ImportProgress | null
 }
 
 export interface CodebaseListProps {
@@ -39,6 +41,7 @@ function transformCodebase(apiCodebase: ApiCodebase): Codebase {
     repositoryId: apiCodebase.repositoryId ?? null,
     createdAt: new Date(apiCodebase.importedAt),
     errorMessage: apiCodebase.error ?? null,
+    progress: apiCodebase.progress ?? null,
   }
 }
 
@@ -51,6 +54,8 @@ export function CodebaseList({
   const [codebaseList, setCodebaseList] = useState<Codebase[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const showError = useToastStore((state) => state.showError)
+  const showSuccess = useToastStore((state) => state.showSuccess)
 
   const loadCodebases = async () => {
     try {
@@ -71,6 +76,20 @@ export function CodebaseList({
     loadCodebases()
   }, [workspaceId, refreshTrigger])
 
+  // Poll for progress updates when any codebase is processing
+  useEffect(() => {
+    const hasProcessing = codebaseList.some(
+      (c) => c.status === 'processing' || c.status === 'pending'
+    )
+    if (!hasProcessing) return
+
+    const pollInterval = setInterval(() => {
+      loadCodebases()
+    }, 2000) // Poll every 2 seconds
+
+    return () => clearInterval(pollInterval)
+  }, [codebaseList])
+
   const handleDelete = async (codebaseId: string) => {
     const confirmed = window.confirm(
       'Delete this codebase? This action cannot be undone.'
@@ -80,20 +99,24 @@ export function CodebaseList({
 
     try {
       await codebases.delete(workspaceId, codebaseId)
+      showSuccess('Codebase Deleted', 'The codebase has been removed.')
       await loadCodebases() // Refresh list
     } catch (err) {
       console.error('Failed to delete codebase:', err)
-      alert('Failed to delete codebase. Please try again.')
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+      showError('Delete Failed', `Failed to delete codebase. ${errorMessage}. Please try again.`)
     }
   }
 
   const handleRetry = async (codebaseId: string) => {
     try {
       await codebases.retry(workspaceId, codebaseId)
+      showSuccess('Retry Started', 'The import has been restarted.')
       await loadCodebases() // Refresh list
     } catch (err) {
       console.error('Failed to retry codebase:', err)
-      alert('Failed to retry import. Please try again.')
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+      showError('Retry Failed', `Failed to retry import. ${errorMessage}. Please try again.`)
     }
   }
 

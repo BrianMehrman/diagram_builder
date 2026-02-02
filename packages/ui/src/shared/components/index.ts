@@ -7,3 +7,4 @@
 export * from './ErrorBoundary';
 export * from './GlobalErrorFallback';
 export * from './FeatureErrorFallback';
+export * from './KeyboardShortcutsModal';

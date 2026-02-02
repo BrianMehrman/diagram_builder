@@ -2,8 +2,10 @@
  * Breadcrumbs Component
  *
  * Navigation breadcrumbs showing current location in the graph hierarchy
+ * Shows flight target during camera flight animations
  */
 
+import { useCanvasStore } from '../canvas/store'
 import type { GraphNode } from '../../shared/types'
 
 interface BreadcrumbsProps {
@@ -51,14 +53,37 @@ export function Breadcrumbs({
   onNodeClick = () => {},
   className = '',
 }: BreadcrumbsProps) {
-  if (!selectedNode) {
+  const isFlying = useCanvasStore((state) => state.isFlying)
+  const flightTargetNodeId = useCanvasStore((state) => state.flightTargetNodeId)
+
+  // During flight, show the target node path; otherwise show selected node path
+  const targetNode = isFlying && flightTargetNodeId
+    ? nodes.find((n) => n.id === flightTargetNodeId) ?? selectedNode
+    : selectedNode
+
+  if (!targetNode) {
     return null
   }
 
-  const path = buildBreadcrumbPath(selectedNode, nodes)
+  const path = buildBreadcrumbPath(targetNode, nodes)
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
+      {/* Flying indicator */}
+      {isFlying && (
+        <div className="flex items-center gap-1 text-primary-500 animate-pulse">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 5l7 7-7 7M5 5l7 7-7 7"
+            />
+          </svg>
+        </div>
+      )}
+
+      {/* Home icon */}
       <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
           strokeLinecap="round"
@@ -82,16 +107,24 @@ export function Breadcrumbs({
           )}
           <button
             onClick={() => onNodeClick(node.id)}
+            disabled={isFlying}
             className={`text-sm font-medium transition-colors ${
-              index === path.length - 1
-                ? 'text-gray-900 cursor-default'
-                : 'text-primary-600 hover:text-primary-700'
+              isFlying
+                ? 'text-primary-400 cursor-wait'
+                : index === path.length - 1
+                  ? 'text-gray-900 cursor-default'
+                  : 'text-primary-600 hover:text-primary-700'
             }`}
           >
             {node.label}
           </button>
         </div>
       ))}
+
+      {/* Flying status text */}
+      {isFlying && (
+        <span className="text-xs text-gray-400 ml-2">Flying...</span>
+      )}
     </div>
   )
 }

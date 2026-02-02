@@ -9,12 +9,10 @@ import { useParams } from 'react-router'
 import { Canvas3D, EmptyState, CodebaseStatusIndicator, ErrorNotification, SuccessNotification } from '../features/canvas'
 import { MiniMap } from '../features/minimap'
 import { Navigation, SearchBarModal, useCameraFlight } from '../features/navigation'
-import { ViewpointPanel } from '../features/viewpoints'
-import { WorkspaceSwitcher, ImportCodebaseButton, CodebaseList } from '../features/workspace'
-import { ExportButton } from '../features/export'
-import { SessionControl, UserPresence } from '../features/collaboration'
+import { LeftPanel, RightPanel } from '../features/panels'
 import { HUD } from '../features/navigation/HUD'
-import { useGlobalSearchShortcut } from '../shared/hooks'
+import { useGlobalSearchShortcut, useGlobalKeyboardShortcuts } from '../shared/hooks'
+import { useUIStore } from '../shared/stores/uiStore'
 import { workspaces, codebases, graph } from '../shared/api/endpoints'
 import type { Workspace, Graph, Position3D } from '../shared/types'
 
@@ -30,13 +28,20 @@ export function WorkspacePage() {
   const [selectedCodebaseId, setSelectedCodebaseId] = useState<string | null>(null)
   const [listRefreshTrigger, setListRefreshTrigger] = useState(0)
 
-  // Panel states
-  const [leftPanelOpen, setLeftPanelOpen] = useState(false)
-  const [rightPanelOpen, setRightPanelOpen] = useState(false)
+  // Panel states (from global UI store for ESC handling)
+  const leftPanelOpen = useUIStore((state) => state.isLeftPanelOpen)
+  const rightPanelOpen = useUIStore((state) => state.isRightPanelOpen)
+  const toggleLeftPanel = useUIStore((state) => state.toggleLeftPanel)
+  const toggleRightPanel = useUIStore((state) => state.toggleRightPanel)
+  const openLeftPanel = useUIStore((state) => state.openLeftPanel)
+  const closeAllPanels = useUIStore((state) => state.closeAllPanels)
   const [miniMapCollapsed, setMiniMapCollapsed] = useState(false)
 
   // Track if we've loaded graph data for completed status
   const loadedForCompletedRef = useRef(false)
+
+  // Track if camera should fly to root after import completes
+  const [pendingCameraFlight, setPendingCameraFlight] = useState(false)
 
   // Global search shortcut (⌘K / Ctrl+K)
   useGlobalSearchShortcut()
@@ -44,12 +49,24 @@ export function WorkspacePage() {
   // Camera flight animation for search results
   const { flyToNode } = useCameraFlight()
 
+  // Global keyboard shortcuts (ESC, Home, C, ?, Ctrl+Shift+S)
+  useGlobalKeyboardShortcuts({
+    nodes: graphData?.nodes || [],
+    onFlyToNode: flyToNode,
+  })
+
   // Handle node selection from search modal
   const handleSearchNodeSelect = useCallback((nodeId: string, position?: Position3D) => {
     if (position) {
       flyToNode(nodeId, position)
     }
   }, [flyToNode])
+
+  // Handle import completion - trigger camera flight after graph loads
+  const handleImportComplete = useCallback((_repositoryId: string) => {
+    // Set flag to trigger camera flight when graph data becomes available
+    setPendingCameraFlight(true)
+  }, [])
 
   // Debug: Log graphData changes
   useEffect(() => {
@@ -60,6 +77,28 @@ export function WorkspacePage() {
       graphDataKeys: graphData ? Object.keys(graphData) : 'null'
     })
   }, [graphData])
+
+  // Effect: Trigger camera flight to root node after import completes
+  useEffect(() => {
+    if (pendingCameraFlight && graphData?.nodes && graphData.nodes.length > 0) {
+      // Find the root node - use the first file node as the entry point
+      // Files are the top-level containers in the graph structure
+      const rootNode = graphData.nodes.find(node => node.type === 'file') || graphData.nodes[0]
+
+      if (rootNode) {
+        console.log('[WorkspacePage] Flying camera to root node after import:', rootNode.id)
+
+        // Use node position or default to origin
+        const position: Position3D = rootNode.position || { x: 0, y: 0, z: 0 }
+
+        // Trigger camera flight
+        flyToNode(rootNode.id, position)
+      }
+
+      // Clear the flag
+      setPendingCameraFlight(false)
+    }
+  }, [pendingCameraFlight, graphData, flyToNode])
 
   useEffect(() => {
     console.log('[WorkspacePage] Mount effect - workspace ID:', id)
@@ -217,9 +256,9 @@ export function WorkspacePage() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-900">
+      <div className="h-screen flex items-center justify-center bg-gray-900" role="status" aria-label="Loading workspace">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white" aria-hidden="true"></div>
           <p className="mt-4 text-white">Loading workspace...</p>
         </div>
       </div>
@@ -228,7 +267,7 @@ export function WorkspacePage() {
 
   if (error || !workspace) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-900">
+      <div className="h-screen flex items-center justify-center bg-gray-900" role="alert">
         <div className="text-center">
           <p className="text-red-400">{error || 'Workspace not found'}</p>
         </div>
@@ -242,13 +281,15 @@ export function WorkspacePage() {
       <header
         className="bg-gray-800 border-b border-gray-700 px-3 py-2 flex items-center justify-between"
         data-testid="workspace-header"
+        role="banner"
       >
         <div className="flex items-center gap-3">
           {/* Left Panel Toggle */}
           <button
-            onClick={() => setLeftPanelOpen(!leftPanelOpen)}
-            className="p-1.5 hover:bg-gray-700 rounded transition-colors text-gray-300"
-            title="Toggle menu"
+            onClick={toggleLeftPanel}
+            className="p-2 hover:bg-gray-700 rounded transition-colors text-gray-300 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label={leftPanelOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={leftPanelOpen}
             data-testid="toggle-left-panel"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -272,9 +313,10 @@ export function WorkspacePage() {
         <div className="flex items-center gap-2">
           {/* Right Panel Toggle */}
           <button
-            onClick={() => setRightPanelOpen(!rightPanelOpen)}
-            className="p-1.5 hover:bg-gray-700 rounded transition-colors text-gray-300"
-            title="Toggle tools"
+            onClick={toggleRightPanel}
+            className="p-2 hover:bg-gray-700 rounded transition-colors text-gray-300 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label={rightPanelOpen ? 'Close tools' : 'Open tools'}
+            aria-expanded={rightPanelOpen}
             data-testid="toggle-right-panel"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -290,18 +332,21 @@ export function WorkspacePage() {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 relative overflow-hidden">
+      <main id="main-content" className="flex-1 relative overflow-hidden" role="main">
         {/* 3D Canvas or Empty State */}
         {graphData ? (
           <Canvas3D graph={graphData} />
         ) : (
-          <EmptyState onImportClick={() => setLeftPanelOpen(true)} />
+          <EmptyState onImportClick={openLeftPanel} />
         )}
 
-        {/* Processing Status Indicator */}
-        {processingStatus && processingStatus !== 'completed' && processingStatus !== 'failed' && (
-          <CodebaseStatusIndicator status={processingStatus} />
-        )}
+        {/* Status/Notification Region */}
+        <div role="status" aria-live="polite" aria-atomic="true">
+          {/* Processing Status Indicator */}
+          {processingStatus && processingStatus !== 'completed' && processingStatus !== 'failed' && (
+            <CodebaseStatusIndicator status={processingStatus} />
+          )}
+        </div>
 
         {/* Error Notification */}
         {importError && (
@@ -321,144 +366,37 @@ export function WorkspacePage() {
         )}
 
         {/* Left Side Panel */}
-        <div
-          className={`absolute top-0 left-0 h-full w-80 bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out z-30 ${
-            leftPanelOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-        >
-          <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
-              <h2 className="text-lg font-semibold text-white">Menu</h2>
-              <button
-                onClick={() => setLeftPanelOpen(false)}
-                className="p-1 hover:bg-gray-700 rounded text-gray-400"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {/* Workspace Switcher */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Workspace
-                </h3>
-                <WorkspaceSwitcher />
-              </div>
-
-              {/* Codebases List */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Codebases
-                </h3>
-                <CodebaseList
-                  workspaceId={workspace.id}
-                  selectedId={selectedCodebaseId || undefined}
-                  onCodebaseSelected={handleCodebaseSelected}
-                  refreshTrigger={listRefreshTrigger}
-                />
-              </div>
-
-              {/* Import Section */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Actions
-                </h3>
-                <ImportCodebaseButton
-                  workspaceId={workspace.id}
-                  onImportSuccess={() => loadWorkspace(workspace.id)}
-                />
-              </div>
-
-              {/* Collaboration */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Collaboration
-                </h3>
-                <SessionControl />
-              </div>
-            </div>
-          </div>
-        </div>
+        <LeftPanel
+          workspaceId={workspace.id}
+          selectedCodebaseId={selectedCodebaseId || undefined}
+          onCodebaseSelected={handleCodebaseSelected}
+          refreshTrigger={listRefreshTrigger}
+          onImportSuccess={() => loadWorkspace(workspace.id)}
+          onImportComplete={handleImportComplete}
+        />
 
         {/* Right Side Panel */}
-        <div
-          className={`absolute top-0 right-0 h-full w-80 bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out z-30 ${
-            rightPanelOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
-        >
-          <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
-              <h2 className="text-lg font-semibold text-white">Tools</h2>
-              <button
-                onClick={() => setRightPanelOpen(false)}
-                className="p-1 hover:bg-gray-700 rounded text-gray-400"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {/* Export */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Export
-                </h3>
-                <ExportButton />
-              </div>
-
-              {/* Viewpoints */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Viewpoints
-                </h3>
-                <ViewpointPanel />
-              </div>
-
-              {/* User Presence */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Users
-                </h3>
-                <UserPresence />
-              </div>
-            </div>
-          </div>
-        </div>
+        <RightPanel />
 
         {/* HUD (Top Left) */}
-        <div className="absolute top-4 left-4 z-20">
-          <HUD nodes={graphData?.nodes || []} />
-        </div>
+        <HUD nodes={graphData?.nodes || []} className="z-20" />
 
         {/* Navigation Panel (Top Center) */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 max-w-md">
+        <nav id="search" className="absolute top-4 left-1/2 -translate-x-1/2 z-20 max-w-md" aria-label="Graph navigation">
           <Navigation
             nodes={graphData?.nodes || []}
             onNodeSelect={handleSearchNodeSelect}
           />
-        </div>
+        </nav>
 
         {/* Collapsible MiniMap (Bottom Right) */}
         <div className="absolute bottom-4 right-4 z-20">
           <div className="bg-white rounded-lg shadow-xl overflow-hidden">
             <button
               onClick={() => setMiniMapCollapsed(!miniMapCollapsed)}
-              className="w-full px-3 py-2 flex items-center justify-between bg-gray-100 hover:bg-gray-200 transition-colors border-b border-gray-200"
+              className="w-full px-3 py-2 flex items-center justify-between bg-gray-100 hover:bg-gray-200 transition-colors border-b border-gray-200 min-h-[44px]"
+              aria-label={miniMapCollapsed ? 'Expand minimap' : 'Collapse minimap'}
+              aria-expanded={!miniMapCollapsed}
             >
               <span className="text-xs font-semibold text-gray-900">MiniMap</span>
               <svg
@@ -483,17 +421,15 @@ export function WorkspacePage() {
           </div>
         </div>
 
-        {/* Overlay for closing panels */}
+        {/* Overlay backdrop for closing panels */}
         {(leftPanelOpen || rightPanelOpen) && (
           <div
             className="absolute inset-0 bg-black/30 z-20"
-            onClick={() => {
-              setLeftPanelOpen(false)
-              setRightPanelOpen(false)
-            }}
+            data-testid="panel-overlay"
+            onClick={closeAllPanels}
           />
         )}
-      </div>
+      </main>
 
       {/* Global Search Modal (⌘K) */}
       <SearchBarModal

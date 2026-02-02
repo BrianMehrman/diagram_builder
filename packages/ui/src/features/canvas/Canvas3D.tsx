@@ -102,9 +102,10 @@ function CameraController({ graph }: { graph?: Graph | undefined }) {
         />
       ) : (
         <FlyControls
-          movementSpeed={10}
-          rollSpeed={0.5}
-          dragToLook={false}
+          movementSpeed={50}
+          rollSpeed={0.3}
+          dragToLook={true}
+          autoForward={false}
         />
       )}
     </>

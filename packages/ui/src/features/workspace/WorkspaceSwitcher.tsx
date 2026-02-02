@@ -1,42 +1,56 @@
 /**
  * WorkspaceSwitcher Component
  *
- * UI for switching between workspaces and managing workspace list
+ * Fetches workspaces from API and allows switching between them.
+ * Navigating to a workspace reloads the graph via React Router.
  */
 
-import { useState } from 'react';
-import { useWorkspaceStore } from './store';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router';
+import { workspaces as workspacesApi } from '../../shared/api/endpoints';
 import { WorkspaceConfig } from './WorkspaceConfig';
+import type { Workspace } from '../../shared/types';
 
 interface WorkspaceSwitcherProps {
   className?: string;
 }
 
-/**
- * Format date for display
- */
 function formatDate(isoString: string): string {
   const date = new Date(isoString);
   return date.toLocaleDateString();
 }
 
-/**
- * WorkspaceSwitcher component
- */
 export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
+  const navigate = useNavigate();
+  const { id: currentWorkspaceId } = useParams<{ id: string }>();
+
+  const [workspaceList, setWorkspaceList] = useState<Workspace[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showConfig, setShowConfig] = useState(false);
   const [editingId, setEditingId] = useState<string | undefined>();
 
-  const workspaces = useWorkspaceStore((state) => state.workspaces);
-  const currentWorkspaceId = useWorkspaceStore(
-    (state) => state.currentWorkspaceId
-  );
-  const setCurrentWorkspace = useWorkspaceStore(
-    (state) => state.setCurrentWorkspace
-  );
-  const deleteWorkspace = useWorkspaceStore((state) => state.deleteWorkspace);
+  useEffect(() => {
+    fetchWorkspaces();
+  }, []);
 
-  const currentWorkspace = workspaces.find((w) => w.id === currentWorkspaceId);
+  const fetchWorkspaces = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await workspacesApi.list();
+      setWorkspaceList(data);
+    } catch (err) {
+      setError('Failed to load workspaces');
+      console.error('Failed to fetch workspaces:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSwitch = (workspaceId: string) => {
+    navigate(`/workspace/${workspaceId}`);
+  };
 
   const handleCreateNew = () => {
     setEditingId(undefined);
@@ -48,22 +62,18 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
     setShowConfig(true);
   };
 
-  const handleDelete = (workspaceId: string) => {
+  const handleDelete = async (workspaceId: string) => {
     if (confirm('Are you sure you want to delete this workspace?')) {
-      deleteWorkspace(workspaceId);
+      setWorkspaceList((prev) => prev.filter((w) => w.id !== workspaceId));
     }
-  };
-
-  const handleSwitch = (workspaceId: string) => {
-    setCurrentWorkspace(workspaceId);
   };
 
   const handleConfigSave = (workspaceId: string) => {
     setShowConfig(false);
     setEditingId(undefined);
-    // Optionally switch to the newly created/edited workspace
+    fetchWorkspaces();
     if (!currentWorkspaceId) {
-      setCurrentWorkspace(workspaceId);
+      navigate(`/workspace/${workspaceId}`);
     }
   };
 
@@ -93,16 +103,34 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
             + New
           </button>
         </div>
-        {currentWorkspace && (
+        {currentWorkspaceId && (
           <div className="mt-2 text-sm text-gray-600">
-            Current: <span className="font-medium">{currentWorkspace.name}</span>
+            Current:{' '}
+            <span className="font-medium">
+              {workspaceList.find((w) => w.id === currentWorkspaceId)?.name || 'Loading...'}
+            </span>
           </div>
         )}
       </div>
 
       {/* Workspace List */}
       <div className="p-4">
-        {workspaces.length === 0 ? (
+        {loading ? (
+          <div className="text-center text-gray-500 text-sm py-8">
+            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400 mb-2"></div>
+            <p>Loading...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-500 text-sm py-8">
+            <p>{error}</p>
+            <button
+              onClick={fetchWorkspaces}
+              className="mt-2 text-primary-600 hover:text-primary-700 text-sm"
+            >
+              Retry
+            </button>
+          </div>
+        ) : workspaceList.length === 0 ? (
           <div className="text-center text-gray-500 text-sm py-8">
             <svg
               className="w-12 h-12 mx-auto mb-3 text-gray-400"
@@ -122,9 +150,10 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
           </div>
         ) : (
           <div className="space-y-2">
-            {workspaces.map((workspace) => (
+            {workspaceList.map((workspace) => (
               <div
                 key={workspace.id}
+                data-testid={`workspace-item-${workspace.id}`}
                 className={`border rounded-lg p-3 ${
                   workspace.id === currentWorkspaceId
                     ? 'border-primary-500 bg-primary-50'
@@ -142,14 +171,10 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
                       </p>
                     )}
                     <div className="text-xs text-gray-500 mt-2 space-y-0.5">
-                      <div>
-                        {workspace.repositories.length} repositories
-                      </div>
+                      <div>{workspace.repositories.length} repositories</div>
                       <div>Created: {formatDate(workspace.createdAt)}</div>
                       {workspace.lastAccessedAt && (
-                        <div>
-                          Last accessed: {formatDate(workspace.lastAccessedAt)}
-                        </div>
+                        <div>Last accessed: {formatDate(workspace.lastAccessedAt)}</div>
                       )}
                     </div>
                   </div>
@@ -159,7 +184,7 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
                       <button
                         onClick={() => handleSwitch(workspace.id)}
                         className="p-1.5 text-primary-600 hover:bg-primary-100 rounded transition-colors"
-                        title="Switch to this workspace"
+                        aria-label="Switch to this workspace"
                       >
                         <svg
                           className="w-5 h-5"
@@ -179,7 +204,7 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
                     <button
                       onClick={() => handleEdit(workspace.id)}
                       className="p-1.5 text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                      title="Edit workspace"
+                      aria-label="Edit workspace"
                     >
                       <svg
                         className="w-5 h-5"
@@ -198,7 +223,7 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
                     <button
                       onClick={() => handleDelete(workspace.id)}
                       className="p-1.5 text-red-600 hover:bg-red-100 rounded transition-colors"
-                      title="Delete workspace"
+                      aria-label="Delete workspace"
                     >
                       <svg
                         className="w-5 h-5"
@@ -220,12 +245,8 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
                 {/* Settings summary */}
                 <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-600 flex gap-4">
                   <div>LOD: Level {workspace.settings.defaultLodLevel}</div>
-                  {workspace.settings.autoRefresh && (
-                    <div>Auto-refresh</div>
-                  )}
-                  {workspace.settings.collaborationEnabled && (
-                    <div>Collaboration</div>
-                  )}
+                  {workspace.settings.autoRefresh && <div>Auto-refresh</div>}
+                  {workspace.settings.collaborationEnabled && <div>Collaboration</div>}
                 </div>
               </div>
             ))}

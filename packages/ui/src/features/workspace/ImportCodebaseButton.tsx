@@ -10,11 +10,14 @@ import { ImportCodebaseModal } from './ImportCodebaseModal'
 interface ImportCodebaseButtonProps {
   workspaceId: string
   onImportSuccess?: () => void
+  /** Called when import completes successfully with repositoryId */
+  onImportComplete?: (repositoryId: string) => void
 }
 
 export function ImportCodebaseButton({
   workspaceId,
   onImportSuccess,
+  onImportComplete,
 }: ImportCodebaseButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -22,6 +25,12 @@ export function ImportCodebaseButton({
     // Don't close modal here - let the modal handle its own closing after showing success message
     if (onImportSuccess) {
       onImportSuccess()
+    }
+  }
+
+  const handleImportComplete = (repositoryId: string) => {
+    if (onImportComplete) {
+      onImportComplete(repositoryId)
     }
   }
 
@@ -41,6 +50,7 @@ export function ImportCodebaseButton({
           onClose={() => setIsModalOpen(false)}
           workspaceId={workspaceId}
           onSuccess={handleSuccess}
+          onImportComplete={handleImportComplete}
         />
       )}
     </>

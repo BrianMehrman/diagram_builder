@@ -370,4 +370,97 @@ describe('CodebaseList', () => {
       expect(api.codebases.list).toHaveBeenCalledTimes(2)
     })
   })
+
+  describe('Progress Display', () => {
+    it('should display progress bar when codebase is processing', async () => {
+      const processingCodebase = {
+        codebaseId: 'cb-processing',
+        workspaceId: mockWorkspaceId,
+        status: 'processing' as const,
+        source: 'github.com/user/processing-repo',
+        repositoryId: null,
+        importedAt: '2024-01-01T00:00:00Z',
+        progress: {
+          percentage: 45,
+          stage: 'parsing' as const,
+          message: 'Reading files (100/200)',
+          filesProcessed: 100,
+          totalFiles: 200,
+        },
+      }
+
+      vi.mocked(api.codebases.list).mockResolvedValue({
+        codebases: [processingCodebase],
+      })
+
+      render(<CodebaseList workspaceId={mockWorkspaceId} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/processing-repo/i)).toBeInTheDocument()
+      })
+
+      // Check progress message is displayed
+      expect(screen.getByText(/Reading files/i)).toBeInTheDocument()
+
+      // Check progress percentage is displayed
+      expect(screen.getByText(/45%/)).toBeInTheDocument()
+
+      // Check progress bar exists
+      expect(screen.getByRole('progressbar')).toBeInTheDocument()
+      expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '45')
+
+      // Check file count is displayed
+      expect(screen.getByText(/100 \/ 200 files/i)).toBeInTheDocument()
+    })
+
+    it('should display stage name', async () => {
+      const processingCodebase = {
+        codebaseId: 'cb-processing',
+        workspaceId: mockWorkspaceId,
+        status: 'processing' as const,
+        source: 'github.com/user/repo',
+        repositoryId: null,
+        importedAt: '2024-01-01T00:00:00Z',
+        progress: {
+          percentage: 70,
+          stage: 'graph-building' as const,
+          message: 'Building dependency graph...',
+        },
+      }
+
+      vi.mocked(api.codebases.list).mockResolvedValue({
+        codebases: [processingCodebase],
+      })
+
+      render(<CodebaseList workspaceId={mockWorkspaceId} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/graph-building/i)).toBeInTheDocument()
+      })
+    })
+
+    it('should not display progress bar when codebase is completed', async () => {
+      const completedCodebase = {
+        codebaseId: 'cb-completed',
+        workspaceId: mockWorkspaceId,
+        status: 'completed' as const,
+        source: 'github.com/user/completed-repo',
+        repositoryId: 'repo-1',
+        importedAt: '2024-01-01T00:00:00Z',
+      }
+
+      vi.mocked(api.codebases.list).mockResolvedValue({
+        codebases: [completedCodebase],
+      })
+
+      render(<CodebaseList workspaceId={mockWorkspaceId} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/completed-repo/i)).toBeInTheDocument()
+      })
+
+      // Progress bar should not be present
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+    })
+  })
 })

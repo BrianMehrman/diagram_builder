@@ -1,7 +1,10 @@
 /**
  * HUD Component
  *
- * Heads-up display showing real-time canvas information
+ * Heads-up display showing real-time workspace statistics.
+ * Uses semantic HTML (dl/dt/dd) with ARIA attributes for accessibility.
+ *
+ * Stats: Nodes, Files, FPS, Control Mode
  */
 
 import { useEffect, useState } from 'react'
@@ -13,24 +16,12 @@ interface HUDProps {
   className?: string
 }
 
-/**
- * Calculate visible node count based on LOD level
- */
-function getVisibleNodeCount(nodes: GraphNode[], lodLevel: number): number {
-  return nodes.filter((node) => node.lod <= lodLevel).length
-}
-
-/**
- * HUD component
- */
 export function HUD({ nodes = [], className = '' }: HUDProps) {
-  const camera = useCanvasStore((state) => state.camera)
   const selectedNodeId = useCanvasStore((state) => state.selectedNodeId)
-  const lodLevel = useCanvasStore((state) => state.lodLevel)
   const controlMode = useCanvasStore((state) => state.controlMode)
   const [fps, setFps] = useState(0)
 
-  // FPS counter
+  // FPS counter - throttled to 1s updates
   useEffect(() => {
     let frameCount = 0
     let lastTime = performance.now()
@@ -50,89 +41,63 @@ export function HUD({ nodes = [], className = '' }: HUDProps) {
     }
 
     const rafId = requestAnimationFrame(measureFps)
-
     return () => cancelAnimationFrame(rafId)
   }, [])
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId)
-  const visibleCount = getVisibleNodeCount(nodes, lodLevel)
+  const totalNodes = nodes.length
+  const fileCount = nodes.filter((n) => n.type === 'file').length
+
+  const fpsColorClass = fps > 30 ? 'text-green-400' : 'text-red-400'
+  const modeLabel = controlMode === 'fly' ? 'Fly ✈️' : 'Orbit 🔄'
 
   return (
     <div
-      className={`absolute top-4 left-4 bg-black/75 text-white rounded-lg p-3 font-mono text-xs space-y-1 backdrop-blur-sm ${className}`}
+      className={`absolute top-4 left-4 w-[200px] text-white rounded-lg p-3 text-xs backdrop-blur-md ${className}`}
+      style={{ backgroundColor: 'rgba(26, 31, 46, 0.95)' }}
+      aria-label="Workspace statistics"
+      tabIndex={-1}
     >
-      {/* FPS */}
-      <div className="flex justify-between gap-4">
-        <span className="text-gray-400">FPS:</span>
-        <span className="font-semibold">{fps}</span>
-      </div>
+      <dl className="space-y-1.5" aria-live="polite">
+        {/* Nodes */}
+        <div className="flex justify-between items-center">
+          <dt className="text-gray-400">Nodes</dt>
+          <dd className="font-semibold">{totalNodes}</dd>
+        </div>
 
-      {/* Camera Position */}
-      <div className="flex justify-between gap-4">
-        <span className="text-gray-400">Camera:</span>
-        <span className="font-semibold">
-          ({camera.position.x.toFixed(1)}, {camera.position.y.toFixed(1)},{' '}
-          {camera.position.z.toFixed(1)})
-        </span>
-      </div>
+        {/* Files */}
+        <div className="flex justify-between items-center">
+          <dt className="text-gray-400">Files</dt>
+          <dd className="font-semibold">{fileCount}</dd>
+        </div>
 
-      {/* Camera Target */}
-      <div className="flex justify-between gap-4">
-        <span className="text-gray-400">Target:</span>
-        <span className="font-semibold">
-          ({camera.target.x.toFixed(1)}, {camera.target.y.toFixed(1)}, {camera.target.z.toFixed(1)})
-        </span>
-      </div>
+        {/* FPS */}
+        <div className="flex justify-between items-center">
+          <dt className="text-gray-400">FPS</dt>
+          <dd className={`font-semibold ${fpsColorClass}`} data-testid="fps-value">
+            {fps}
+          </dd>
+        </div>
 
-      {/* LOD Level */}
-      <div className="flex justify-between gap-4">
-        <span className="text-gray-400">LOD:</span>
-        <span className="font-semibold">Level {lodLevel}</span>
-      </div>
+        {/* Control Mode */}
+        <div className="flex justify-between items-center">
+          <dt className="text-gray-400">Mode</dt>
+          <dd className="font-semibold">{modeLabel}</dd>
+        </div>
+      </dl>
 
-      {/* Control Mode */}
-      <div className="flex justify-between gap-4">
-        <span className="text-gray-400">Controls:</span>
-        <span className={`font-semibold capitalize ${controlMode === 'fly' ? 'text-green-400' : 'text-blue-400'}`}>
-          {controlMode} {controlMode === 'fly' ? '✈️' : '🔄'}
-        </span>
-      </div>
-
-      {/* Keyboard Hint */}
-      <div className="text-gray-500 text-[10px] italic">
-        Press 'C' to toggle
-      </div>
-
-      {/* Node Counts */}
-      <div className="flex justify-between gap-4">
-        <span className="text-gray-400">Nodes:</span>
-        <span className="font-semibold">
-          {visibleCount} / {nodes.length}
-        </span>
-      </div>
-
-      {/* Selected Node */}
+      {/* Selected Node Info */}
       {selectedNode && (
-        <>
-          <div className="border-t border-gray-600 my-1 pt-1" />
-          <div className="flex justify-between gap-4">
+        <div className="border-t border-gray-600 mt-2 pt-2 space-y-1">
+          <div className="flex justify-between gap-2">
             <span className="text-gray-400">Selected:</span>
-            <span className="font-semibold truncate max-w-[150px]">{selectedNode.label}</span>
+            <span className="font-semibold truncate max-w-[120px]">{selectedNode.label}</span>
           </div>
-          <div className="flex justify-between gap-4">
+          <div className="flex justify-between gap-2">
             <span className="text-gray-400">Type:</span>
             <span className="font-semibold capitalize">{selectedNode.type}</span>
           </div>
-          {selectedNode.position && (
-            <div className="flex justify-between gap-4">
-              <span className="text-gray-400">Position:</span>
-              <span className="font-semibold">
-                ({selectedNode.position.x.toFixed(1)}, {selectedNode.position.y.toFixed(1)},{' '}
-                {selectedNode.position.z.toFixed(1)})
-              </span>
-            </div>
-          )}
-        </>
+        </div>
       )}
     </div>
   )

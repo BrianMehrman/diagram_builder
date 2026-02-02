@@ -112,7 +112,7 @@ export function ExportDialog({
             <button
               onClick={handleClose}
               className="p-1.5 text-gray-400 hover:text-gray-600 rounded transition-colors"
-              title="Close"
+              aria-label="Close export dialog"
               data-testid="close-export-dialog"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

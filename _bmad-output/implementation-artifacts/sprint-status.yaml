@@ -74,19 +74,47 @@ development_status:
   6-3-implement-user-feedback-loading-states: done  # Empty state, parsing indicators, success/error notifications - auto-focus deferred
   6-4-end-to-end-integration-testing: done  # API integration tests (10), E2E pipeline tests (3), graph quality assertions, failure mode tests (21) - 54 total tests
   6-5-configuration-security: done  # File storage management, repo size limits, secret scanning, environment config - COMPLETE (2026-01-24)
-  6-6-codebase-management-ui: review  # View codebase list with status, delete codebases, retry failed imports - COMPLETE (2026-01-24)
+  6-6-codebase-management-ui: done  # View codebase list with status, delete codebases, retry failed imports - COMPLETE (2026-01-24)
 
   # Epic 7: "Search-First Command Center" UX Implementation
   epic-7: in-progress
   epic-7-retrospective: optional
   7-1-implement-searchbar-modal-autocomplete: done  # SearchBar with ⌘K, fuzzy autocomplete, camera flight - COMPLETE (2026-01-25)
-  7-2-enhance-empty-states-loading-indicators: in-progress  # Empty states, progress bars, toast notifications
-  7-3-implement-camera-flight-animations: not-started  # Smooth camera flight with arrival feedback
-  7-4-add-keyboard-navigation-shortcuts: not-started  # Global keyboard shortcuts (⌘K, ESC, Home, C)
-  7-5-enhance-minimap-click-to-jump: not-started  # MiniMap click-to-jump, FOV indicator
-  7-6-implement-side-panels-workspace-switcher: not-started  # Left/right side panels with workspace switcher
-  7-7-enhance-hud-real-time-stats: not-started  # HUD with Nodes, Files, FPS, Mode stats
-  7-8-wcag-aa-compliance-accessibility: not-started  # WCAG AA compliance (keyboard, ARIA, reduced motion)
+  7-2-enhance-empty-states-loading-indicators: done  # Empty states, progress bars, toast notifications, API progress tracking - COMPLETE (2026-01-26)
+  7-3-implement-camera-flight-animations: done  # Smooth camera flight with arrival feedback - COMPLETE (2026-01-26)
+  7-4-add-keyboard-navigation-shortcuts: done  # Global keyboard shortcuts (⌘K, ESC, Home, C, ?, Ctrl+Shift+S) - COMPLETE (2026-01-26)
+  7-5-enhance-minimap-click-to-jump: review  # MiniMap click-to-jump, FOV indicator, collapse/expand - COMPLETE (2026-01-29)
+  7-6-implement-side-panels-workspace-switcher: review  # Left/right side panels with workspace switcher - COMPLETE (2026-02-01)
+  7-7-enhance-hud-real-time-stats: review  # HUD with Nodes, Files, FPS, Mode stats - COMPLETE (2026-02-01)
+  7-8-wcag-aa-compliance-accessibility: review  # WCAG AA compliance - semantic landmarks, ARIA labels, reduced motion, focus indicators, skip links, touch targets - COMPLETE (2026-02-01)
+  7-9-implement-edge-pulse-animation: review  # Edge pulse animation on arrival - COMPLETE (2026-02-02)
+
+  # Epic 8: City-to-Cell 3D Layout
+  epic-8: not-started
+  epic-8-retrospective: optional
+  # Phase 1: Data Foundation
+  8-1-add-depth-field-to-graphnode: not-started  # Add depth, isExternal, parentId to GraphNode type
+  8-2-calculate-abstraction-depth: not-started  # BFS algorithm from entry points
+  8-3-add-external-library-detection: not-started  # Detect and flag external library imports
+  8-4-add-parent-child-relationships: not-started  # Establish containment relationships
+  # Phase 2: Layout System
+  8-5-create-layout-engine-interface: not-started  # Pluggable layout engine interface
+  8-6-implement-city-layout-engine: not-started  # City layout with building silhouettes
+  8-7-implement-building-layout-engine: not-started  # Building layout with floors
+  8-8-implement-cell-layout-engine: not-started  # Cell layout with organelles
+  # Phase 3: View Modes
+  8-9-create-view-mode-manager: not-started  # City/Building/Cell mode manager
+  8-10-implement-city-view-renderer: not-started  # City view with building silhouettes
+  8-11-implement-building-view-renderer: not-started  # Building view with floors and rooms
+  8-12-implement-cell-view-renderer: not-started  # Cell view with organelles
+  # Phase 4: Transitions
+  8-13-implement-membrane-threshold-transition: not-started  # Membrane crossing effect
+  8-14-implement-city-to-building-transition: not-started  # Smooth city to building transition
+  8-15-implement-building-to-cell-transition: not-started  # Smooth building to cell transition
+  # Phase 5: Visibility Modes
+  8-16-implement-xray-mode: not-started  # X-ray mode for see-through buildings
+  8-17-implement-underground-mode: not-started  # Underground dependency visualization
+  8-18-render-dependency-tunnels: not-started  # Enhanced tunnel rendering
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun
@@ -220,6 +248,7 @@ epics:
       - 7-6-implement-side-panels-workspace-switcher
       - 7-7-enhance-hud-real-time-stats
       - 7-8-wcag-aa-compliance-accessibility
+      - 7-9-implement-edge-pulse-animation
     dependencies:
       - "Epic 6: Fix Parser & Complete Core Integration (4/6 stories complete)"
       - "UX Design Specification (Complete - 2026-01-24)"
@@ -228,4 +257,38 @@ epics:
       - "Component roadmap: Phase 1 (Core Journey), Phase 2 (Core Interaction), Phase 3 (Spatial Awareness), Phase 4 (Accessibility)"
       - "Priority: Story 7-1 (SearchBar) is CRITICAL - defines core 'Search → Fly → Understand' user journey"
       - "WCAG AA compliance required for enterprise customers (Section 508, ADA)"
+
+  epic-8:
+    name: "City-to-Cell 3D Layout"
+    description: "Transform the flat 3D visualization into a multi-scale city-to-cell metaphor. Files become buildings in a city grid, classes become rooms/floors inside buildings, and methods become organelles inside biological cells. Includes view mode transitions, X-ray mode, and underground dependency visualization."
+    stories:
+      - 8-1-add-depth-field-to-graphnode
+      - 8-2-calculate-abstraction-depth
+      - 8-3-add-external-library-detection
+      - 8-4-add-parent-child-relationships
+      - 8-5-create-layout-engine-interface
+      - 8-6-implement-city-layout-engine
+      - 8-7-implement-building-layout-engine
+      - 8-8-implement-cell-layout-engine
+      - 8-9-create-view-mode-manager
+      - 8-10-implement-city-view-renderer
+      - 8-11-implement-building-view-renderer
+      - 8-12-implement-cell-view-renderer
+      - 8-13-implement-membrane-threshold-transition
+      - 8-14-implement-city-to-building-transition
+      - 8-15-implement-building-to-cell-transition
+      - 8-16-implement-xray-mode
+      - 8-17-implement-underground-mode
+      - 8-18-render-dependency-tunnels
+    dependencies:
+      - "Epic 7: Search-First Command Center UX (camera flight, keyboard shortcuts)"
+      - "UX 3D Layout Vision (ux-3d-layout-vision.md)"
+      - "Existing parser pipeline (parser package)"
+    notes:
+      - "Phase 1 (Data Foundation): Stories 8-1 through 8-4 - Type extensions and parser enhancements"
+      - "Phase 2 (Layout System): Stories 8-5 through 8-8 - Pluggable layout engine with city, building, cell algorithms"
+      - "Phase 3 (View Modes): Stories 8-9 through 8-12 - View mode manager and three renderers"
+      - "Phase 4 (Transitions): Stories 8-13 through 8-15 - Membrane effect and smooth camera transitions"
+      - "Phase 5 (Visibility Modes): Stories 8-16 through 8-18 - X-ray mode, underground dependencies"
+      - "Critical path: 8-1 → 8-2/8-3/8-4 → 8-5 → 8-6/8-7/8-8 → 8-9 → 8-10/8-11/8-12"
 

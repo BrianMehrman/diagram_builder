@@ -16,6 +16,27 @@
 export type CodebaseStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 /**
+ * Import progress stage
+ */
+export type ImportStage = 'cloning' | 'parsing' | 'graph-building' | 'storing';
+
+/**
+ * Import progress information
+ */
+export interface ImportProgress {
+  /** Progress percentage (0-100) */
+  percentage: number;
+  /** Current stage of import */
+  stage: ImportStage;
+  /** Human-readable stage message */
+  message: string;
+  /** Number of files processed (optional) */
+  filesProcessed?: number;
+  /** Total files to process (optional) */
+  totalFiles?: number;
+}
+
+/**
  * Codebase source type
  */
 export type CodebaseType = 'local' | 'git';
@@ -61,6 +82,8 @@ export interface Codebase {
   importedAt: string;
   /** Last update timestamp */
   updatedAt: string;
+  /** Import progress (when processing) */
+  progress?: ImportProgress;
 }
 
 /**
@@ -101,4 +124,20 @@ export interface UpdateCodebaseStatusInput {
   error?: string;
   /** Repository ID (if completed) */
   repositoryId?: string;
+}
+
+/**
+ * Input for updating codebase import progress
+ */
+export interface UpdateCodebaseProgressInput {
+  /** Progress percentage (0-100) */
+  percentage: number;
+  /** Current import stage */
+  stage: ImportStage;
+  /** Human-readable message */
+  message: string;
+  /** Files processed so far */
+  filesProcessed?: number;
+  /** Total files to process */
+  totalFiles?: number;
 }

@@ -55,29 +55,29 @@ Current state: Basic workspace management exists (Story 5-10) but not in side pa
 ## Tasks/Subtasks
 
 ### Task 1: Build LeftPanel component
-- [ ] Create LeftPanel.tsx with slide-in animation
-- [ ] Add toggle button to header (hamburger icon)
-- [ ] Implement overlay backdrop
-- [ ] ESC closes panel
-- [ ] Click outside closes panel
+- [x] Create LeftPanel.tsx with slide-in animation
+- [x] Add toggle button to header (hamburger icon)
+- [x] Implement overlay backdrop
+- [x] ESC closes panel
+- [x] Click outside closes panel
 
 ### Task 2: Build RightPanel component
-- [ ] Create RightPanel.tsx with slide-in animation
-- [ ] Add toggle button to header (tools icon)
-- [ ] Same backdrop and close behavior
+- [x] Create RightPanel.tsx with slide-in animation
+- [x] Add toggle button to header (tools icon)
+- [x] Same backdrop and close behavior
 
 ### Task 3: Implement WorkspaceSwitcher
-- [ ] Create WorkspaceSwitcher.tsx
-- [ ] Fetch all workspaces from API
-- [ ] Display as dropdown or list
-- [ ] Highlight current workspace
-- [ ] Switch workspace on click (reload graph)
+- [x] Create WorkspaceSwitcher.tsx
+- [x] Fetch all workspaces from API
+- [x] Display as dropdown or list
+- [x] Highlight current workspace
+- [x] Switch workspace on click (reload graph)
 
 ### Task 4: Organize panel sections
-- [ ] Left Panel: Workspace, Actions, Collaboration
-- [ ] Right Panel: Export, Viewpoints, Users
-- [ ] Section headers styled per UX spec
-- [ ] Integrate existing components (ExportButton, ViewpointPanel, etc.)
+- [x] Left Panel: Workspace, Actions, Collaboration
+- [x] Right Panel: Export, Viewpoints, Users
+- [x] Section headers styled per UX spec
+- [x] Integrate existing components (ExportButton, ViewpointPanel, etc.)
 
 ---
 
@@ -87,5 +87,47 @@ Current state: Basic workspace management exists (Story 5-10) but not in side pa
 - **Estimated Effort:** 5-6 hours
 - **Priority:** MEDIUM
 
-**Status:** not-started
+**Status:** review
 **Created:** 2026-01-24
+
+---
+
+## Dev Agent Record
+
+### Implementation Plan
+- Add panel state (leftPanelOpen, rightPanelOpen) to shared uiStore for global access
+- Extract LeftPanel.tsx and RightPanel.tsx into features/panels/ directory
+- Update ESC handler in useGlobalKeyboardShortcuts to close panels
+- WorkspaceSwitcher already works with local store - AC-3 satisfied with existing impl
+- Write comprehensive tests for panel behavior
+- Refactor WorkspacePage.tsx to use extracted components
+
+### Debug Log
+
+### Completion Notes
+- Extracted inline left/right panels from WorkspacePage.tsx into dedicated LeftPanel.tsx and RightPanel.tsx components in features/panels/
+- Moved panel state (isLeftPanelOpen, isRightPanelOpen) from local useState into shared uiStore for global access
+- Updated useGlobalKeyboardShortcuts ESC handler to close panels (priority 3, after help modal and search modal)
+- Updated WorkspaceSwitcher to fetch workspaces from API instead of local Zustand store, navigate via React Router on switch
+- Added loading, error, and empty states to WorkspaceSwitcher
+- All 50 new/changed tests pass (14 panel + 6 workspace switcher + 24 keyboard shortcuts + 6 uiStore)
+- Pre-existing test failures (18) are unrelated to this story (CodebaseList file count display, NodeRenderer Three.js mocks, LOD controls, etc.)
+
+---
+
+## File List
+- packages/ui/src/features/panels/LeftPanel.tsx (new)
+- packages/ui/src/features/panels/LeftPanel.test.tsx (new)
+- packages/ui/src/features/panels/RightPanel.tsx (new)
+- packages/ui/src/features/panels/RightPanel.test.tsx (new)
+- packages/ui/src/features/panels/index.ts (new)
+- packages/ui/src/features/workspace/WorkspaceSwitcher.tsx (modified)
+- packages/ui/src/features/workspace/WorkspaceSwitcher.test.tsx (new)
+- packages/ui/src/shared/stores/uiStore.ts (modified - added panel state)
+- packages/ui/src/shared/hooks/useGlobalKeyboardShortcuts.ts (modified - ESC closes panels)
+- packages/ui/src/pages/WorkspacePage.tsx (modified - uses extracted panel components and uiStore)
+
+---
+
+## Change Log
+- 2026-02-01: Implemented side panels with workspace switcher - all 4 ACs satisfied

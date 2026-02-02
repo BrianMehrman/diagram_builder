@@ -2,10 +2,11 @@
  * Breadcrumbs Tests
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Breadcrumbs } from './Breadcrumbs';
+import { useCanvasStore } from '../canvas/store';
 import type { GraphNode } from '../../shared/types';
 
 const mockNodes: GraphNode[] = [
@@ -15,7 +16,7 @@ const mockNodes: GraphNode[] = [
     label: 'app.ts',
     metadata: {},
     position: { x: 0, y: 0, z: 0 },
-    lodLevel: 0,
+    lod: 0,
   },
   {
     id: 'class-1',
@@ -23,7 +24,7 @@ const mockNodes: GraphNode[] = [
     label: 'Application',
     metadata: { file: 'file-1' },
     position: { x: 1, y: 1, z: 1 },
-    lodLevel: 1,
+    lod: 1,
   },
   {
     id: 'method-1',
@@ -31,11 +32,15 @@ const mockNodes: GraphNode[] = [
     label: 'initialize',
     metadata: { class: 'class-1', file: 'file-1' },
     position: { x: 1.5, y: 1.5, z: 1.5 },
-    lodLevel: 2,
+    lod: 2,
   },
 ];
 
 describe('Breadcrumbs', () => {
+  beforeEach(() => {
+    useCanvasStore.getState().reset();
+  });
+
   it('renders null when no node is selected', () => {
     const { container } = render(
       <Breadcrumbs
@@ -175,7 +180,7 @@ describe('Breadcrumbs', () => {
       label: 'orphan',
       metadata: { file: 'file-1' },
       position: { x: 2, y: 2, z: 2 },
-      lodLevel: 2,
+      lod: 2,
     };
 
     render(
@@ -199,7 +204,7 @@ describe('Breadcrumbs', () => {
       label: 'OrphanClass',
       metadata: {},
       position: { x: 3, y: 3, z: 3 },
-      lodLevel: 1,
+      lod: 1,
     };
 
     render(
@@ -213,5 +218,95 @@ describe('Breadcrumbs', () => {
     // Should show only class
     expect(screen.getByText('OrphanClass')).toBeDefined();
     expect(screen.queryByText('app.ts')).toBeNull();
+  });
+
+  describe('flight state', () => {
+    it('shows flight target during flight', () => {
+      const file = mockNodes[0];
+      const method = mockNodes[2];
+
+      // Set flight state to target the method
+      useCanvasStore.getState().setFlightState(true, 'method-1');
+
+      render(
+        <Breadcrumbs
+          selectedNode={file}
+          nodes={mockNodes}
+          onNodeClick={vi.fn()}
+        />
+      );
+
+      // Should show the flight target (method) path, not the selected node
+      expect(screen.getByText('initialize')).toBeDefined();
+      expect(screen.getByText('Application')).toBeDefined();
+    });
+
+    it('shows "Flying..." text during flight', () => {
+      const file = mockNodes[0];
+
+      useCanvasStore.getState().setFlightState(true, 'method-1');
+
+      render(
+        <Breadcrumbs
+          selectedNode={file}
+          nodes={mockNodes}
+          onNodeClick={vi.fn()}
+        />
+      );
+
+      expect(screen.getByText('Flying...')).toBeDefined();
+    });
+
+    it('disables breadcrumb clicks during flight', () => {
+      const method = mockNodes[2];
+
+      useCanvasStore.getState().setFlightState(true, 'method-1');
+
+      render(
+        <Breadcrumbs
+          selectedNode={method}
+          nodes={mockNodes}
+          onNodeClick={vi.fn()}
+        />
+      );
+
+      const fileButton = screen.getByText('app.ts');
+      expect(fileButton).toBeDisabled();
+    });
+
+    it('falls back to selected node if flight target not found', () => {
+      const file = mockNodes[0];
+
+      useCanvasStore.getState().setFlightState(true, 'non-existent-node');
+
+      render(
+        <Breadcrumbs
+          selectedNode={file}
+          nodes={mockNodes}
+          onNodeClick={vi.fn()}
+        />
+      );
+
+      // Should fall back to selected node
+      expect(screen.getByText('app.ts')).toBeDefined();
+    });
+
+    it('shows selected node when not flying', () => {
+      const file = mockNodes[0];
+
+      // Not flying
+      useCanvasStore.getState().setFlightState(false, null);
+
+      render(
+        <Breadcrumbs
+          selectedNode={file}
+          nodes={mockNodes}
+          onNodeClick={vi.fn()}
+        />
+      );
+
+      expect(screen.getByText('app.ts')).toBeDefined();
+      expect(screen.queryByText('Flying...')).toBeNull();
+    });
   });
 });

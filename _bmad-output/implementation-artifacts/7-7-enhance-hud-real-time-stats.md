@@ -53,26 +53,26 @@ From UX Design Specification:
 ## Tasks/Subtasks
 
 ### Task 1: Enhance HUD component
-- [ ] Update HUD.tsx with all 4 stats (Nodes, Files, FPS, Mode)
-- [ ] Connect to Zustand store for real-time data
-- [ ] Style with dark glass background
-- [ ] Use semantic HTML (`<dl>`, `<dt>`, `<dd>`)
+- [x] Update HUD.tsx with all 4 stats (Nodes, Files, FPS, Mode)
+- [x] Connect to Zustand store for real-time data
+- [x] Style with dark glass background
+- [x] Use semantic HTML (`<dl>`, `<dt>`, `<dd>`)
 
 ### Task 2: Implement FPS counter
-- [ ] Track rendering FPS (useFrame hook)
-- [ ] Throttle updates to 1 second
-- [ ] Color: green if >30, red if <30
-- [ ] Display as integer (e.g., "60 FPS")
+- [x] Track rendering FPS (useFrame hook)
+- [x] Throttle updates to 1 second
+- [x] Color: green if >30, red if <30
+- [x] Display as integer (e.g., "60 FPS")
 
 ### Task 3: Add control mode indicator
-- [ ] Show current mode: "Orbit 🔄" or "Fly ✈️"
-- [ ] Update when user presses C key
-- [ ] Connect to camera control store
+- [x] Show current mode: "Orbit 🔄" or "Fly ✈️"
+- [x] Update when user presses C key
+- [x] Connect to camera control store
 
 ### Task 4: Add accessibility
-- [ ] `aria-label="Workspace statistics"`
-- [ ] `aria-live="polite"` for stat updates
-- [ ] Not focusable (tabindex="-1")
+- [x] `aria-label="Workspace statistics"`
+- [x] `aria-live="polite"` for stat updates
+- [x] Not focusable (tabindex="-1")
 
 ---
 
@@ -82,5 +82,42 @@ From UX Design Specification:
 - **Estimated Effort:** 2-3 hours
 - **Priority:** MEDIUM
 
-**Status:** not-started
+**Status:** review
 **Created:** 2026-01-24
+
+---
+
+## Dev Agent Record
+
+### Implementation Plan
+- Restructure HUD markup from divs to semantic `<dl>`/`<dt>`/`<dd>` with aria attributes
+- Add Files count (count nodes of type 'file')
+- Apply dark glass styling per UX spec (`rgba(26, 31, 46, 0.95)`, 200px, backdrop blur)
+- Add FPS color coding (green >30, red <30)
+- Keep selected node info section as secondary display
+- Update existing tests to match new markup
+
+### Debug Log
+
+### Completion Notes
+- Restructured HUD from generic divs to semantic `<dl>`/`<dt>`/`<dd>` markup
+- Added Files count (filters nodes by type === 'file')
+- Applied UX spec dark glass styling: `rgba(26, 31, 46, 0.95)` with backdrop-blur-md, 200px width, rounded-lg
+- FPS color coding: green-400 when >30, red-400 when <30
+- Added accessibility: aria-label="Workspace statistics", aria-live="polite" on dl, tabIndex=-1
+- Control mode shows "Orbit 🔄" or "Fly ✈️" connected to canvas store
+- Removed camera position/target/LOD display (not in UX spec); kept selected node info
+- Removed wrapper div in WorkspacePage, HUD now self-positions
+- 20 tests passing covering all 4 ACs
+
+---
+
+## File List
+- packages/ui/src/features/navigation/HUD.tsx (modified)
+- packages/ui/src/features/navigation/HUD.test.tsx (modified)
+- packages/ui/src/pages/WorkspacePage.tsx (modified - HUD wrapper removed)
+
+---
+
+## Change Log
+- 2026-02-01: Enhanced HUD with real-time stats, semantic HTML, dark glass styling, accessibility

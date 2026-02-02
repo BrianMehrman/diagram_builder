@@ -4,9 +4,9 @@
  * Display and manage saved viewpoints
  */
 
-import { useState } from 'react';
 import { useViewpointStore } from './store';
 import { useCanvasStore } from '../canvas/store';
+import { useToastStore } from '../feedback/toastStore';
 import type { Viewpoint } from '../../shared/types';
 
 interface ViewpointListProps {
@@ -153,7 +153,6 @@ export function ViewpointList({
   className = '',
   onViewpointApplied,
 }: ViewpointListProps) {
-  const [shareUrl, setShareUrl] = useState<string | null>(null);
   const viewpoints = useViewpointStore((state) => state.viewpoints);
   const activeViewpointId = useViewpointStore((state) => state.activeViewpointId);
   const setActiveViewpoint = useViewpointStore((state) => state.setActiveViewpoint);
@@ -163,6 +162,9 @@ export function ViewpointList({
   const setCameraTarget = useCanvasStore((state) => state.setCameraTarget);
   const setLodLevel = useCanvasStore((state) => state.setLodLevel);
   const selectNode = useCanvasStore((state) => state.selectNode);
+
+  const showSuccess = useToastStore((state) => state.showSuccess);
+  const showError = useToastStore((state) => state.showError);
 
   const handleApply = (viewpoint: Viewpoint) => {
     // Apply camera state
@@ -189,7 +191,6 @@ export function ViewpointList({
   const handleDelete = (viewpointId: string) => {
     if (confirm('Are you sure you want to delete this viewpoint?')) {
       deleteViewpoint(viewpointId);
-      setShareUrl(null);
     }
   };
 
@@ -199,8 +200,9 @@ export function ViewpointList({
     const url = `${window.location.origin}${window.location.pathname}?viewpoint=${encoded}`;
 
     navigator.clipboard.writeText(url).then(() => {
-      setShareUrl(url);
-      setTimeout(() => setShareUrl(null), 3000);
+      showSuccess('Link Copied', 'Viewpoint link copied to clipboard!');
+    }).catch(() => {
+      showError('Copy Failed', 'Failed to copy link. Please try again.');
     });
   };
 
@@ -230,12 +232,6 @@ export function ViewpointList({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {shareUrl && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
-          URL copied to clipboard!
-        </div>
-      )}
-
       {viewpoints.map((viewpoint) => (
         <ViewpointListItem
           key={viewpoint.id}
