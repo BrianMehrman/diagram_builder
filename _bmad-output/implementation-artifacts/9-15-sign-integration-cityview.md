@@ -1,6 +1,6 @@
 # Story 9.15: Sign Integration in CityView
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -33,21 +33,20 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Attach signs to buildings (AC: 1, 2, 4)
-- [ ] Update CityView rendering loop
-- [ ] For each node, use `getSignType()` from story 9-12 to determine sign type
-- [ ] Render appropriate sign component as child of building mesh
-- [ ] Position sign above or beside the building (offset from building top)
+- [x] Update CityView rendering loop
+- [x] For each node, use `getSignType()` to determine sign type
+- [x] Render appropriate sign component via `renderSign()` helper
+- [x] Position sign above building using `getBuildingConfig(node).geometry.height + 1.5`
 
 ### Task 2: Attach highway signs to districts (AC: 3)
-- [ ] Render HighwaySign at each district boundary
-- [ ] Use district name/directory as sign text
-- [ ] Position at edge of district ground plane
+- [x] Render HighwaySign at each district arc boundary
+- [x] Use last path segment of district name as sign text
+- [x] Position at arc midpoint on outer edge of district ground plane (outerRadius + 1, y=1.5)
 
 ### Task 3: Wire LOD visibility (AC: 5-8)
-- [ ] Read `lodLevel` from store
-- [ ] Pass to `getSignVisibility()` from story 9-12
-- [ ] Set sign `visible` prop based on result
-- [ ] Signs with `visible={false}` skip rendering entirely
+- [x] Read `lodLevel` from store (already subscribed)
+- [x] Pass to `getSignVisibility(signType, lodLevel)` for each sign
+- [x] Set sign `visible` prop — signs with `visible={false}` return null (zero render cost)
 
 ---
 
@@ -80,9 +79,27 @@ Status: not-started
 ---
 
 ## Dev Agent Record
-_To be filled during implementation_
+
+### Implementation Plan
+- Created `renderSign.tsx` helper that maps `SignType` to the correct component
+- Added sign rendering in CityView's internal building loop (above each building)
+- Added highway signs at district arc midpoints
+- All signs LOD-controlled via `getSignVisibility(signType, lodLevel)`
+
+### Completion Notes
+- **Building signs:** Each internal file node gets a sign above it. Sign type determined by `getSignType(node)` — classes get hanging signs, public nodes get neon, etc. Positioned at `building height + 1.5` offset.
+- **District highway signs:** One highway sign per district arc, positioned at arc midpoint angle on the outer radius edge. Uses last path segment as label.
+- **LOD control:** `lodLevel` from store drives `getSignVisibility()`. LOD 1 shows only highway signs. LOD 4 shows everything.
+- **X-Ray mode:** Signs are skipped during X-Ray mode (X-Ray building path runs before sign rendering).
+- **renderSign helper:** Clean switch on `SignType` returns the correct component. Added to signs barrel export.
+- Zero TS errors, 1073 total tests passing, zero regressions.
+
+## File List
+- `packages/ui/src/features/canvas/components/signs/renderSign.tsx` (NEW — sign type → component mapper)
+- `packages/ui/src/features/canvas/components/signs/index.ts` (MODIFIED — added renderSign export)
+- `packages/ui/src/features/canvas/views/CityView.tsx` (MODIFIED — sign imports, building signs, district highway signs)
 
 ---
 
 ## Change Log
-_To be filled during implementation_
+- 2026-02-06: Wired signs into CityView with LOD visibility. Building signs above each node, highway signs at district boundaries. Zero TS errors, zero regressions.

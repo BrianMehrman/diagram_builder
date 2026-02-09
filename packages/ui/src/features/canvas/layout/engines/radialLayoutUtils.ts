@@ -148,11 +148,15 @@ export function assignDistrictArcs(
  * Converts from polar coordinates (angle, radius) to cartesian (x, z).
  * Y is always 0 — height is handled separately by the layout engine.
  *
+ * Nodes are spaced at least `buildingSpacing` apart (measured as chord distance).
+ * If the arc is too small for the minimum spacing, nodes overflow beyond arcEnd
+ * to prevent overlap.
+ *
  * @param nodes - Nodes to position
  * @param arcStart - Start angle in radians
  * @param arcEnd - End angle in radians
  * @param radius - Distance from origin
- * @param _config - Arc position configuration (reserved for spacing refinements)
+ * @param config - Arc position configuration with buildingSpacing
  * @returns Positioned nodes with cartesian coordinates
  */
 export function positionNodesInArc(
@@ -160,23 +164,35 @@ export function positionNodesInArc(
   arcStart: number,
   arcEnd: number,
   radius: number,
-  _config: ArcPositionConfig,
+  config: ArcPositionConfig,
 ): PositionedNode[] {
   if (nodes.length === 0) return [];
 
   const arcSpan = arcEnd - arcStart;
 
+  // Calculate minimum angular step to maintain buildingSpacing between nodes.
+  // chord ≈ radius * angle for small angles; use 2*asin(spacing/(2*radius)) for accuracy.
+  const effectiveRadius = Math.max(radius, 0.1);
+  const halfChord = config.buildingSpacing / (2 * effectiveRadius);
+  const minAngularStep = halfChord >= 1
+    ? Math.PI // spacing exceeds diameter — place on opposite sides
+    : 2 * Math.asin(halfChord);
+
+  // Use the larger of proportional spacing or minimum spacing
+  const proportionalStep = nodes.length > 1 ? arcSpan / nodes.length : arcSpan;
+  const angularStep = Math.max(proportionalStep, minAngularStep);
+
   return nodes.map((node, i) => {
-    // Distribute evenly: for N nodes, place at (i + 0.5) / N of the arc
-    const t = (i + 0.5) / nodes.length;
-    const angle = arcStart + t * arcSpan;
+    // Clamp within arc boundaries to prevent overflow into adjacent districts
+    const rawAngle = arcStart + (i + 0.5) * angularStep;
+    const angle = Math.min(rawAngle, arcEnd - 0.001);
 
     return {
       id: node.id,
       position: {
-        x: Math.cos(angle) * radius,
+        x: Math.cos(angle) * effectiveRadius,
         y: 0,
-        z: Math.sin(angle) * radius,
+        z: Math.sin(angle) * effectiveRadius,
       },
     };
   });

@@ -78,6 +78,28 @@ export const BUILDING_WIDTH = 2;
 export const BUILDING_DEPTH = 2;
 
 /**
+ * Type-specific building dimensions (Epic 9-B).
+ */
+export const CLASS_WIDTH = 2.5;
+export const CLASS_DEPTH = 2.5;
+export const SHOP_WIDTH = 3.5;
+export const SHOP_DEPTH = 1.5;
+export const CRATE_SIZE = 1.0;
+export const GLASS_OPACITY = 0.3;
+export const ABSTRACT_OPACITY = 0.5;
+
+/**
+ * Calculate building height from method count (for classes).
+ * Each method adds one floor. Minimum 1 floor.
+ */
+export function getMethodBasedHeight(methodCount: number | undefined, depth: number | undefined): number {
+  if (methodCount !== undefined && methodCount > 0) {
+    return Math.max(methodCount, 1) * FLOOR_HEIGHT;
+  }
+  return getBuildingHeight(depth);
+}
+
+/**
  * External building color (distinct from directory colors).
  */
 export const EXTERNAL_COLOR = '#475569'; // Slate

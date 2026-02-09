@@ -1,6 +1,6 @@
 # Story 9.12: Sign Selection & Visibility Utilities
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -38,25 +38,25 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Define sign types (AC: 1-7)
-- [ ] Create `packages/ui/src/features/canvas/components/signs/signUtils.ts`
-- [ ] Define `SignType` union type: `'neon' | 'brass' | 'hanging' | 'highway' | 'labelTape' | 'marquee' | 'construction'`
-- [ ] Implement `getSignType(node: GraphNode): SignType`
-- [ ] Priority order for multiple matches: deprecated > exported > visibility-based > type-based
+- [x] Create `packages/ui/src/features/canvas/components/signs/signUtils.ts`
+- [x] Define `SignType` union type: `'neon' | 'brass' | 'hanging' | 'highway' | 'labelTape' | 'marquee' | 'construction'`
+- [x] Implement `getSignType(node: GraphNode): SignType`
+- [x] Priority order for multiple matches: deprecated > exported > visibility-based > type-based
 
 ### Task 2: Implement visibility logic (AC: 8)
-- [ ] Implement `getSignVisibility(signType: SignType, lodLevel: number): boolean`
-- [ ] Define LOD visibility matrix as a constant map
-- [ ] LOD 1: `['highway']`
-- [ ] LOD 2: `['highway', 'hanging', 'neon', 'marquee']`
-- [ ] LOD 3: `['highway', 'hanging', 'neon', 'marquee', 'brass', 'labelTape']`
-- [ ] LOD 4: all types
+- [x] Implement `getSignVisibility(signType: SignType, lodLevel: number): boolean`
+- [x] Define LOD visibility matrix as a constant map
+- [x] LOD 1: `['highway']`
+- [x] LOD 2: `['highway', 'hanging', 'neon', 'marquee']`
+- [x] LOD 3: `['highway', 'hanging', 'neon', 'marquee', 'brass', 'labelTape']`
+- [x] LOD 4: all types
 
 ### Task 3: Write unit tests (AC: 9)
-- [ ] Create `packages/ui/src/features/canvas/components/signs/signUtils.test.ts`
-- [ ] Test each node type/metadata → sign type mapping
-- [ ] Test each LOD level → visibility mapping
-- [ ] Test fallback behavior when metadata is missing
-- [ ] Test priority when node has multiple matching conditions
+- [x] Create `packages/ui/src/features/canvas/components/signs/signUtils.test.ts`
+- [x] Test each node type/metadata → sign type mapping (22 tests)
+- [x] Test each LOD level → visibility mapping (17 tests)
+- [x] Test fallback behavior when metadata is missing
+- [x] Test priority when node has multiple matching conditions
 
 ---
 
@@ -86,9 +86,24 @@ Status: not-started
 ---
 
 ## Dev Agent Record
-_To be filled during implementation_
+
+### Implementation Plan
+- Created `signUtils.ts` with `SignType` union, `getSignType()`, and `getSignVisibility()`
+- Priority chain: deprecated → exported → visibility (private/public) → node type → fallback
+- LOD visibility matrix as `Record<number, Set<SignType>>` for O(1) lookup
+- 42 comprehensive tests covering all ACs
+
+### Completion Notes
+- **`getSignType`:** 8-level priority chain. Deprecated (construction) > exported (marquee) > private (brass) > public (neon) > class/abstract_class (hanging) > file (highway) > variable (labelTape) > fallback (highway).
+- **`getSignVisibility`:** LOD 1 shows only highway. LOD 2 adds hanging, neon, marquee. LOD 3 adds brass, labelTape. LOD 4+ shows all including construction. LOD 0/negative shows nothing.
+- **42 tests:** 22 for sign type selection (priority, type-based, fallback, missing metadata), 17 for visibility (each LOD level + edge cases), 3 for edge cases (LOD 0, negative, 5+).
+- Zero TS errors, 1054 total tests passing, zero regressions.
+
+## File List
+- `packages/ui/src/features/canvas/components/signs/signUtils.ts` (NEW)
+- `packages/ui/src/features/canvas/components/signs/signUtils.test.ts` (NEW — 42 tests)
 
 ---
 
 ## Change Log
-_To be filled during implementation_
+- 2026-02-06: Created sign selection and visibility utilities with 42 tests. Zero TS errors, zero regressions.

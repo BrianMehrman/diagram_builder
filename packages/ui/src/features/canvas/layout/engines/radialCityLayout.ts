@@ -40,7 +40,7 @@ export interface RadialCityLayoutConfig extends LayoutConfig {
   arcPadding?: number;
   /** Gap between districts on the same ring (default 5) — reserved for future refinement */
   districtGap?: number;
-  /** Spacing between buildings within an arc (default 2) */
+  /** Spacing between building centers within an arc (default 6) — must exceed widest building */
   buildingSpacing?: number;
   /** Radius of the center area for entry-point nodes (default 10) */
   centerRadius?: number;
@@ -64,7 +64,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
     const {
       ringSpacing = 20,
       arcPadding = 0.05,
-      buildingSpacing = 2,
+      buildingSpacing = 6,
       centerRadius = 10,
       density = 1.0,
     } = config;
@@ -82,9 +82,31 @@ export class RadialCityLayoutEngine implements LayoutEngine {
     );
     const externalNodes = graph.nodes.filter((n) => n.isExternal === true);
 
+    // Compute effective depth for each file node.
+    // If the parser provides depth, use it. Otherwise derive from directory nesting.
+    const hasAnyDepth = fileNodes.some((n) => n.depth !== undefined && n.depth > 0);
+    const effectiveDepths = new Map<string, number>();
+
+    if (hasAnyDepth) {
+      for (const n of fileNodes) {
+        effectiveDepths.set(n.id, n.depth ?? 0);
+      }
+    } else {
+      // Derive depth from directory nesting level relative to shortest path
+      const paths = fileNodes.map((n) => {
+        const p = (n.metadata?.path as string) ?? n.label ?? '';
+        return { id: n.id, segments: p.split('/').filter(Boolean) };
+      });
+      const minSegments = Math.min(...paths.map((p) => p.segments.length));
+      for (const p of paths) {
+        // Depth = number of extra directory levels beyond the shallowest file
+        effectiveDepths.set(p.id, Math.max(0, p.segments.length - minSegments));
+      }
+    }
+
     // Find entry points (depth 0) and deeper nodes
-    const entryNodes = fileNodes.filter((n) => (n.depth ?? 0) === 0);
-    const deeperNodes = fileNodes.filter((n) => (n.depth ?? 0) > 0);
+    const entryNodes = fileNodes.filter((n) => (effectiveDepths.get(n.id) ?? 0) === 0);
+    const deeperNodes = fileNodes.filter((n) => (effectiveDepths.get(n.id) ?? 0) > 0);
 
     // Position entry points at center
     const entryPositions = calculateEntryPointPosition(
@@ -98,10 +120,10 @@ export class RadialCityLayoutEngine implements LayoutEngine {
     // Group deeper nodes by directory (districts)
     const districts = this.groupByDirectory(deeperNodes);
 
-    // Build nodeDepths map for distribution
+    // Build nodeDepths map for distribution (using effective depths)
     const nodeDepths = new Map<string, number>();
     for (const node of deeperNodes) {
-      nodeDepths.set(node.id, node.depth ?? 0);
+      nodeDepths.set(node.id, effectiveDepths.get(node.id) ?? 0);
     }
 
     // Distribute districts across rings
@@ -127,6 +149,32 @@ export class RadialCityLayoutEngine implements LayoutEngine {
     // For each depth ring, assign arcs and position nodes
     const districtArcs: DistrictArcMetadata[] = [];
 
+    // Pre-compute actual radii per ring: ensure circumference can fit all nodes
+    const sortedDepths = [...assignmentsByDepth.keys()].sort((a, b) => a - b);
+    const actualRadii = new Map<number, number>();
+    let radiusOffset = 0;
+
+    for (const depth of sortedDepths) {
+      const assignments = assignmentsByDepth.get(depth)!;
+      const totalNodesOnRing = assignments.reduce((sum, a) => sum + a.nodeIds.length, 0);
+
+      const baseRadius = calculateRingRadius(depth, {
+        centerRadius: effectiveCenterRadius,
+        ringSpacing: effectiveRingSpacing,
+      }) + radiusOffset;
+
+      // Minimum radius so circumference fits all nodes at buildingSpacing
+      const minRadius = (totalNodesOnRing * effectiveBuildingSpacing) / (2 * Math.PI);
+      const actualRadius = Math.max(baseRadius, minRadius);
+
+      // If we had to expand this ring, push all outer rings out too
+      if (actualRadius > baseRadius) {
+        radiusOffset += actualRadius - baseRadius;
+      }
+
+      actualRadii.set(depth, actualRadius);
+    }
+
     for (const [depth, assignments] of assignmentsByDepth) {
       const districtDescriptors = assignments.map((a) => ({
         id: a.districtId,
@@ -134,10 +182,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       }));
 
       const arcs = assignDistrictArcs(districtDescriptors, depth, { arcPadding });
-      const radius = calculateRingRadius(depth, {
-        centerRadius: effectiveCenterRadius,
-        ringSpacing: effectiveRingSpacing,
-      });
+      const radius = actualRadii.get(depth)!;
       const halfRing = effectiveRingSpacing / 2;
 
       for (let i = 0; i < arcs.length; i++) {
@@ -174,13 +219,15 @@ export class RadialCityLayoutEngine implements LayoutEngine {
     if (externalNodes.length > 0) {
       const maxDepth = Math.max(
         0,
-        ...fileNodes.map((n) => n.depth ?? 0),
+        ...fileNodes.map((n) => effectiveDepths.get(n.id) ?? 0),
       );
       const externalRingDepth = maxDepth + 1;
-      const externalRadius = calculateRingRadius(externalRingDepth, {
+      const baseExternalRadius = calculateRingRadius(externalRingDepth, {
         centerRadius: effectiveCenterRadius,
         ringSpacing: effectiveRingSpacing,
-      });
+      }) + radiusOffset;
+      const minExternalRadius = (externalNodes.length * effectiveBuildingSpacing) / (2 * Math.PI);
+      const externalRadius = Math.max(baseExternalRadius, minExternalRadius);
 
       const sorted = [...externalNodes].sort((a, b) =>
         (a.label ?? '').localeCompare(b.label ?? '')
@@ -202,7 +249,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
     const bounds = boundsFromPositions(allPositions);
 
     // Compute metadata
-    const depthSet = new Set(fileNodes.map((n) => n.depth ?? 0));
+    const depthSet = new Set(fileNodes.map((n) => effectiveDepths.get(n.id) ?? 0));
 
     return {
       positions,

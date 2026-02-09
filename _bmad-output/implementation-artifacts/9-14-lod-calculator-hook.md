@@ -1,6 +1,6 @@
 # Story 9.14: LOD Calculator Hook
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -31,26 +31,27 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Create LOD calculator hook (AC: 1-4)
-- [ ] Create `packages/ui/src/features/canvas/hooks/useLodCalculator.ts`
-- [ ] Use `useFrame` from R3F to read camera position each frame
-- [ ] Calculate camera distance to scene center (or average node position)
-- [ ] Map distance to LOD level using configurable thresholds
-- [ ] Update store `lodLevel` via `setLodLevel()`
-- [ ] Define distance thresholds as constants (tunable)
+- [x] Create `packages/ui/src/features/canvas/hooks/lodCalculatorUtils.ts` (pure functions)
+- [x] Create `packages/ui/src/features/canvas/hooks/useLodCalculator.ts` (R3F hook)
+- [x] Use `useFrame` from R3F to read camera position each frame
+- [x] Calculate camera distance to scene origin (0,0,0)
+- [x] Map distance to LOD level: street≤25→4, ≤60→3, ≤120→2, >120→1
+- [x] Update store `lodLevel` via `setLodLevel()` only when LOD changes
+- [x] Distance thresholds exported as `LOD_THRESHOLDS` constant
 
 ### Task 2: Ensure no initial flash (AC: 5)
-- [ ] Hook must run on first frame before signs render
-- [ ] Since store defaults to lodLevel 1 (from story 9-4), initial state is correct
-- [ ] Verify the hook updates lodLevel before sign visibility is evaluated
+- [x] Store defaults to lodLevel 1 (from story 9-4) — correct initial state
+- [x] Hook updates on first frame via `useFrame` before sign render
+- [x] `useRef` tracks current LOD to avoid unnecessary store updates
 
 ### Task 3: Smooth transitions (AC: 6)
-- [ ] Add hysteresis to prevent rapid LOD switching at threshold boundaries
-- [ ] Only update lodLevel when distance crosses threshold by a margin (e.g., 5% buffer)
-- [ ] Debounce or throttle updates if needed
+- [x] 8% hysteresis buffer (`HYSTERESIS_FACTOR = 0.08`) prevents threshold flickering
+- [x] Zooming in transitions immediately; zooming out requires passing threshold + buffer
+- [x] No debounce needed — `useRef` comparison prevents redundant store writes
 
 ### Task 4: Integration point (AC: 1-4)
-- [ ] Hook must be called from within the R3F Canvas tree (requires `useFrame`)
-- [ ] Add to CityView or create a dedicated `<LodController>` component
+- [x] Created `<LodController>` component (renders null, calls hook)
+- [x] Added `<LodController />` to CityView render tree
 
 ---
 
@@ -83,9 +84,29 @@ Status: not-started
 ---
 
 ## Dev Agent Record
-_To be filled during implementation_
+
+### Implementation Plan
+- Separated pure utility functions (testable without R3F) from the hook
+- `lodCalculatorUtils.ts`: `calculateLodFromDistance`, `calculateLodWithHysteresis`, `cameraDistanceToOrigin`
+- `useLodCalculator.ts`: R3F hook using `useFrame` + `useRef` for efficient updates
+- `LodController.tsx`: Thin component wrapper for the hook, integrated into CityView
+
+### Completion Notes
+- **Thresholds:** street≤25 (LOD 4), neighborhood≤60 (LOD 3), district≤120 (LOD 2), city>120 (LOD 1)
+- **Hysteresis:** 8% buffer on zoom-out transitions. LOD 2→1 requires distance > 120 + 9.6 = 129.6. Prevents flickering.
+- **Performance:** `useRef` tracks current LOD to avoid store writes when unchanged. Only writes to Zustand store on actual LOD change.
+- **No initial flash:** Store defaults to LOD 1. Hook runs on first `useFrame` and adjusts from there.
+- 19 tests covering distance calculation, LOD mapping, hysteresis (zoom-in/out/stable).
+- Zero TS errors, 1074 total tests passing, zero regressions.
+
+## File List
+- `packages/ui/src/features/canvas/hooks/lodCalculatorUtils.ts` (NEW — pure utility functions)
+- `packages/ui/src/features/canvas/hooks/lodCalculatorUtils.test.ts` (NEW — 19 tests)
+- `packages/ui/src/features/canvas/hooks/useLodCalculator.ts` (NEW — R3F hook)
+- `packages/ui/src/features/canvas/components/LodController.tsx` (NEW — component wrapper)
+- `packages/ui/src/features/canvas/views/CityView.tsx` (MODIFIED — added LodController)
 
 ---
 
 ## Change Log
-_To be filled during implementation_
+- 2026-02-06: Created LOD calculator with hysteresis, integrated into CityView. 19 tests, zero TS errors, zero regressions.

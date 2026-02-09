@@ -16,13 +16,26 @@ import { GroundPlane } from './GroundPlane';
 import { UndergroundLayer } from './UndergroundLayer';
 import { DistrictGround } from '../components/DistrictGround';
 import { ClusterBuilding } from '../components/ClusterBuilding';
+import { LodController } from '../components/LodController';
+import {
+  ClassBuilding,
+  FunctionShop,
+  InterfaceBuilding,
+  AbstractBuilding,
+  VariableCrate,
+  EnumCrate,
+  RooftopGarden,
+  buildNestedTypeMap,
+} from '../components/buildings';
+import { getBuildingConfig } from '../components/buildingGeometry';
 import { getDistrictColor } from '../components/districtGroundUtils';
+import { getSignType, getSignVisibility, renderSign } from '../components/signs';
 import { RadialCityLayoutEngine } from '../layout/engines/radialCityLayout';
 import { shouldCluster, createClusterMetadata } from '../layout/engines/clusterUtils';
 import { useCanvasStore } from '../store';
 import { computeXRayWallOpacity, shouldShowXRayDetail } from '../xrayUtils';
 import { computeGroundOpacity } from '../undergroundUtils';
-import type { Graph } from '../../../shared/types';
+import type { Graph, GraphNode } from '../../../shared/types';
 import type { DistrictArcMetadata } from '../layout/engines/radialCityLayout';
 
 interface CityViewProps {
@@ -34,6 +47,80 @@ const XRAY_DETAIL_DISTANCE = 30;
 
 /** Default threshold for clustering — districts with more nodes collapse at LOD 1 */
 const DEFAULT_CLUSTER_THRESHOLD = 20;
+
+/** Types that can contain nested type definitions */
+const CONTAINER_TYPES = new Set(['class', 'abstract_class', 'file']);
+
+/**
+ * Renders the appropriate typed building component based on node.type.
+ * Falls back to the generic Building component for unrecognized types.
+ * Adds RooftopGarden for container types with nested children.
+ */
+function renderTypedBuilding(
+  node: GraphNode,
+  position: { x: number; y: number; z: number },
+  nestedMap: Map<string, GraphNode[]>,
+) {
+  const props = { key: node.id, node, position };
+  const hasNested = CONTAINER_TYPES.has(node.type) && nestedMap.has(node.id);
+
+  let building: React.JSX.Element;
+  switch (node.type) {
+    case 'class':
+      building = <ClassBuilding {...props} />;
+      break;
+    case 'function':
+      building = <FunctionShop {...props} />;
+      break;
+    case 'interface':
+      building = <InterfaceBuilding {...props} />;
+      break;
+    case 'abstract_class':
+      building = <AbstractBuilding {...props} />;
+      break;
+    case 'variable':
+      building = <VariableCrate {...props} />;
+      break;
+    case 'enum':
+      building = <EnumCrate {...props} />;
+      break;
+    default:
+      building = <Building key={node.id} node={node} position={position} />;
+      break;
+  }
+
+  if (!hasNested) return building;
+
+  const config = getBuildingConfig(node);
+  return (
+    <group key={node.id} position={[position.x, position.y, position.z]}>
+      {/* Re-render building at origin since group handles position */}
+      {renderTypedBuildingInner(node)}
+      <RooftopGarden
+        parentNode={node}
+        parentWidth={config.geometry.width}
+        parentHeight={config.geometry.height}
+        nestedMap={nestedMap}
+      />
+    </group>
+  );
+}
+
+/**
+ * Renders just the building mesh without position (used inside rooftop group).
+ */
+function renderTypedBuildingInner(node: GraphNode) {
+  const origin = { x: 0, y: 0, z: 0 };
+  const props = { key: `inner-${node.id}`, node, position: origin };
+  switch (node.type) {
+    case 'class':
+      return <ClassBuilding {...props} />;
+    case 'abstract_class':
+      return <AbstractBuilding {...props} />;
+    default:
+      return <Building key={`inner-${node.id}`} node={node} position={origin} />;
+  }
+}
 
 export function CityView({ graph }: CityViewProps) {
   const setLayoutPositions = useCanvasStore((s) => s.setLayoutPositions);
@@ -102,6 +189,12 @@ export function CityView({ graph }: CityViewProps) {
     return ids;
   }, [clusters]);
 
+  // Build a map of parentId -> nested type children for rooftop gardens
+  const nestedTypeMap = useMemo(
+    () => buildNestedTypeMap(graph.nodes),
+    [graph.nodes],
+  );
+
   // Build a map of file id -> child nodes for x-ray mode
   const childrenByFile = useMemo(() => {
     if (!isXRayMode) return new Map<string, typeof graph.nodes>();
@@ -147,6 +240,9 @@ export function CityView({ graph }: CityViewProps) {
 
   return (
     <group name="city-view">
+      {/* LOD level controller — updates lodLevel based on camera distance */}
+      <LodController />
+
       {/* Ground plane */}
       <GroundPlane
         width={Math.max(groundWidth, 20)}
@@ -167,6 +263,24 @@ export function CityView({ graph }: CityViewProps) {
         />
       ))}
 
+      {/* District highway signs (LOD-controlled) */}
+      {districtArcs.map((arc) => {
+        const midAngle = (arc.arcStart + arc.arcEnd) / 2;
+        const signRadius = arc.outerRadius + 1;
+        const districtLabel = (arc.id ?? '').split('/').pop() || arc.id || 'district';
+        return renderSign({
+          key: `district-sign-${arc.id}-${arc.ringDepth}`,
+          signType: 'highway',
+          text: districtLabel,
+          position: {
+            x: Math.cos(midAngle) * signRadius,
+            y: 1.5,
+            z: Math.sin(midAngle) * signRadius,
+          },
+          visible: getSignVisibility('highway', lodLevel),
+        });
+      })}
+
       {/* Underground dependency tunnels */}
       <UndergroundLayer graph={graph} positions={layout.positions} />
 
@@ -181,7 +295,7 @@ export function CityView({ graph }: CityViewProps) {
         />
       ))}
 
-      {/* Internal buildings (skip clustered nodes at LOD 1) */}
+      {/* Internal buildings with signs (skip clustered nodes at LOD 1) */}
       {internalFiles.map((node) => {
         const pos = layout.positions.get(node.id);
         if (!pos) return null;
@@ -207,7 +321,27 @@ export function CityView({ graph }: CityViewProps) {
           );
         }
 
-        return <Building key={node.id} node={node} position={pos} />;
+        const signType = getSignType(node);
+        const signVisible = getSignVisibility(signType, lodLevel);
+        const config = getBuildingConfig(node);
+        const signLabel = (node.label ?? node.id).split('/').pop() ?? node.id;
+
+        return (
+          <group key={node.id}>
+            {renderTypedBuilding(node, pos, nestedTypeMap)}
+            {renderSign({
+              key: `sign-${node.id}`,
+              signType,
+              text: signLabel,
+              position: {
+                x: pos.x,
+                y: pos.y + config.geometry.height + 1.5,
+                z: pos.z,
+              },
+              visible: signVisible,
+            })}
+          </group>
+        );
       })}
 
       {/* External library buildings */}

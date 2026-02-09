@@ -127,15 +127,15 @@ development_status:
   9-6-node-clustering-high-zoom: review  # Cluster large districts into compound buildings at city zoom - COMPLETE (2026-02-05)
   # Epic 9-B: Shape Language & Visual Differentiation
   9-7-extend-graphnode-type-union: review  # Add interface, enum, abstract_class to GraphNode.type union - COMPLETE (2026-02-06)
-  9-8-building-geometry-factory: not-started  # Geometry factory mapping node types to Three.js configs
-  9-9-typed-building-components: not-started  # 6 typed R3F building components
-  9-10-cityview-type-switched-rendering: not-started  # Type-switched rendering in CityView
-  9-11-rooftop-gardens-nested-types: not-started  # Rooftop structures for nested types
+  9-8-building-geometry-factory: review  # Geometry factory mapping node types to Three.js configs - COMPLETE (2026-02-06)
+  9-9-typed-building-components: review  # 6 typed R3F building components - COMPLETE (2026-02-06)
+  9-10-cityview-type-switched-rendering: review  # Type-switched rendering in CityView - COMPLETE (2026-02-06)
+  9-11-rooftop-gardens-nested-types: review  # Rooftop structures for nested types - COMPLETE (2026-02-06)
   # Epic 9-C: Signage System & Progressive Labels
-  9-12-sign-selection-visibility-utilities: not-started  # Sign type selection and LOD visibility utilities
-  9-13-sign-component-library: not-started  # 7 R3F sign components with instanced rendering
-  9-14-lod-calculator-hook: not-started  # Camera distance → lodLevel hook
-  9-15-sign-integration-cityview: not-started  # Wire signs into CityView with LOD visibility
+  9-12-sign-selection-visibility-utilities: review  # Sign type selection and LOD visibility utilities - COMPLETE (2026-02-06)
+  9-13-sign-component-library: review  # 7 R3F sign components with frustum culling - COMPLETE (2026-02-06)
+  9-14-lod-calculator-hook: review  # Camera distance → lodLevel hook - COMPLETE (2026-02-06)
+  9-15-sign-integration-cityview: review  # Wire signs into CityView with LOD visibility - COMPLETE (2026-02-06)
   9-16-sign-metadata-extensions: not-started  # Add visibility, isDeprecated, isExported to GraphNode
   # Epic 9-D: Infrastructure Landmarks & Layer Control
   9-17-infrastructure-classifier: not-started  # Package name → infrastructure type classifier (parser)

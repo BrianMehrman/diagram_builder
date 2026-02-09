@@ -1,6 +1,6 @@
 # Story 9.11: Rooftop Gardens for Nested Types
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -32,22 +32,22 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Create RooftopGarden component (AC: 1, 2, 3)
-- [ ] Create `packages/ui/src/features/canvas/components/buildings/RooftopGarden.tsx`
-- [ ] R3F component that renders smaller building meshes on top of parent
-- [ ] Accept props: `parentNode`, `childNodes`, `parentDimensions`
-- [ ] Scale each tier: tier 1 = 60% of parent, tier 2 = 40%, tier 3 = 25%
-- [ ] Position each tier centered on the roof of the tier below
-- [ ] If >3 tiers, show count badge text on top tier
+- [x] Create `packages/ui/src/features/canvas/components/buildings/RooftopGarden.tsx`
+- [x] R3F component that renders smaller building meshes on top of parent
+- [x] Accept props: `parentNode`, `parentWidth`, `parentHeight`, `nestedMap`
+- [x] Scale each tier: tier 1 = 60% of parent, tier 2 = 40%, tier 3 = 25%
+- [x] Position each tier centered on the roof of the tier below
+- [x] If >3 tiers, show count badge text on top tier
 
 ### Task 2: Integrate into typed building components (AC: 1, 4)
-- [ ] Check `hasNestedTypes` metadata or find children via `parentId` in graph
-- [ ] If children exist, render RooftopGarden as child of the building mesh
-- [ ] If no children found (containment analyzer doesn't support it), skip gracefully — no error, no empty rendering
+- [x] Check nested type map for children via `parentId` in graph
+- [x] If children exist, render RooftopGarden as sibling in wrapping group
+- [x] If no children found (containment analyzer doesn't support it), skip gracefully — no error, no empty rendering
 
 ### Task 3: Build child lookup utility (AC: 1, 4)
-- [ ] Create utility to find nodes whose `parentId` matches a given node ID
-- [ ] Filter to only class-level children (inner classes, nested enums)
-- [ ] Handle case where parentId data isn't populated
+- [x] Create `nestedTypeUtils.ts` with `buildNestedTypeMap`, `collectNestingTiers`, `countOverflowChildren`
+- [x] Filter to only class-level children (class, interface, enum, abstract_class)
+- [x] Handle case where parentId data isn't populated — returns empty map
 
 ---
 
@@ -78,9 +78,28 @@ Status: not-started
 ---
 
 ## Dev Agent Record
-_To be filled during implementation_
+
+### Implementation Plan
+- Created `nestedTypeUtils.ts` with three pure utility functions for building nested type hierarchy
+- Created `RooftopGarden.tsx` R3F component rendering tiered box meshes on parent roof
+- Integrated into CityView via `renderTypedBuilding` — container types (class, abstract_class, file) get rooftop gardens when they have nested children
+- Used `buildNestedTypeMap` memo in CityView to avoid recomputing on every render
+
+### Completion Notes
+- **nestedTypeUtils.ts:** `buildNestedTypeMap` filters to class-level nested types (class, interface, enum, abstract_class), excluding methods/functions. `collectNestingTiers` walks up to 3 levels. `countOverflowChildren` counts anything beyond tier 3.
+- **RooftopGarden.tsx:** Tier scales: 60%, 40%, 25% of parent width. Each tier is 0.8 units tall. Colors: blue → purple → pink. Overflow count badge in yellow.
+- **CityView integration:** `renderTypedBuilding` now accepts `nestedMap` param. Container types with nested children get wrapped in a `<group>` with the building + `RooftopGarden`. Non-container types pass through unchanged.
+- **Graceful degradation:** If containment analyzer doesn't populate `parentId` for class→inner class, `buildNestedTypeMap` returns empty map and no rooftop gardens render.
+- 14 new tests in `nestedTypeUtils.test.ts`. 1013 total tests passing, zero regressions.
+
+## File List
+- `packages/ui/src/features/canvas/components/buildings/nestedTypeUtils.ts` (NEW — utility functions)
+- `packages/ui/src/features/canvas/components/buildings/nestedTypeUtils.test.ts` (NEW — 14 tests)
+- `packages/ui/src/features/canvas/components/buildings/RooftopGarden.tsx` (NEW — R3F component)
+- `packages/ui/src/features/canvas/components/buildings/index.ts` (MODIFIED — added exports)
+- `packages/ui/src/features/canvas/views/CityView.tsx` (MODIFIED — nestedTypeMap memo, updated renderTypedBuilding)
 
 ---
 
 ## Change Log
-_To be filled during implementation_
+- 2026-02-06: Created RooftopGarden component with nested type utilities. Integrated into CityView with graceful degradation. 14 tests, zero TS errors, zero regressions.
