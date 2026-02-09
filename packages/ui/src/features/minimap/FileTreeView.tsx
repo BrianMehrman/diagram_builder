@@ -21,40 +21,52 @@ interface TreeNode {
 }
 
 /**
- * Build tree structure from flat node list
+ * Build tree structure from flat node list using parentId relationships.
+ * Falls back to metadata.file / metadata.class if parentId is not set.
+ * Nodes without a parent are placed at the root level.
  */
 function buildTree(nodes: GraphNode[]): TreeNode[] {
-  // For now, simple hierarchy: files > classes > functions > methods
-  const files = nodes.filter((n) => n.type === 'file');
+  // Build a map of parentId -> children
+  const childrenMap = new Map<string, GraphNode[]>();
+  const rootNodes: GraphNode[] = [];
+  const nodeIds = new Set(nodes.map((n) => n.id));
 
-  return files.map((file) => {
-    const classes = nodes.filter(
-      (n) => n.type === 'class' && n.metadata.file === file.id
-    );
+  for (const node of nodes) {
+    // Determine parent: prefer parentId, fall back to metadata.file or metadata.class
+    const parentId =
+      node.parentId ??
+      (node.metadata.file as string | undefined) ??
+      (node.metadata.class as string | undefined) ??
+      null;
 
+    if (parentId && nodeIds.has(parentId)) {
+      const siblings = childrenMap.get(parentId) ?? [];
+      siblings.push(node);
+      childrenMap.set(parentId, siblings);
+    } else {
+      rootNodes.push(node);
+    }
+  }
+
+  // Recursively convert to TreeNode
+  function toTreeNode(node: GraphNode): TreeNode {
+    const children = childrenMap.get(node.id) ?? [];
     return {
-      id: file.id,
-      label: file.label,
-      type: file.type,
-      children: classes.map((cls) => {
-        const methods = nodes.filter(
-          (n) => n.type === 'method' && n.metadata.class === cls.id
-        );
-
-        return {
-          id: cls.id,
-          label: cls.label,
-          type: cls.type,
-          children: methods.map((method) => ({
-            id: method.id,
-            label: method.label,
-            type: method.type,
-            children: [],
-          })),
-        };
-      }),
+      id: node.id,
+      label: node.label ?? node.id,
+      type: node.type,
+      children: children.map(toTreeNode),
     };
+  }
+
+  // Sort roots: files first, then by label
+  rootNodes.sort((a, b) => {
+    if (a.type === 'file' && b.type !== 'file') return -1;
+    if (a.type !== 'file' && b.type === 'file') return 1;
+    return (a.label ?? '').localeCompare(b.label ?? '');
   });
+
+  return rootNodes.map(toTreeNode);
 }
 
 /**

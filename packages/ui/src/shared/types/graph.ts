@@ -18,11 +18,24 @@ export interface Position3D {
  */
 export interface GraphNode {
   id: string;
-  type: 'file' | 'class' | 'function' | 'method' | 'variable';
+  type: 'file' | 'class' | 'function' | 'method' | 'variable' | 'interface' | 'enum' | 'abstract_class';
   label: string;
   metadata: Record<string, unknown>;
   position?: Position3D;
   lod: number; // Changed from lodLevel to match IVM format
+
+  // City-to-cell layout fields (Epic 8)
+  depth?: number; // Abstraction depth from entry point (0 = entry, higher = deeper)
+  isExternal?: boolean; // True for external library imports
+  parentId?: string; // ID of the containing node (file → class → method)
+
+  // Shape metadata fields (Epic 9-B)
+  /** Number of methods in this class/interface */
+  methodCount?: number;
+  /** True for abstract classes */
+  isAbstract?: boolean;
+  /** True if this node contains nested type definitions */
+  hasNestedTypes?: boolean;
 }
 
 /**

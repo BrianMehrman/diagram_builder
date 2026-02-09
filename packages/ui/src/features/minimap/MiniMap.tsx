@@ -46,9 +46,12 @@ export function MiniMap({ nodes = [], className = '' }: MiniMapProps) {
     (nodeId: string) => {
       selectNode(nodeId)
 
+      // Prefer layout positions (from CityView), fall back to graph node position
+      const layoutPos = useCanvasStore.getState().layoutPositions.get(nodeId)
       const node = nodes.find((n) => n.id === nodeId)
-      if (node?.position) {
-        flyToNode(nodeId, node.position)
+      const targetPos = layoutPos ?? node?.position
+      if (targetPos) {
+        flyToNode(nodeId, targetPos)
       }
     },
     [nodes, selectNode, flyToNode]

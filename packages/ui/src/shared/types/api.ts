@@ -181,6 +181,16 @@ export interface ApiGraphNode {
   label: string;
   position: { x: number; y: number; z: number };
   metadata?: Record<string, unknown>;
+
+  // City-to-cell layout fields (Epic 8)
+  depth?: number;
+  isExternal?: boolean;
+  parentId?: string;
+
+  // Shape metadata fields (Epic 9-B)
+  methodCount?: number;
+  isAbstract?: boolean;
+  hasNestedTypes?: boolean;
 }
 
 export interface ApiGraphEdge {

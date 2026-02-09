@@ -86,7 +86,7 @@ describe('useCanvasStore', () => {
     const state = useCanvasStore.getState();
     expect(state.camera.position).toEqual({ x: 0, y: 5, z: 10 });
     expect(state.selectedNodeId).toBeNull();
-    expect(state.lodLevel).toBe(4);
+    expect(state.lodLevel).toBe(1);
   });
 
   // Highlighted node state tests

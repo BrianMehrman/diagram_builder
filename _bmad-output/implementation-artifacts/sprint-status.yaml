@@ -4,7 +4,7 @@
 
 project_name: diagram_builder
 sprint_start: "2025-12-29"
-current_phase: "Epic 6: 4/6 done, 2 ready-for-dev (Config & Codebase UI) | Epic 7: Planned - 8 UX stories (Search-First Command Center)"
+current_phase: "Epic 9: Planned - 21 stories across 4 sub-epics (City Visualization Overhaul Phase 1)"
 
 # Epic and Story Status Tracking
 development_status:
@@ -67,7 +67,7 @@ development_status:
   5.5-10-fix-parser-file-discovery: done  # Resolved: Switched test repo to TypeScript (mitt), parser works correctly
 
   # Epic 6: Fix Parser & Complete Core Integration
-  epic-6: in-progress
+  epic-6: done
   epic-6-retrospective: optional
   6-1-fix-parser-file-discovery: done  # Completed via Story 5.5-10 - parser works correctly for JS/TS repos
   6-2-add-observability-infrastructure: done  # MVP logging implemented - Winston, parser/API instrumentation, advanced features deferred
@@ -77,44 +77,72 @@ development_status:
   6-6-codebase-management-ui: done  # View codebase list with status, delete codebases, retry failed imports - COMPLETE (2026-01-24)
 
   # Epic 7: "Search-First Command Center" UX Implementation
-  epic-7: in-progress
+  epic-7: done
   epic-7-retrospective: optional
   7-1-implement-searchbar-modal-autocomplete: done  # SearchBar with ⌘K, fuzzy autocomplete, camera flight - COMPLETE (2026-01-25)
   7-2-enhance-empty-states-loading-indicators: done  # Empty states, progress bars, toast notifications, API progress tracking - COMPLETE (2026-01-26)
   7-3-implement-camera-flight-animations: done  # Smooth camera flight with arrival feedback - COMPLETE (2026-01-26)
   7-4-add-keyboard-navigation-shortcuts: done  # Global keyboard shortcuts (⌘K, ESC, Home, C, ?, Ctrl+Shift+S) - COMPLETE (2026-01-26)
-  7-5-enhance-minimap-click-to-jump: review  # MiniMap click-to-jump, FOV indicator, collapse/expand - COMPLETE (2026-01-29)
-  7-6-implement-side-panels-workspace-switcher: review  # Left/right side panels with workspace switcher - COMPLETE (2026-02-01)
-  7-7-enhance-hud-real-time-stats: review  # HUD with Nodes, Files, FPS, Mode stats - COMPLETE (2026-02-01)
-  7-8-wcag-aa-compliance-accessibility: review  # WCAG AA compliance - semantic landmarks, ARIA labels, reduced motion, focus indicators, skip links, touch targets - COMPLETE (2026-02-01)
-  7-9-implement-edge-pulse-animation: review  # Edge pulse animation on arrival - COMPLETE (2026-02-02)
+  7-5-enhance-minimap-click-to-jump: done  # MiniMap click-to-jump, FOV indicator, collapse/expand - COMPLETE (2026-01-29)
+  7-6-implement-side-panels-workspace-switcher: done  # Left/right side panels with workspace switcher - COMPLETE (2026-02-01)
+  7-7-enhance-hud-real-time-stats: done  # HUD with Nodes, Files, FPS, Mode stats - COMPLETE (2026-02-01)
+  7-8-wcag-aa-compliance-accessibility: done  # WCAG AA compliance - semantic landmarks, ARIA labels, reduced motion, focus indicators, skip links, touch targets - COMPLETE (2026-02-01)
+  7-9-implement-edge-pulse-animation: done  # Edge pulse animation on arrival - COMPLETE (2026-02-02)
 
   # Epic 8: City-to-Cell 3D Layout
-  epic-8: not-started
+  epic-8: done
   epic-8-retrospective: optional
   # Phase 1: Data Foundation
-  8-1-add-depth-field-to-graphnode: not-started  # Add depth, isExternal, parentId to GraphNode type
-  8-2-calculate-abstraction-depth: not-started  # BFS algorithm from entry points
-  8-3-add-external-library-detection: not-started  # Detect and flag external library imports
-  8-4-add-parent-child-relationships: not-started  # Establish containment relationships
+  8-1-add-depth-field-to-graphnode: done  # Add depth, isExternal, parentId to GraphNode type - COMPLETE (2026-02-02)
+  8-2-calculate-abstraction-depth: done  # BFS algorithm from entry points - COMPLETE (2026-02-02)
+  8-3-add-external-library-detection: done  # Detect and flag external library imports - COMPLETE (2026-02-02)
+  8-4-add-parent-child-relationships: done  # Establish containment relationships - COMPLETE (2026-02-02)
   # Phase 2: Layout System
-  8-5-create-layout-engine-interface: not-started  # Pluggable layout engine interface
-  8-6-implement-city-layout-engine: not-started  # City layout with building silhouettes
-  8-7-implement-building-layout-engine: not-started  # Building layout with floors
-  8-8-implement-cell-layout-engine: not-started  # Cell layout with organelles
+  8-5-create-layout-engine-interface: done  # Pluggable layout engine interface - COMPLETE (2026-02-02)
+  8-6-implement-city-layout-engine: done  # City layout with building silhouettes - COMPLETE (2026-02-02)
+  8-7-implement-building-layout-engine: done  # Building layout with floors - COMPLETE (2026-02-02)
+  8-8-implement-cell-layout-engine: done  # Cell layout with organelles
   # Phase 3: View Modes
-  8-9-create-view-mode-manager: not-started  # City/Building/Cell mode manager
-  8-10-implement-city-view-renderer: not-started  # City view with building silhouettes
-  8-11-implement-building-view-renderer: not-started  # Building view with floors and rooms
-  8-12-implement-cell-view-renderer: not-started  # Cell view with organelles
+  8-9-create-view-mode-manager: done  # City/Building/Cell mode manager
+  8-10-implement-city-view-renderer: done  # City view with building silhouettes
+  8-11-implement-building-view-renderer: done  # Building view with floors and rooms
+  8-12-implement-cell-view-renderer: done  # Cell view with organelles
   # Phase 4: Transitions
-  8-13-implement-membrane-threshold-transition: not-started  # Membrane crossing effect
-  8-14-implement-city-to-building-transition: not-started  # Smooth city to building transition
-  8-15-implement-building-to-cell-transition: not-started  # Smooth building to cell transition
+  8-13-implement-membrane-threshold-transition: done  # Membrane crossing effect
+  8-14-implement-city-to-building-transition: done  # City-to-building camera transition - COMPLETE (2026-02-02)
+  8-15-implement-building-to-cell-transition: done  # Building-to-cell camera transition - COMPLETE (2026-02-03)
   # Phase 5: Visibility Modes
-  8-16-implement-xray-mode: not-started  # X-ray mode for see-through buildings
-  8-17-implement-underground-mode: not-started  # Underground dependency visualization
-  8-18-render-dependency-tunnels: not-started  # Enhanced tunnel rendering
+  8-16-implement-xray-mode: done  # X-ray mode for see-through buildings
+  8-17-implement-underground-mode: done  # Underground dependency visualization
+  8-18-render-dependency-tunnels: done  # Enhanced tunnel rendering
+
+  # Epic 9: City Visualization Overhaul — Phase 1
+  epic-9: not-started
+  # Epic 9-A: Radial City Layout & Navigation
+  9-1-radial-layout-utility-functions: review  # Pure utility functions for radial position calculations - COMPLETE (2026-02-05)
+  9-2-radial-city-layout-engine: review  # RadialCityLayoutEngine implementing LayoutEngine interface - COMPLETE (2026-02-05)
+  9-3-district-ground-planes: review  # Colored arc-segment ground planes per district - COMPLETE (2026-02-05)
+  9-4-cityview-radial-integration: review  # Wire radial engine into CityView, camera auto-fit, lodLevel fix - COMPLETE (2026-02-05)
+  9-5-density-slider-store-extensions: review  # layoutDensity store state + DensitySlider UI - COMPLETE (2026-02-05)
+  9-6-node-clustering-high-zoom: review  # Cluster large districts into compound buildings at city zoom - COMPLETE (2026-02-05)
+  # Epic 9-B: Shape Language & Visual Differentiation
+  9-7-extend-graphnode-type-union: review  # Add interface, enum, abstract_class to GraphNode.type union - COMPLETE (2026-02-06)
+  9-8-building-geometry-factory: not-started  # Geometry factory mapping node types to Three.js configs
+  9-9-typed-building-components: not-started  # 6 typed R3F building components
+  9-10-cityview-type-switched-rendering: not-started  # Type-switched rendering in CityView
+  9-11-rooftop-gardens-nested-types: not-started  # Rooftop structures for nested types
+  # Epic 9-C: Signage System & Progressive Labels
+  9-12-sign-selection-visibility-utilities: not-started  # Sign type selection and LOD visibility utilities
+  9-13-sign-component-library: not-started  # 7 R3F sign components with instanced rendering
+  9-14-lod-calculator-hook: not-started  # Camera distance → lodLevel hook
+  9-15-sign-integration-cityview: not-started  # Wire signs into CityView with LOD visibility
+  9-16-sign-metadata-extensions: not-started  # Add visibility, isDeprecated, isExported to GraphNode
+  # Epic 9-D: Infrastructure Landmarks & Layer Control
+  9-17-infrastructure-classifier: not-started  # Package name → infrastructure type classifier (parser)
+  9-18-infrastructure-landmark-components: not-started  # 6 R3F landmark components
+  9-19-infrastructure-edge-positioning: not-started  # Group infrastructure nodes by type at city edges
+  9-20-infrastructure-rendering-cityview: not-started  # Wire landmarks into CityView
+  9-21-layer-toggle-store-ui: not-started  # Layer toggle store + UI (above ground / underground)
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun
@@ -291,4 +319,45 @@ epics:
       - "Phase 4 (Transitions): Stories 8-13 through 8-15 - Membrane effect and smooth camera transitions"
       - "Phase 5 (Visibility Modes): Stories 8-16 through 8-18 - X-ray mode, underground dependencies"
       - "Critical path: 8-1 → 8-2/8-3/8-4 → 8-5 → 8-6/8-7/8-8 → 8-9 → 8-10/8-11/8-12"
+
+  epic-9:
+    name: "City Visualization Overhaul — Phase 1"
+    description: "Transform the flat grid city layout into a radial 3D visualization with visual differentiation, signage, infrastructure landmarks, and layer control. Four sub-epics: Radial Layout (9-A), Shape Language (9-B), Signage System (9-C), Infrastructure & Layers (9-D)."
+    stories:
+      # Epic 9-A: Radial City Layout & Navigation
+      - 9-1-radial-layout-utility-functions
+      - 9-2-radial-city-layout-engine
+      - 9-3-district-ground-planes
+      - 9-4-cityview-radial-integration
+      - 9-5-density-slider-store-extensions
+      - 9-6-node-clustering-high-zoom
+      # Epic 9-B: Shape Language & Visual Differentiation
+      - 9-7-extend-graphnode-type-union
+      - 9-8-building-geometry-factory
+      - 9-9-typed-building-components
+      - 9-10-cityview-type-switched-rendering
+      - 9-11-rooftop-gardens-nested-types
+      # Epic 9-C: Signage System & Progressive Labels
+      - 9-12-sign-selection-visibility-utilities
+      - 9-13-sign-component-library
+      - 9-14-lod-calculator-hook
+      - 9-15-sign-integration-cityview
+      - 9-16-sign-metadata-extensions
+      # Epic 9-D: Infrastructure Landmarks & Layer Control
+      - 9-17-infrastructure-classifier
+      - 9-18-infrastructure-landmark-components
+      - 9-19-infrastructure-edge-positioning
+      - 9-20-infrastructure-rendering-cityview
+      - 9-21-layer-toggle-store-ui
+    dependencies:
+      - "Epic 8: City-to-Cell 3D Layout (layout engine interface, view modes, underground mode)"
+      - "Tech Spec: City Visualization Overhaul (tech-spec-city-visualization-overhaul.md)"
+      - "Brainstorming Session (brainstorming-session-2026-02-04.md)"
+    notes:
+      - "4 sub-epics: 9-A (Radial Layout, 6 stories), 9-B (Shape Language, 5 stories), 9-C (Signage, 5 stories), 9-D (Infrastructure, 5 stories)"
+      - "Critical path: 9-1 → 9-2 → 9-4 → 9-3/9-5/9-6 (layout foundation first)"
+      - "9-B depends on 9-A (positions), 9-C depends on 9-B (buildings to attach signs), 9-D depends on 9-A (edge positioning)"
+      - "Each sub-epic is standalone functional — can deliver value independently"
+      - "Architect review completed — 11 items incorporated into requirements and tech spec"
+      - "Phase 2 deferred: connection encoding/bundling, color system, transit-map minimap, animated flow"
 

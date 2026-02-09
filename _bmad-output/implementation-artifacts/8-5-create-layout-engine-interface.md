@@ -1,6 +1,6 @@
 # Story 8-5: Create Layout Engine Interface
 
-**Status:** not-started
+**Status:** review
 
 ---
 
@@ -188,30 +188,30 @@ export function mergeBounds(a: BoundingBox, b: BoundingBox): BoundingBox {
 ## Tasks/Subtasks
 
 ### Task 1: Define types
-- [ ] LayoutEngine interface
-- [ ] LayoutResult type
-- [ ] LayoutConfig type
-- [ ] BoundingBox type
+- [x] LayoutEngine interface
+- [x] LayoutResult type
+- [x] LayoutConfig type
+- [x] BoundingBox type
 
 ### Task 2: Implement LayoutRegistry
-- [ ] Register/get engines
-- [ ] Auto-select by canHandle
-- [ ] Singleton instance
+- [x] Register/get engines
+- [x] Auto-select by canHandle
+- [x] Singleton instance
 
 ### Task 3: Implement BoundingBox helpers
-- [ ] center, size, contains, merge
-- [ ] Unit tests for each
+- [x] center, size, contains, merge
+- [x] Unit tests for each
 
 ### Task 4: Create directory structure
-- [ ] `layout/` directory
-- [ ] `layout/engines/` for implementations
-- [ ] Index exports
+- [x] `layout/` directory
+- [x] `layout/engines/` for implementations
+- [x] Index exports
 
 ### Task 5: Write unit tests
-- [ ] Registry register/get
-- [ ] Registry auto-select
-- [ ] BoundingBox helpers
-- [ ] Handle missing engine
+- [x] Registry register/get
+- [x] Registry auto-select
+- [x] BoundingBox helpers
+- [x] Handle missing engine
 
 ---
 
@@ -236,16 +236,53 @@ export function mergeBounds(a: BoundingBox, b: BoundingBox): BoundingBox {
 ## Estimation
 
 **Complexity:** Low-Medium
-**Effort:** 3-4 hours
 **Risk:** Low - Interface design
 
 ---
 
 ## Definition of Done
 
-- [ ] LayoutEngine interface defined
-- [ ] LayoutResult and LayoutConfig types defined
-- [ ] BoundingBox type with helpers
-- [ ] LayoutRegistry with register/get/autoSelect
-- [ ] Directory structure created
-- [ ] Unit tests pass
+- [x] LayoutEngine interface defined
+- [x] LayoutResult and LayoutConfig types defined
+- [x] BoundingBox type with helpers
+- [x] LayoutRegistry with register/get/autoSelect
+- [x] Directory structure created
+- [x] Unit tests pass
+
+---
+
+## Dev Agent Record
+
+### Agent Model Used
+
+Claude Opus 4.5 (claude-opus-4-5-20251101)
+
+### Debug Log References
+
+- All 27 new tests pass (12 bounds + 15 registry). No new regressions — only pre-existing 7 failing test files remain.
+- Added `boundsFromPositions()` helper beyond what the story specified — useful utility for computing bounds from node positions.
+
+### Completion Notes List
+
+All 5 tasks completed:
+- **Task 1 (Types):** `LayoutEngine` interface with `type`, `layout()`, `canHandle()`. `LayoutResult` with positions Map, bounds, optional metadata. `LayoutConfig` with spacing, scale, origin, and index signature for engine-specific config. `BoundingBox` with min/max Position3D.
+- **Task 2 (Registry):** `LayoutRegistry` class with `register()`, `unregister()`, `get()`, `has()`, `getAll()`, `autoSelect()`, `size`. Singleton `layoutRegistry` exported.
+- **Task 3 (Bounds helpers):** `boundsCenter()`, `boundsSize()`, `boundsContains()`, `mergeBounds()`, `boundsFromPositions()`.
+- **Task 4 (Directory):** Created `layout/` with `types.ts`, `registry.ts`, `bounds.ts`, `index.ts`, and `engines/index.ts` placeholder.
+- **Task 5 (Tests):** 12 bounds tests (center, size, contains, merge, fromPositions), 15 registry tests (register/get, overwrite, unregister, has, getAll, size, autoSelect with various scenarios).
+
+### File List
+
+**New Files:**
+- `packages/ui/src/features/canvas/layout/types.ts` — LayoutEngine, LayoutResult, LayoutConfig, BoundingBox interfaces
+- `packages/ui/src/features/canvas/layout/registry.ts` — LayoutRegistry class + singleton
+- `packages/ui/src/features/canvas/layout/bounds.ts` — BoundingBox helper functions
+- `packages/ui/src/features/canvas/layout/index.ts` — Public exports
+- `packages/ui/src/features/canvas/layout/engines/index.ts` — Placeholder for engine implementations
+- `packages/ui/src/features/canvas/layout/bounds.test.ts` — 12 unit tests
+- `packages/ui/src/features/canvas/layout/registry.test.ts` — 15 unit tests
+
+---
+
+## Change Log
+- 2026-02-02: Created pluggable layout engine interface, registry, and BoundingBox helpers. 27 unit tests, all passing. Directory structure ready for engine implementations (8-6, 8-7, 8-8).

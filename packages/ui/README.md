@@ -204,6 +204,21 @@ function App() {
 - **WebSocket Sync**: <100ms latency
 - **API Queries**: <1s response time (with caching)
 
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `C` | Toggle Orbit / Fly camera control mode |
+| `X` | Toggle X-Ray mode (see inside buildings) |
+| `U` | Toggle Underground mode (dependency tunnels) |
+| `?` | Open keyboard shortcuts help modal |
+| `Home` | Fly camera to root node |
+| `Esc` | Close modals / panels, cancel flight, deselect node |
+| `Ctrl+Shift+S` / `Cmd+Shift+S` | Copy shareable viewpoint link |
+| `Ctrl+K` / `Cmd+K` | Open search |
+
+**Navigation:** Double-click a building to enter Building view. Double-click a class inside a building to enter Cell view. Press `Esc` or use breadcrumbs to navigate back.
+
 ## Development
 
 ```bash

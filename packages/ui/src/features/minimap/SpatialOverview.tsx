@@ -7,7 +7,8 @@
 import { useState, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrthographicCamera, Html, Line } from '@react-three/drei';
-import type { GraphNode } from '../../shared/types';
+import type { GraphNode, Position3D } from '../../shared/types';
+import { useCanvasStore } from '../canvas/store';
 import { calculateFovCorners } from './fovIndicator';
 
 interface SpatialOverviewProps {
@@ -23,15 +24,16 @@ interface SpatialOverviewProps {
  */
 function MiniNode({
   node,
+  position,
   isSelected,
   onClick,
 }: {
   node: GraphNode;
+  position: Position3D;
   isSelected: boolean;
   onClick?: ((nodeId: string) => void) | undefined;
 }) {
   const [hovered, setHovered] = useState(false);
-  const position = node.position ?? { x: 0, y: 0, z: 0 };
 
   const getColor = (type: GraphNode['type']): string => {
     switch (type) {
@@ -49,6 +51,8 @@ function MiniNode({
         return '#6b7280';
     }
   };
+
+  const displayLabel = (node.label || node.id).split('/').pop() ?? node.label;
 
   return (
     <group position={[position.x, position.y, position.z]}>
@@ -71,21 +75,21 @@ function MiniNode({
         />
       </mesh>
 
-      {/* Show label on hover or when selected */}
-      {(hovered || isSelected) && (
-        <Html
-          position={[0, 0.5, 0]}
-          center
-          style={{
-            pointerEvents: 'none',
-            userSelect: 'none',
-          }}
-        >
-          <div className="bg-black/90 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap">
-            {node.label || node.id}
-          </div>
-        </Html>
-      )}
+      {/* Always show label */}
+      <Html
+        position={[0, 0.5, 0]}
+        center
+        style={{
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      >
+        <div className={`text-white text-[10px] px-1 py-0.5 rounded whitespace-nowrap ${
+          isSelected ? 'bg-blue-600/90 font-bold' : hovered ? 'bg-black/90' : 'bg-black/60'
+        }`}>
+          {displayLabel}
+        </div>
+      </Html>
     </group>
   );
 }
@@ -142,6 +146,42 @@ function FovIndicator({
 /**
  * SpatialOverview component
  */
+function MiniNodes({
+  nodes,
+  selectedNodeId,
+  onNodeClick,
+}: {
+  nodes: GraphNode[];
+  selectedNodeId: string | null | undefined;
+  onNodeClick: ((nodeId: string) => void) | undefined;
+}) {
+  const layoutPositions = useCanvasStore((s) => s.layoutPositions);
+
+  // Use layout positions when available, fall back to node.position
+  const nodesWithPositions = useMemo(() => {
+    return nodes
+      .map((node) => {
+        const pos = layoutPositions.get(node.id) ?? node.position;
+        return pos ? { node, position: pos } : null;
+      })
+      .filter((entry): entry is { node: GraphNode; position: Position3D } => entry !== null);
+  }, [nodes, layoutPositions]);
+
+  return (
+    <>
+      {nodesWithPositions.map(({ node, position }) => (
+        <MiniNode
+          key={node.id}
+          node={node}
+          position={position}
+          isSelected={selectedNodeId === node.id}
+          onClick={onNodeClick}
+        />
+      ))}
+    </>
+  );
+}
+
 export function SpatialOverview({
   nodes,
   selectedNodeId,
@@ -164,16 +204,11 @@ export function SpatialOverview({
         <gridHelper args={[20, 20, '#4b5563', '#374151']} />
 
         {/* Render mini nodes */}
-        {nodes
-          .filter((n) => n.position)
-          .map((node) => (
-            <MiniNode
-              key={node.id}
-              node={node}
-              isSelected={selectedNodeId === node.id}
-              onClick={onNodeClick}
-            />
-          ))}
+        <MiniNodes
+          nodes={nodes}
+          selectedNodeId={selectedNodeId}
+          onNodeClick={onNodeClick}
+        />
 
         {/* Camera position indicator */}
         {cameraPosition && <CameraIndicator position={cameraPosition} />}

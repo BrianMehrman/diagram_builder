@@ -7,6 +7,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'react-router'
 import { Canvas3D, EmptyState, CodebaseStatusIndicator, ErrorNotification, SuccessNotification } from '../features/canvas'
+import { useCanvasStore } from '../features/canvas/store'
 import { MiniMap } from '../features/minimap'
 import { Navigation, SearchBarModal, useCameraFlight } from '../features/navigation'
 import { LeftPanel, RightPanel } from '../features/panels'
@@ -57,8 +58,11 @@ export function WorkspacePage() {
 
   // Handle node selection from search modal
   const handleSearchNodeSelect = useCallback((nodeId: string, position?: Position3D) => {
-    if (position) {
-      flyToNode(nodeId, position)
+    // Prefer layout positions (from CityView/BuildingView), fall back to graph node position
+    const layoutPos = useCanvasStore.getState().layoutPositions.get(nodeId)
+    const targetPos = layoutPos ?? position
+    if (targetPos) {
+      flyToNode(nodeId, targetPos)
     }
   }, [flyToNode])
 
@@ -88,8 +92,9 @@ export function WorkspacePage() {
       if (rootNode) {
         console.log('[WorkspacePage] Flying camera to root node after import:', rootNode.id)
 
-        // Use node position or default to origin
-        const position: Position3D = rootNode.position || { x: 0, y: 0, z: 0 }
+        // Prefer layout positions (from CityView), fall back to graph node position
+        const layoutPos = useCanvasStore.getState().layoutPositions.get(rootNode.id)
+        const position: Position3D = layoutPos ?? rootNode.position ?? { x: 0, y: 0, z: 0 }
 
         // Trigger camera flight
         flyToNode(rootNode.id, position)

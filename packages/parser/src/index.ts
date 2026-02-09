@@ -34,6 +34,18 @@ export type { ImportStatement, ImportSpecifier, ExportStatement, ExportSpecifier
 export { calculateMetrics } from './analysis/metrics-calculator'
 export type { CodeMetrics } from './analysis/metrics-calculator'
 
+// Depth Calculation
+export { calculateAbstractionDepth, identifyEntryPoints } from './analysis/depthCalculator'
+export type { DepthResult } from './analysis/depthCalculator'
+
+// External Import Detection
+export { detectExternalImports, isExternalImport, extractPackageName, isNodeBuiltin } from './analysis/externalDetector'
+export type { ExternalImportInfo, ExternalDetectionResult, PackageJsonDeps } from './analysis/externalDetector'
+
+// Containment Analysis
+export { buildContainmentHierarchy } from './analysis/containmentAnalyzer'
+export type { ContainmentResult } from './analysis/containmentAnalyzer'
+
 // Dependency Graph
 export { DependencyGraph } from './graph/dependency-graph'
 export type { DependencyNode, DependencyEdge, DependencyNodeType, DependencyEdgeType } from './graph/dependency-graph'

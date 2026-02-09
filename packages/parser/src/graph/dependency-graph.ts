@@ -6,7 +6,7 @@ export type DependencyNodeType = 'file' | 'class' | 'function' | 'interface' | '
 /**
  * Types of edges in the dependency graph
  */
-export type DependencyEdgeType = 'imports' | 'extends' | 'implements' | 'calls' | 'exports'
+export type DependencyEdgeType = 'imports' | 'extends' | 'implements' | 'calls' | 'exports' | 'contains'
 
 /**
  * Represents a node in the dependency graph

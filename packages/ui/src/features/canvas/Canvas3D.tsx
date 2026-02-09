@@ -8,7 +8,9 @@ import React from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, FlyControls, Grid, PerspectiveCamera } from '@react-three/drei';
 import { useCanvasStore } from './store';
-import { GraphRenderer } from './components';
+import { ViewModeRenderer } from './views';
+import { TransitionOrchestrator } from './transitions';
+import { DependencyLegend } from './components/DependencyLegend';
 import type { Graph } from '../../shared/types';
 
 interface Canvas3DProps {
@@ -24,16 +26,16 @@ function CameraController({ graph }: { graph?: Graph | undefined }) {
   const camera = useCanvasStore((state) => state.camera);
   const setCamera = useCanvasStore((state) => state.setCamera);
   const setCameraTarget = useCanvasStore((state) => state.setCameraTarget);
+  const setCameraPosition = useCanvasStore((state) => state.setCameraPosition);
   const controlMode = useCanvasStore((state) => state.controlMode);
+  const layoutPositions = useCanvasStore((state) => state.layoutPositions);
 
-  // Auto-fit camera when graph loads
+  // Auto-fit camera when layout positions are computed
   React.useEffect(() => {
-    if (!graph || !graph.nodes || graph.nodes.length === 0) return;
-
-    // Calculate bounding box of all nodes
-    const positions = graph.nodes
-      .filter(n => n.position)
-      .map(n => n.position!);
+    // Prefer layout positions (computed by CityView/BuildingView)
+    const positions = layoutPositions.size > 0
+      ? Array.from(layoutPositions.values())
+      : graph?.nodes?.filter(n => n.position).map(n => n.position!) ?? [];
 
     if (positions.length === 0) return;
 
@@ -57,31 +59,27 @@ function CameraController({ graph }: { graph?: Graph | undefined }) {
     const sizeX = maxX - minX;
     const sizeY = maxY - minY;
     const sizeZ = maxZ - minZ;
-    const maxSize = Math.max(sizeX, sizeY, sizeZ);
 
-    // Position camera to see all nodes
-    // Camera distance = maxSize * 1.5 to give some padding
-    const distance = Math.max(maxSize * 1.5, 10);
+    // For radial layouts, use the diagonal of the XZ plane as the spread
+    const xzSpread = Math.sqrt(sizeX * sizeX + sizeZ * sizeZ);
+    const maxSize = Math.max(xzSpread, sizeY);
 
-    console.log('[Canvas3D] Auto-fitting camera to nodes:', {
-      center: { x: centerX, y: centerY, z: centerZ },
-      size: { x: sizeX, y: sizeY, z: sizeZ },
-      distance
-    });
+    // Position camera to see all nodes with padding
+    const distance = Math.max(maxSize * 0.85, 10);
 
     // Set camera target to center of nodes
     setCameraTarget({ x: centerX, y: centerY, z: centerZ });
 
-    // Set camera position above and in front of center
+    // Set camera position above and angled for overview
     setCamera({
       position: {
         x: centerX,
-        y: centerY + distance * 0.5,
-        z: centerZ + distance
+        y: centerY + distance * 0.6,
+        z: centerZ + distance * 0.5
       },
       target: { x: centerX, y: centerY, z: centerZ }
     });
-  }, [graph, setCamera, setCameraTarget]);
+  }, [layoutPositions, graph, setCamera, setCameraTarget]);
 
   return (
     <>
@@ -99,6 +97,12 @@ function CameraController({ graph }: { graph?: Graph | undefined }) {
           dampingFactor={0.05}
           minDistance={0.1}
           maxDistance={5000}
+          onChange={(e) => {
+            if (e?.target?.object) {
+              const cam = e.target.object;
+              setCameraPosition({ x: cam.position.x, y: cam.position.y, z: cam.position.z });
+            }
+          }}
         />
       ) : (
         <FlyControls
@@ -137,8 +141,9 @@ function Scene({ graph }: { graph?: Graph }) {
         infiniteGrid
       />
 
-      {/* Graph rendering */}
-      {graph && <GraphRenderer graph={graph} />}
+      {/* View mode rendering (city/building/cell) */}
+      {graph && <ViewModeRenderer graph={graph} />}
+      <TransitionOrchestrator />
     </>
   );
 }
@@ -164,7 +169,8 @@ export function Canvas3D({ className = '', graph }: Canvas3DProps) {
   }, [toggleControlMode]);
 
   return (
-    <div className={`w-full h-full ${className}`}>
+    <div className={`w-full h-full relative ${className}`}>
+      <DependencyLegend />
       <Canvas
         shadows
         dpr={[1, 2]}

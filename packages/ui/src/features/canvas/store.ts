@@ -5,7 +5,7 @@
  */
 
 import { create } from 'zustand';
-import type { Position3D } from '../../shared/types';
+import type { Position3D, GraphNode } from '../../shared/types';
 
 /**
  * Camera state
@@ -20,6 +20,11 @@ export interface CameraState {
  * Control mode
  */
 export type ControlMode = 'orbit' | 'fly';
+
+/**
+ * View mode for city-to-cell navigation
+ */
+export type ViewMode = 'city' | 'building' | 'cell';
 
 /**
  * Canvas store state
@@ -57,6 +62,36 @@ interface CanvasState {
   // LOD level
   lodLevel: number;
   setLodLevel: (level: number) => void;
+
+  // View mode (city-to-cell navigation)
+  viewMode: ViewMode;
+  focusedNodeId: string | null;
+  focusHistory: string[];
+  setViewMode: (mode: ViewMode, focusedNodeId?: string) => void;
+  enterNode: (nodeId: string, nodeType: GraphNode['type']) => void;
+  exitToParent: () => void;
+  resetToCity: () => void;
+
+  // Layout positions (computed by view renderers)
+  layoutPositions: Map<string, Position3D>;
+  setLayoutPositions: (positions: Map<string, Position3D>) => void;
+
+  // X-ray mode
+  isXRayMode: boolean;
+  xrayOpacity: number;
+  toggleXRay: () => void;
+
+  // Underground mode
+  isUndergroundMode: boolean;
+  toggleUnderground: () => void;
+
+  // Flow animation (underground tunnel particles)
+  showFlowAnimation: boolean;
+  toggleFlowAnimation: () => void;
+
+  // Layout density (radial layout spacing multiplier)
+  layoutDensity: number;
+  setLayoutDensity: (density: number) => void;
 
   // Reset to defaults
   reset: () => void;
@@ -125,9 +160,84 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   setFlightState: (isFlying, targetNodeId = null) =>
     set({ isFlying, flightTargetNodeId: targetNodeId }),
 
-  // LOD level (default to 4 to show most detail by default)
-  lodLevel: 4,
+  // LOD level (default to 1 = city level; LOD calculator drives up on zoom)
+  lodLevel: 1,
   setLodLevel: (level) => set({ lodLevel: level }),
+
+  // View mode (city-to-cell navigation)
+  viewMode: 'city' as ViewMode,
+  focusedNodeId: null,
+  focusHistory: [] as string[],
+
+  setViewMode: (mode, focusedNodeId) =>
+    set({ viewMode: mode, focusedNodeId: focusedNodeId ?? null }),
+
+  enterNode: (nodeId, nodeType) => {
+    let newMode: ViewMode;
+    if (nodeType === 'file') {
+      newMode = 'building';
+    } else if (nodeType === 'class') {
+      newMode = 'cell';
+    } else {
+      return; // Can't enter this node type
+    }
+
+    set((state) => ({
+      viewMode: newMode,
+      focusedNodeId: nodeId,
+      focusHistory: state.focusedNodeId
+        ? [...state.focusHistory, state.focusedNodeId]
+        : state.focusHistory,
+    }));
+  },
+
+  exitToParent: () =>
+    set((state) => {
+      if (state.focusHistory.length === 0) {
+        return {
+          viewMode: 'city' as ViewMode,
+          focusedNodeId: null,
+          focusHistory: [],
+        };
+      }
+
+      const parentId = state.focusHistory[state.focusHistory.length - 1] ?? null;
+      return {
+        viewMode: parentId ? ('building' as ViewMode) : ('city' as ViewMode),
+        focusedNodeId: parentId,
+        focusHistory: state.focusHistory.slice(0, -1),
+      };
+    }),
+
+  resetToCity: () =>
+    set({
+      viewMode: 'city' as ViewMode,
+      focusedNodeId: null,
+      focusHistory: [],
+    }),
+
+  // Layout positions (computed by view renderers)
+  layoutPositions: new Map<string, Position3D>(),
+  setLayoutPositions: (positions) => set({ layoutPositions: positions }),
+
+  // X-ray mode
+  isXRayMode: false,
+  xrayOpacity: 0.05,
+  toggleXRay: () => set((state) => ({ isXRayMode: !state.isXRayMode })),
+
+  // Underground mode
+  isUndergroundMode: false,
+  toggleUnderground: () =>
+    set((state) => ({ isUndergroundMode: !state.isUndergroundMode })),
+
+  // Flow animation
+  showFlowAnimation: false,
+  toggleFlowAnimation: () =>
+    set((state) => ({ showFlowAnimation: !state.showFlowAnimation })),
+
+  // Layout density (radial layout spacing multiplier)
+  layoutDensity: 1.0,
+  setLayoutDensity: (density) => set({ layoutDensity: density }),
 
   // Reset
   reset: () =>
@@ -139,6 +249,15 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       highlightedNodeId: null,
       isFlying: false,
       flightTargetNodeId: null,
-      lodLevel: 4,
+      lodLevel: 1,
+      viewMode: 'city' as ViewMode,
+      focusedNodeId: null,
+      focusHistory: [],
+      layoutPositions: new Map<string, Position3D>(),
+      isXRayMode: false,
+      xrayOpacity: 0.05,
+      isUndergroundMode: false,
+      showFlowAnimation: false,
+      layoutDensity: 1.0,
     }),
 }));

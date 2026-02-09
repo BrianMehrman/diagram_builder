@@ -119,6 +119,10 @@ export function useGlobalKeyboardShortcuts(
   const selectNode = useCanvasStore((state) => state.selectNode);
   const toggleControlMode = useCanvasStore((state) => state.toggleControlMode);
   const controlMode = useCanvasStore((state) => state.controlMode);
+  const toggleXRay = useCanvasStore((state) => state.toggleXRay);
+  const isXRayMode = useCanvasStore((state) => state.isXRayMode);
+  const toggleUnderground = useCanvasStore((state) => state.toggleUnderground);
+  const isUndergroundMode = useCanvasStore((state) => state.isUndergroundMode);
   const isFlying = useCanvasStore((state) => state.isFlying);
   const openHelpModal = useUIStore((state) => state.openHelpModal);
   const closeHelpModal = useUIStore((state) => state.closeHelpModal);
@@ -177,8 +181,9 @@ export function useGlobalKeyboardShortcuts(
   const handleHome = useCallback(() => {
     const rootNode = findRootNode();
     if (rootNode && onFlyToNode) {
-      // Use node position or default to origin
-      const position: Position3D = rootNode.position ?? { x: 0, y: 0, z: 0 };
+      // Prefer layout positions (from CityView), fall back to graph node position
+      const layoutPos = useCanvasStore.getState().layoutPositions.get(rootNode.id);
+      const position: Position3D = layoutPos ?? rootNode.position ?? { x: 0, y: 0, z: 0 };
       onFlyToNode(rootNode.id, position);
     }
   }, [findRootNode, onFlyToNode]);
@@ -191,6 +196,24 @@ export function useGlobalKeyboardShortcuts(
     const newMode = controlMode === 'orbit' ? 'Fly' : 'Orbit';
     showSuccess(`Switched to ${newMode} mode`, 'Press C to toggle');
   }, [toggleControlMode, controlMode, showSuccess]);
+
+  /**
+   * Handle X key - toggle x-ray mode
+   */
+  const handleToggleXRay = useCallback(() => {
+    toggleXRay();
+    const newState = !isXRayMode ? 'ON' : 'OFF';
+    showSuccess(`X-Ray mode ${newState}`, 'Press X to toggle');
+  }, [toggleXRay, isXRayMode, showSuccess]);
+
+  /**
+   * Handle U key - toggle underground mode
+   */
+  const handleToggleUnderground = useCallback(() => {
+    toggleUnderground();
+    const newState = !isUndergroundMode ? 'ON' : 'OFF';
+    showSuccess(`Underground mode ${newState}`, 'Press U to toggle');
+  }, [toggleUnderground, isUndergroundMode, showSuccess]);
 
   /**
    * Handle Ctrl+Shift+S - copy viewpoint link
@@ -250,6 +273,20 @@ export function useGlobalKeyboardShortcuts(
         return;
       }
 
+      // X - Toggle x-ray mode (only lowercase x, not Ctrl+X)
+      if (event.key === 'x' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        event.preventDefault();
+        handleToggleXRay();
+        return;
+      }
+
+      // U - Toggle underground mode (only lowercase u, not Ctrl+U)
+      if (event.key === 'u' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        event.preventDefault();
+        handleToggleUnderground();
+        return;
+      }
+
       // Ctrl+Shift+S - Share viewpoint
       if (
         event.key === 'S' &&
@@ -283,6 +320,8 @@ export function useGlobalKeyboardShortcuts(
     handleEscape,
     handleHome,
     handleToggleControlMode,
+    handleToggleXRay,
+    handleToggleUnderground,
     handleShareViewpoint,
     handleOpenHelp,
   ]);

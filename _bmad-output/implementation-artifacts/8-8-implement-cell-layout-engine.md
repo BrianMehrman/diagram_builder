@@ -1,6 +1,6 @@
 # Story 8-8: Implement Cell Layout Engine
 
-**Status:** not-started
+**Status:** review
 
 ---
 
@@ -236,27 +236,27 @@ export class CellLayoutEngine implements LayoutEngine {
 ## Tasks/Subtasks
 
 ### Task 1: Implement seeded random
-- [ ] Create deterministic random from node ID
-- [ ] Ensure same graph = same layout
+- [x] Create deterministic random from node ID
+- [x] Ensure same graph = same layout
 
 ### Task 2: Implement nucleus positioning
-- [ ] Position state nodes near center
-- [ ] Cluster for visual grouping
+- [x] Position state nodes near center
+- [x] Cluster for visual grouping
 
 ### Task 3: Implement organelle positioning
-- [ ] Use Fibonacci sphere distribution
-- [ ] Add jitter for organic feel
-- [ ] Keep within membrane bounds
+- [x] Use Fibonacci sphere distribution
+- [x] Add jitter for organic feel
+- [x] Keep within membrane bounds
 
 ### Task 4: Track cell metadata
-- [ ] Return membrane radius
-- [ ] Return nucleus center
-- [ ] Enable membrane rendering
+- [x] Return membrane radius
+- [x] Return nucleus center
+- [x] Enable membrane rendering
 
 ### Task 5: Write unit tests
-- [ ] Test deterministic positioning
-- [ ] Test all organelles within bounds
-- [ ] Test type-based positioning
+- [x] Test deterministic positioning
+- [x] Test all organelles within bounds
+- [x] Test type-based positioning
 
 ---
 
@@ -288,9 +288,47 @@ export class CellLayoutEngine implements LayoutEngine {
 
 ## Definition of Done
 
-- [ ] Organelles positioned within membrane
-- [ ] State nodes near center
-- [ ] Method nodes in outer region
-- [ ] Organic distribution with jitter
-- [ ] Deterministic layout
-- [ ] Unit tests pass
+- [x] Organelles positioned within membrane
+- [x] State nodes near center
+- [x] Method nodes in outer region
+- [x] Organic distribution with jitter
+- [x] Deterministic layout
+- [x] Unit tests pass
+
+---
+
+## Dev Agent Record
+
+### Agent Model Used
+
+Claude Opus 4.5 (claude-opus-4-5-20251101)
+
+### Debug Log References
+
+- All 14 tests pass on first GREEN attempt. No bugs encountered.
+- Seeded random uses sin-hash approach for deterministic results from node ID.
+- Fibonacci sphere distribution with golden angle ensures even spacing of organelles.
+
+### Completion Notes List
+
+All 5 tasks completed:
+- **Task 1 (Seeded random):** `seededRandom(seed)` creates a closure with hash-based PRNG. Same cell ID always produces same positions.
+- **Task 2 (Nucleus positioning):** `positionNucleus()` places variable/state nodes within `nucleusRadius * 0.8` of center using golden angle spiral with equatorial clustering.
+- **Task 3 (Organelle positioning):** `positionOrganelles()` distributes method/function nodes between `nucleusRadius + organelleSpacing` and `membraneRadius - organelleSpacing` using Fibonacci sphere. 20% jitter for organic feel.
+- **Task 4 (Cell metadata):** Returns `membraneRadius`, `nucleusRadius`, and `cellCenter` in metadata. Bounds are spherical around cell center.
+- **Task 5 (Tests):** 14 tests: type identity, canHandle (3 cases), cell positioning (2), organelles within membrane, variables closer to center, deterministic output, no cell node, empty class, metadata, spherical bounds, many organelles (20).
+
+### File List
+
+**New Files:**
+- `packages/ui/src/features/canvas/layout/engines/cellLayout.ts` — CellLayoutEngine class
+- `packages/ui/src/features/canvas/layout/engines/cellLayout.test.ts` — 14 unit tests
+
+**Modified Files:**
+- `packages/ui/src/features/canvas/layout/engines/index.ts` — Export CellLayoutEngine
+- `packages/ui/src/features/canvas/layout/index.ts` — Re-export CellLayoutEngine
+
+---
+
+## Change Log
+- 2026-02-02: Implemented cell layout engine with seeded random, nucleus positioning, Fibonacci sphere organelle distribution, and cell metadata. 14 unit tests, all passing. 71 total layout tests.

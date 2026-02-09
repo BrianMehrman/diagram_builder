@@ -9,6 +9,7 @@ import { useUIStore } from '../../shared/stores/uiStore';
 import { ExportButton } from '../export/ExportButton';
 import { ViewpointPanel } from '../viewpoints/ViewpointPanel';
 import UserPresence from '../collaboration/UserPresence';
+import { DensitySlider } from '../canvas/components/DensitySlider';
 
 export function RightPanel() {
   const isOpen = useUIStore((state) => state.isRightPanelOpen);
@@ -43,6 +44,14 @@ export function RightPanel() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Layout Controls */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Layout
+            </h3>
+            <DensitySlider />
+          </div>
+
           {/* Export */}
           <div className="space-y-2">
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
