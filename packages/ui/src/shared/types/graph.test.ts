@@ -149,6 +149,65 @@ describe('GraphNode type', () => {
     expect(node.isAbstract).toBeUndefined();
     expect(node.hasNestedTypes).toBeUndefined();
   });
+
+  it('creates a node with sign metadata fields', () => {
+    const node: GraphNode = {
+      id: 'func-1',
+      type: 'function',
+      label: 'getUser',
+      metadata: {},
+      lod: 2,
+      visibility: 'public',
+      isDeprecated: false,
+      isExported: true,
+    };
+
+    expect(node.visibility).toBe('public');
+    expect(node.isDeprecated).toBe(false);
+    expect(node.isExported).toBe(true);
+  });
+
+  it('supports all visibility values', () => {
+    const visibilities: GraphNode['visibility'][] = ['public', 'protected', 'private', 'static'];
+    visibilities.forEach((vis) => {
+      const node: GraphNode = {
+        id: `vis-${vis}`,
+        type: 'function',
+        label: 'test',
+        metadata: {},
+        lod: 1,
+        visibility: vis,
+      };
+      expect(node.visibility).toBe(vis);
+    });
+  });
+
+  it('creates a deprecated node', () => {
+    const node: GraphNode = {
+      id: 'dep-1',
+      type: 'function',
+      label: 'oldMethod',
+      metadata: {},
+      lod: 2,
+      isDeprecated: true,
+    };
+
+    expect(node.isDeprecated).toBe(true);
+  });
+
+  it('sign metadata fields are optional (backward compatibility)', () => {
+    const node: GraphNode = {
+      id: 'class-2',
+      type: 'class',
+      label: 'Service',
+      metadata: {},
+      lod: 2,
+    };
+
+    expect(node.visibility).toBeUndefined();
+    expect(node.isDeprecated).toBeUndefined();
+    expect(node.isExported).toBeUndefined();
+  });
 });
 
 describe('GraphEdge type', () => {

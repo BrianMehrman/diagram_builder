@@ -1,6 +1,6 @@
 # Story 9.18: Infrastructure Landmark Components
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -33,37 +33,37 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Create infrastructure component directory (AC: 8)
-- [ ] Create `packages/ui/src/features/canvas/components/infrastructure/` directory
-- [ ] Create `index.ts` barrel export
-- [ ] Define common `InfrastructureProps` interface
+- [x] Create `packages/ui/src/features/canvas/components/infrastructure/` directory
+- [x] Create `index.ts` barrel export
+- [x] Define common `InfrastructureProps` interface
 
 ### Task 2: Implement PowerStation (AC: 1, 7)
-- [ ] Create `PowerStation.tsx`
-- [ ] R3F component: tall box base + cylindrical smokestacks on top
-- [ ] Use `cylinderGeometry` for smokestacks, `boxGeometry` for base
-- [ ] Industrial color palette (dark gray, rust)
+- [x] Create `PowerStation.tsx`
+- [x] R3F component: tall box base + cylindrical smokestacks on top
+- [x] Use `cylinderGeometry` for smokestacks, `boxGeometry` for base
+- [x] Industrial color palette (dark gray, rust)
 
 ### Task 3: Implement WaterTower (AC: 2, 7)
-- [ ] Create `WaterTower.tsx`
-- [ ] R3F component: cylindrical tank on thin cylindrical stilts
-- [ ] Elevated position for visibility
+- [x] Create `WaterTower.tsx`
+- [x] R3F component: cylindrical tank on thin cylindrical stilts
+- [x] Elevated position for visibility
 
 ### Task 4: Implement MunicipalBuilding (AC: 3, 7)
-- [ ] Create `MunicipalBuilding.tsx`
-- [ ] R3F component: base building with dome/sphere on top or clock tower (thin cylinder + sphere)
+- [x] Create `MunicipalBuilding.tsx`
+- [x] R3F component: base building with dome/sphere on top or clock tower (thin cylinder + sphere)
 
 ### Task 5: Implement Harbor (AC: 4, 7)
-- [ ] Create `Harbor.tsx`
-- [ ] R3F component: flat dock platform with pier posts (thin cylinders)
-- [ ] Water-themed color (blue-gray base)
+- [x] Create `Harbor.tsx`
+- [x] R3F component: flat dock platform with pier posts (thin cylinders)
+- [x] Water-themed color (blue-gray base)
 
 ### Task 6: Implement Airport (AC: 5, 7)
-- [ ] Create `Airport.tsx`
-- [ ] R3F component: wide flat terminal building with runway strip (thin long box)
+- [x] Create `Airport.tsx`
+- [x] R3F component: wide flat terminal building with runway strip (thin long box)
 
 ### Task 7: Implement CityGate (AC: 6, 7)
-- [ ] Create `CityGate.tsx`
-- [ ] R3F component: two pillars with arch connecting them (cylinder + torus segment or box arch)
+- [x] Create `CityGate.tsx`
+- [x] R3F component: two pillars with arch connecting them (cylinder + box arch + sphere caps)
 
 ---
 
@@ -94,9 +94,25 @@ Status: not-started
 ---
 
 ## Dev Agent Record
-_To be filled during implementation_
+
+### Implementation Notes
+- Created `infrastructure/` component directory with `types.ts`, barrel `index.ts`, and 6 landmark components
+- All components follow the same pattern: useState hover, Zustand store for selection, `requestFlyToNode` on double-click
+- Each has a distinctive silhouette: PowerStation (smokestacks), WaterTower (elevated tank), MunicipalBuilding (dome), Harbor (dock+posts), Airport (terminal+runway+tower), CityGate (arch+pillars+caps)
+- Each type has a unique color accent for its label text
+- All built from primitive geometries (box, cylinder, sphere, plane) — no custom meshes
+
+### File List
+- `packages/ui/src/features/canvas/components/infrastructure/types.ts` — NEW: InfrastructureProps
+- `packages/ui/src/features/canvas/components/infrastructure/PowerStation.tsx` — NEW
+- `packages/ui/src/features/canvas/components/infrastructure/WaterTower.tsx` — NEW
+- `packages/ui/src/features/canvas/components/infrastructure/MunicipalBuilding.tsx` — NEW
+- `packages/ui/src/features/canvas/components/infrastructure/Harbor.tsx` — NEW
+- `packages/ui/src/features/canvas/components/infrastructure/Airport.tsx` — NEW
+- `packages/ui/src/features/canvas/components/infrastructure/CityGate.tsx` — NEW
+- `packages/ui/src/features/canvas/components/infrastructure/index.ts` — NEW: barrel export
 
 ---
 
 ## Change Log
-_To be filled during implementation_
+- 2026-02-05: Story implemented — all ACs met, 6 landmark components created

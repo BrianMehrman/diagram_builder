@@ -27,7 +27,7 @@ export function Building({ node, position }: BuildingProps) {
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
-  const enterNode = useCanvasStore((s) => s.enterNode);
+  const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
 
   const isSelected = selectedNodeId === node.id;
   const buildingHeight = getBuildingHeight(node.depth);
@@ -46,7 +46,7 @@ export function Building({ node, position }: BuildingProps) {
   };
 
   const handleDoubleClick = () => {
-    enterNode(node.id, node.type);
+    requestFlyToNode(node.id);
   };
 
   const handlePointerOver = () => {

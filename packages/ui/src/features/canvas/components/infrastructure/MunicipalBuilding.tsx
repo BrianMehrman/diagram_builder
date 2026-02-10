@@ -1,17 +1,22 @@
 /**
- * ClassBuilding Component
+ * MunicipalBuilding Component
  *
- * Multi-story building representing a class. Height scales with methodCount.
+ * Building with dome on top for logging / scheduled task nodes.
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
-import { getBuildingConfig } from '../buildingGeometry';
-import { getDirectoryFromLabel, getDirectoryColor } from '../../views/cityViewUtils';
-import type { TypedBuildingProps } from './types';
+import type { InfrastructureProps } from './types';
 
-export function ClassBuilding({ node, position }: TypedBuildingProps) {
+const BASE_COLOR = '#a3a3a3';
+const DOME_COLOR = '#d4d4d4';
+const BASE_W = 3;
+const BASE_H = 3;
+const BASE_D = 3;
+const DOME_R = 1.2;
+
+export function MunicipalBuilding({ node, position }: InfrastructureProps) {
   const [hovered, setHovered] = useState(false);
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
@@ -19,40 +24,46 @@ export function ClassBuilding({ node, position }: TypedBuildingProps) {
   const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
 
   const isSelected = selectedNodeId === node.id;
-  const config = useMemo(() => getBuildingConfig(node), [node]);
-  const { width, height, depth } = config.geometry;
-  const directory = getDirectoryFromLabel(node.label);
-  const color = getDirectoryColor(directory);
-  const fileName = (node.label ?? node.id).split('/').pop() ?? node.id;
+  const label = (node.label ?? node.id).split('/').pop() ?? node.id;
 
   return (
     <group position={[position.x, position.y, position.z]}>
+      {/* Base building */}
       <mesh
-        position={[0, height / 2, 0]}
+        position={[0, BASE_H / 2, 0]}
         onClick={() => selectNode(isSelected ? null : node.id)}
         onDoubleClick={() => requestFlyToNode(node.id)}
         onPointerOver={() => { setHovered(true); setHoveredNode(node.id); document.body.style.cursor = 'pointer'; }}
         onPointerOut={() => { setHovered(false); setHoveredNode(null); document.body.style.cursor = 'auto'; }}
       >
-        <boxGeometry args={[width, height, depth]} />
+        <boxGeometry args={[BASE_W, BASE_H, BASE_D]} />
         <meshStandardMaterial
-          color={hovered ? '#f59e0b' : color}
-          emissive={isSelected ? color : '#000000'}
+          color={hovered ? '#d4d4d4' : BASE_COLOR}
+          emissive={isSelected ? '#fbbf24' : '#000000'}
           emissiveIntensity={isSelected ? 0.3 : 0}
-          roughness={config.material.roughness}
-          metalness={config.material.metalness}
+          roughness={0.6}
+          metalness={0.3}
+        />
+      </mesh>
+      {/* Dome */}
+      <mesh position={[0, BASE_H + DOME_R * 0.5, 0]}>
+        <sphereGeometry args={[DOME_R, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial
+          color={DOME_COLOR}
+          roughness={0.4}
+          metalness={0.5}
         />
       </mesh>
       <Text
-        position={[0, height + 0.5, 0]}
-        fontSize={0.35}
-        color="#ffffff"
+        position={[0, BASE_H + DOME_R + 0.5, 0]}
+        fontSize={0.3}
+        color="#fbbf24"
         anchorX="center"
         anchorY="bottom"
         outlineWidth={0.02}
         outlineColor="#000000"
       >
-        {fileName}
+        {label}
       </Text>
     </group>
   );

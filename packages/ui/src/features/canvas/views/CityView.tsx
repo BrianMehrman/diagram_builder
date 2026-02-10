@@ -30,12 +30,20 @@ import {
 import { getBuildingConfig } from '../components/buildingGeometry';
 import { getDistrictColor } from '../components/districtGroundUtils';
 import { getSignType, getSignVisibility, renderSign } from '../components/signs';
+import {
+  PowerStation,
+  WaterTower,
+  MunicipalBuilding,
+  Harbor,
+  Airport,
+  CityGate,
+} from '../components/infrastructure';
 import { RadialCityLayoutEngine } from '../layout/engines/radialCityLayout';
 import { shouldCluster, createClusterMetadata } from '../layout/engines/clusterUtils';
 import { useCanvasStore } from '../store';
 import { computeXRayWallOpacity, shouldShowXRayDetail } from '../xrayUtils';
 import { computeGroundOpacity } from '../undergroundUtils';
-import type { Graph, GraphNode } from '../../../shared/types';
+import type { Graph, GraphNode, Position3D } from '../../../shared/types';
 import type { DistrictArcMetadata } from '../layout/engines/radialCityLayout';
 
 interface CityViewProps {
@@ -50,6 +58,38 @@ const DEFAULT_CLUSTER_THRESHOLD = 20;
 
 /** Types that can contain nested type definitions */
 const CONTAINER_TYPES = new Set(['class', 'abstract_class', 'file']);
+
+/**
+ * Renders the appropriate infrastructure landmark for an external node
+ * based on its `metadata.infrastructureType`. Returns null for 'general'
+ * or missing type, signaling fallback to ExternalBuilding.
+ */
+function renderInfrastructureLandmark(
+  node: GraphNode,
+  position: Position3D,
+): React.JSX.Element | null {
+  const infraType = node.metadata?.infrastructureType as string | undefined;
+  if (!infraType || infraType === 'general') return null;
+
+  const props = { key: node.id, node, position };
+  switch (infraType) {
+    case 'database':
+      return <Harbor {...props} />;
+    case 'api':
+      return <Airport {...props} />;
+    case 'queue':
+      return <PowerStation {...props} />;
+    case 'cache':
+      return <WaterTower {...props} />;
+    case 'auth':
+      return <CityGate {...props} />;
+    case 'logging':
+    case 'filesystem':
+      return <MunicipalBuilding {...props} />;
+    default:
+      return null;
+  }
+}
 
 /**
  * Renders the appropriate typed building component based on node.type.
@@ -130,6 +170,7 @@ export function CityView({ graph }: CityViewProps) {
   const isUndergroundMode = useCanvasStore((s) => s.isUndergroundMode);
   const layoutDensity = useCanvasStore((s) => s.layoutDensity);
   const lodLevel = useCanvasStore((s) => s.lodLevel);
+  const visibleLayers = useCanvasStore((s) => s.visibleLayers);
 
   // Compute radial city layout — entry points at center, deeper code outward
   const layout = useMemo(() => {
@@ -144,7 +185,7 @@ export function CityView({ graph }: CityViewProps) {
 
   // Separate internal and external nodes
   const internalFiles = useMemo(
-    () => graph.nodes.filter((n) => n.type === 'file' && !n.isExternal),
+    () => graph.nodes.filter((n) => !n.isExternal),
     [graph.nodes]
   );
 
@@ -250,125 +291,135 @@ export function CityView({ graph }: CityViewProps) {
         opacity={computeGroundOpacity(isUndergroundMode)}
       />
 
-      {/* District ground planes (radial layout) */}
-      {districtArcs.map((arc, index) => (
-        <DistrictGround
-          key={`${arc.id}-${arc.ringDepth}`}
-          arcStart={arc.arcStart}
-          arcEnd={arc.arcEnd}
-          innerRadius={arc.innerRadius}
-          outerRadius={arc.outerRadius}
-          color={getDistrictColor(arc.id, index)}
-          label={arc.id}
-        />
-      ))}
+      {/* Above-ground layer: district grounds, signs, buildings, landmarks, edges */}
+      {visibleLayers.aboveGround && (
+        <>
+          {/* District ground planes (radial layout) */}
+          {districtArcs.map((arc, index) => (
+            <DistrictGround
+              key={`${arc.id}-${arc.ringDepth}`}
+              arcStart={arc.arcStart}
+              arcEnd={arc.arcEnd}
+              innerRadius={arc.innerRadius}
+              outerRadius={arc.outerRadius}
+              color={getDistrictColor(arc.id, index)}
+              label={arc.id}
+            />
+          ))}
 
-      {/* District highway signs (LOD-controlled) */}
-      {districtArcs.map((arc) => {
-        const midAngle = (arc.arcStart + arc.arcEnd) / 2;
-        const signRadius = arc.outerRadius + 1;
-        const districtLabel = (arc.id ?? '').split('/').pop() || arc.id || 'district';
-        return renderSign({
-          key: `district-sign-${arc.id}-${arc.ringDepth}`,
-          signType: 'highway',
-          text: districtLabel,
-          position: {
-            x: Math.cos(midAngle) * signRadius,
-            y: 1.5,
-            z: Math.sin(midAngle) * signRadius,
-          },
-          visible: getSignVisibility('highway', lodLevel),
-        });
-      })}
+          {/* District highway signs (LOD-controlled) */}
+          {districtArcs.map((arc) => {
+            const midAngle = (arc.arcStart + arc.arcEnd) / 2;
+            const signRadius = arc.outerRadius + 1;
+            const districtLabel = (arc.id ?? '').split('/').pop() || arc.id || 'district';
+            return renderSign({
+              key: `district-sign-${arc.id}-${arc.ringDepth}`,
+              signType: 'highway',
+              text: districtLabel,
+              position: {
+                x: Math.cos(midAngle) * signRadius,
+                y: 1.5,
+                z: Math.sin(midAngle) * signRadius,
+              },
+              visible: getSignVisibility('highway', lodLevel),
+            });
+          })}
+
+          {/* Cluster buildings (LOD 1 only) */}
+          {clusters.map((cluster) => (
+            <ClusterBuilding
+              key={`cluster-${cluster.districtId}`}
+              position={cluster.center}
+              nodeCount={cluster.nodeCount}
+              districtName={cluster.districtId}
+              size={cluster.size}
+            />
+          ))}
+
+          {/* Internal buildings with signs (skip clustered nodes at LOD 1) */}
+          {internalFiles.map((node) => {
+            const pos = layout.positions.get(node.id);
+            if (!pos) return null;
+            if (clusteredNodeIds.has(node.id)) return null;
+
+            if (isXRayMode) {
+              const dx = cameraPosition.x - pos.x;
+              const dy = cameraPosition.y - pos.y;
+              const dz = cameraPosition.z - pos.z;
+              const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+              const wallOpacity = computeXRayWallOpacity(true, xrayOpacity);
+              const showDetail = shouldShowXRayDetail(true, dist, XRAY_DETAIL_DISTANCE);
+
+              return (
+                <XRayBuilding
+                  key={node.id}
+                  node={node}
+                  position={pos}
+                  children={childrenByFile.get(node.id) ?? []}
+                  xrayOpacity={wallOpacity}
+                  showDetail={showDetail}
+                />
+              );
+            }
+
+            const signType = getSignType(node);
+            const signVisible = getSignVisibility(signType, lodLevel);
+            const config = getBuildingConfig(node);
+            const signLabel = (node.label ?? node.id).split('/').pop() ?? node.id;
+
+            return (
+              <group key={node.id}>
+                {renderTypedBuilding(node, pos, nestedTypeMap)}
+                {renderSign({
+                  key: `sign-${node.id}`,
+                  signType,
+                  text: signLabel,
+                  position: {
+                    x: pos.x,
+                    y: pos.y + config.geometry.height + 1.5,
+                    z: pos.z,
+                  },
+                  visible: signVisible,
+                })}
+              </group>
+            );
+          })}
+
+          {/* External library buildings — infrastructure landmarks or wireframe fallback */}
+          {externalNodes.map((node) => {
+            const pos = layout.positions.get(node.id);
+            if (!pos) return null;
+
+            const landmark = renderInfrastructureLandmark(node, pos);
+            if (landmark) return landmark;
+
+            return <ExternalBuilding key={node.id} node={node} position={pos} />;
+          })}
+
+          {/* Dependency edges between buildings */}
+          {visibleEdges.map((edge) => {
+            const srcPos = layout.positions.get(edge.source)!;
+            const tgtPos = layout.positions.get(edge.target)!;
+            const srcNode = nodeMap.get(edge.source);
+            const tgtNode = nodeMap.get(edge.target);
+            return (
+              <CityEdge
+                key={edge.id}
+                edge={edge}
+                sourcePosition={srcPos}
+                targetPosition={tgtPos}
+                sourceDepth={srcNode?.depth}
+                targetDepth={tgtNode?.depth}
+              />
+            );
+          })}
+        </>
+      )}
 
       {/* Underground dependency tunnels */}
-      <UndergroundLayer graph={graph} positions={layout.positions} />
-
-      {/* Cluster buildings (LOD 1 only) */}
-      {clusters.map((cluster) => (
-        <ClusterBuilding
-          key={`cluster-${cluster.districtId}`}
-          position={cluster.center}
-          nodeCount={cluster.nodeCount}
-          districtName={cluster.districtId}
-          size={cluster.size}
-        />
-      ))}
-
-      {/* Internal buildings with signs (skip clustered nodes at LOD 1) */}
-      {internalFiles.map((node) => {
-        const pos = layout.positions.get(node.id);
-        if (!pos) return null;
-        if (clusteredNodeIds.has(node.id)) return null;
-
-        if (isXRayMode) {
-          const dx = cameraPosition.x - pos.x;
-          const dy = cameraPosition.y - pos.y;
-          const dz = cameraPosition.z - pos.z;
-          const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-          const wallOpacity = computeXRayWallOpacity(true, xrayOpacity);
-          const showDetail = shouldShowXRayDetail(true, dist, XRAY_DETAIL_DISTANCE);
-
-          return (
-            <XRayBuilding
-              key={node.id}
-              node={node}
-              position={pos}
-              children={childrenByFile.get(node.id) ?? []}
-              xrayOpacity={wallOpacity}
-              showDetail={showDetail}
-            />
-          );
-        }
-
-        const signType = getSignType(node);
-        const signVisible = getSignVisibility(signType, lodLevel);
-        const config = getBuildingConfig(node);
-        const signLabel = (node.label ?? node.id).split('/').pop() ?? node.id;
-
-        return (
-          <group key={node.id}>
-            {renderTypedBuilding(node, pos, nestedTypeMap)}
-            {renderSign({
-              key: `sign-${node.id}`,
-              signType,
-              text: signLabel,
-              position: {
-                x: pos.x,
-                y: pos.y + config.geometry.height + 1.5,
-                z: pos.z,
-              },
-              visible: signVisible,
-            })}
-          </group>
-        );
-      })}
-
-      {/* External library buildings */}
-      {externalNodes.map((node) => {
-        const pos = layout.positions.get(node.id);
-        if (!pos) return null;
-
-        return <ExternalBuilding key={node.id} node={node} position={pos} />;
-      })}
-
-      {/* Dependency edges between buildings */}
-      {visibleEdges.map((edge) => {
-        const srcPos = layout.positions.get(edge.source)!;
-        const tgtPos = layout.positions.get(edge.target)!;
-        const srcNode = nodeMap.get(edge.source);
-        const tgtNode = nodeMap.get(edge.target);
-        return (
-          <CityEdge
-            key={edge.id}
-            edge={edge}
-            sourcePosition={srcPos}
-            targetPosition={tgtPos}
-            sourceDepth={srcNode?.depth}
-            targetDepth={tgtNode?.depth}
-          />
-        );
-      })}
+      {visibleLayers.underground && (
+        <UndergroundLayer graph={graph} positions={layout.positions} />
+      )}
     </group>
   );
 }

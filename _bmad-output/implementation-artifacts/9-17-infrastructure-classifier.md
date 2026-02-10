@@ -1,6 +1,6 @@
 # Story 9.17: Infrastructure Classifier Analysis Module
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -35,30 +35,30 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Define infrastructure types (AC: 1-8)
-- [ ] Create `packages/parser/src/analysis/infrastructureClassifier.ts`
-- [ ] Define `InfrastructureType` union: `'database' | 'api' | 'queue' | 'cache' | 'filesystem' | 'auth' | 'logging' | 'general'`
-- [ ] Define package-to-type mapping as a constant lookup table
-- [ ] Include scoped package variants (e.g., `@prisma/client`)
+- [x] Create `packages/parser/src/analysis/infrastructureClassifier.ts`
+- [x] Define `InfrastructureType` union: `'database' | 'api' | 'queue' | 'cache' | 'filesystem' | 'auth' | 'logging' | 'general'`
+- [x] Define package-to-type mapping as a constant lookup table
+- [x] Include scoped package variants (e.g., `@prisma/client`)
 
 ### Task 2: Implement classifier function (AC: 1-9)
-- [ ] `classifyPackage(packageName: string): InfrastructureType`
-- [ ] Exact match against lookup table
-- [ ] Handle scoped packages (extract base package name)
-- [ ] Handle Node.js builtins (e.g., `fs` → `'filesystem'`, `http` → `'api'`, `crypto` → `'auth'`)
-- [ ] Return `'general'` for unrecognized packages
+- [x] `classifyPackage(packageName: string): InfrastructureType`
+- [x] Exact match against lookup table
+- [x] Handle scoped packages (extract base package name)
+- [x] Handle Node.js builtins (e.g., `fs` → `'filesystem'`, `http` → `'api'`, `crypto` → `'auth'`)
+- [x] Return `'general'` for unrecognized packages
 
 ### Task 3: Create batch classifier (AC: 9)
-- [ ] `classifyExternalNodes(nodes: DependencyNode[]): Map<string, InfrastructureType>`
-- [ ] Processes all external nodes and returns a map of nodeId → infrastructure type
-- [ ] Designed to be called after `detectExternalImports` and inject results into node metadata
+- [x] `classifyExternalNodes(nodes: DependencyNode[]): Map<string, InfrastructureType>`
+- [x] Processes all external nodes and returns a map of nodeId → infrastructure type
+- [x] Designed to be called after `detectExternalImports` and inject results into node metadata
 
 ### Task 4: Write unit tests (AC: 10)
-- [ ] Create `packages/parser/src/analysis/infrastructureClassifier.test.ts`
-- [ ] Test each category with multiple package names
-- [ ] Test scoped packages
-- [ ] Test Node.js builtins
-- [ ] Test unknown packages → `'general'`
-- [ ] Test batch classifier with mixed node list
+- [x] Create `packages/parser/src/analysis/infrastructureClassifier.test.ts`
+- [x] Test each category with multiple package names
+- [x] Test scoped packages
+- [x] Test Node.js builtins
+- [x] Test unknown packages → `'general'`
+- [x] Test batch classifier with mixed node list
 
 ---
 
@@ -91,9 +91,19 @@ Status: not-started
 ---
 
 ## Dev Agent Record
-_To be filled during implementation_
+
+### Implementation Notes
+- Created `infrastructureClassifier.ts` in `packages/parser/src/analysis/`
+- Lookup table covers 50+ packages across 7 categories plus general fallback
+- Resolution: exact match → scoped base name fallback → Node.js builtin → general
+- `classifyExternalNodes()` batch function processes DependencyNode arrays, uses `node.name` with fallback to id
+- 68 tests with comprehensive coverage using `it.each` for concise parameterized tests
+
+### File List
+- `packages/parser/src/analysis/infrastructureClassifier.ts` — NEW: classifier module
+- `packages/parser/src/analysis/infrastructureClassifier.test.ts` — NEW: 68 tests
 
 ---
 
 ## Change Log
-_To be filled during implementation_
+- 2026-02-05: Story implemented — all ACs met, 68 tests passing

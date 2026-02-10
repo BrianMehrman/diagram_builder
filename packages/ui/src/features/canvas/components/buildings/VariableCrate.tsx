@@ -17,6 +17,7 @@ export function VariableCrate({ node, position }: TypedBuildingProps) {
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
+  const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
 
   const isSelected = selectedNodeId === node.id;
   const config = useMemo(() => getBuildingConfig(node), [node]);
@@ -28,6 +29,7 @@ export function VariableCrate({ node, position }: TypedBuildingProps) {
       <mesh
         position={[0, width / 2, 0]}
         onClick={() => selectNode(isSelected ? null : node.id)}
+        onDoubleClick={() => requestFlyToNode(node.id)}
         onPointerOver={() => { setHovered(true); setHoveredNode(node.id); document.body.style.cursor = 'pointer'; }}
         onPointerOut={() => { setHovered(false); setHoveredNode(null); document.body.style.cursor = 'auto'; }}
       >

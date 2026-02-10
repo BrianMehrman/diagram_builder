@@ -1,6 +1,6 @@
 # Story 9.20: Infrastructure Rendering in CityView
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -30,26 +30,26 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Create infrastructure type → component mapping (AC: 1, 2)
-- [ ] Create a mapping function or switch: `infrastructureType` → landmark component
-- [ ] `'database'` → Harbor
-- [ ] `'api'` → Airport
-- [ ] `'queue'` → PowerStation
-- [ ] `'cache'` → WaterTower
-- [ ] `'auth'` → CityGate
-- [ ] `'logging'` → MunicipalBuilding
-- [ ] `'filesystem'` → MunicipalBuilding (reuse)
-- [ ] `'general'` → existing ExternalBuilding (wireframe)
+- [x] Create a mapping function or switch: `infrastructureType` → landmark component
+- [x] `'database'` → Harbor
+- [x] `'api'` → Airport
+- [x] `'queue'` → PowerStation
+- [x] `'cache'` → WaterTower
+- [x] `'auth'` → CityGate
+- [x] `'logging'` → MunicipalBuilding
+- [x] `'filesystem'` → MunicipalBuilding (reuse)
+- [x] `'general'` → existing ExternalBuilding (wireframe)
 
 ### Task 2: Update CityView external node rendering (AC: 1, 2)
-- [ ] Update `packages/ui/src/features/canvas/views/CityView.tsx`
-- [ ] In the external nodes rendering loop, check `node.metadata.infrastructureType`
-- [ ] Render appropriate landmark component instead of default ExternalBuilding
-- [ ] Pass position, node, and interaction props
+- [x] Update `packages/ui/src/features/canvas/views/CityView.tsx`
+- [x] In the external nodes rendering loop, check `node.metadata.infrastructureType`
+- [x] Render appropriate landmark component instead of default ExternalBuilding
+- [x] Pass position, node, and interaction props
 
 ### Task 3: Ensure LOD independence (AC: 3)
-- [ ] Infrastructure landmarks bypass LOD visibility filtering
-- [ ] They render at all zoom levels as orientation aids
-- [ ] This may mean skipping the `lodLevel` check for external/infrastructure nodes
+- [x] Infrastructure landmarks bypass LOD visibility filtering
+- [x] They render at all zoom levels as orientation aids
+- [x] External nodes already bypass LOD filtering in CityView (no `clusteredNodeIds` or `lodLevel` check)
 
 ---
 
@@ -80,9 +80,19 @@ Status: not-started
 ---
 
 ## Dev Agent Record
-_To be filled during implementation_
+
+### Implementation Notes
+- Added `renderInfrastructureLandmark()` function in CityView that maps `metadata.infrastructureType` to the correct landmark component via a switch statement
+- Mapping: database→Harbor, api→Airport, queue→PowerStation, cache→WaterTower, auth→CityGate, logging/filesystem→MunicipalBuilding
+- Returns `null` for `'general'` or missing type, falling back to `ExternalBuilding` wireframe
+- Updated external nodes rendering loop to call `renderInfrastructureLandmark()` first, with fallback to `ExternalBuilding`
+- LOD independence: External nodes already bypass LOD filtering — no `clusteredNodeIds` check, no `lodLevel` gate. Landmarks are always visible.
+- All 6 infrastructure components imported from `../components/infrastructure` barrel export
+
+### File List
+- `packages/ui/src/features/canvas/views/CityView.tsx` — MODIFIED: added infrastructure imports, `renderInfrastructureLandmark()`, updated external rendering loop
 
 ---
 
 ## Change Log
-_To be filled during implementation_
+- 2026-02-05: Story implemented — all ACs met, infrastructure landmarks wired into CityView

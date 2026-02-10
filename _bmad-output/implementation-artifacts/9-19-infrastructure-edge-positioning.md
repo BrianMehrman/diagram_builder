@@ -1,6 +1,6 @@
 # Story 9.19: Infrastructure Edge Positioning
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -34,20 +34,20 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Update radial layout for infrastructure zones (AC: 1-5)
-- [ ] Update `packages/ui/src/features/canvas/layout/engines/radialCityLayout.ts`
-- [ ] Group external nodes by `metadata.infrastructureType`
-- [ ] Assign each infrastructure type a dedicated arc segment on the outermost ring
-- [ ] Order zones consistently (e.g., database, api, queue, cache, auth, logging, filesystem, general)
-- [ ] Add gap between zones for visual separation
+- [x] Update `packages/ui/src/features/canvas/layout/engines/radialCityLayout.ts`
+- [x] Group external nodes by `metadata.infrastructureType`
+- [x] Assign each infrastructure type a dedicated arc segment on the outermost ring
+- [x] Order zones consistently (e.g., database, api, queue, cache, auth, logging, filesystem, general)
+- [x] Add gap between zones for visual separation
 
 ### Task 2: Add zone metadata to layout output (AC: 1)
-- [ ] Include zone arc information in `LayoutResult.metadata`
-- [ ] Zone metadata: `{ type, arcStart, arcEnd, nodeCount }` per zone
-- [ ] Used by CityView to optionally render zone labels or boundaries
+- [x] Include zone arc information in `LayoutResult.metadata`
+- [x] Zone metadata: `{ type, arcStart, arcEnd, nodeCount }` per zone
+- [x] Used by CityView to optionally render zone labels or boundaries
 
 ### Task 3: Handle missing infrastructure types (AC: 1)
-- [ ] If `infrastructureType` is not set on external nodes, fall back to `'general'`
-- [ ] All unclassified external nodes group in the `'general'` zone
+- [x] If `infrastructureType` is not set on external nodes, fall back to `'general'`
+- [x] All unclassified external nodes group in the `'general'` zone
 
 ---
 
@@ -77,9 +77,23 @@ Status: not-started
 ---
 
 ## Dev Agent Record
-_To be filled during implementation_
+
+### Implementation Notes
+- Added `InfrastructureZoneMetadata` interface to `radialCityLayout.ts` with `type`, `arcStart`, `arcEnd`, `nodeCount`
+- Defined `ZONE_ORDER` constant array for consistent zone ordering: database, api, queue, cache, auth, logging, filesystem, general
+- Replaced simple equal-angle external node distribution with zone-grouped arc positioning
+- External nodes are grouped by `metadata.infrastructureType`, defaulting to `'general'` when not set
+- Zones are assigned proportional arc segments based on node count with `arcPadding * 2` gaps between zones
+- Nodes within each zone are sorted alphabetically and positioned via `positionNodesInArc()`
+- Unknown infrastructure types (not in ZONE_ORDER) are appended alphabetically after the standard zones
+- Added `infrastructureZones` array to `LayoutResult.metadata` for CityView to render zone labels/boundaries
+- 9 new tests covering: zone grouping, ordering, visual separation, clustering, fallback, mixed types, empty case, arc metadata, determinism
+
+### File List
+- `packages/ui/src/features/canvas/layout/engines/radialCityLayout.ts` — MODIFIED: added InfrastructureZoneMetadata, ZONE_ORDER, zone-grouped external node positioning
+- `packages/ui/src/features/canvas/layout/engines/radialCityLayout.test.ts` — MODIFIED: added 9 infrastructure zone tests (27 total)
 
 ---
 
 ## Change Log
-_To be filled during implementation_
+- 2026-02-05: Story implemented — all ACs met, zone-grouped external node positioning with metadata

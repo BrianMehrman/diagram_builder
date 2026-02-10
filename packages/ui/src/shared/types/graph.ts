@@ -36,6 +36,14 @@ export interface GraphNode {
   isAbstract?: boolean;
   /** True if this node contains nested type definitions */
   hasNestedTypes?: boolean;
+
+  // Sign metadata fields (Epic 9-C)
+  /** Access visibility level for sign type selection */
+  visibility?: 'public' | 'protected' | 'private' | 'static';
+  /** True if this symbol is deprecated — renders construction sign */
+  isDeprecated?: boolean;
+  /** True if this symbol is exported — renders marquee sign */
+  isExported?: boolean;
 }
 
 /**

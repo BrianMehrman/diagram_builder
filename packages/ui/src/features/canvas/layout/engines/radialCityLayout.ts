@@ -31,6 +31,35 @@ export interface DistrictArcMetadata {
 }
 
 /**
+ * Metadata for an infrastructure zone arc on the outermost ring.
+ */
+export interface InfrastructureZoneMetadata {
+  /** Infrastructure type identifier */
+  type: string;
+  /** Start angle of the zone arc in radians */
+  arcStart: number;
+  /** End angle of the zone arc in radians */
+  arcEnd: number;
+  /** Number of nodes in this zone */
+  nodeCount: number;
+}
+
+/**
+ * Fixed zone order for consistent positioning across re-renders.
+ * Zones appear in this order clockwise around the outermost ring.
+ */
+const ZONE_ORDER = [
+  'database',
+  'api',
+  'queue',
+  'cache',
+  'auth',
+  'logging',
+  'filesystem',
+  'general',
+] as const;
+
+/**
  * Configuration for the radial city layout engine.
  */
 export interface RadialCityLayoutConfig extends LayoutConfig {
@@ -76,13 +105,11 @@ export class RadialCityLayoutEngine implements LayoutEngine {
 
     const positions = new Map<string, Position3D>();
 
-    // Separate file nodes: internal vs external
-    const fileNodes = graph.nodes.filter(
-      (n) => n.type === 'file' && !n.isExternal
-    );
+    // Separate nodes: internal (all types) vs external
+    const fileNodes = graph.nodes.filter((n) => !n.isExternal);
     const externalNodes = graph.nodes.filter((n) => n.isExternal === true);
 
-    // Compute effective depth for each file node.
+    // Compute effective depth for each node.
     // If the parser provides depth, use it. Otherwise derive from directory nesting.
     const hasAnyDepth = fileNodes.some((n) => n.depth !== undefined && n.depth > 0);
     const effectiveDepths = new Map<string, number>();
@@ -215,7 +242,9 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       }
     }
 
-    // Position external nodes at outermost ring
+    // Position external nodes at outermost ring, grouped by infrastructure type
+    const infrastructureZones: InfrastructureZoneMetadata[] = [];
+
     if (externalNodes.length > 0) {
       const maxDepth = Math.max(
         0,
@@ -229,18 +258,68 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       const minExternalRadius = (externalNodes.length * effectiveBuildingSpacing) / (2 * Math.PI);
       const externalRadius = Math.max(baseExternalRadius, minExternalRadius);
 
-      const sorted = [...externalNodes].sort((a, b) =>
-        (a.label ?? '').localeCompare(b.label ?? '')
-      );
-      const angleStep = (2 * Math.PI) / sorted.length;
+      // Group external nodes by infrastructure type
+      const zoneGroups = new Map<string, GraphNode[]>();
+      for (const node of externalNodes) {
+        const infraType = (node.metadata?.infrastructureType as string) ?? 'general';
+        if (!zoneGroups.has(infraType)) zoneGroups.set(infraType, []);
+        zoneGroups.get(infraType)!.push(node);
+      }
 
-      for (let i = 0; i < sorted.length; i++) {
-        const angle = i * angleStep;
-        positions.set(sorted[i]!.id, {
-          x: Math.cos(angle) * externalRadius,
-          y: 0,
-          z: Math.sin(angle) * externalRadius,
+      // Build ordered zone list (only zones that have nodes, in ZONE_ORDER)
+      const orderedZones: Array<{ type: string; nodes: GraphNode[] }> = [];
+      for (const zoneType of ZONE_ORDER) {
+        const nodes = zoneGroups.get(zoneType);
+        if (nodes && nodes.length > 0) {
+          orderedZones.push({ type: zoneType, nodes });
+        }
+      }
+      // Include any types not in ZONE_ORDER (sorted alphabetically)
+      for (const [zoneType, nodes] of [...zoneGroups.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+        if (!ZONE_ORDER.includes(zoneType as typeof ZONE_ORDER[number])) {
+          orderedZones.push({ type: zoneType, nodes });
+        }
+      }
+
+      // Assign arc segments proportionally with gaps between zones
+      const zonePadding = arcPadding * 2; // Wider gaps between infrastructure zones
+      const totalZonePadding = zonePadding * orderedZones.length;
+      const usableArc = Math.max(0, 2 * Math.PI - totalZonePadding);
+      const totalExternalNodes = externalNodes.length;
+
+      let currentAngle = 0;
+      for (const zone of orderedZones) {
+        const sortedNodes = [...zone.nodes].sort((a, b) =>
+          (a.label ?? '').localeCompare(b.label ?? '')
+        );
+
+        const proportion = sortedNodes.length / totalExternalNodes;
+        const zoneArcSize = proportion * usableArc;
+        const zoneArcStart = currentAngle;
+        const zoneArcEnd = currentAngle + zoneArcSize;
+
+        // Position nodes within this zone's arc
+        const positioned = positionNodesInArc(
+          sortedNodes.map((n) => ({ id: n.id })),
+          zoneArcStart,
+          zoneArcEnd,
+          externalRadius,
+          { buildingSpacing: effectiveBuildingSpacing },
+        );
+
+        for (const pn of positioned) {
+          positions.set(pn.id, pn.position);
+        }
+
+        // Record zone metadata
+        infrastructureZones.push({
+          type: zone.type,
+          arcStart: zoneArcStart,
+          arcEnd: zoneArcEnd,
+          nodeCount: sortedNodes.length,
         });
+
+        currentAngle += zoneArcSize + zonePadding;
       }
     }
 
@@ -260,16 +339,17 @@ export class RadialCityLayoutEngine implements LayoutEngine {
         externalCount: externalNodes.length,
         entryPointCount: entryNodes.length,
         districtArcs,
+        infrastructureZones,
       },
     };
   }
 
   canHandle(graph: Graph): boolean {
-    return graph.nodes.some((n) => n.type === 'file');
+    return graph.nodes.length > 0;
   }
 
   /**
-   * Groups file nodes by their containing directory.
+   * Groups nodes by their containing directory.
    * Sorted alphabetically for deterministic output.
    */
   private groupByDirectory(nodes: GraphNode[]): Map<string, GraphNode[]> {

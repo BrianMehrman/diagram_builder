@@ -136,13 +136,13 @@ development_status:
   9-13-sign-component-library: review  # 7 R3F sign components with frustum culling - COMPLETE (2026-02-06)
   9-14-lod-calculator-hook: review  # Camera distance → lodLevel hook - COMPLETE (2026-02-06)
   9-15-sign-integration-cityview: review  # Wire signs into CityView with LOD visibility - COMPLETE (2026-02-06)
-  9-16-sign-metadata-extensions: not-started  # Add visibility, isDeprecated, isExported to GraphNode
+  9-16-sign-metadata-extensions: review  # Add visibility, isDeprecated, isExported to GraphNode - COMPLETE (2026-02-05)
   # Epic 9-D: Infrastructure Landmarks & Layer Control
-  9-17-infrastructure-classifier: not-started  # Package name → infrastructure type classifier (parser)
-  9-18-infrastructure-landmark-components: not-started  # 6 R3F landmark components
-  9-19-infrastructure-edge-positioning: not-started  # Group infrastructure nodes by type at city edges
-  9-20-infrastructure-rendering-cityview: not-started  # Wire landmarks into CityView
-  9-21-layer-toggle-store-ui: not-started  # Layer toggle store + UI (above ground / underground)
+  9-17-infrastructure-classifier: review  # Package name → infrastructure type classifier (parser) - COMPLETE (2026-02-05)
+  9-18-infrastructure-landmark-components: review  # 6 R3F landmark components - COMPLETE (2026-02-05)
+  9-19-infrastructure-edge-positioning: review  # Group infrastructure nodes by type at city edges - COMPLETE (2026-02-05)
+  9-20-infrastructure-rendering-cityview: review  # Wire landmarks into CityView - COMPLETE (2026-02-05)
+  9-21-layer-toggle-store-ui: review  # Layer toggle store + UI (above ground / underground) - COMPLETE (2026-02-05)
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun

@@ -27,6 +27,19 @@ export type ControlMode = 'orbit' | 'fly';
 export type ViewMode = 'city' | 'building' | 'cell';
 
 /**
+ * Layer name for visibility toggling
+ */
+export type LayerName = 'aboveGround' | 'underground';
+
+/**
+ * Layer visibility state
+ */
+export interface VisibleLayers {
+  aboveGround: boolean;
+  underground: boolean;
+}
+
+/**
  * Canvas store state
  */
 interface CanvasState {
@@ -72,6 +85,10 @@ interface CanvasState {
   exitToParent: () => void;
   resetToCity: () => void;
 
+  // Pending camera flight — set by any component, consumed by WorkspacePage
+  pendingFlyToNodeId: string | null;
+  requestFlyToNode: (nodeId: string | null) => void;
+
   // Layout positions (computed by view renderers)
   layoutPositions: Map<string, Position3D>;
   setLayoutPositions: (positions: Map<string, Position3D>) => void;
@@ -92,6 +109,10 @@ interface CanvasState {
   // Layout density (radial layout spacing multiplier)
   layoutDensity: number;
   setLayoutDensity: (density: number) => void;
+
+  // Layer visibility
+  visibleLayers: VisibleLayers;
+  toggleLayer: (layer: LayerName) => void;
 
   // Reset to defaults
   reset: () => void;
@@ -216,6 +237,10 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       focusHistory: [],
     }),
 
+  // Pending camera flight
+  pendingFlyToNodeId: null,
+  requestFlyToNode: (nodeId) => set({ pendingFlyToNodeId: nodeId }),
+
   // Layout positions (computed by view renderers)
   layoutPositions: new Map<string, Position3D>(),
   setLayoutPositions: (positions) => set({ layoutPositions: positions }),
@@ -239,6 +264,18 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   layoutDensity: 1.0,
   setLayoutDensity: (density) => set({ layoutDensity: density }),
 
+  // Layer visibility
+  visibleLayers: { aboveGround: true, underground: true },
+  toggleLayer: (layer) =>
+    set((state) => {
+      const updated = { ...state.visibleLayers, [layer]: !state.visibleLayers[layer] };
+      // Sync underground layer with existing isUndergroundMode for backwards compatibility
+      if (layer === 'underground') {
+        return { visibleLayers: updated, isUndergroundMode: updated.underground };
+      }
+      return { visibleLayers: updated };
+    }),
+
   // Reset
   reset: () =>
     set({
@@ -249,6 +286,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       highlightedNodeId: null,
       isFlying: false,
       flightTargetNodeId: null,
+      pendingFlyToNodeId: null,
       lodLevel: 1,
       viewMode: 'city' as ViewMode,
       focusedNodeId: null,
@@ -259,5 +297,6 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       isUndergroundMode: false,
       showFlowAnimation: false,
       layoutDensity: 1.0,
+      visibleLayers: { aboveGround: true, underground: true },
     }),
 }));

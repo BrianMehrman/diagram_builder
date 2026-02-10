@@ -1,6 +1,6 @@
 # Story 9.16: Sign Metadata Extensions on GraphNode
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -30,24 +30,24 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Extend GraphNode interface (AC: 1, 2, 3)
-- [ ] Update `packages/ui/src/shared/types/graph.ts`
-- [ ] Add `visibility?: 'public' | 'protected' | 'private' | 'static'`
-- [ ] Add `isDeprecated?: boolean`
-- [ ] Add `isExported?: boolean`
-- [ ] Add JSDoc comments
+- [x] Update `packages/ui/src/shared/types/graph.ts`
+- [x] Add `visibility?: 'public' | 'protected' | 'private' | 'static'`
+- [x] Add `isDeprecated?: boolean`
+- [x] Add `isExported?: boolean`
+- [x] Add JSDoc comments
 
 ### Task 2: Update ApiGraphNode (AC: 1, 2, 3)
-- [ ] Update `packages/ui/src/shared/types/api.ts` if ApiGraphNode has explicit fields
-- [ ] Ensure all new fields are optional
+- [x] Update `packages/ui/src/shared/types/api.ts` if ApiGraphNode has explicit fields
+- [x] Ensure all new fields are optional
 
 ### Task 3: Verify sign utility compatibility (AC: 4, 5)
-- [ ] Verify `getSignType()` from story 9-12 reads from metadata bag correctly
-- [ ] Test fallback behavior when fields are not populated
+- [x] Verify `getSignType()` from story 9-12 reads from metadata bag correctly
+- [x] Test fallback behavior when fields are not populated
 
 ### Task 4: Update tests (AC: 4)
-- [ ] Update `packages/ui/src/shared/types/graph.test.ts`
-- [ ] Test node creation with sign metadata fields
-- [ ] Test backward compatibility
+- [x] Update `packages/ui/src/shared/types/graph.test.ts`
+- [x] Test node creation with sign metadata fields
+- [x] Test backward compatibility
 
 ---
 
@@ -75,9 +75,20 @@ Status: not-started
 ---
 
 ## Dev Agent Record
-_To be filled during implementation_
+
+### Implementation Notes
+- Added `visibility`, `isDeprecated`, `isExported` fields to `GraphNode` in `graph.ts` with JSDoc comments
+- Added same fields to `ApiGraphNode` in `api.ts` for API transport
+- Verified `getSignType()` already reads from `node.metadata` bag — explicit fields are for TypeScript convenience
+- All 42 existing sign utils tests pass unchanged, confirming backward compatibility
+- Added 4 new tests: sign metadata creation, all visibility values, deprecated node, backward compatibility
+
+### File List
+- `packages/ui/src/shared/types/graph.ts` — Added 3 sign metadata fields
+- `packages/ui/src/shared/types/api.ts` — Added 3 sign metadata fields to ApiGraphNode
+- `packages/ui/src/shared/types/graph.test.ts` — Added 4 tests for sign metadata
 
 ---
 
 ## Change Log
-_To be filled during implementation_
+- 2026-02-05: Story implemented — all ACs met, 57 tests passing

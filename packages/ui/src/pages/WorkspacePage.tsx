@@ -66,6 +66,19 @@ export function WorkspacePage() {
     }
   }, [flyToNode])
 
+  // Watch for pending fly-to requests from building double-clicks
+  const pendingFlyToNodeId = useCanvasStore((s) => s.pendingFlyToNodeId)
+  const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode)
+
+  useEffect(() => {
+    if (!pendingFlyToNodeId) return
+    const layoutPos = useCanvasStore.getState().layoutPositions.get(pendingFlyToNodeId)
+    if (layoutPos) {
+      flyToNode(pendingFlyToNodeId, layoutPos)
+    }
+    requestFlyToNode(null)
+  }, [pendingFlyToNodeId, flyToNode, requestFlyToNode])
+
   // Handle import completion - trigger camera flight after graph loads
   const handleImportComplete = useCallback((_repositoryId: string) => {
     // Set flag to trigger camera flight when graph data becomes available

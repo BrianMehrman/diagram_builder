@@ -1,6 +1,6 @@
 # Story 9.21: Layer Toggle Store & UI
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -34,27 +34,27 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Extend canvas store (AC: 1, 2, 3, 5)
-- [ ] Add `visibleLayers: { aboveGround: boolean; underground: boolean }` to `CanvasState`
-- [ ] Add `toggleLayer: (layer: 'aboveGround' | 'underground') => void` action
-- [ ] Default both to `true`
-- [ ] Wire `underground` layer to existing `isUndergroundMode` for compatibility
-- [ ] Include `visibleLayers` in `reset()` function
+- [x] Add `visibleLayers: { aboveGround: boolean; underground: boolean }` to `CanvasState`
+- [x] Add `toggleLayer: (layer: 'aboveGround' | 'underground') => void` action
+- [x] Default both to `true`
+- [x] Wire `underground` layer to existing `isUndergroundMode` for compatibility
+- [x] Include `visibleLayers` in `reset()` function
 
 ### Task 2: Create LayerToggle component (AC: 4)
-- [ ] Create `packages/ui/src/features/canvas/components/LayerToggle.tsx`
-- [ ] Two toggle buttons: "Above Ground" and "Underground"
-- [ ] Styled with Tailwind, positioned in canvas overlay
-- [ ] Reads from and writes to store `visibleLayers`
+- [x] Create `packages/ui/src/features/canvas/components/LayerToggle.tsx`
+- [x] Two toggle buttons: "Above Ground" and "Underground"
+- [x] Styled with Tailwind, positioned in canvas overlay
+- [x] Reads from and writes to store `visibleLayers`
 
 ### Task 3: Wire layer visibility into CityView (AC: 2, 3)
-- [ ] Read `visibleLayers` from store in CityView
-- [ ] When `aboveGround` is false, hide buildings, signs, landmarks, district ground planes
-- [ ] When `underground` is false, hide dependency tunnels / underground layer
-- [ ] Preserve existing UndergroundLayer component behavior
+- [x] Read `visibleLayers` from store in CityView
+- [x] When `aboveGround` is false, hide buildings, signs, landmarks, district ground planes
+- [x] When `underground` is false, hide dependency tunnels / underground layer
+- [x] Preserve existing UndergroundLayer component behavior
 
 ### Task 4: Add LayerToggle to workspace layout (AC: 4)
-- [ ] Add LayerToggle component alongside DensitySlider in the canvas overlay area
-- [ ] Ensure both controls are visually grouped
+- [x] Add LayerToggle component alongside DensitySlider in the canvas overlay area
+- [x] Ensure both controls are visually grouped
 
 ---
 
@@ -87,9 +87,26 @@ Status: not-started
 ---
 
 ## Dev Agent Record
-_To be filled during implementation_
+
+### Implementation Notes
+- Added `LayerName`, `VisibleLayers` types and `visibleLayers`/`toggleLayer` to canvas store
+- `toggleLayer('underground')` syncs with `isUndergroundMode` for backwards compatibility
+- Created `LayerToggle.tsx` — two styled toggle buttons (blue when active, gray when inactive) with `aria-pressed` for accessibility
+- Only visible in city view mode (same pattern as DensitySlider)
+- CityView wraps above-ground content (district grounds, signs, clusters, buildings, landmarks, edges) in `{visibleLayers.aboveGround && (<>...</>)}`
+- UndergroundLayer wrapped in `{visibleLayers.underground && (<UndergroundLayer ... />)}`
+- Ground plane always renders regardless of layer toggles (serves as base)
+- LayerToggle placed in RightPanel under "Layout" section alongside DensitySlider
+- 7 store integration tests covering defaults, toggling, sync with isUndergroundMode, independence, reset
+
+### File List
+- `packages/ui/src/features/canvas/store.ts` — MODIFIED: added LayerName, VisibleLayers types, visibleLayers state, toggleLayer action
+- `packages/ui/src/features/canvas/components/LayerToggle.tsx` — NEW: toggle buttons for layer visibility
+- `packages/ui/src/features/canvas/components/LayerToggle.test.ts` — NEW: 7 store integration tests
+- `packages/ui/src/features/canvas/views/CityView.tsx` — MODIFIED: conditional rendering based on visibleLayers
+- `packages/ui/src/features/panels/RightPanel.tsx` — MODIFIED: added LayerToggle import and placement
 
 ---
 
 ## Change Log
-_To be filled during implementation_
+- 2026-02-05: Story implemented — all ACs met, layer toggle store + UI + CityView wiring

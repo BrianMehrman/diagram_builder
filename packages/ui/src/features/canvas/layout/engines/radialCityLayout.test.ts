@@ -1,18 +1,22 @@
 import { describe, it, expect } from 'vitest';
 import type { Graph, GraphNode } from '../../../../shared/types';
 import { RadialCityLayoutEngine } from './radialCityLayout';
-import type { RadialCityLayoutConfig } from './radialCityLayout';
+import type { RadialCityLayoutConfig, InfrastructureZoneMetadata } from './radialCityLayout';
 
 function makeFileNode(
   id: string,
   label: string,
-  opts: { depth?: number; isExternal?: boolean; path?: string } = {}
+  opts: { depth?: number; isExternal?: boolean; path?: string; infrastructureType?: string } = {}
 ): GraphNode {
+  const metadata: Record<string, unknown> = { path: opts.path ?? label };
+  if (opts.infrastructureType) {
+    metadata.infrastructureType = opts.infrastructureType;
+  }
   return {
     id,
     type: 'file',
     label,
-    metadata: { path: opts.path ?? label },
+    metadata,
     lod: 0,
     depth: opts.depth ?? 0,
     isExternal: opts.isExternal ?? false,
@@ -47,11 +51,11 @@ describe('RadialCityLayoutEngine', () => {
       expect(engine.canHandle(graph)).toBe(true);
     });
 
-    it('should return false when graph has no file nodes', () => {
+    it('should return true when graph has any nodes', () => {
       const graph = makeGraph([
         { id: '1', type: 'class', label: 'Foo', metadata: {}, lod: 0 },
       ]);
-      expect(engine.canHandle(graph)).toBe(false);
+      expect(engine.canHandle(graph)).toBe(true);
     });
 
     it('should return false for empty graph', () => {
@@ -205,7 +209,7 @@ describe('RadialCityLayoutEngine', () => {
       expect(result.positions.size).toBe(0);
     });
 
-    it('should only layout file-type nodes', () => {
+    it('should layout all non-external node types', () => {
       const graph: Graph = {
         nodes: [
           makeFileNode('f1', 'src/app.ts', { depth: 0, path: 'src/app.ts' }),
@@ -219,8 +223,8 @@ describe('RadialCityLayoutEngine', () => {
       const result = engine.layout(graph);
 
       expect(result.positions.has('f1')).toBe(true);
-      expect(result.positions.has('c1')).toBe(false);
-      expect(result.positions.has('fn1')).toBe(false);
+      expect(result.positions.has('c1')).toBe(true);
+      expect(result.positions.has('fn1')).toBe(true);
     });
 
     it('should set y=0 for all positioned nodes', () => {
@@ -292,6 +296,169 @@ describe('RadialCityLayoutEngine', () => {
       ]);
 
       expect(() => engine.layout(graph, { ringSpacing: 25 })).not.toThrow();
+    });
+  });
+
+  describe('infrastructure zones', () => {
+    it('should group external nodes by infrastructureType into separate zones', () => {
+      const graph = makeGraph([
+        makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+        makeFileNode('db1', 'pg', { isExternal: true, infrastructureType: 'database' }),
+        makeFileNode('db2', 'mongoose', { isExternal: true, infrastructureType: 'database' }),
+        makeFileNode('api1', 'express', { isExternal: true, infrastructureType: 'api' }),
+      ]);
+
+      const result = engine.layout(graph);
+      const zones = result.metadata!.infrastructureZones as InfrastructureZoneMetadata[];
+
+      expect(zones).toBeDefined();
+      expect(zones.length).toBe(2); // database and api zones
+      expect(zones[0]!.type).toBe('database');
+      expect(zones[0]!.nodeCount).toBe(2);
+      expect(zones[1]!.type).toBe('api');
+      expect(zones[1]!.nodeCount).toBe(1);
+    });
+
+    it('should follow ZONE_ORDER for consistent zone positioning', () => {
+      const graph = makeGraph([
+        makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+        makeFileNode('log1', 'winston', { isExternal: true, infrastructureType: 'logging' }),
+        makeFileNode('db1', 'pg', { isExternal: true, infrastructureType: 'database' }),
+        makeFileNode('api1', 'express', { isExternal: true, infrastructureType: 'api' }),
+        makeFileNode('cache1', 'redis', { isExternal: true, infrastructureType: 'cache' }),
+      ]);
+
+      const result = engine.layout(graph);
+      const zones = result.metadata!.infrastructureZones as InfrastructureZoneMetadata[];
+
+      // Should be ordered: database, api, cache, logging
+      expect(zones.map((z) => z.type)).toEqual(['database', 'api', 'cache', 'logging']);
+    });
+
+    it('should have visual separation (gaps) between adjacent zones', () => {
+      const graph = makeGraph([
+        makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+        makeFileNode('db1', 'pg', { isExternal: true, infrastructureType: 'database' }),
+        makeFileNode('api1', 'express', { isExternal: true, infrastructureType: 'api' }),
+      ]);
+
+      const result = engine.layout(graph);
+      const zones = result.metadata!.infrastructureZones as InfrastructureZoneMetadata[];
+
+      expect(zones.length).toBe(2);
+      // The end of zone 0 should be less than the start of zone 1 (gap between them)
+      expect(zones[0]!.arcEnd).toBeLessThan(zones[1]!.arcStart);
+    });
+
+    it('should cluster same-type nodes close together', () => {
+      const graph = makeGraph([
+        makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+        makeFileNode('db1', 'pg', { isExternal: true, infrastructureType: 'database' }),
+        makeFileNode('db2', 'mongoose', { isExternal: true, infrastructureType: 'database' }),
+        makeFileNode('api1', 'express', { isExternal: true, infrastructureType: 'api' }),
+        makeFileNode('api2', 'fastify', { isExternal: true, infrastructureType: 'api' }),
+      ]);
+
+      const result = engine.layout(graph);
+
+      const db1Pos = result.positions.get('db1')!;
+      const db2Pos = result.positions.get('db2')!;
+      const api1Pos = result.positions.get('api1')!;
+
+      // Distance between same-type nodes should be less than distance to other-type nodes
+      const db1ToDb2 = Math.sqrt((db1Pos.x - db2Pos.x) ** 2 + (db1Pos.z - db2Pos.z) ** 2);
+      const db1ToApi1 = Math.sqrt((db1Pos.x - api1Pos.x) ** 2 + (db1Pos.z - api1Pos.z) ** 2);
+
+      expect(db1ToDb2).toBeLessThan(db1ToApi1);
+    });
+
+    it('should fall back to "general" zone when infrastructureType is missing', () => {
+      const graph = makeGraph([
+        makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+        makeFileNode('ext1', 'lodash', { isExternal: true }),
+        makeFileNode('ext2', 'uuid', { isExternal: true }),
+      ]);
+
+      const result = engine.layout(graph);
+      const zones = result.metadata!.infrastructureZones as InfrastructureZoneMetadata[];
+
+      expect(zones.length).toBe(1);
+      expect(zones[0]!.type).toBe('general');
+      expect(zones[0]!.nodeCount).toBe(2);
+    });
+
+    it('should mix classified and unclassified external nodes', () => {
+      const graph = makeGraph([
+        makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+        makeFileNode('db1', 'pg', { isExternal: true, infrastructureType: 'database' }),
+        makeFileNode('ext1', 'lodash', { isExternal: true }),
+        makeFileNode('ext2', 'uuid', { isExternal: true }),
+      ]);
+
+      const result = engine.layout(graph);
+      const zones = result.metadata!.infrastructureZones as InfrastructureZoneMetadata[];
+
+      // Should have database and general zones
+      expect(zones.length).toBe(2);
+      expect(zones[0]!.type).toBe('database');
+      expect(zones[0]!.nodeCount).toBe(1);
+      expect(zones[1]!.type).toBe('general');
+      expect(zones[1]!.nodeCount).toBe(2);
+    });
+
+    it('should return empty infrastructureZones when no external nodes exist', () => {
+      const graph = makeGraph([
+        makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+        makeFileNode('f2', 'src/app.ts', { depth: 1, path: 'src/app.ts' }),
+      ]);
+
+      const result = engine.layout(graph);
+      const zones = result.metadata!.infrastructureZones as InfrastructureZoneMetadata[];
+
+      expect(zones).toBeDefined();
+      expect(zones.length).toBe(0);
+    });
+
+    it('should include zone arc information in metadata', () => {
+      const graph = makeGraph([
+        makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+        makeFileNode('db1', 'pg', { isExternal: true, infrastructureType: 'database' }),
+        makeFileNode('api1', 'express', { isExternal: true, infrastructureType: 'api' }),
+      ]);
+
+      const result = engine.layout(graph);
+      const zones = result.metadata!.infrastructureZones as InfrastructureZoneMetadata[];
+
+      for (const zone of zones) {
+        expect(zone.type).toBeDefined();
+        expect(typeof zone.arcStart).toBe('number');
+        expect(typeof zone.arcEnd).toBe('number');
+        expect(zone.arcStart).toBeLessThan(zone.arcEnd);
+        expect(zone.nodeCount).toBeGreaterThan(0);
+      }
+    });
+
+    it('should produce deterministic zone output', () => {
+      const graph = makeGraph([
+        makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+        makeFileNode('api1', 'express', { isExternal: true, infrastructureType: 'api' }),
+        makeFileNode('db1', 'pg', { isExternal: true, infrastructureType: 'database' }),
+        makeFileNode('cache1', 'redis', { isExternal: true, infrastructureType: 'cache' }),
+      ]);
+
+      const result1 = engine.layout(graph);
+      const result2 = engine.layout(graph);
+
+      const zones1 = result1.metadata!.infrastructureZones as InfrastructureZoneMetadata[];
+      const zones2 = result2.metadata!.infrastructureZones as InfrastructureZoneMetadata[];
+
+      expect(zones1.length).toBe(zones2.length);
+      for (let i = 0; i < zones1.length; i++) {
+        expect(zones1[i]!.type).toBe(zones2[i]!.type);
+        expect(zones1[i]!.arcStart).toBe(zones2[i]!.arcStart);
+        expect(zones1[i]!.arcEnd).toBe(zones2[i]!.arcEnd);
+        expect(zones1[i]!.nodeCount).toBe(zones2[i]!.nodeCount);
+      }
     });
   });
 });

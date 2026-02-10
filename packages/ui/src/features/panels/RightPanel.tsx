@@ -10,6 +10,7 @@ import { ExportButton } from '../export/ExportButton';
 import { ViewpointPanel } from '../viewpoints/ViewpointPanel';
 import UserPresence from '../collaboration/UserPresence';
 import { DensitySlider } from '../canvas/components/DensitySlider';
+import { LayerToggle } from '../canvas/components/LayerToggle';
 
 export function RightPanel() {
   const isOpen = useUIStore((state) => state.isRightPanelOpen);
@@ -50,6 +51,7 @@ export function RightPanel() {
               Layout
             </h3>
             <DensitySlider />
+            <LayerToggle />
           </div>
 
           {/* Export */}

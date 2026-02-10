@@ -191,6 +191,11 @@ export interface ApiGraphNode {
   methodCount?: number;
   isAbstract?: boolean;
   hasNestedTypes?: boolean;
+
+  // Sign metadata fields (Epic 9-C)
+  visibility?: 'public' | 'protected' | 'private' | 'static';
+  isDeprecated?: boolean;
+  isExported?: boolean;
 }
 
 export interface ApiGraphEdge {
