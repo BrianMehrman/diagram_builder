@@ -1,6 +1,6 @@
 # Story 9.19: Infrastructure Edge Positioning
 
-Status: review
+Status: done
 
 ## Story
 

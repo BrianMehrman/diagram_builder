@@ -1,6 +1,6 @@
 # Story 9.15: Sign Integration in CityView
 
-Status: review
+Status: done
 
 ## Story
 

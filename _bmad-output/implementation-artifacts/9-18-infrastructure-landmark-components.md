@@ -1,6 +1,6 @@
 # Story 9.18: Infrastructure Landmark Components
 
-Status: review
+Status: done
 
 ## Story
 

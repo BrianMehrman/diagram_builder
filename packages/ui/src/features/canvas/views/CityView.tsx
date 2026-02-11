@@ -7,7 +7,6 @@
  * External libraries appear as distinct wireframe buildings in the outermost ring.
  */
 
-import { useMemo, useEffect } from 'react';
 import { Building } from './Building';
 import { ExternalBuilding } from './ExternalBuilding';
 import { XRayBuilding } from './XRayBuilding';
@@ -25,7 +24,6 @@ import {
   VariableCrate,
   EnumCrate,
   RooftopGarden,
-  buildNestedTypeMap,
 } from '../components/buildings';
 import { getBuildingConfig } from '../components/buildingGeometry';
 import { getDistrictColor } from '../components/districtGroundUtils';
@@ -38,13 +36,13 @@ import {
   Airport,
   CityGate,
 } from '../components/infrastructure';
-import { RadialCityLayoutEngine } from '../layout/engines/radialCityLayout';
-import { shouldCluster, createClusterMetadata } from '../layout/engines/clusterUtils';
 import { useCanvasStore } from '../store';
+import { useCityLayout } from '../hooks/useCityLayout';
+import { useCityFiltering } from '../hooks/useCityFiltering';
+import { useDistrictMap } from '../hooks/useDistrictMap';
 import { computeXRayWallOpacity, shouldShowXRayDetail } from '../xrayUtils';
 import { computeGroundOpacity } from '../undergroundUtils';
 import type { Graph, GraphNode, Position3D } from '../../../shared/types';
-import type { DistrictArcMetadata } from '../layout/engines/radialCityLayout';
 
 interface CityViewProps {
   graph: Graph;
@@ -52,9 +50,6 @@ interface CityViewProps {
 
 /** Distance threshold for showing x-ray internal detail */
 const XRAY_DETAIL_DISTANCE = 30;
-
-/** Default threshold for clustering — districts with more nodes collapse at LOD 1 */
-const DEFAULT_CLUSTER_THRESHOLD = 20;
 
 /** Types that can contain nested type definitions */
 const CONTAINER_TYPES = new Set(['class', 'abstract_class', 'file']);
@@ -163,121 +158,25 @@ function renderTypedBuildingInner(node: GraphNode) {
 }
 
 export function CityView({ graph }: CityViewProps) {
-  const setLayoutPositions = useCanvasStore((s) => s.setLayoutPositions);
   const isXRayMode = useCanvasStore((s) => s.isXRayMode);
   const xrayOpacity = useCanvasStore((s) => s.xrayOpacity);
   const cameraPosition = useCanvasStore((s) => s.camera.position);
   const isUndergroundMode = useCanvasStore((s) => s.isUndergroundMode);
-  const layoutDensity = useCanvasStore((s) => s.layoutDensity);
   const lodLevel = useCanvasStore((s) => s.lodLevel);
   const visibleLayers = useCanvasStore((s) => s.visibleLayers);
 
-  // Compute radial city layout — entry points at center, deeper code outward
-  const layout = useMemo(() => {
-    const engine = new RadialCityLayoutEngine();
-    return engine.layout(graph, { density: layoutDensity });
-  }, [graph, layoutDensity]);
-
-  // Publish layout positions to store so camera flight can use them
-  useEffect(() => {
-    setLayoutPositions(layout.positions);
-  }, [layout.positions, setLayoutPositions]);
-
-  // Separate internal and external nodes
-  const internalFiles = useMemo(
-    () => graph.nodes.filter((n) => !n.isExternal),
-    [graph.nodes]
-  );
-
-  const externalNodes = useMemo(
-    () => graph.nodes.filter((n) => n.isExternal === true),
-    [graph.nodes]
-  );
-
-  // Group internal files by directory for clustering
-  const districtGroups = useMemo(() => {
-    const groups = new Map<string, string[]>();
-    for (const node of internalFiles) {
-      const filePath = (node.metadata?.path as string) ?? node.label ?? '';
-      const lastSlash = filePath.lastIndexOf('/');
-      const dir = lastSlash >= 0 ? filePath.substring(0, lastSlash) : 'root';
-      if (!groups.has(dir)) groups.set(dir, []);
-      groups.get(dir)!.push(node.id);
-    }
-    return groups;
-  }, [internalFiles]);
-
-  // Compute cluster metadata for districts that exceed the threshold
-  const clusters = useMemo(() => {
-    if (lodLevel > 1) return []; // No clustering at LOD 2+
-    const result = [];
-    for (const [districtId, nodeIds] of districtGroups) {
-      if (shouldCluster(nodeIds.length, DEFAULT_CLUSTER_THRESHOLD)) {
-        result.push(createClusterMetadata(districtId, nodeIds, layout.positions));
-      }
-    }
-    return result;
-  }, [districtGroups, layout.positions, lodLevel]);
-
-  // Set of node IDs that are clustered (hidden as individual buildings at LOD 1)
-  const clusteredNodeIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const cluster of clusters) {
-      for (const id of cluster.nodeIds) {
-        ids.add(id);
-      }
-    }
-    return ids;
-  }, [clusters]);
-
-  // Build a map of parentId -> nested type children for rooftop gardens
-  const nestedTypeMap = useMemo(
-    () => buildNestedTypeMap(graph.nodes),
-    [graph.nodes],
-  );
-
-  // Build a map of file id -> child nodes for x-ray mode
-  const childrenByFile = useMemo(() => {
-    if (!isXRayMode) return new Map<string, typeof graph.nodes>();
-    const map = new Map<string, typeof graph.nodes>();
-    for (const node of graph.nodes) {
-      if (node.type === 'class' || node.type === 'method' || node.type === 'function') {
-        const parentId = node.parentId;
-        if (parentId) {
-          const existing = map.get(parentId) ?? [];
-          existing.push(node);
-          map.set(parentId, existing);
-        }
-      }
-    }
-    return map;
-  }, [graph.nodes, isXRayMode]);
-
-  // Build node lookup for edge rendering
-  const nodeMap = useMemo(() => {
-    const map = new Map<string, typeof graph.nodes[0]>();
-    for (const node of graph.nodes) {
-      map.set(node.id, node);
-    }
-    return map;
-  }, [graph.nodes]);
-
-  // Filter edges to only those with both endpoints having layout positions
-  const visibleEdges = useMemo(() => {
-    return graph.edges.filter(
-      (e) =>
-        (e.type === 'imports' || e.type === 'depends_on' || e.type === 'calls') &&
-        layout.positions.has(e.source) &&
-        layout.positions.has(e.target)
-    );
-  }, [graph.edges, layout.positions]);
-
-  // Ground plane dimensions from layout bounds
-  const groundWidth = layout.bounds.max.x - layout.bounds.min.x;
-  const groundDepth = layout.bounds.max.z - layout.bounds.min.z;
-
-  // Extract district arcs from radial layout metadata (if available)
-  const districtArcs = (layout.metadata?.districtArcs ?? []) as DistrictArcMetadata[];
+  // Shared hooks — layout, filtering, district map
+  const { positions, districtArcs, groundWidth, groundDepth } = useCityLayout(graph);
+  const {
+    internalNodes,
+    externalNodes,
+    clusters,
+    clusteredNodeIds,
+    childrenByFile,
+    nodeMap,
+    visibleEdges,
+  } = useCityFiltering(graph, positions);
+  const { nestedTypeMap } = useDistrictMap(graph.nodes);
 
   return (
     <group name="city-view">
@@ -337,8 +236,8 @@ export function CityView({ graph }: CityViewProps) {
           ))}
 
           {/* Internal buildings with signs (skip clustered nodes at LOD 1) */}
-          {internalFiles.map((node) => {
-            const pos = layout.positions.get(node.id);
+          {internalNodes.map((node) => {
+            const pos = positions.get(node.id);
             if (!pos) return null;
             if (clusteredNodeIds.has(node.id)) return null;
 
@@ -387,7 +286,7 @@ export function CityView({ graph }: CityViewProps) {
 
           {/* External library buildings — infrastructure landmarks or wireframe fallback */}
           {externalNodes.map((node) => {
-            const pos = layout.positions.get(node.id);
+            const pos = positions.get(node.id);
             if (!pos) return null;
 
             const landmark = renderInfrastructureLandmark(node, pos);
@@ -398,8 +297,8 @@ export function CityView({ graph }: CityViewProps) {
 
           {/* Dependency edges between buildings */}
           {visibleEdges.map((edge) => {
-            const srcPos = layout.positions.get(edge.source)!;
-            const tgtPos = layout.positions.get(edge.target)!;
+            const srcPos = positions.get(edge.source)!;
+            const tgtPos = positions.get(edge.target)!;
             const srcNode = nodeMap.get(edge.source);
             const tgtNode = nodeMap.get(edge.target);
             return (
@@ -418,7 +317,7 @@ export function CityView({ graph }: CityViewProps) {
 
       {/* Underground dependency tunnels */}
       {visibleLayers.underground && (
-        <UndergroundLayer graph={graph} positions={layout.positions} />
+        <UndergroundLayer graph={graph} positions={positions} />
       )}
     </group>
   );

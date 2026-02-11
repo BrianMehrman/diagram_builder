@@ -1,6 +1,6 @@
 # Story 9.17: Infrastructure Classifier Analysis Module
 
-Status: review
+Status: done
 
 ## Story
 

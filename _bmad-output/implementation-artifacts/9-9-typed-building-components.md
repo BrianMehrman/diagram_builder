@@ -1,6 +1,6 @@
 # Story 9.9: Typed Building Components
 
-Status: review
+Status: done
 
 ## Story
 

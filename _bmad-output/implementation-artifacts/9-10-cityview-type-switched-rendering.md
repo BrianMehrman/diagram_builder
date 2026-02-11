@@ -1,6 +1,6 @@
 # Story 9.10: CityView Type-Switched Rendering
 
-Status: review
+Status: done
 
 ## Story
 

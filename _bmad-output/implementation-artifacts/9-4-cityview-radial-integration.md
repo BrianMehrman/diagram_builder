@@ -1,6 +1,6 @@
 # Story 9.4: CityView Radial Integration & Camera Auto-Fit
 
-Status: review
+Status: done
 
 ## Story
 

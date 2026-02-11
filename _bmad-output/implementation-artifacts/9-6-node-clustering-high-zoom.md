@@ -1,6 +1,6 @@
 # Story 9.6: Node Clustering at High Zoom
 
-Status: review
+Status: done
 
 ## Story
 

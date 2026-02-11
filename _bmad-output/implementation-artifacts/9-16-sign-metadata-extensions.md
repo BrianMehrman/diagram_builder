@@ -1,6 +1,6 @@
 # Story 9.16: Sign Metadata Extensions on GraphNode
 
-Status: review
+Status: done
 
 ## Story
 

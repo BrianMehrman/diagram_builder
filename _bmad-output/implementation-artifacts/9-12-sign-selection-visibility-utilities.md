@@ -1,6 +1,6 @@
 # Story 9.12: Sign Selection & Visibility Utilities
 
-Status: review
+Status: done
 
 ## Story
 

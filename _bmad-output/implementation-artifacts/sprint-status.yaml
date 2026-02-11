@@ -4,7 +4,7 @@
 
 project_name: diagram_builder
 sprint_start: "2025-12-29"
-current_phase: "Epic 9: Planned - 21 stories across 4 sub-epics (City Visualization Overhaul Phase 1)"
+current_phase: "Epic 10: Not Started - 25 stories across 5 sub-epics (City Metaphor Rethink — Hierarchical Containment, Sky Edges, Atmosphere)"
 
 # Epic and Story Status Tracking
 development_status:
@@ -117,32 +117,65 @@ development_status:
   8-18-render-dependency-tunnels: done  # Enhanced tunnel rendering
 
   # Epic 9: City Visualization Overhaul — Phase 1
-  epic-9: not-started
+  epic-9: done
   # Epic 9-A: Radial City Layout & Navigation
-  9-1-radial-layout-utility-functions: review  # Pure utility functions for radial position calculations - COMPLETE (2026-02-05)
-  9-2-radial-city-layout-engine: review  # RadialCityLayoutEngine implementing LayoutEngine interface - COMPLETE (2026-02-05)
-  9-3-district-ground-planes: review  # Colored arc-segment ground planes per district - COMPLETE (2026-02-05)
-  9-4-cityview-radial-integration: review  # Wire radial engine into CityView, camera auto-fit, lodLevel fix - COMPLETE (2026-02-05)
-  9-5-density-slider-store-extensions: review  # layoutDensity store state + DensitySlider UI - COMPLETE (2026-02-05)
-  9-6-node-clustering-high-zoom: review  # Cluster large districts into compound buildings at city zoom - COMPLETE (2026-02-05)
+  9-1-radial-layout-utility-functions: done  # Pure utility functions for radial position calculations - COMPLETE (2026-02-05)
+  9-2-radial-city-layout-engine: done  # RadialCityLayoutEngine implementing LayoutEngine interface - COMPLETE (2026-02-05)
+  9-3-district-ground-planes: done  # Colored arc-segment ground planes per district - COMPLETE (2026-02-05)
+  9-4-cityview-radial-integration: done  # Wire radial engine into CityView, camera auto-fit, lodLevel fix - COMPLETE (2026-02-05)
+  9-5-density-slider-store-extensions: done  # layoutDensity store state + DensitySlider UI - COMPLETE (2026-02-05)
+  9-6-node-clustering-high-zoom: done  # Cluster large districts into compound buildings at city zoom - COMPLETE (2026-02-05)
   # Epic 9-B: Shape Language & Visual Differentiation
-  9-7-extend-graphnode-type-union: review  # Add interface, enum, abstract_class to GraphNode.type union - COMPLETE (2026-02-06)
-  9-8-building-geometry-factory: review  # Geometry factory mapping node types to Three.js configs - COMPLETE (2026-02-06)
-  9-9-typed-building-components: review  # 6 typed R3F building components - COMPLETE (2026-02-06)
-  9-10-cityview-type-switched-rendering: review  # Type-switched rendering in CityView - COMPLETE (2026-02-06)
-  9-11-rooftop-gardens-nested-types: review  # Rooftop structures for nested types - COMPLETE (2026-02-06)
+  9-7-extend-graphnode-type-union: done  # Add interface, enum, abstract_class to GraphNode.type union - COMPLETE (2026-02-06)
+  9-8-building-geometry-factory: done  # Geometry factory mapping node types to Three.js configs - COMPLETE (2026-02-06)
+  9-9-typed-building-components: done  # 6 typed R3F building components - COMPLETE (2026-02-06)
+  9-10-cityview-type-switched-rendering: done  # Type-switched rendering in CityView - COMPLETE (2026-02-06)
+  9-11-rooftop-gardens-nested-types: done  # Rooftop structures for nested types - COMPLETE (2026-02-06)
   # Epic 9-C: Signage System & Progressive Labels
-  9-12-sign-selection-visibility-utilities: review  # Sign type selection and LOD visibility utilities - COMPLETE (2026-02-06)
-  9-13-sign-component-library: review  # 7 R3F sign components with frustum culling - COMPLETE (2026-02-06)
-  9-14-lod-calculator-hook: review  # Camera distance → lodLevel hook - COMPLETE (2026-02-06)
-  9-15-sign-integration-cityview: review  # Wire signs into CityView with LOD visibility - COMPLETE (2026-02-06)
-  9-16-sign-metadata-extensions: review  # Add visibility, isDeprecated, isExported to GraphNode - COMPLETE (2026-02-05)
+  9-12-sign-selection-visibility-utilities: done  # Sign type selection and LOD visibility utilities - COMPLETE (2026-02-06)
+  9-13-sign-component-library: done  # 7 R3F sign components with frustum culling - COMPLETE (2026-02-06)
+  9-14-lod-calculator-hook: done  # Camera distance → lodLevel hook - COMPLETE (2026-02-06)
+  9-15-sign-integration-cityview: done  # Wire signs into CityView with LOD visibility - COMPLETE (2026-02-06)
+  9-16-sign-metadata-extensions: done  # Add visibility, isDeprecated, isExported to GraphNode - COMPLETE (2026-02-05)
   # Epic 9-D: Infrastructure Landmarks & Layer Control
-  9-17-infrastructure-classifier: review  # Package name → infrastructure type classifier (parser) - COMPLETE (2026-02-05)
-  9-18-infrastructure-landmark-components: review  # 6 R3F landmark components - COMPLETE (2026-02-05)
-  9-19-infrastructure-edge-positioning: review  # Group infrastructure nodes by type at city edges - COMPLETE (2026-02-05)
-  9-20-infrastructure-rendering-cityview: review  # Wire landmarks into CityView - COMPLETE (2026-02-05)
-  9-21-layer-toggle-store-ui: review  # Layer toggle store + UI (above ground / underground) - COMPLETE (2026-02-05)
+  9-17-infrastructure-classifier: done  # Package name → infrastructure type classifier (parser) - COMPLETE (2026-02-05)
+  9-18-infrastructure-landmark-components: done  # 6 R3F landmark components - COMPLETE (2026-02-05)
+  9-19-infrastructure-edge-positioning: done  # Group infrastructure nodes by type at city edges - COMPLETE (2026-02-05)
+  9-20-infrastructure-rendering-cityview: done  # Wire landmarks into CityView - COMPLETE (2026-02-05)
+  9-21-layer-toggle-store-ui: done  # Layer toggle store + UI (above ground / underground) - COMPLETE (2026-02-05)
+
+  # Epic 10: City Metaphor Rethink — Hierarchical Containment, Sky Edges, Atmosphere
+  epic-10: in-progress
+  # Epic 10-A: Structural Refactoring (Phase 0)
+  10-1-cityview-interaction-test-suite: review  # Write regression test suite for CityView interactions BEFORE decomposition
+  10-2-extract-shared-hooks: review  # Extract useCityLayout, useCityFiltering, useDistrictMap from CityView - COMPLETE (2026-02-11)
+  10-3-decompose-cityview: not-started  # Split CityView into CityBlocks + CitySky + CityAtmosphere sub-orchestrators
+  10-4-hierarchical-layout-types: not-started  # Add HierarchicalLayoutResult, BlockLayout, DistrictLayout to layout types
+  10-5-extend-canvas-store-city-settings: not-started  # Add citySettings namespace (heightEncoding, transitMapMode, atmosphereOverlays, cityVersion flag)
+  # Epic 10-B: Core Metaphor — Files as Land, Methods as Floors (Phase 1)
+  10-6-two-phase-hierarchical-layout: not-started  # Two-phase layout: place file blocks on rings, then children within blocks
+  10-7-file-block-component: not-started  # FileBlock component with subtle boundaries, merged mode for single-export files
+  10-8-floor-band-rendering: not-started  # Log-scaled floor bands on class buildings with visibility coloring (vertex colors, single mesh)
+  10-9-rooftop-garden-dynamic-offset: not-started  # Update RooftopGarden Y-offset to stack on top of log-scaled building height
+  10-10-cityblocks-hierarchical-rendering: not-started  # Wire CityBlocks to render hierarchical layout (blocks with children inside)
+  10-11-configurable-height-encoding: not-started  # Height encoding selector: methodCount, dependencies, LOC, complexity, churn
+  # Epic 10-C: Sky Layer — Elevated Edges and Shadows (Phase 2)
+  10-12-sky-edge-component: not-started  # Elevated bezier arc edges, type-based Y-height, color by edge type
+  10-13-ground-shadow-component: not-started  # Orthographic Y=0 shadow projection for each sky edge
+  10-14-remove-intra-district-edge-lines: not-started  # Replace intra-district edge lines with proximity-based layout encoding
+  10-15-camera-tilt-assist: not-started  # Smooth camera pitch on node selection to reveal outgoing sky edges
+  10-16-transit-map-overlay-mode: not-started  # Toggle: fade buildings (0.15 opacity), emphasize edges (full opacity, double width)
+  10-17-update-citysky-orchestrator: not-started  # Wire SkyEdge + GroundShadow into CitySky, edge tier visibility controls
+  # Epic 10-D: Atmosphere — Environmental Indicators (Phase 3)
+  10-18-construction-crane-indicator: not-started  # Crane mesh on high-churn buildings, toggleable, data-graceful
+  10-19-lighting-system-test-coverage: not-started  # Point lights for test coverage: bright=tested, dim=untested, toggleable
+  10-20-smog-overlay-complexity: not-started  # Semi-transparent particle cloud over high-complexity districts, toggleable
+  10-21-deprecated-indicator: not-started  # Material swap for deprecated buildings (dark, striped), toggleable
+  10-22-cityatmosphere-orchestrator: not-started  # Wire all indicators into CityAtmosphere, LOD 3+ visibility
+  # Epic 10-E: Configurability & UX (Phase 4)
+  10-23-height-encoding-selector-ui: not-started  # Dropdown in canvas toolbar for height encoding selection
+  10-24-atmosphere-toggle-panel: not-started  # Checkbox group for atmospheric indicators with disabled state
+  10-25-edge-tier-visibility-controls: not-started  # Toggle switches for edge tiers + transit map mode button
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun
@@ -360,4 +393,53 @@ epics:
       - "Each sub-epic is standalone functional — can deliver value independently"
       - "Architect review completed — 11 items incorporated into requirements and tech spec"
       - "Phase 2 deferred: connection encoding/bundling, color system, transit-map minimap, animated flow"
+
+  epic-10:
+    name: "City Metaphor Rethink — Hierarchical Containment, Sky Edges, Atmosphere"
+    description: "Complete rethink of the city visualization metaphor. Files become city blocks (land), classes become multi-story buildings with visible method floors, edges elevate into tiered sky arcs with ground shadows, and city-native atmospheric indicators show code health. Five sub-epics: Structural Refactoring (10-A), Core Metaphor (10-B), Sky Layer (10-C), Atmosphere (10-D), Configurability (10-E)."
+    stories:
+      # Epic 10-A: Structural Refactoring (Phase 0 — Pre-requisite)
+      - 10-1-cityview-interaction-test-suite
+      - 10-2-extract-shared-hooks
+      - 10-3-decompose-cityview
+      - 10-4-hierarchical-layout-types
+      - 10-5-extend-canvas-store-city-settings
+      # Epic 10-B: Core Metaphor — Files as Land, Methods as Floors (Phase 1)
+      - 10-6-two-phase-hierarchical-layout
+      - 10-7-file-block-component
+      - 10-8-floor-band-rendering
+      - 10-9-rooftop-garden-dynamic-offset
+      - 10-10-cityblocks-hierarchical-rendering
+      - 10-11-configurable-height-encoding
+      # Epic 10-C: Sky Layer — Elevated Edges and Shadows (Phase 2)
+      - 10-12-sky-edge-component
+      - 10-13-ground-shadow-component
+      - 10-14-remove-intra-district-edge-lines
+      - 10-15-camera-tilt-assist
+      - 10-16-transit-map-overlay-mode
+      - 10-17-update-citysky-orchestrator
+      # Epic 10-D: Atmosphere — Environmental Indicators (Phase 3)
+      - 10-18-construction-crane-indicator
+      - 10-19-lighting-system-test-coverage
+      - 10-20-smog-overlay-complexity
+      - 10-21-deprecated-indicator
+      - 10-22-cityatmosphere-orchestrator
+      # Epic 10-E: Configurability & UX (Phase 4)
+      - 10-23-height-encoding-selector-ui
+      - 10-24-atmosphere-toggle-panel
+      - 10-25-edge-tier-visibility-controls
+    dependencies:
+      - "Epic 9: City Visualization Overhaul Phase 1 (radial layout, shape language, signage, infrastructure)"
+      - "Tech Spec: City Metaphor Rethink (tech-spec-city-metaphor-rethink.md)"
+    notes:
+      - "5 sub-epics: 10-A (Refactoring, 5 stories), 10-B (Core Metaphor, 6 stories), 10-C (Sky Layer, 6 stories), 10-D (Atmosphere, 5 stories), 10-E (Configurability, 3 stories)"
+      - "Critical path: 10-1 → 10-2 → 10-3 → 10-4/10-5 → 10-6 → 10-7/10-8/10-9 → 10-10 → 10-11"
+      - "10-A MUST complete before 10-B (CityView decomposition is prerequisite)"
+      - "10-B must complete before 10-C (sky edges depend on hierarchical layout)"
+      - "10-D can run in parallel with 10-C (atmosphere is independent of edges)"
+      - "10-E depends on 10-B/10-C/10-D (UI controls for features that must exist)"
+      - "Feature flag: citySettings.cityVersion = 'v2' — current city-v1 preserved during development"
+      - "No parser changes needed — all metadata already exists in graph model"
+      - "Key implementation rules: single-mesh floor bands (vertex coloring), type-based edge heights, grid-based child placement"
+      - "Deferred: edge bundling, LOD 4 interior view, underground layer"
 

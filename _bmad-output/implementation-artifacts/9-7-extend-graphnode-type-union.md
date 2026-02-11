@@ -1,6 +1,6 @@
 # Story 9.7: Extend GraphNode Type Union & Shape Metadata
 
-Status: review
+Status: done
 
 ## Story
 

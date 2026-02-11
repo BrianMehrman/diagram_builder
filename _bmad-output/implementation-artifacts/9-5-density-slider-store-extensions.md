@@ -1,6 +1,6 @@
 # Story 9.5: Density Slider & Store Extensions
 
-Status: review
+Status: done
 
 ## Story
 

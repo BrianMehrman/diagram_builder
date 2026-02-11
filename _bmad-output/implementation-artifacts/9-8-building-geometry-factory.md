@@ -1,6 +1,6 @@
 # Story 9.8: Building Geometry Factory & Shape Constants
 
-Status: review
+Status: done
 
 ## Story
 

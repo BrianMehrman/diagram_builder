@@ -1,6 +1,6 @@
 # Story 9.20: Infrastructure Rendering in CityView
 
-Status: review
+Status: done
 
 ## Story
 

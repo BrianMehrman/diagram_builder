@@ -1,6 +1,6 @@
 # Story 9.14: LOD Calculator Hook
 
-Status: review
+Status: done
 
 ## Story
 
