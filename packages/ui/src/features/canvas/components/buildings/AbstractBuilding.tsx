@@ -1,7 +1,8 @@
 /**
  * AbstractBuilding Component
  *
- * Semi-transparent building with dashed edge lines.
+ * Semi-transparent cone building with dashed edge lines.
+ * Supports per-method visibility-colored floor bands via vertex coloring.
  */
 
 import { useState, useMemo } from 'react';
@@ -10,9 +11,11 @@ import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
 import { getBuildingConfig } from '../buildingGeometry';
 import { getDirectoryFromLabel, getDirectoryColor } from '../../views/cityViewUtils';
-import type { TypedBuildingProps } from './types';
+import { getFloorCount, applyFloorBandColors } from './floorBandUtils';
+import { FloorLabels } from './FloorLabels';
+import type { ClassBuildingProps } from './types';
 
-export function AbstractBuilding({ node, position }: TypedBuildingProps) {
+export function AbstractBuilding({ node, position, methods, lodLevel }: ClassBuildingProps) {
   const [hovered, setHovered] = useState(false);
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
@@ -25,6 +28,20 @@ export function AbstractBuilding({ node, position }: TypedBuildingProps) {
   const directory = getDirectoryFromLabel(node.label);
   const color = getDirectoryColor(directory);
   const fileName = (node.label ?? node.id).split('/').pop() ?? node.id;
+
+  const methodCount = methods?.length ?? node.methodCount ?? 0;
+  const floorCount = getFloorCount(methodCount > 0 ? methodCount : undefined);
+
+  const geometry = useMemo(() => {
+    const geo = new THREE.ConeGeometry(width / 2, height, 32, floorCount);
+
+    if (methods && methods.length > 0) {
+      const visibilities = methods.map((m) => m.visibility);
+      applyFloorBandColors(geo, floorCount, visibilities, height);
+    }
+
+    return geo;
+  }, [width, height, floorCount, methods]);
 
   // Dashed line material for abstract class edges
   const dashedMaterial = useMemo(() => {
@@ -44,21 +61,26 @@ export function AbstractBuilding({ node, position }: TypedBuildingProps) {
     return edges;
   }, [width, height]);
 
+  const hasFloorBands = !!(methods && methods.length > 0);
+
   return (
     <group position={[position.x, position.y, position.z]}>
-      {/* Semi-transparent fill */}
+      {/* Semi-transparent fill with vertex colors */}
       <mesh
         position={[0, height / 2, 0]}
+        geometry={geometry}
         onClick={() => selectNode(isSelected ? null : node.id)}
         onDoubleClick={() => requestFlyToNode(node.id)}
         onPointerOver={() => { setHovered(true); setHoveredNode(node.id); document.body.style.cursor = 'pointer'; }}
         onPointerOut={() => { setHovered(false); setHoveredNode(null); document.body.style.cursor = 'auto'; }}
       >
-        <coneGeometry args={[width / 2, height, 32]} />
         <meshStandardMaterial
-          color={hovered ? '#f59e0b' : color}
+          color={hasFloorBands ? '#ffffff' : color}
+          vertexColors={hasFloorBands}
           opacity={config.material.opacity}
           transparent={config.material.transparent}
+          emissive={hovered ? '#f59e0b' : isSelected ? color : '#000000'}
+          emissiveIntensity={hovered ? 0.4 : isSelected ? 0.3 : 0}
           roughness={config.material.roughness}
           metalness={config.material.metalness}
         />
@@ -71,6 +93,19 @@ export function AbstractBuilding({ node, position }: TypedBuildingProps) {
         onUpdate={(self: THREE.LineSegments) => self.computeLineDistances()}
       />
 
+      {hovered && (
+        <Text
+          position={[0, height + 1.0, 0]}
+          fontSize={0.25}
+          color="#fbbf24"
+          anchorX="center"
+          anchorY="bottom"
+          outlineWidth={0.01}
+          outlineColor="#000000"
+        >
+          {methodCount} methods
+        </Text>
+      )}
       <Text
         position={[0, height + 0.5, 0]}
         fontSize={0.35}
@@ -82,6 +117,14 @@ export function AbstractBuilding({ node, position }: TypedBuildingProps) {
       >
         {fileName}
       </Text>
+      {methods && methods.length > 0 && (
+        <FloorLabels
+          methods={methods}
+          totalHeight={height}
+          buildingWidth={width}
+          lodLevel={lodLevel ?? 2}
+        />
+      )}
     </group>
   );
 }

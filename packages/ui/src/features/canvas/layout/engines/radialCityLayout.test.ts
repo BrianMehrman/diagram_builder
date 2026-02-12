@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import type { Graph, GraphNode } from '../../../../shared/types';
+import type { Graph, GraphNode, GraphEdge } from '../../../../shared/types';
 import { RadialCityLayoutEngine } from './radialCityLayout';
 import type { RadialCityLayoutConfig, InfrastructureZoneMetadata } from './radialCityLayout';
+import type { HierarchicalLayoutResult } from '../types';
 
 function makeFileNode(
   id: string,
@@ -458,6 +459,263 @@ describe('RadialCityLayoutEngine', () => {
         expect(zones1[i]!.arcStart).toBe(zones2[i]!.arcStart);
         expect(zones1[i]!.arcEnd).toBe(zones2[i]!.arcEnd);
         expect(zones1[i]!.nodeCount).toBe(zones2[i]!.nodeCount);
+      }
+    });
+  });
+
+  describe('hierarchical output', () => {
+    it('should return districts and externalZones arrays', () => {
+      const graph = makeGraph([
+        makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+        makeFileNode('f2', 'src/a/app.ts', { depth: 1, path: 'src/a/app.ts' }),
+        makeFileNode('ext1', 'express', { isExternal: true, infrastructureType: 'api' }),
+      ]);
+
+      const result = engine.layout(graph) as HierarchicalLayoutResult;
+
+      expect(result.districts).toBeDefined();
+      expect(Array.isArray(result.districts)).toBe(true);
+      expect(result.externalZones).toBeDefined();
+      expect(Array.isArray(result.externalZones)).toBe(true);
+    });
+
+    it('should create district layouts with blocks for file nodes', () => {
+      const graph = makeGraph([
+        makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+        makeFileNode('f2', 'src/a/app.ts', { depth: 1, path: 'src/a/app.ts' }),
+        makeFileNode('f3', 'src/a/svc.ts', { depth: 1, path: 'src/a/svc.ts' }),
+      ]);
+
+      const result = engine.layout(graph) as HierarchicalLayoutResult;
+
+      expect(result.districts.length).toBeGreaterThan(0);
+      const district = result.districts[0]!;
+      expect(district.blocks.length).toBeGreaterThan(0);
+      expect(district.arc).toBeDefined();
+    });
+
+    it('should place child nodes inside file blocks', () => {
+      const graph: Graph = {
+        nodes: [
+          makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+          makeFileNode('f2', 'src/a/app.ts', { depth: 1, path: 'src/a/app.ts' }),
+          {
+            id: 'c1',
+            type: 'class',
+            label: 'AppClass',
+            metadata: { path: 'src/a/app.ts' },
+            lod: 0,
+            parentId: 'f2',
+          },
+          {
+            id: 'm1',
+            type: 'method',
+            label: 'run',
+            metadata: { path: 'src/a/app.ts' },
+            lod: 0,
+            parentId: 'c1',
+          },
+        ],
+        edges: [],
+        metadata: { repositoryId: 'test', name: 'Test', totalNodes: 4, totalEdges: 0 },
+      };
+
+      const result = engine.layout(graph) as HierarchicalLayoutResult;
+
+      // All nodes should have positions
+      expect(result.positions.has('f1')).toBe(true);
+      expect(result.positions.has('f2')).toBe(true);
+      expect(result.positions.has('c1')).toBe(true);
+      expect(result.positions.has('m1')).toBe(true);
+
+      // Find the block containing f2
+      const district = result.districts.find((d) =>
+        d.blocks.some((b) => b.fileId === 'f2'),
+      );
+      expect(district).toBeDefined();
+
+      const block = district!.blocks.find((b) => b.fileId === 'f2');
+      expect(block).toBeDefined();
+      expect(block!.children.length).toBe(2); // c1 and m1
+    });
+
+    it('should create compound blocks for districts with 1-3 files', () => {
+      const graph = makeGraph([
+        makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+        makeFileNode('f2', 'src/a/app.ts', { depth: 1, path: 'src/a/app.ts' }),
+      ]);
+
+      const result = engine.layout(graph) as HierarchicalLayoutResult;
+
+      const compoundDistrict = result.districts.find((d) => d.isCompound);
+      expect(compoundDistrict).toBeDefined();
+      expect(compoundDistrict!.blocks.length).toBe(1);
+      expect(compoundDistrict!.blocks[0]!.isMerged).toBe(true);
+    });
+
+    it('should handle orphan nodes without parentId', () => {
+      const graph: Graph = {
+        nodes: [
+          makeFileNode('f1', 'src/app.ts', { depth: 0, path: 'src/app.ts' }),
+          {
+            id: 'orphan1',
+            type: 'function',
+            label: 'orphanFn',
+            metadata: {},
+            lod: 0,
+          },
+        ],
+        edges: [],
+        metadata: { repositoryId: 'test', name: 'Test', totalNodes: 2, totalEdges: 0 },
+      };
+
+      const result = engine.layout(graph);
+
+      // Orphan should still get a position
+      expect(result.positions.has('orphan1')).toBe(true);
+    });
+
+    it('should handle cycles in parentId chains', () => {
+      const graph: Graph = {
+        nodes: [
+          makeFileNode('f1', 'src/app.ts', { depth: 0, path: 'src/app.ts' }),
+          {
+            id: 'a',
+            type: 'class',
+            label: 'A',
+            metadata: {},
+            lod: 0,
+            parentId: 'b',
+          },
+          {
+            id: 'b',
+            type: 'class',
+            label: 'B',
+            metadata: {},
+            lod: 0,
+            parentId: 'a',
+          },
+        ],
+        edges: [],
+        metadata: { repositoryId: 'test', name: 'Test', totalNodes: 3, totalEdges: 0 },
+      };
+
+      // Should not throw
+      const result = engine.layout(graph);
+
+      // Cycled nodes should still get positions (as orphans)
+      expect(result.positions.has('a')).toBe(true);
+      expect(result.positions.has('b')).toBe(true);
+    });
+
+    it('should populate externalZones in hierarchical result', () => {
+      const graph = makeGraph([
+        makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+        makeFileNode('ext1', 'express', { isExternal: true, infrastructureType: 'api' }),
+        makeFileNode('ext2', 'pg', { isExternal: true, infrastructureType: 'database' }),
+      ]);
+
+      const result = engine.layout(graph) as HierarchicalLayoutResult;
+
+      expect(result.externalZones.length).toBe(2);
+      expect(result.externalZones[0]!.zoneMetadata.type).toBe('database');
+      expect(result.externalZones[0]!.nodes.length).toBe(1);
+    });
+  });
+
+  describe('performance', () => {
+    it('should layout 1000 nodes in under 50ms', () => {
+      const nodes: GraphNode[] = [];
+      // Create 200 file nodes across 10 directories
+      for (let d = 0; d < 10; d++) {
+        for (let f = 0; f < 20; f++) {
+          nodes.push(
+            makeFileNode(`f${d}-${f}`, `src/dir${d}/file${f}.ts`, {
+              depth: d % 3 + 1,
+              path: `src/dir${d}/file${f}.ts`,
+            }),
+          );
+        }
+      }
+      // Add 800 child nodes with parentIds
+      for (let i = 0; i < 800; i++) {
+        const parentDir = i % 10;
+        const parentFile = i % 20;
+        nodes.push({
+          id: `child-${i}`,
+          type: i % 2 === 0 ? 'class' : 'function',
+          label: `Child${i}`,
+          metadata: {},
+          lod: 0,
+          parentId: `f${parentDir}-${parentFile}`,
+        });
+      }
+
+      const graph = makeGraph(nodes);
+      // Add entry point
+      graph.nodes.unshift(
+        makeFileNode('entry', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+      );
+
+      const start = performance.now();
+      engine.layout(graph);
+      const elapsed = performance.now() - start;
+
+      expect(elapsed).toBeLessThan(50);
+    });
+  });
+
+  describe('determinism (hierarchical)', () => {
+    it('should produce identical hierarchical output across 10 runs', () => {
+      const graph: Graph = {
+        nodes: [
+          makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
+          makeFileNode('f2', 'src/a/app.ts', { depth: 1, path: 'src/a/app.ts' }),
+          makeFileNode('f3', 'src/a/svc.ts', { depth: 1, path: 'src/a/svc.ts' }),
+          makeFileNode('f4', 'src/b/db.ts', { depth: 2, path: 'src/b/db.ts' }),
+          {
+            id: 'c1',
+            type: 'class',
+            label: 'AppClass',
+            metadata: {},
+            lod: 0,
+            parentId: 'f2',
+          },
+          {
+            id: 'fn1',
+            type: 'function',
+            label: 'helper',
+            metadata: {},
+            lod: 0,
+            parentId: 'f3',
+          },
+        ],
+        edges: [
+          { id: 'e1', source: 'f2', target: 'f3', type: 'imports', metadata: {} },
+        ],
+        metadata: { repositoryId: 'test', name: 'Test', totalNodes: 6, totalEdges: 1 },
+      };
+
+      const baseline = engine.layout(graph) as HierarchicalLayoutResult;
+
+      for (let i = 0; i < 9; i++) {
+        const result = engine.layout(graph) as HierarchicalLayoutResult;
+
+        // Check positions match
+        for (const [id, pos1] of baseline.positions) {
+          const pos2 = result.positions.get(id)!;
+          expect(pos1.x).toBe(pos2.x);
+          expect(pos1.y).toBe(pos2.y);
+          expect(pos1.z).toBe(pos2.z);
+        }
+
+        // Check district count and block count match
+        expect(result.districts.length).toBe(baseline.districts.length);
+        for (let d = 0; d < baseline.districts.length; d++) {
+          expect(result.districts[d]!.blocks.length).toBe(
+            baseline.districts[d]!.blocks.length,
+          );
+        }
       }
     });
   });

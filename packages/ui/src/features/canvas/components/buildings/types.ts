@@ -11,3 +11,11 @@ export interface TypedBuildingProps {
   node: GraphNode;
   position: Position3D;
 }
+
+/**
+ * Extended props for class-like buildings that support floor bands.
+ */
+export interface ClassBuildingProps extends TypedBuildingProps {
+  methods?: GraphNode[];
+  lodLevel?: number;
+}

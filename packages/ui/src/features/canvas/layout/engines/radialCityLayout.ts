@@ -1,4 +1,11 @@
-import type { LayoutEngine, LayoutConfig, LayoutResult } from '../types';
+import type {
+  LayoutEngine,
+  LayoutConfig,
+  HierarchicalLayoutResult,
+  BlockLayout,
+  DistrictLayout,
+  ExternalZoneLayout,
+} from '../types';
 import type { Graph, GraphNode, Position3D } from '../../../../shared/types';
 import { boundsFromPositions } from '../bounds';
 import {
@@ -8,6 +15,14 @@ import {
   calculateEntryPointPosition,
   distributeDistrictsAcrossRings,
 } from './radialLayoutUtils';
+import {
+  calculateBlockFootprint,
+  placeChildrenInGrid,
+  buildFileBlockHierarchy,
+  createCompoundBlock,
+  positionBlocksInArc,
+} from './blockLayoutUtils';
+import { refineDistrictProximity, hashSeed } from './proximityRefinement';
 
 /**
  * Metadata for a single district arc in the radial layout.
@@ -78,18 +93,22 @@ export interface RadialCityLayoutConfig extends LayoutConfig {
 }
 
 /**
- * Radial city layout engine positions file-level nodes in concentric rings.
+ * Radial city layout engine with two-phase hierarchical layout.
  *
- * - Entry-point nodes (depth 0) are placed at the center
- * - Each depth level forms a ring at increasing radius
- * - Files are grouped by directory (districts) and assigned arc segments
- * - External library nodes are positioned at the outermost ring
- * - Deterministic output via alphabetical sorting
+ * Phase A: File nodes are placed as blocks on concentric rings by depth.
+ *          Entry-point file nodes (depth 0) are placed at the center.
+ *          Files are grouped by directory (districts) and assigned arc segments.
+ *
+ * Phase B: Non-file internal nodes (classes, methods, functions) are placed
+ *          inside their parent file blocks via grid layout.
+ *
+ * External library nodes are positioned at the outermost ring.
+ * Output is a HierarchicalLayoutResult with districts and externalZones.
  */
 export class RadialCityLayoutEngine implements LayoutEngine {
   readonly type = 'radial-city';
 
-  layout(graph: Graph, config: RadialCityLayoutConfig = {}): LayoutResult {
+  layout(graph: Graph, config: RadialCityLayoutConfig = {}): HierarchicalLayoutResult {
     const {
       ringSpacing = 20,
       arcPadding = 0.05,
@@ -105,12 +124,13 @@ export class RadialCityLayoutEngine implements LayoutEngine {
 
     const positions = new Map<string, Position3D>();
 
-    // Separate nodes: internal (all types) vs external
-    const fileNodes = graph.nodes.filter((n) => !n.isExternal);
+    // === Separate nodes by role ===
+    const internalNodes = graph.nodes.filter((n) => !n.isExternal);
     const externalNodes = graph.nodes.filter((n) => n.isExternal === true);
+    const fileNodes = internalNodes.filter((n) => n.type === 'file');
+    const nonFileNodes = internalNodes.filter((n) => n.type !== 'file');
 
-    // Compute effective depth for each node.
-    // If the parser provides depth, use it. Otherwise derive from directory nesting.
+    // === Compute effective depth for file nodes ===
     const hasAnyDepth = fileNodes.some((n) => n.depth !== undefined && n.depth > 0);
     const effectiveDepths = new Map<string, number>();
 
@@ -119,42 +139,42 @@ export class RadialCityLayoutEngine implements LayoutEngine {
         effectiveDepths.set(n.id, n.depth ?? 0);
       }
     } else {
-      // Derive depth from directory nesting level relative to shortest path
       const paths = fileNodes.map((n) => {
         const p = (n.metadata?.path as string) ?? n.label ?? '';
         return { id: n.id, segments: p.split('/').filter(Boolean) };
       });
-      const minSegments = Math.min(...paths.map((p) => p.segments.length));
-      for (const p of paths) {
-        // Depth = number of extra directory levels beyond the shallowest file
-        effectiveDepths.set(p.id, Math.max(0, p.segments.length - minSegments));
+      if (paths.length > 0) {
+        const minSegments = Math.min(...paths.map((p) => p.segments.length));
+        for (const p of paths) {
+          effectiveDepths.set(p.id, Math.max(0, p.segments.length - minSegments));
+        }
       }
     }
 
-    // Find entry points (depth 0) and deeper nodes
-    const entryNodes = fileNodes.filter((n) => (effectiveDepths.get(n.id) ?? 0) === 0);
-    const deeperNodes = fileNodes.filter((n) => (effectiveDepths.get(n.id) ?? 0) > 0);
+    // Find entry-point file nodes (depth 0) and deeper file nodes
+    const entryFileNodes = fileNodes.filter((n) => (effectiveDepths.get(n.id) ?? 0) === 0);
+    const deeperFileNodes = fileNodes.filter((n) => (effectiveDepths.get(n.id) ?? 0) > 0);
 
-    // Position entry points at center
+    // Position entry-point files at center
     const entryPositions = calculateEntryPointPosition(
-      entryNodes.map((n) => ({ id: n.id })),
+      entryFileNodes.map((n) => ({ id: n.id })),
       { centerRadius: effectiveCenterRadius },
     );
     for (const ep of entryPositions) {
       positions.set(ep.id, ep.position);
     }
 
-    // Group deeper nodes by directory (districts)
-    const districts = this.groupByDirectory(deeperNodes);
+    // Group deeper file nodes by directory (districts)
+    const dirGroups = groupByDirectory(deeperFileNodes);
 
-    // Build nodeDepths map for distribution (using effective depths)
+    // Build nodeDepths map for distribution
     const nodeDepths = new Map<string, number>();
-    for (const node of deeperNodes) {
+    for (const node of deeperFileNodes) {
       nodeDepths.set(node.id, effectiveDepths.get(node.id) ?? 0);
     }
 
     // Distribute districts across rings
-    const districtNodes = Array.from(districts.entries()).map(([id, nodes]) => ({
+    const districtNodes = Array.from(dirGroups.entries()).map(([id, nodes]) => ({
       id,
       nodeIds: nodes.map((n) => n.id),
     }));
@@ -165,7 +185,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       { centerRadius: effectiveCenterRadius, ringSpacing: effectiveRingSpacing },
     );
 
-    // Group ring assignments by depth for arc assignment
+    // Group ring assignments by depth
     const assignmentsByDepth = new Map<number, typeof ringAssignments>();
     for (const assignment of ringAssignments) {
       const depth = assignment.ringDepth;
@@ -173,10 +193,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       assignmentsByDepth.get(depth)!.push(assignment);
     }
 
-    // For each depth ring, assign arcs and position nodes
-    const districtArcs: DistrictArcMetadata[] = [];
-
-    // Pre-compute actual radii per ring: ensure circumference can fit all nodes
+    // Pre-compute actual radii per ring with footprint-aware expansion
     const sortedDepths = [...assignmentsByDepth.keys()].sort((a, b) => a - b);
     const actualRadii = new Map<number, number>();
     let radiusOffset = 0;
@@ -190,17 +207,25 @@ export class RadialCityLayoutEngine implements LayoutEngine {
         ringSpacing: effectiveRingSpacing,
       }) + radiusOffset;
 
-      // Minimum radius so circumference fits all nodes at buildingSpacing
+      // Use total footprint widths for minimum radius calculation
       const minRadius = (totalNodesOnRing * effectiveBuildingSpacing) / (2 * Math.PI);
       const actualRadius = Math.max(baseRadius, minRadius);
 
-      // If we had to expand this ring, push all outer rings out too
       if (actualRadius > baseRadius) {
         radiusOffset += actualRadius - baseRadius;
       }
 
       actualRadii.set(depth, actualRadius);
     }
+
+    // === Build file-block hierarchy for all internal non-file nodes ===
+    const allInternalForHierarchy = [...fileNodes, ...nonFileNodes];
+    const { fileBlocks, orphans, cycleBreaks: _cycleBreaks } =
+      buildFileBlockHierarchy(allInternalForHierarchy);
+
+    // === Phase A: Position file blocks on rings ===
+    const districtLayouts: DistrictLayout[] = [];
+    const districtArcs: DistrictArcMetadata[] = [];
 
     for (const [depth, assignments] of assignmentsByDepth) {
       const districtDescriptors = assignments.map((a) => ({
@@ -215,21 +240,161 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       for (let i = 0; i < arcs.length; i++) {
         const arc = arcs[i]!;
         const assignment = assignments[i]!;
-        const nodeRefs = assignment.nodeIds.map((id) => ({ id }));
 
-        const positioned = positionNodesInArc(
-          nodeRefs,
-          arc.arcStart,
-          arc.arcEnd,
-          radius,
-          { buildingSpacing: effectiveBuildingSpacing },
-        );
+        // Check if this district qualifies for compound merging (1-3 files)
+        const isCompound = assignment.nodeIds.length <= 3 && assignment.nodeIds.length >= 1;
 
-        for (const pn of positioned) {
-          positions.set(pn.id, pn.position);
+        let blocks: BlockLayout[];
+
+        if (isCompound && assignment.nodeIds.length <= 3) {
+          // Create compound block for small districts
+          const districtFileNodes = assignment.nodeIds
+            .map((id) => graph.nodes.find((n) => n.id === id))
+            .filter((n): n is GraphNode => n !== undefined);
+
+          const compoundPos: Position3D = {
+            x: Math.cos((arc.arcStart + arc.arcEnd) / 2) * radius,
+            y: 0,
+            z: Math.sin((arc.arcStart + arc.arcEnd) / 2) * radius,
+          };
+
+          const compound = createCompoundBlock(districtFileNodes, fileBlocks, compoundPos);
+          blocks = [compound];
+
+          // Set file node positions to compound center
+          for (const fileId of assignment.nodeIds) {
+            positions.set(fileId, compoundPos);
+          }
+        } else {
+          // Build individual blocks with footprint-aware placement
+          const blockDescriptors = assignment.nodeIds.map((id) => {
+            const children = fileBlocks.get(id) ?? [];
+            const childTypes = children.map((c) => c.type);
+            const footprint = calculateBlockFootprint(children.length, childTypes);
+            return { id, footprint };
+          });
+
+          const positioned = positionBlocksInArc(
+            blockDescriptors,
+            arc.arcStart,
+            arc.arcEnd,
+            radius,
+          );
+
+          blocks = positioned.map((p) => {
+            const children = fileBlocks.get(p.id) ?? [];
+            const childTypes = children.map((c) => c.type);
+            const footprint = calculateBlockFootprint(children.length, childTypes);
+            const placedChildren = placeChildrenInGrid(children, footprint);
+
+            positions.set(p.id, p.position);
+
+            return {
+              fileId: p.id,
+              position: p.position,
+              footprint,
+              children: placedChildren,
+              isMerged: false,
+            };
+          });
         }
 
-        // Collect district arc metadata for ground plane rendering
+        // Proximity refinement
+        const seed = hashSeed(assignment.nodeIds);
+        blocks = refineDistrictProximity(blocks, graph.edges, seed);
+
+        // Update positions after refinement
+        for (const block of blocks) {
+          if (!block.isMerged) {
+            positions.set(block.fileId, block.position);
+          } else {
+            // For merged blocks, update all constituent file positions
+            for (const fileId of assignment.nodeIds) {
+              positions.set(fileId, block.position);
+            }
+          }
+        }
+
+        // Phase B: Place children inside blocks and publish absolute positions
+        for (const block of blocks) {
+          for (const child of block.children) {
+            positions.set(child.nodeId, {
+              x: block.position.x + child.localPosition.x,
+              y: block.position.y + child.localPosition.y,
+              z: block.position.z + child.localPosition.z,
+            });
+          }
+        }
+
+        // Handle orphan nodes for this district
+        const districtOrphans = orphans.filter((o) => {
+          // Check if orphan's parentId chain leads to a node in this district
+          return assignment.nodeIds.some((fid) => {
+            const children = fileBlocks.get(fid);
+            return children?.some((c) => c.id === o.id);
+          });
+        });
+
+        // Remaining orphans for this district — create homeless block
+        const unassignedOrphans = orphans.filter((o) => {
+          // Orphans not assigned to any file block
+          for (const [, children] of fileBlocks) {
+            if (children.some((c) => c.id === o.id)) return false;
+          }
+          return true;
+        });
+
+        // Filter to orphans that belong to this district (by directory)
+        const districtDir = assignment.districtId;
+        const districtOrphanNodes = unassignedOrphans.filter((o) => {
+          const path = (o.metadata?.path as string) ?? o.label ?? '';
+          const dir = extractDirectory(path);
+          return dir === districtDir;
+        });
+
+        if (districtOrphanNodes.length > 0 || districtOrphans.length > 0) {
+          const allOrphansForDistrict = [...districtOrphanNodes];
+          if (allOrphansForDistrict.length > 0) {
+            const orphanTypes = allOrphansForDistrict.map((o) => o.type);
+            const orphanFootprint = calculateBlockFootprint(
+              allOrphansForDistrict.length,
+              orphanTypes,
+            );
+            const orphanChildren = placeChildrenInGrid(
+              allOrphansForDistrict,
+              orphanFootprint,
+            );
+
+            // Position orphan block at the end of the arc
+            const orphanAngle = arc.arcEnd - 0.01;
+            const orphanPos: Position3D = {
+              x: Math.cos(orphanAngle) * radius,
+              y: 0,
+              z: Math.sin(orphanAngle) * radius,
+            };
+
+            const orphanBlock: BlockLayout = {
+              fileId: `${assignment.districtId}/__orphans__`,
+              position: orphanPos,
+              footprint: orphanFootprint,
+              children: orphanChildren,
+              isMerged: false,
+            };
+
+            blocks.push(orphanBlock);
+
+            // Publish orphan child positions
+            for (const child of orphanChildren) {
+              positions.set(child.nodeId, {
+                x: orphanPos.x + child.localPosition.x,
+                y: orphanPos.y + child.localPosition.y,
+                z: orphanPos.z + child.localPosition.z,
+              });
+            }
+          }
+        }
+
+        // Record district arc metadata
         districtArcs.push({
           id: arc.id,
           arcStart: arc.arcStart,
@@ -239,10 +404,55 @@ export class RadialCityLayoutEngine implements LayoutEngine {
           ringDepth: depth,
           nodeCount: assignment.nodeIds.length,
         });
+
+        districtLayouts.push({
+          id: assignment.districtId,
+          arc: {
+            id: arc.id,
+            arcStart: arc.arcStart,
+            arcEnd: arc.arcEnd,
+            innerRadius: Math.max(0, radius - halfRing),
+            outerRadius: radius + halfRing,
+            ringDepth: depth,
+            nodeCount: assignment.nodeIds.length,
+          },
+          blocks,
+          isCompound: isCompound && assignment.nodeIds.length <= 3,
+        });
       }
     }
 
-    // Position external nodes at outermost ring, grouped by infrastructure type
+    // Handle entry-point files as blocks (Phase B for center-placed files)
+    for (const entryFile of entryFileNodes) {
+      const children = fileBlocks.get(entryFile.id) ?? [];
+      if (children.length > 0) {
+        const childTypes = children.map((c) => c.type);
+        const footprint = calculateBlockFootprint(children.length, childTypes);
+        const placedChildren = placeChildrenInGrid(children, footprint);
+        const filePos = positions.get(entryFile.id) ?? { x: 0, y: 0, z: 0 };
+
+        for (const child of placedChildren) {
+          positions.set(child.nodeId, {
+            x: filePos.x + child.localPosition.x,
+            y: filePos.y + child.localPosition.y,
+            z: filePos.z + child.localPosition.z,
+          });
+        }
+      }
+    }
+
+    // Handle global orphans (not assigned to any district)
+    const globalOrphans = orphans.filter((o) => {
+      // Check if already positioned
+      return !positions.has(o.id);
+    });
+    for (const orphan of globalOrphans) {
+      // Place global orphans near the origin
+      positions.set(orphan.id, { x: 0, y: 0, z: 0 });
+    }
+
+    // === Position external nodes at outermost ring ===
+    const externalZoneLayouts: ExternalZoneLayout[] = [];
     const infrastructureZones: InfrastructureZoneMetadata[] = [];
 
     if (externalNodes.length > 0) {
@@ -266,7 +476,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
         zoneGroups.get(infraType)!.push(node);
       }
 
-      // Build ordered zone list (only zones that have nodes, in ZONE_ORDER)
+      // Build ordered zone list
       const orderedZones: Array<{ type: string; nodes: GraphNode[] }> = [];
       for (const zoneType of ZONE_ORDER) {
         const nodes = zoneGroups.get(zoneType);
@@ -274,7 +484,6 @@ export class RadialCityLayoutEngine implements LayoutEngine {
           orderedZones.push({ type: zoneType, nodes });
         }
       }
-      // Include any types not in ZONE_ORDER (sorted alphabetically)
       for (const [zoneType, nodes] of [...zoneGroups.entries()].sort(([a], [b]) => a.localeCompare(b))) {
         if (!ZONE_ORDER.includes(zoneType as typeof ZONE_ORDER[number])) {
           orderedZones.push({ type: zoneType, nodes });
@@ -282,7 +491,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       }
 
       // Assign arc segments proportionally with gaps between zones
-      const zonePadding = arcPadding * 2; // Wider gaps between infrastructure zones
+      const zonePadding = arcPadding * 2;
       const totalZonePadding = zonePadding * orderedZones.length;
       const usableArc = Math.max(0, 2 * Math.PI - totalZonePadding);
       const totalExternalNodes = externalNodes.length;
@@ -290,7 +499,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       let currentAngle = 0;
       for (const zone of orderedZones) {
         const sortedNodes = [...zone.nodes].sort((a, b) =>
-          (a.label ?? '').localeCompare(b.label ?? '')
+          (a.label ?? '').localeCompare(b.label ?? ''),
         );
 
         const proportion = sortedNodes.length / totalExternalNodes;
@@ -298,7 +507,6 @@ export class RadialCityLayoutEngine implements LayoutEngine {
         const zoneArcStart = currentAngle;
         const zoneArcEnd = currentAngle + zoneArcSize;
 
-        // Position nodes within this zone's arc
         const positioned = positionNodesInArc(
           sortedNodes.map((n) => ({ id: n.id })),
           zoneArcStart,
@@ -307,16 +515,27 @@ export class RadialCityLayoutEngine implements LayoutEngine {
           { buildingSpacing: effectiveBuildingSpacing },
         );
 
+        const zoneNodes: { nodeId: string; position: Position3D }[] = [];
         for (const pn of positioned) {
           positions.set(pn.id, pn.position);
+          zoneNodes.push({ nodeId: pn.id, position: pn.position });
         }
 
-        // Record zone metadata
         infrastructureZones.push({
           type: zone.type,
           arcStart: zoneArcStart,
           arcEnd: zoneArcEnd,
           nodeCount: sortedNodes.length,
+        });
+
+        externalZoneLayouts.push({
+          zoneMetadata: {
+            type: zone.type,
+            arcStart: zoneArcStart,
+            arcEnd: zoneArcEnd,
+            nodeCount: sortedNodes.length,
+          },
+          nodes: zoneNodes,
         });
 
         currentAngle += zoneArcSize + zonePadding;
@@ -334,45 +553,47 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       positions,
       bounds,
       metadata: {
-        districtCount: districts.size,
+        districtCount: dirGroups.size,
         ringCount: depthSet.size,
         externalCount: externalNodes.length,
-        entryPointCount: entryNodes.length,
+        entryPointCount: entryFileNodes.length,
         districtArcs,
         infrastructureZones,
       },
+      districts: districtLayouts,
+      externalZones: externalZoneLayouts,
     };
   }
 
   canHandle(graph: Graph): boolean {
     return graph.nodes.length > 0;
   }
+}
 
-  /**
-   * Groups nodes by their containing directory.
-   * Sorted alphabetically for deterministic output.
-   */
-  private groupByDirectory(nodes: GraphNode[]): Map<string, GraphNode[]> {
-    const groups = new Map<string, GraphNode[]>();
+/**
+ * Groups nodes by their containing directory.
+ * Sorted alphabetically for deterministic output.
+ */
+function groupByDirectory(nodes: GraphNode[]): Map<string, GraphNode[]> {
+  const groups = new Map<string, GraphNode[]>();
 
-    for (const node of nodes) {
-      const filePath = (node.metadata?.path as string) ?? node.label ?? '';
-      const dir = this.extractDirectory(filePath);
+  for (const node of nodes) {
+    const filePath = (node.metadata?.path as string) ?? node.label ?? '';
+    const dir = extractDirectory(filePath);
 
-      if (!groups.has(dir)) groups.set(dir, []);
-      groups.get(dir)!.push(node);
-    }
-
-    return new Map(
-      [...groups.entries()].sort(([a], [b]) => a.localeCompare(b))
-    );
+    if (!groups.has(dir)) groups.set(dir, []);
+    groups.get(dir)!.push(node);
   }
 
-  /**
-   * Extracts the directory portion from a file path.
-   */
-  private extractDirectory(filePath: string): string {
-    const lastSlash = filePath.lastIndexOf('/');
-    return lastSlash >= 0 ? filePath.substring(0, lastSlash) : 'root';
-  }
+  return new Map(
+    [...groups.entries()].sort(([a], [b]) => a.localeCompare(b)),
+  );
+}
+
+/**
+ * Extracts the directory portion from a file path.
+ */
+function extractDirectory(filePath: string): string {
+  const lastSlash = filePath.lastIndexOf('/');
+  return lastSlash >= 0 ? filePath.substring(0, lastSlash) : 'root';
 }

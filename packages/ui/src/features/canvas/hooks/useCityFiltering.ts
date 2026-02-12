@@ -9,6 +9,7 @@
 
 import { useMemo } from 'react';
 import { shouldCluster, createClusterMetadata } from '../layout/engines/clusterUtils';
+import { buildMethodChildMap } from '../components/buildings/floorBandUtils';
 import { useCanvasStore } from '../store';
 import type { Graph, GraphNode, Position3D } from '../../../shared/types';
 import type { ClusterMetadata } from '../layout/engines/clusterUtils';
@@ -29,6 +30,8 @@ export interface CityFilteringResult {
   clusteredNodeIds: Set<string>;
   /** Parent ID → child nodes for x-ray mode */
   childrenByFile: Map<string, GraphNode[]>;
+  /** Class ID → method child nodes (always computed for floor bands) */
+  methodsByClass: Map<string, GraphNode[]>;
   /** Node ID → node lookup */
   nodeMap: Map<string, GraphNode>;
   /** Edges with both endpoints positioned and matching allowed types */
@@ -95,6 +98,12 @@ export function useCityFiltering(
     return ids;
   }, [clusters]);
 
+  // Build a map of class id -> method child nodes (always computed for floor bands)
+  const methodsByClass = useMemo(
+    () => buildMethodChildMap(graph.nodes),
+    [graph.nodes],
+  );
+
   // Build a map of file id -> child nodes for x-ray mode
   const childrenByFile = useMemo(() => {
     if (!isXRayMode) return new Map<string, GraphNode[]>();
@@ -138,6 +147,7 @@ export function useCityFiltering(
     clusters,
     clusteredNodeIds,
     childrenByFile,
+    methodsByClass,
     nodeMap,
     visibleEdges,
   };

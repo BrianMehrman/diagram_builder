@@ -25,6 +25,20 @@ const mockDistrictArcs = [
   },
 ];
 
+const mockDistricts = [
+  {
+    id: 'src/features',
+    arc: mockDistrictArcs[0],
+    blocks: [],
+    isCompound: false,
+  },
+];
+
+const mockExternalZones: Array<{
+  zoneMetadata: { type: string; arcStart: number; arcEnd: number; nodeCount: number };
+  nodes: Array<{ nodeId: string; position: { x: number; y: number; z: number } }>;
+}> = [];
+
 vi.mock('../layout/engines/radialCityLayout', () => ({
   RadialCityLayoutEngine: class MockRadialCityLayoutEngine {
     layout() {
@@ -35,6 +49,8 @@ vi.mock('../layout/engines/radialCityLayout', () => ({
           max: { x: 50, y: 20, z: 50 },
         },
         metadata: { districtArcs: mockDistrictArcs },
+        districts: mockDistricts,
+        externalZones: mockExternalZones,
       };
     }
   },
@@ -152,5 +168,27 @@ describe('useCityLayout', () => {
 
     // Restore
     mockDistrictArcs.push(...originalArcs);
+  });
+
+  it('exposes districts from hierarchical result', () => {
+    const graph = createGraph(2);
+    graph.nodes.forEach((n, i) => {
+      mockPositions.set(n.id, { x: i, y: 0, z: i });
+    });
+
+    const { result } = renderHook(() => useCityLayout(graph));
+
+    expect(result.current.districts).toBeDefined();
+    expect(Array.isArray(result.current.districts)).toBe(true);
+  });
+
+  it('exposes externalZones from hierarchical result', () => {
+    const graph = createGraph(1);
+    mockPositions.set('node-0', { x: 0, y: 0, z: 0 });
+
+    const { result } = renderHook(() => useCityLayout(graph));
+
+    expect(result.current.externalZones).toBeDefined();
+    expect(Array.isArray(result.current.externalZones)).toBe(true);
   });
 });

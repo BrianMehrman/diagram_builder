@@ -8,8 +8,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   getDirectoryColor,
   getBuildingHeight,
+  getMethodBasedHeight,
   getDirectoryFromLabel,
   COLOR_PALETTE,
+  FLOOR_HEIGHT,
   resetDirectoryColors,
 } from './cityViewUtils';
 
@@ -97,6 +99,33 @@ describe('cityViewUtils', () => {
       const h3 = getBuildingHeight(3);
       // Differences should be equal (linear scaling)
       expect(h2 - h1).toBeCloseTo(h3 - h2, 5);
+    });
+  });
+
+  describe('getMethodBasedHeight', () => {
+    it('returns log-scaled height for positive methodCount', () => {
+      const h = getMethodBasedHeight(5, 0);
+      expect(h).toBeCloseTo(Math.log2(6) * FLOOR_HEIGHT);
+    });
+
+    it('returns depth-based height when methodCount is undefined', () => {
+      expect(getMethodBasedHeight(undefined, 2)).toBe(getBuildingHeight(2));
+    });
+
+    it('returns depth-based height when methodCount is 0', () => {
+      expect(getMethodBasedHeight(0, 1)).toBe(getBuildingHeight(1));
+    });
+
+    it('returns at least 1 * FLOOR_HEIGHT for 1 method', () => {
+      // log2(2) = 1
+      expect(getMethodBasedHeight(1, 0)).toBeCloseTo(FLOOR_HEIGHT);
+    });
+
+    it('grows sub-linearly', () => {
+      const h10 = getMethodBasedHeight(10, 0);
+      const h100 = getMethodBasedHeight(100, 0);
+      // 10x more methods should NOT produce 10x more height
+      expect(h100 / h10).toBeLessThan(3);
     });
   });
 });

@@ -1,4 +1,8 @@
 import type { Graph, Position3D } from '../../../shared/types';
+import type {
+  DistrictArcMetadata,
+  InfrastructureZoneMetadata,
+} from './engines/radialCityLayout';
 
 /**
  * Axis-aligned bounding box in 3D space
@@ -64,4 +68,33 @@ export interface LayoutEngine {
    * @returns True if this engine is suitable
    */
   canHandle(graph: Graph): boolean;
+}
+
+/** Layout of a single file block within a district */
+export interface BlockLayout {
+  fileId: string;
+  position: Position3D;
+  footprint: { width: number; depth: number };
+  children: { nodeId: string; localPosition: Position3D }[];
+  isMerged: boolean;
+}
+
+/** Layout of a district containing file blocks */
+export interface DistrictLayout {
+  id: string;
+  arc: DistrictArcMetadata;
+  blocks: BlockLayout[];
+  isCompound: boolean;
+}
+
+/** Layout of an external infrastructure zone */
+export interface ExternalZoneLayout {
+  zoneMetadata: InfrastructureZoneMetadata;
+  nodes: { nodeId: string; position: Position3D }[];
+}
+
+/** Extended layout result with hierarchical structure */
+export interface HierarchicalLayoutResult extends LayoutResult {
+  districts: DistrictLayout[];
+  externalZones: ExternalZoneLayout[];
 }

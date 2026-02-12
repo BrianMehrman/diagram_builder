@@ -37,9 +37,9 @@ describe('getBuildingConfig', () => {
       expect(config.material.wireframe).toBe(false);
     });
 
-    it('scales height by methodCount', () => {
+    it('scales height by methodCount (log scale)', () => {
       const config = getBuildingConfig(makeNode({ type: 'class', methodCount: 5 }));
-      expect(config.geometry.height).toBe(5 * FLOOR_HEIGHT);
+      expect(config.geometry.height).toBeCloseTo(Math.log2(6) * FLOOR_HEIGHT);
     });
 
     it('falls back to depth-based height when methodCount missing', () => {
@@ -80,9 +80,9 @@ describe('getBuildingConfig', () => {
       expect(config.material.wireframe).toBe(true);
     });
 
-    it('scales height by methodCount', () => {
+    it('scales height by methodCount (log scale)', () => {
       const config = getBuildingConfig(makeNode({ type: 'interface', methodCount: 3 }));
-      expect(config.geometry.height).toBe(3 * FLOOR_HEIGHT);
+      expect(config.geometry.height).toBeCloseTo(Math.log2(4) * FLOOR_HEIGHT);
     });
   });
 

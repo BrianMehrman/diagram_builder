@@ -149,13 +149,13 @@ development_status:
   # Epic 10-A: Structural Refactoring (Phase 0)
   10-1-cityview-interaction-test-suite: review  # Write regression test suite for CityView interactions BEFORE decomposition
   10-2-extract-shared-hooks: review  # Extract useCityLayout, useCityFiltering, useDistrictMap from CityView - COMPLETE (2026-02-11)
-  10-3-decompose-cityview: not-started  # Split CityView into CityBlocks + CitySky + CityAtmosphere sub-orchestrators
-  10-4-hierarchical-layout-types: not-started  # Add HierarchicalLayoutResult, BlockLayout, DistrictLayout to layout types
-  10-5-extend-canvas-store-city-settings: not-started  # Add citySettings namespace (heightEncoding, transitMapMode, atmosphereOverlays, cityVersion flag)
+  10-3-decompose-cityview: review  # Split CityView into CityBlocks + CitySky + CityAtmosphere sub-orchestrators - COMPLETE (2026-02-11)
+  10-4-hierarchical-layout-types: review  # Add HierarchicalLayoutResult, BlockLayout, DistrictLayout to layout types - COMPLETE (2026-02-11)
+  10-5-extend-canvas-store-city-settings: review  # Add citySettings namespace (heightEncoding, transitMapMode, atmosphereOverlays, cityVersion flag) - COMPLETE (2026-02-11)
   # Epic 10-B: Core Metaphor — Files as Land, Methods as Floors (Phase 1)
-  10-6-two-phase-hierarchical-layout: not-started  # Two-phase layout: place file blocks on rings, then children within blocks
-  10-7-file-block-component: not-started  # FileBlock component with subtle boundaries, merged mode for single-export files
-  10-8-floor-band-rendering: not-started  # Log-scaled floor bands on class buildings with visibility coloring (vertex colors, single mesh)
+  10-6-two-phase-hierarchical-layout: review  # Two-phase layout: place file blocks on rings, then children within blocks - COMPLETE (2026-02-11)
+  10-7-file-block-component: review  # FileBlock component with subtle boundaries, merged mode for single-export files - COMPLETE (2026-02-11)
+  10-8-floor-band-rendering: review  # Log-scaled floor bands on class buildings with visibility coloring (vertex colors, single mesh) - COMPLETE (2026-02-11)
   10-9-rooftop-garden-dynamic-offset: not-started  # Update RooftopGarden Y-offset to stack on top of log-scaled building height
   10-10-cityblocks-hierarchical-rendering: not-started  # Wire CityBlocks to render hierarchical layout (blocks with children inside)
   10-11-configurable-height-encoding: not-started  # Height encoding selector: methodCount, dependencies, LOC, complexity, churn

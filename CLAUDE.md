@@ -137,7 +137,9 @@ const docs = {
 
 ### When Completing Work
 
-1. Mark story as `review` or `done` in `sprint-status.yaml`
+> **CRITICAL:** You MUST update `sprint-status.yaml` every time you finish a story. This is non-optional.
+
+1. **ALWAYS update `sprint-status.yaml`** — mark the story as `review` with a completion date comment (e.g., `review  # Description - COMPLETE (2026-02-11)`)
 2. Mark tasks as `[x]` in `TASKS.md`
 3. Update story file with completion notes
 4. Document new/modified files in story file

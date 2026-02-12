@@ -40,6 +40,55 @@ export interface VisibleLayers {
 }
 
 /**
+ * Height encoding metric for building height
+ */
+export type HeightEncoding = 'methodCount' | 'dependencies' | 'loc' | 'complexity' | 'churn';
+
+/**
+ * City version feature flag
+ */
+export type CityVersion = 'v1' | 'v2';
+
+/**
+ * Atmosphere overlay toggles
+ */
+export interface AtmosphereOverlays {
+  cranes: boolean;
+  smog: boolean;
+  lighting: boolean;
+  deprecated: boolean;
+}
+
+/**
+ * Edge tier visibility toggles
+ */
+export interface EdgeTierVisibility {
+  crossDistrict: boolean;
+  inheritance: boolean;
+}
+
+/**
+ * City settings namespace — forward-planned state for Phases 1-4
+ */
+export interface CitySettings {
+  heightEncoding: HeightEncoding;
+  transitMapMode: boolean;
+  atmosphereOverlays: AtmosphereOverlays;
+  edgeTierVisibility: EdgeTierVisibility;
+  cityVersion: CityVersion;
+}
+
+/**
+ * Atmosphere overlay key
+ */
+export type AtmosphereOverlayKey = keyof AtmosphereOverlays;
+
+/**
+ * Edge tier key
+ */
+export type EdgeTierKey = keyof EdgeTierVisibility;
+
+/**
  * Canvas store state
  */
 interface CanvasState {
@@ -114,9 +163,36 @@ interface CanvasState {
   visibleLayers: VisibleLayers;
   toggleLayer: (layer: LayerName) => void;
 
+  // City settings (forward-planned state for Phases 1-4)
+  citySettings: CitySettings;
+  setCityVersion: (version: CityVersion) => void;
+  setHeightEncoding: (encoding: HeightEncoding) => void;
+  toggleTransitMapMode: () => void;
+  toggleAtmosphereOverlay: (key: AtmosphereOverlayKey) => void;
+  toggleEdgeTierVisibility: (key: EdgeTierKey) => void;
+
   // Reset to defaults
   reset: () => void;
 }
+
+/**
+ * Default city settings
+ */
+const DEFAULT_CITY_SETTINGS: CitySettings = {
+  heightEncoding: 'methodCount',
+  transitMapMode: false,
+  atmosphereOverlays: {
+    cranes: false,
+    smog: false,
+    lighting: false,
+    deprecated: false,
+  },
+  edgeTierVisibility: {
+    crossDistrict: true,
+    inheritance: true,
+  },
+  cityVersion: 'v1',
+};
 
 /**
  * Default camera state
@@ -276,6 +352,41 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       return { visibleLayers: updated };
     }),
 
+  // City settings
+  citySettings: { ...DEFAULT_CITY_SETTINGS },
+  setCityVersion: (version) =>
+    set((state) => ({
+      citySettings: { ...state.citySettings, cityVersion: version },
+    })),
+  setHeightEncoding: (encoding) =>
+    set((state) => ({
+      citySettings: { ...state.citySettings, heightEncoding: encoding },
+    })),
+  toggleTransitMapMode: () =>
+    set((state) => ({
+      citySettings: { ...state.citySettings, transitMapMode: !state.citySettings.transitMapMode },
+    })),
+  toggleAtmosphereOverlay: (key) =>
+    set((state) => ({
+      citySettings: {
+        ...state.citySettings,
+        atmosphereOverlays: {
+          ...state.citySettings.atmosphereOverlays,
+          [key]: !state.citySettings.atmosphereOverlays[key],
+        },
+      },
+    })),
+  toggleEdgeTierVisibility: (key) =>
+    set((state) => ({
+      citySettings: {
+        ...state.citySettings,
+        edgeTierVisibility: {
+          ...state.citySettings.edgeTierVisibility,
+          [key]: !state.citySettings.edgeTierVisibility[key],
+        },
+      },
+    })),
+
   // Reset
   reset: () =>
     set({
@@ -298,5 +409,6 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       showFlowAnimation: false,
       layoutDensity: 1.0,
       visibleLayers: { aboveGround: true, underground: true },
+      citySettings: { ...DEFAULT_CITY_SETTINGS },
     }),
 }));

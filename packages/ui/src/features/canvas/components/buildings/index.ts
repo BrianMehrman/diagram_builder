@@ -5,5 +5,13 @@ export { AbstractBuilding } from './AbstractBuilding';
 export { VariableCrate } from './VariableCrate';
 export { EnumCrate } from './EnumCrate';
 export { RooftopGarden } from './RooftopGarden';
+export { FloorLabels } from './FloorLabels';
 export { buildNestedTypeMap } from './nestedTypeUtils';
-export type { TypedBuildingProps } from './types';
+export {
+  getLogScaledHeight,
+  getFloorCount,
+  VISIBILITY_COLORS,
+  applyFloorBandColors,
+  buildMethodChildMap,
+} from './floorBandUtils';
+export type { TypedBuildingProps, ClassBuildingProps } from './types';

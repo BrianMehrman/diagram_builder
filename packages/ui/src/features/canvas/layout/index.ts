@@ -4,7 +4,14 @@ export type {
   LayoutResult,
   LayoutConfig,
   LayoutEngine,
+  BlockLayout,
+  DistrictLayout,
+  HierarchicalLayoutResult,
+  ExternalZoneLayout,
 } from './types';
+
+// Hierarchical helpers
+export { flattenHierarchicalLayout } from './hierarchicalUtils';
 
 // Registry
 export { LayoutRegistry, layoutRegistry } from './registry';
@@ -27,3 +34,14 @@ export { CellLayoutEngine } from './engines/cellLayout';
 export type { CellLayoutConfig } from './engines/cellLayout';
 export { RadialCityLayoutEngine } from './engines/radialCityLayout';
 export type { RadialCityLayoutConfig } from './engines/radialCityLayout';
+
+// Block layout utilities
+export {
+  calculateBlockFootprint,
+  placeChildrenInGrid,
+  buildFileBlockHierarchy,
+  positionBlocksInArc,
+} from './engines/blockLayoutUtils';
+
+// Proximity refinement utilities
+export { refineDistrictProximity, hashSeed, createSeededRng } from './engines/proximityRefinement';

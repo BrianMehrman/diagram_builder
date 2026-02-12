@@ -2,16 +2,20 @@
  * InterfaceBuilding Component
  *
  * Glass building with transparent walls and wireframe edge overlay.
+ * Supports per-method visibility-colored floor bands via vertex coloring.
  */
 
 import { useState, useMemo } from 'react';
+import * as THREE from 'three';
 import { Text, Edges } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
 import { getBuildingConfig } from '../buildingGeometry';
 import { getDirectoryFromLabel, getDirectoryColor } from '../../views/cityViewUtils';
-import type { TypedBuildingProps } from './types';
+import { getFloorCount, applyFloorBandColors } from './floorBandUtils';
+import { FloorLabels } from './FloorLabels';
+import type { ClassBuildingProps } from './types';
 
-export function InterfaceBuilding({ node, position }: TypedBuildingProps) {
+export function InterfaceBuilding({ node, position, methods, lodLevel }: ClassBuildingProps) {
   const [hovered, setHovered] = useState(false);
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
@@ -25,20 +29,39 @@ export function InterfaceBuilding({ node, position }: TypedBuildingProps) {
   const color = getDirectoryColor(directory);
   const fileName = (node.label ?? node.id).split('/').pop() ?? node.id;
 
+  const methodCount = methods?.length ?? node.methodCount ?? 0;
+  const floorCount = getFloorCount(methodCount > 0 ? methodCount : undefined);
+
+  const geometry = useMemo(() => {
+    const geo = new THREE.CylinderGeometry(width / 2, width / 2, height, 8, floorCount);
+
+    if (methods && methods.length > 0) {
+      const visibilities = methods.map((m) => m.visibility);
+      applyFloorBandColors(geo, floorCount, visibilities, height);
+    }
+
+    return geo;
+  }, [width, height, floorCount, methods]);
+
+  const hasFloorBands = !!(methods && methods.length > 0);
+
   return (
     <group position={[position.x, position.y, position.z]}>
       <mesh
         position={[0, height / 2, 0]}
+        geometry={geometry}
         onClick={() => selectNode(isSelected ? null : node.id)}
         onDoubleClick={() => requestFlyToNode(node.id)}
         onPointerOver={() => { setHovered(true); setHoveredNode(node.id); document.body.style.cursor = 'pointer'; }}
         onPointerOut={() => { setHovered(false); setHoveredNode(null); document.body.style.cursor = 'auto'; }}
       >
-        <cylinderGeometry args={[width / 2, width / 2, height, 8]} />
         <meshStandardMaterial
-          color={hovered ? '#f59e0b' : color}
+          color={hasFloorBands ? '#ffffff' : color}
+          vertexColors={hasFloorBands}
           opacity={config.material.opacity}
           transparent={config.material.transparent}
+          emissive={hovered ? '#f59e0b' : isSelected ? color : '#000000'}
+          emissiveIntensity={hovered ? 0.4 : isSelected ? 0.3 : 0}
           roughness={config.material.roughness}
           metalness={config.material.metalness}
         />
@@ -48,6 +71,19 @@ export function InterfaceBuilding({ node, position }: TypedBuildingProps) {
           lineWidth={1}
         />
       </mesh>
+      {hovered && (
+        <Text
+          position={[0, height + 1.0, 0]}
+          fontSize={0.25}
+          color="#fbbf24"
+          anchorX="center"
+          anchorY="bottom"
+          outlineWidth={0.01}
+          outlineColor="#000000"
+        >
+          {methodCount} methods
+        </Text>
+      )}
       <Text
         position={[0, height + 0.5, 0]}
         fontSize={0.35}
@@ -59,6 +95,14 @@ export function InterfaceBuilding({ node, position }: TypedBuildingProps) {
       >
         {fileName}
       </Text>
+      {methods && methods.length > 0 && (
+        <FloorLabels
+          methods={methods}
+          totalHeight={height}
+          buildingWidth={width}
+          lodLevel={lodLevel ?? 2}
+        />
+      )}
     </group>
   );
 }

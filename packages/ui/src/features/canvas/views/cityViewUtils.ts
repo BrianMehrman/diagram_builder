@@ -94,7 +94,7 @@ export const ABSTRACT_OPACITY = 0.5;
  */
 export function getMethodBasedHeight(methodCount: number | undefined, depth: number | undefined): number {
   if (methodCount !== undefined && methodCount > 0) {
-    return Math.max(methodCount, 1) * FLOOR_HEIGHT;
+    return Math.max(Math.log2(methodCount + 1), 1) * FLOOR_HEIGHT;
   }
   return getBuildingHeight(depth);
 }
