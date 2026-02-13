@@ -19,6 +19,9 @@ const TIER_SCALES = [0.6, 0.4, 0.25];
 /** Height of each rooftop tier */
 const TIER_HEIGHT = 0.8;
 
+/** Visual gap between building top and first rooftop tier */
+export const ROOFTOP_GAP = 0.15;
+
 /** Color palette for tier levels */
 const TIER_COLORS = ['#60a5fa', '#a78bfa', '#f472b6'];
 
@@ -56,7 +59,7 @@ export function RooftopGarden({
 
   if (tiers.length === 0) return null;
 
-  let cumulativeY = parentHeight;
+  let cumulativeY = parentHeight + ROOFTOP_GAP;
 
   return (
     <group>

@@ -5,14 +5,20 @@
  * cluster buildings (LOD 1), internal buildings (typed/x-ray + signs),
  * and external buildings (infrastructure landmarks + wireframe fallback).
  *
+ * Supports two rendering modes:
+ * - v1 (default): Flat layout — all internal nodes rendered at top level
+ * - v2: Hierarchical layout — files as land blocks, classes/functions as buildings within
+ *
  * Extracted from CityView as part of Epic 10, Story 10-3.
  */
 
+import { useMemo } from 'react';
 import { Building } from './Building';
 import { ExternalBuilding } from './ExternalBuilding';
 import { XRayBuilding } from './XRayBuilding';
 import { DistrictGround } from '../components/DistrictGround';
 import { ClusterBuilding } from '../components/ClusterBuilding';
+import { FileBlock } from '../components/FileBlock';
 import {
   ClassBuilding,
   FunctionShop,
@@ -25,6 +31,7 @@ import {
 import { getBuildingConfig } from '../components/buildingGeometry';
 import { getDistrictColor } from '../components/districtGroundUtils';
 import { getSignType, getSignVisibility, renderSign } from '../components/signs';
+import { buildIncomingEdgeCounts } from './cityViewUtils';
 import {
   PowerStation,
   WaterTower,
@@ -39,6 +46,7 @@ import { useCityFiltering } from '../hooks/useCityFiltering';
 import { useDistrictMap } from '../hooks/useDistrictMap';
 import { computeXRayWallOpacity, shouldShowXRayDetail } from '../xrayUtils';
 import type { Graph, GraphNode, Position3D } from '../../../shared/types';
+import type { EncodedHeightOptions } from './cityViewUtils';
 
 interface CityBlocksProps {
   graph: Graph;
@@ -93,11 +101,15 @@ function renderTypedBuilding(
   nestedMap: Map<string, GraphNode[]>,
   methodsByClass: Map<string, GraphNode[]>,
   lodLevel: number,
+  encodingOptions?: EncodedHeightOptions,
 ) {
   const props = { key: node.id, node, position };
   const hasNested = CONTAINER_TYPES.has(node.type) && nestedMap.has(node.id);
   const classMethods = methodsByClass.get(node.id);
-  const methodProps = classMethods ? { methods: classMethods, lodLevel } : { lodLevel };
+  const classExtras = encodingOptions ? { encodingOptions } : {};
+  const methodProps = classMethods
+    ? { methods: classMethods, lodLevel, ...classExtras }
+    : { lodLevel, ...classExtras };
 
   let building: React.JSX.Element;
   switch (node.type) {
@@ -126,11 +138,11 @@ function renderTypedBuilding(
 
   if (!hasNested) return building;
 
-  const config = getBuildingConfig(node);
+  const config = getBuildingConfig(node, encodingOptions);
   return (
     <group key={node.id} position={[position.x, position.y, position.z]}>
       {/* Re-render building at origin since group handles position */}
-      {renderTypedBuildingInner(node, methodsByClass, lodLevel)}
+      {renderTypedBuildingInner(node, methodsByClass, lodLevel, encodingOptions)}
       <RooftopGarden
         parentNode={node}
         parentWidth={config.geometry.width}
@@ -148,11 +160,15 @@ function renderTypedBuildingInner(
   node: GraphNode,
   methodsByClass: Map<string, GraphNode[]>,
   lodLevel: number,
+  encodingOptions?: EncodedHeightOptions,
 ) {
   const origin = { x: 0, y: 0, z: 0 };
   const props = { key: `inner-${node.id}`, node, position: origin };
   const classMethods = methodsByClass.get(node.id);
-  const methodProps = classMethods ? { methods: classMethods, lodLevel } : { lodLevel };
+  const classExtras = encodingOptions ? { encodingOptions } : {};
+  const methodProps = classMethods
+    ? { methods: classMethods, lodLevel, ...classExtras }
+    : { lodLevel, ...classExtras };
   switch (node.type) {
     case 'class':
       return <ClassBuilding {...props} {...methodProps} />;
@@ -168,15 +184,21 @@ export function CityBlocks({ graph }: CityBlocksProps) {
   const xrayOpacity = useCanvasStore((s) => s.xrayOpacity);
   const cameraPosition = useCanvasStore((s) => s.camera.position);
   const lodLevel = useCanvasStore((s) => s.lodLevel);
+  const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion);
+  const heightEncoding = useCanvasStore((s) => s.citySettings.heightEncoding);
 
-  const { positions, districtArcs } = useCityLayout(graph);
-  const { internalNodes, externalNodes, clusters, clusteredNodeIds, childrenByFile, methodsByClass } =
+  const { positions, districtArcs, districts } = useCityLayout(graph);
+  const { internalNodes, externalNodes, clusters, clusteredNodeIds, childrenByFile, methodsByClass, nodeMap } =
     useCityFiltering(graph, positions);
   const { nestedTypeMap } = useDistrictMap(graph.nodes);
 
+  const incomingEdgeCounts = useMemo(() => buildIncomingEdgeCounts(graph.edges), [graph.edges]);
+
+  const isV2 = cityVersion === 'v2';
+
   return (
     <>
-      {/* District ground planes (radial layout) */}
+      {/* District ground planes (radial layout) — shared by v1 and v2 */}
       {districtArcs.map((arc, index) => (
         <DistrictGround
           key={`${arc.id}-${arc.ringDepth}`}
@@ -189,7 +211,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
         />
       ))}
 
-      {/* District highway signs (LOD-controlled) */}
+      {/* District highway signs (LOD-controlled) — shared by v1 and v2 */}
       {districtArcs.map((arc) => {
         const midAngle = (arc.arcStart + arc.arcEnd) / 2;
         const signRadius = arc.outerRadius + 1;
@@ -207,67 +229,154 @@ export function CityBlocks({ graph }: CityBlocksProps) {
         });
       })}
 
-      {/* Cluster buildings (LOD 1 only) */}
-      {clusters.map((cluster) => (
-        <ClusterBuilding
-          key={`cluster-${cluster.districtId}`}
-          position={cluster.center}
-          nodeCount={cluster.nodeCount}
-          districtName={cluster.districtId}
-          size={cluster.size}
-        />
-      ))}
-
-      {/* Internal buildings with signs (skip clustered nodes at LOD 1) */}
-      {internalNodes.map((node) => {
-        const pos = positions.get(node.id);
-        if (!pos) return null;
-        if (clusteredNodeIds.has(node.id)) return null;
-
-        if (isXRayMode) {
-          const dx = cameraPosition.x - pos.x;
-          const dy = cameraPosition.y - pos.y;
-          const dz = cameraPosition.z - pos.z;
-          const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-          const wallOpacity = computeXRayWallOpacity(true, xrayOpacity);
-          const showDetail = shouldShowXRayDetail(true, dist, XRAY_DETAIL_DISTANCE);
-
-          return (
-            <XRayBuilding
-              key={node.id}
-              node={node}
-              position={pos}
-              children={childrenByFile.get(node.id) ?? []}
-              xrayOpacity={wallOpacity}
-              showDetail={showDetail}
-            />
-          );
-        }
-
-        const signType = getSignType(node);
-        const signVisible = getSignVisibility(signType, lodLevel);
-        const config = getBuildingConfig(node);
-        const signLabel = (node.label ?? node.id).split('/').pop() ?? node.id;
+      {/* ===== V2: Hierarchical rendering — files as land, buildings within ===== */}
+      {isV2 && districts.map((district, districtIndex) => {
+        const districtColor = getDistrictColor(district.id, districtIndex);
 
         return (
-          <group key={node.id}>
-            {renderTypedBuilding(node, pos, nestedTypeMap, methodsByClass, lodLevel)}
-            {renderSign({
-              key: `sign-${node.id}`,
-              signType,
-              text: signLabel,
-              position: {
-                x: pos.x,
-                y: pos.y + config.geometry.height + 1.5,
-                z: pos.z,
-              },
-              visible: signVisible,
-            })}
+          <group key={`v2-district-${district.id}`}>
+            {district.blocks.map((block) => (
+              <group key={`block-${block.fileId}`}>
+                {/* File block ground plane */}
+                <FileBlock
+                  block={block}
+                  districtColor={districtColor}
+                  lodLevel={lodLevel}
+                />
+
+                {/* Child buildings within the file block */}
+                {block.children.map((child) => {
+                  const node = nodeMap.get(child.nodeId);
+                  if (!node) return null;
+
+                  const worldPos: Position3D = {
+                    x: block.position.x + child.localPosition.x,
+                    y: block.position.y + child.localPosition.y,
+                    z: block.position.z + child.localPosition.z,
+                  };
+
+                  if (isXRayMode) {
+                    const dx = cameraPosition.x - worldPos.x;
+                    const dy = cameraPosition.y - worldPos.y;
+                    const dz = cameraPosition.z - worldPos.z;
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    const wallOpacity = computeXRayWallOpacity(true, xrayOpacity);
+                    const showDetail = shouldShowXRayDetail(true, dist, XRAY_DETAIL_DISTANCE);
+
+                    return (
+                      <XRayBuilding
+                        key={node.id}
+                        node={node}
+                        position={worldPos}
+                        children={childrenByFile.get(node.id) ?? []}
+                        xrayOpacity={wallOpacity}
+                        showDetail={showDetail}
+                      />
+                    );
+                  }
+
+                  const nodeEncoding: EncodedHeightOptions = {
+                    encoding: heightEncoding,
+                    incomingEdgeCount: incomingEdgeCounts.get(node.id) ?? 0,
+                  };
+                  const signType = getSignType(node);
+                  const signVisible = getSignVisibility(signType, lodLevel);
+                  const config = getBuildingConfig(node, nodeEncoding);
+                  const signLabel = (node.label ?? node.id).split('/').pop() ?? node.id;
+
+                  return (
+                    <group key={node.id}>
+                      {renderTypedBuilding(node, worldPos, nestedTypeMap, methodsByClass, lodLevel, nodeEncoding)}
+                      {renderSign({
+                        key: `sign-${node.id}`,
+                        signType,
+                        text: signLabel,
+                        position: {
+                          x: worldPos.x,
+                          y: worldPos.y + config.geometry.height + 1.5,
+                          z: worldPos.z,
+                        },
+                        visible: signVisible,
+                      })}
+                    </group>
+                  );
+                })}
+              </group>
+            ))}
           </group>
         );
       })}
 
-      {/* External library buildings — infrastructure landmarks or wireframe fallback */}
+      {/* ===== V1: Flat rendering path (original) ===== */}
+      {!isV2 && (
+        <>
+          {/* Cluster buildings (LOD 1 only) */}
+          {clusters.map((cluster) => (
+            <ClusterBuilding
+              key={`cluster-${cluster.districtId}`}
+              position={cluster.center}
+              nodeCount={cluster.nodeCount}
+              districtName={cluster.districtId}
+              size={cluster.size}
+            />
+          ))}
+
+          {/* Internal buildings with signs (skip clustered nodes at LOD 1) */}
+          {internalNodes.map((node) => {
+            const pos = positions.get(node.id);
+            if (!pos) return null;
+            if (clusteredNodeIds.has(node.id)) return null;
+
+            if (isXRayMode) {
+              const dx = cameraPosition.x - pos.x;
+              const dy = cameraPosition.y - pos.y;
+              const dz = cameraPosition.z - pos.z;
+              const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+              const wallOpacity = computeXRayWallOpacity(true, xrayOpacity);
+              const showDetail = shouldShowXRayDetail(true, dist, XRAY_DETAIL_DISTANCE);
+
+              return (
+                <XRayBuilding
+                  key={node.id}
+                  node={node}
+                  position={pos}
+                  children={childrenByFile.get(node.id) ?? []}
+                  xrayOpacity={wallOpacity}
+                  showDetail={showDetail}
+                />
+              );
+            }
+
+            const nodeEncoding: EncodedHeightOptions = {
+              encoding: heightEncoding,
+              incomingEdgeCount: incomingEdgeCounts.get(node.id) ?? 0,
+            };
+            const signType = getSignType(node);
+            const signVisible = getSignVisibility(signType, lodLevel);
+            const config = getBuildingConfig(node, nodeEncoding);
+            const signLabel = (node.label ?? node.id).split('/').pop() ?? node.id;
+
+            return (
+              <group key={node.id}>
+                {renderTypedBuilding(node, pos, nestedTypeMap, methodsByClass, lodLevel, nodeEncoding)}
+                {renderSign({
+                  key: `sign-${node.id}`,
+                  signType,
+                  text: signLabel,
+                  position: {
+                    x: pos.x,
+                    y: pos.y + config.geometry.height + 1.5,
+                    z: pos.z,
+                  },
+                  visible: signVisible,
+                })}
+              </group>
+            );
+          })}
+        </>
+      )}
+
+      {/* External library buildings — infrastructure landmarks or wireframe fallback (shared) */}
       {externalNodes.map((node) => {
         const pos = positions.get(node.id);
         if (!pos) return null;

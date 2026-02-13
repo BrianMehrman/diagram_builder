@@ -19,8 +19,10 @@ import {
   BUILDING_WIDTH,
   BUILDING_DEPTH,
   getMethodBasedHeight,
+  getEncodedHeight,
   getBuildingHeight,
 } from '../views/cityViewUtils';
+import type { EncodedHeightOptions } from '../views/cityViewUtils';
 
 /**
  * Geometry shape types for Three.js
@@ -59,15 +61,25 @@ export interface BuildingConfig {
 
 /**
  * Returns geometry and material configuration for a given node type.
+ *
+ * When `encodingOptions` is provided, height is calculated using the
+ * specified encoding metric instead of the default methodCount.
  */
-export function getBuildingConfig(node: GraphNode): BuildingConfig {
+export function getBuildingConfig(
+  node: GraphNode,
+  encodingOptions?: EncodedHeightOptions,
+): BuildingConfig {
+  const classHeight = encodingOptions
+    ? getEncodedHeight(node, encodingOptions)
+    : getMethodBasedHeight(node.methodCount, node.depth);
+
   switch (node.type) {
     case 'class':
       return {
         geometry: {
           shape: 'box',
           width: CLASS_WIDTH,
-          height: getMethodBasedHeight(node.methodCount, node.depth),
+          height: classHeight,
           depth: CLASS_DEPTH,
         },
         material: {
@@ -121,7 +133,7 @@ export function getBuildingConfig(node: GraphNode): BuildingConfig {
         geometry: {
           shape: 'octagonal',
           width: CLASS_WIDTH,
-          height: getMethodBasedHeight(node.methodCount, node.depth),
+          height: classHeight,
           depth: CLASS_DEPTH,
         },
         material: {
@@ -139,7 +151,7 @@ export function getBuildingConfig(node: GraphNode): BuildingConfig {
         geometry: {
           shape: 'cone',
           width: CLASS_WIDTH,
-          height: getMethodBasedHeight(node.methodCount, node.depth),
+          height: classHeight,
           depth: CLASS_DEPTH,
         },
         material: {

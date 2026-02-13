@@ -1,6 +1,6 @@
 # Story 10.9: Update RooftopGarden for Dynamic Y-Offset
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -30,18 +30,18 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Update RooftopGarden Y-offset (AC: 1, 2, 3)
-- [ ] Modify `RooftopGarden.tsx` to accept `parentHeight` prop
-- [ ] Calculate Y-offset as `parentHeight + ROOFTOP_GAP`
-- [ ] Remove any hardcoded Y-offset values
+- [x] Modify `RooftopGarden.tsx` to accept `parentHeight` prop (already existed)
+- [x] Calculate Y-offset as `parentHeight + ROOFTOP_GAP`
+- [x] Remove any hardcoded Y-offset values
 
 ### Task 2: Update parent building components (AC: 4)
-- [ ] Pass `buildingHeight` from ClassBuilding to RooftopGarden
-- [ ] Pass `buildingHeight` from AbstractBuilding to RooftopGarden
-- [ ] Height comes from `calculateBuildingHeight()` (Story 10-8)
+- [x] Pass `buildingHeight` from ClassBuilding to RooftopGarden (via CityBlocks getBuildingConfig)
+- [x] Pass `buildingHeight` from AbstractBuilding to RooftopGarden (via CityBlocks getBuildingConfig)
+- [x] Height comes from `getMethodBasedHeight()` (Story 10-8 log scale)
 
 ### Task 3: Write unit tests (AC: 5)
-- [ ] Test: RooftopGarden positioned at `parentHeight + gap` for various heights
-- [ ] Test: works with log-scaled height (5-method class vs 30-method class)
+- [x] Test: RooftopGarden positioned at `parentHeight + gap` for various heights
+- [x] Test: works with log-scaled height (5-method class vs 30-method class)
 
 ---
 
@@ -64,13 +64,19 @@ Status: not-started
 ## Dev Agent Record
 
 ### Implementation Plan
-_To be filled during implementation_
+RooftopGarden already received `parentHeight` from CityBlocks via `getBuildingConfig().geometry.height`,
+which delegates to `getMethodBasedHeight()` — now log-scaled from Story 10-8. The main change was
+adding a `ROOFTOP_GAP` constant (0.15) between the building top and the first rooftop tier for visual
+separation, then writing co-located unit tests.
 
 ### Completion Notes
-_To be filled on completion_
+- Added exported `ROOFTOP_GAP = 0.15` constant to RooftopGarden.tsx
+- Updated `cumulativeY` initialization from `parentHeight` to `parentHeight + ROOFTOP_GAP`
+- 9 unit tests covering tier Y-positioning on log-scaled heights, multi-tier stacking, nesting collection
 
 ## File List
-_To be filled during implementation_
+- `packages/ui/src/features/canvas/components/buildings/RooftopGarden.tsx` (modified)
+- `packages/ui/src/features/canvas/components/buildings/RooftopGarden.test.ts` (new)
 
 ---
 

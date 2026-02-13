@@ -100,6 +100,87 @@ export function getMethodBasedHeight(methodCount: number | undefined, depth: num
 }
 
 /**
+ * Height encoding types (mirrors HeightEncoding from store).
+ */
+export type HeightEncodingType = 'methodCount' | 'dependencies' | 'loc' | 'complexity' | 'churn';
+
+/**
+ * Options for encoded height calculation.
+ */
+export interface EncodedHeightOptions {
+  encoding: HeightEncodingType;
+  incomingEdgeCount?: number;
+}
+
+/**
+ * Calculate building height using the specified encoding metric.
+ *
+ * All encodings use log2 scaling for visual consistency.
+ * Falls back to methodCount when data is unavailable.
+ */
+export function getEncodedHeight(
+  node: { methodCount?: number; depth?: number; metadata?: Record<string, unknown> },
+  options: EncodedHeightOptions,
+): number {
+  const { encoding, incomingEdgeCount } = options;
+
+  switch (encoding) {
+    case 'methodCount':
+      return getMethodBasedHeight(node.methodCount, node.depth);
+
+    case 'dependencies': {
+      const count = incomingEdgeCount ?? 0;
+      if (count > 0) {
+        return Math.max(Math.log2(count + 1), 1) * FLOOR_HEIGHT;
+      }
+      return getMethodBasedHeight(node.methodCount, node.depth);
+    }
+
+    case 'loc': {
+      const loc = (node.metadata?.loc as number | undefined) ?? 0;
+      if (loc > 0) {
+        return Math.max(Math.log2(loc / 50 + 1), 1) * FLOOR_HEIGHT;
+      }
+      return getMethodBasedHeight(node.methodCount, node.depth);
+    }
+
+    case 'complexity': {
+      const complexity = (node.metadata?.complexity as number | undefined) ?? 0;
+      if (complexity > 0) {
+        return Math.max(Math.log2(complexity + 1), 1) * FLOOR_HEIGHT;
+      }
+      return getMethodBasedHeight(node.methodCount, node.depth);
+    }
+
+    case 'churn': {
+      const churn = (node.metadata?.churn as number | undefined) ?? 0;
+      if (churn > 0) {
+        return Math.max(Math.log2(churn + 1), 1) * FLOOR_HEIGHT;
+      }
+      // Churn requires git data — graceful fallback to methodCount
+      return getMethodBasedHeight(node.methodCount, node.depth);
+    }
+
+    default:
+      return getMethodBasedHeight(node.methodCount, node.depth);
+  }
+}
+
+/**
+ * Build a map of node ID → incoming edge count from the graph's edges.
+ * Counts edges where the node is the target.
+ */
+export function buildIncomingEdgeCounts(
+  edges: ReadonlyArray<{ target: string }>,
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const edge of edges) {
+    counts.set(edge.target, (counts.get(edge.target) ?? 0) + 1);
+  }
+  return counts;
+}
+
+/**
  * External building color (distinct from directory colors).
  */
 export const EXTERNAL_COLOR = '#475569'; // Slate

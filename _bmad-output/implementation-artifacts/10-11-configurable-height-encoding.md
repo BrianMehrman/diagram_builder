@@ -1,6 +1,6 @@
 # Story 10.11: Implement Configurable Height Encoding
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -33,19 +33,19 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Extend height calculation utility (AC: 1-6)
-- [ ] Modify `calculateBuildingHeight(node, encoding)` to accept encoding parameter
-- [ ] Implement formula for each encoding type
-- [ ] Handle missing data gracefully (fallback to methodCount)
+- [x] Modify `calculateBuildingHeight(node, encoding)` to accept encoding parameter
+- [x] Implement formula for each encoding type
+- [x] Handle missing data gracefully (fallback to methodCount)
 
 ### Task 2: Wire encoding to rendering (AC: 7)
-- [ ] Building components read `heightEncoding` from store
-- [ ] Height recalculated when encoding changes
-- [ ] Floor bands adjust to new height (log-scaled for all encodings)
+- [x] Building components read `heightEncoding` from store
+- [x] Height recalculated when encoding changes
+- [x] Floor bands adjust to new height (log-scaled for all encodings)
 
 ### Task 3: Write unit tests (AC: 8)
-- [ ] Test each encoding formula with sample data
-- [ ] Test fallback when data missing (e.g., no complexity score)
-- [ ] Test height update speed (<100ms)
+- [x] Test each encoding formula with sample data
+- [x] Test fallback when data missing (e.g., no complexity score)
+- [x] Test height update speed (<100ms)
 
 ---
 
@@ -68,13 +68,30 @@ Status: not-started
 ## Dev Agent Record
 
 ### Implementation Plan
-_To be filled during implementation_
+1. Added `getEncodedHeight` dispatch function and `buildIncomingEdgeCounts` helper to `cityViewUtils.ts`
+2. Extended `getBuildingConfig` to accept optional `EncodedHeightOptions` parameter
+3. Updated `ClassBuildingProps` with optional `encodingOptions`
+4. Updated ClassBuilding, AbstractBuilding, InterfaceBuilding to pass `encodingOptions` through to `getBuildingConfig`
+5. Wired encoding through `CityBlocks`: reads `heightEncoding` from store, precomputes edge counts, builds per-node encoding options, passes to all rendering call sites
+6. Added 18 new tests across cityViewUtils and buildingGeometry test files
 
 ### Completion Notes
-_To be filled on completion_
+- All encoding formulas use `log2(metric + 1) * FLOOR_HEIGHT` with graceful fallback to `getMethodBasedHeight` when data missing
+- `loc` encoding normalizes by dividing by 50 before log scaling
+- Encoding is reactive — changing `heightEncoding` in store triggers re-render with new heights
+- No new type errors introduced; all pre-existing errors unchanged
 
 ## File List
-_To be filled during implementation_
+### Modified
+- `packages/ui/src/features/canvas/views/cityViewUtils.ts` — Added `getEncodedHeight`, `buildIncomingEdgeCounts`, types
+- `packages/ui/src/features/canvas/views/cityViewUtils.test.ts` — 18 new tests for encoding + edge counts
+- `packages/ui/src/features/canvas/components/buildingGeometry.ts` — `getBuildingConfig` accepts `EncodedHeightOptions`
+- `packages/ui/src/features/canvas/components/buildingGeometry.test.ts` — 5 new encoding integration tests
+- `packages/ui/src/features/canvas/components/buildings/types.ts` — Added `encodingOptions` to `ClassBuildingProps`
+- `packages/ui/src/features/canvas/components/buildings/ClassBuilding.tsx` — Passes `encodingOptions` to `getBuildingConfig`
+- `packages/ui/src/features/canvas/components/buildings/AbstractBuilding.tsx` — Same encoding pass-through
+- `packages/ui/src/features/canvas/components/buildings/InterfaceBuilding.tsx` — Same encoding pass-through
+- `packages/ui/src/features/canvas/views/CityBlocks.tsx` — Reads `heightEncoding`, computes edge counts, passes encoding to all call sites
 
 ---
 

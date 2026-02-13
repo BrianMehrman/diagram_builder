@@ -107,6 +107,39 @@ describe('getBuildingConfig', () => {
     });
   });
 
+  describe('encodingOptions', () => {
+    it('uses encoded height for class when encodingOptions provided', () => {
+      const node = makeNode({ type: 'class', methodCount: 5, metadata: { loc: 500 } });
+      const config = getBuildingConfig(node, { encoding: 'loc' });
+      expect(config.geometry.height).toBeCloseTo(Math.log2(500 / 50 + 1) * FLOOR_HEIGHT);
+    });
+
+    it('uses dependency count for class when dependencies encoding provided', () => {
+      const node = makeNode({ type: 'class', methodCount: 5 });
+      const config = getBuildingConfig(node, { encoding: 'dependencies', incomingEdgeCount: 8 });
+      expect(config.geometry.height).toBeCloseTo(Math.log2(9) * FLOOR_HEIGHT);
+    });
+
+    it('falls back to methodCount when encoding data is missing', () => {
+      const node = makeNode({ type: 'class', methodCount: 5 });
+      const config = getBuildingConfig(node, { encoding: 'loc' });
+      // loc not in metadata → falls back to getMethodBasedHeight
+      expect(config.geometry.height).toBeCloseTo(Math.log2(6) * FLOOR_HEIGHT);
+    });
+
+    it('applies encoding to interface type', () => {
+      const node = makeNode({ type: 'interface', metadata: { complexity: 10 } });
+      const config = getBuildingConfig(node, { encoding: 'complexity' });
+      expect(config.geometry.height).toBeCloseTo(Math.log2(11) * FLOOR_HEIGHT);
+    });
+
+    it('applies encoding to abstract_class type', () => {
+      const node = makeNode({ type: 'abstract_class', metadata: { churn: 15 } });
+      const config = getBuildingConfig(node, { encoding: 'churn' });
+      expect(config.geometry.height).toBeCloseTo(Math.log2(16) * FLOOR_HEIGHT);
+    });
+  });
+
   describe('default / file', () => {
     it('returns default config for file type', () => {
       const config = getBuildingConfig(makeNode({ type: 'file' }));

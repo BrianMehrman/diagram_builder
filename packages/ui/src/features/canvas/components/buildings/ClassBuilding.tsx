@@ -15,7 +15,7 @@ import { getFloorCount, applyFloorBandColors } from './floorBandUtils';
 import { FloorLabels } from './FloorLabels';
 import type { ClassBuildingProps } from './types';
 
-export function ClassBuilding({ node, position, methods, lodLevel }: ClassBuildingProps) {
+export function ClassBuilding({ node, position, methods, lodLevel, encodingOptions }: ClassBuildingProps) {
   const [hovered, setHovered] = useState(false);
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
@@ -23,7 +23,7 @@ export function ClassBuilding({ node, position, methods, lodLevel }: ClassBuildi
   const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
 
   const isSelected = selectedNodeId === node.id;
-  const config = useMemo(() => getBuildingConfig(node), [node]);
+  const config = useMemo(() => getBuildingConfig(node, encodingOptions), [node, encodingOptions]);
   const { width, height, depth } = config.geometry;
   const directory = getDirectoryFromLabel(node.label);
   const color = getDirectoryColor(directory);
