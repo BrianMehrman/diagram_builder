@@ -79,6 +79,20 @@ export function applyFloorBandColors(
 }
 
 /**
+ * Extract method count from a GraphNode.
+ *
+ * Checks (in order): explicit methodCount field, metadata.methods (number or array length).
+ * Returns 0 when no method data is available.
+ */
+export function getMethodCount(node: GraphNode): number {
+  if (node.methodCount !== undefined && node.methodCount > 0) return node.methodCount;
+  const metaMethods = node.metadata?.methods;
+  if (typeof metaMethods === 'number') return metaMethods;
+  if (Array.isArray(metaMethods)) return metaMethods.length;
+  return 0;
+}
+
+/**
  * Build a map from parent class ID to child method nodes.
  */
 export function buildMethodChildMap(nodes: GraphNode[]): Map<string, GraphNode[]> {

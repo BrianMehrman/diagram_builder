@@ -1,6 +1,6 @@
 # Story 10.16: Implement Transit Map Overlay Mode
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -31,17 +31,17 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Implement building opacity change (AC: 2)
-- [ ] All building components read `transitMapMode` from store
-- [ ] When active: set material opacity to 0.15, transparent = true
-- [ ] When inactive: restore original opacity
+- [x] All building components read `transitMapMode` from store
+- [x] When active: set material opacity to 0.15, transparent = true
+- [x] When inactive: restore original opacity
 
 ### Task 2: Implement edge emphasis (AC: 3, 4)
-- [ ] SkyEdge: increase line width and opacity when transit map active
-- [ ] GroundShadow: set opacity to 1.0 when transit map active
+- [x] SkyEdge: increase line width and opacity when transit map active
+- [x] GroundShadow: set opacity to 1.0 when transit map active
 
 ### Task 3: Preserve context (AC: 5, 6)
-- [ ] DistrictGround planes: do NOT change opacity in transit map mode
-- [ ] Toggle off: all materials return to normal immediately (no animation needed)
+- [x] DistrictGround planes: do NOT change opacity in transit map mode
+- [x] Toggle off: all materials return to normal immediately (no animation needed)
 
 ---
 
@@ -63,13 +63,31 @@ Status: not-started
 ## Dev Agent Record
 
 ### Implementation Plan
-_To be filled during implementation_
+- Created `useTransitMapStyle` hook returning opacity/transparent overrides (0.15 opacity when transit map active)
+- Applied the hook to all 8 building components via import + material props
+- For AbstractBuilding/InterfaceBuilding (which have config opacity), transit map opacity takes precedence
+- SkyEdge: added `transitMapMode` store read — opacity goes from 0.6 to 1.0, linewidth from 1 to 2
+- GroundShadow: already handled in Story 10-13 (opacity 1.0 in transit map mode)
+- DistrictGround: intentionally NOT modified — its fixed 0.35 opacity provides spatial context
 
 ### Completion Notes
-_To be filled on completion_
+- 6 tests passing (3 hook style tests, 2 store integration, 1 district ground contract)
+- No new TypeScript errors
+- Toggle off restores all materials immediately (reactive via React re-render)
+- No UI toggle button added (deferred to Story 10-25)
 
 ## File List
-_To be filled during implementation_
+- `packages/ui/src/features/canvas/hooks/useTransitMapStyle.ts` (NEW)
+- `packages/ui/src/features/canvas/hooks/useTransitMapStyle.test.ts` (NEW)
+- `packages/ui/src/features/canvas/components/SkyEdge.tsx` (MODIFIED — transit map opacity + linewidth)
+- `packages/ui/src/features/canvas/components/buildings/ClassBuilding.tsx` (MODIFIED)
+- `packages/ui/src/features/canvas/components/buildings/FunctionShop.tsx` (MODIFIED)
+- `packages/ui/src/features/canvas/components/buildings/VariableCrate.tsx` (MODIFIED)
+- `packages/ui/src/features/canvas/components/buildings/EnumCrate.tsx` (MODIFIED)
+- `packages/ui/src/features/canvas/components/buildings/AbstractBuilding.tsx` (MODIFIED)
+- `packages/ui/src/features/canvas/components/buildings/InterfaceBuilding.tsx` (MODIFIED)
+- `packages/ui/src/features/canvas/views/Building.tsx` (MODIFIED)
+- `packages/ui/src/features/canvas/views/ExternalBuilding.tsx` (MODIFIED)
 
 ---
 

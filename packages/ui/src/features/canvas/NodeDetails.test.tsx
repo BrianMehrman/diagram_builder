@@ -16,7 +16,7 @@ const mockNodes: GraphNode[] = [
     label: 'app.ts',
     metadata: { path: 'src/app.ts', loc: 150 },
     position: { x: 1, y: 2, z: 3 },
-    lodLevel: 0,
+    lod: 0,
   },
   {
     id: 'node-2',
@@ -24,7 +24,7 @@ const mockNodes: GraphNode[] = [
     label: 'Application',
     metadata: { methods: 5 },
     position: { x: 4, y: 5, z: 6 },
-    lodLevel: 1,
+    lod: 1,
   },
 ];
 

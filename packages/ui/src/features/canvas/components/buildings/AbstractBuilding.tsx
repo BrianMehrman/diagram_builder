@@ -11,8 +11,9 @@ import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
 import { getBuildingConfig } from '../buildingGeometry';
 import { getDirectoryFromLabel, getDirectoryColor } from '../../views/cityViewUtils';
-import { getFloorCount, applyFloorBandColors } from './floorBandUtils';
+import { getFloorCount, applyFloorBandColors, getMethodCount } from './floorBandUtils';
 import { FloorLabels } from './FloorLabels';
+import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
 import type { ClassBuildingProps } from './types';
 
 export function AbstractBuilding({ node, position, methods, lodLevel, encodingOptions }: ClassBuildingProps) {
@@ -21,6 +22,7 @@ export function AbstractBuilding({ node, position, methods, lodLevel, encodingOp
   const selectNode = useCanvasStore((s) => s.selectNode);
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
   const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
+  const transitStyle = useTransitMapStyle();
 
   const isSelected = selectedNodeId === node.id;
   const config = useMemo(() => getBuildingConfig(node, encodingOptions), [node, encodingOptions]);
@@ -29,19 +31,25 @@ export function AbstractBuilding({ node, position, methods, lodLevel, encodingOp
   const color = getDirectoryColor(directory);
   const fileName = (node.label ?? node.id).split('/').pop() ?? node.id;
 
-  const methodCount = methods?.length ?? node.methodCount ?? 0;
+  const methodCount = methods?.length ?? getMethodCount(node);
   const floorCount = getFloorCount(methodCount > 0 ? methodCount : undefined);
 
   const geometry = useMemo(() => {
     const geo = new THREE.ConeGeometry(width / 2, height, 32, floorCount);
 
-    if (methods && methods.length > 0) {
-      const visibilities = methods.map((m) => m.visibility);
+    // Apply floor band colors when method count is known (from methods array or node.methodCount)
+    // Default to "public" coloring when individual method visibility data is unavailable (AC-4)
+    if (methodCount > 0) {
+      const visibilities: Array<string | undefined> = methods && methods.length > 0
+        ? methods.map((m) => m.visibility)
+        : new Array(floorCount).fill(undefined);
       applyFloorBandColors(geo, floorCount, visibilities, height);
     }
 
     return geo;
-  }, [width, height, floorCount, methods]);
+  }, [width, height, floorCount, methodCount, methods]);
+
+  const hasFloorBands = methodCount > 0;
 
   // Dashed line material for abstract class edges
   const dashedMaterial = useMemo(() => {
@@ -61,8 +69,6 @@ export function AbstractBuilding({ node, position, methods, lodLevel, encodingOp
     return edges;
   }, [width, height]);
 
-  const hasFloorBands = !!(methods && methods.length > 0);
-
   return (
     <group position={[position.x, position.y, position.z]}>
       {/* Semi-transparent fill with vertex colors */}
@@ -77,8 +83,8 @@ export function AbstractBuilding({ node, position, methods, lodLevel, encodingOp
         <meshStandardMaterial
           color={hasFloorBands ? '#ffffff' : color}
           vertexColors={hasFloorBands}
-          opacity={config.material.opacity}
-          transparent={config.material.transparent}
+          opacity={transitStyle.transparent ? transitStyle.opacity : config.material.opacity}
+          transparent={transitStyle.transparent || config.material.transparent}
           emissive={hovered ? '#f59e0b' : isSelected ? color : '#000000'}
           emissiveIntensity={hovered ? 0.4 : isSelected ? 0.3 : 0}
           roughness={config.material.roughness}

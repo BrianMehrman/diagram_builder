@@ -8,6 +8,7 @@
 import { useState, useMemo } from 'react';
 import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../store';
+import { useTransitMapStyle } from '../hooks/useTransitMapStyle';
 import type { GraphNode, Position3D } from '../../../shared/types';
 import {
   getDirectoryColor,
@@ -28,6 +29,7 @@ export function Building({ node, position }: BuildingProps) {
   const selectNode = useCanvasStore((s) => s.selectNode);
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
   const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
+  const transitStyle = useTransitMapStyle();
 
   const isSelected = selectedNodeId === node.id;
   const buildingHeight = getBuildingHeight(node.depth);
@@ -78,6 +80,8 @@ export function Building({ node, position }: BuildingProps) {
           emissiveIntensity={isSelected ? 0.3 : 0}
           roughness={0.7}
           metalness={0.1}
+          opacity={transitStyle.opacity}
+          transparent={transitStyle.transparent}
         />
       </mesh>
 

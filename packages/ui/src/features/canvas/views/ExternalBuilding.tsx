@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../store';
+import { useTransitMapStyle } from '../hooks/useTransitMapStyle';
 import type { GraphNode, Position3D } from '../../../shared/types';
 import { EXTERNAL_COLOR } from './cityViewUtils';
 
@@ -24,6 +25,7 @@ export function ExternalBuilding({ node, position }: ExternalBuildingProps) {
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
+  const transitStyle = useTransitMapStyle();
 
   const isSelected = selectedNodeId === node.id;
   const label = node.label ?? '';
@@ -60,6 +62,8 @@ export function ExternalBuilding({ node, position }: ExternalBuildingProps) {
           wireframe
           emissive={isSelected ? '#ffffff' : '#000000'}
           emissiveIntensity={isSelected ? 0.2 : 0}
+          opacity={transitStyle.opacity}
+          transparent={transitStyle.transparent}
         />
       </mesh>
 

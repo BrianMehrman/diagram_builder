@@ -1,7 +1,7 @@
 /**
  * NodeDetails Component
  *
- * Displays details of the selected node
+ * Displays details of the selected node with dark theme matching the HUD.
  */
 
 import { useCanvasStore } from './store';
@@ -27,6 +27,12 @@ function getNodeIcon(type: GraphNode['type']): string {
       return '🔧';
     case 'variable':
       return '📦';
+    case 'interface':
+      return '🔗';
+    case 'enum':
+      return '📋';
+    case 'abstract_class':
+      return '🏗️';
     default:
       return '❓';
   }
@@ -38,6 +44,7 @@ function getNodeIcon(type: GraphNode['type']): string {
 export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
   const selectedNodeId = useCanvasStore((state) => state.selectedNodeId);
   const selectNode = useCanvasStore((state) => state.selectNode);
+  const layoutPositions = useCanvasStore((state) => state.layoutPositions);
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
 
@@ -49,20 +56,25 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
     selectNode(null);
   };
 
+  // Prefer layout positions over graph node positions
+  const layoutPos = selectedNodeId ? layoutPositions.get(selectedNodeId) : undefined;
+  const displayPos = layoutPos ?? selectedNode.position;
+
   return (
     <div
-      className={`absolute top-20 right-4 bg-white rounded-lg shadow-xl p-4 max-w-sm ${className}`}
+      className={`absolute top-20 right-4 rounded-lg shadow-xl p-4 max-w-sm text-white backdrop-blur-md ${className}`}
+      style={{ backgroundColor: 'rgba(26, 31, 46, 0.95)' }}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="text-2xl">{getNodeIcon(selectedNode.type)}</span>
-          <h3 className="text-lg font-bold text-gray-900">
+          <h3 className="text-lg font-bold text-white">
             {selectedNode.label}
           </h3>
         </div>
         <button
           onClick={handleClose}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
+          className="text-gray-400 hover:text-gray-200 transition-colors"
           aria-label="Close"
         >
           <svg
@@ -83,54 +95,112 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
 
       <div className="space-y-3">
         <div>
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
             Type
           </div>
-          <div className="text-sm text-gray-900 capitalize mt-1">
-            {selectedNode.type}
+          <div className="text-sm text-gray-200 capitalize mt-1">
+            {selectedNode.type.replace('_', ' ')}
           </div>
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
             ID
           </div>
-          <div className="text-sm text-gray-900 font-mono mt-1 break-all">
+          <div className="text-sm text-gray-200 font-mono mt-1 break-all">
             {selectedNode.id}
           </div>
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
             LOD Level
           </div>
-          <div className="text-sm text-gray-900 mt-1">
+          <div className="text-sm text-gray-200 mt-1">
             {selectedNode.lod}
           </div>
         </div>
 
-        {selectedNode.position && (
+        {displayPos && (
           <div>
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
               Position
             </div>
-            <div className="text-sm text-gray-900 font-mono mt-1">
-              x: {selectedNode.position.x.toFixed(2)}, y:{' '}
-              {selectedNode.position.y.toFixed(2)}, z:{' '}
-              {selectedNode.position.z.toFixed(2)}
+            <div className="text-sm text-gray-200 font-mono mt-1">
+              x: {displayPos.x.toFixed(2)}, y:{' '}
+              {displayPos.y.toFixed(2)}, z:{' '}
+              {displayPos.z.toFixed(2)}
+            </div>
+          </div>
+        )}
+
+        {selectedNode.depth !== undefined && (
+          <div>
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+              Depth
+            </div>
+            <div className="text-sm text-gray-200 mt-1">{selectedNode.depth}</div>
+          </div>
+        )}
+
+        {selectedNode.parentId && (
+          <div>
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+              Parent
+            </div>
+            <div className="text-sm text-gray-200 font-mono mt-1 break-all">
+              {selectedNode.parentId}
+            </div>
+          </div>
+        )}
+
+        {selectedNode.visibility && (
+          <div>
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+              Visibility
+            </div>
+            <div className="text-sm text-gray-200 capitalize mt-1">{selectedNode.visibility}</div>
+          </div>
+        )}
+
+        {selectedNode.methodCount !== undefined && (
+          <div>
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+              Methods
+            </div>
+            <div className="text-sm text-gray-200 mt-1">{selectedNode.methodCount}</div>
+          </div>
+        )}
+
+        {/* Boolean flags */}
+        {(selectedNode.isExternal || selectedNode.isDeprecated || selectedNode.isExported) && (
+          <div>
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+              Flags
+            </div>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {selectedNode.isExternal && (
+                <span className="text-[10px] bg-blue-900/60 text-blue-300 px-1.5 py-0.5 rounded">external</span>
+              )}
+              {selectedNode.isDeprecated && (
+                <span className="text-[10px] bg-yellow-900/60 text-yellow-300 px-1.5 py-0.5 rounded">deprecated</span>
+              )}
+              {selectedNode.isExported && (
+                <span className="text-[10px] bg-green-900/60 text-green-300 px-1.5 py-0.5 rounded">exported</span>
+              )}
             </div>
           </div>
         )}
 
         {selectedNode.metadata && Object.keys(selectedNode.metadata).length > 0 && (
           <div>
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
               Metadata
             </div>
-            <div className="text-sm text-gray-900 mt-1 space-y-1">
+            <div className="text-sm text-gray-200 mt-1 space-y-1">
               {Object.entries(selectedNode.metadata || {}).map(([key, value]) => (
                 <div key={key} className="flex justify-between">
-                  <span className="text-gray-600">{key}:</span>
+                  <span className="text-gray-400">{key}:</span>
                   <span className="font-medium">
                     {typeof value === 'object'
                       ? JSON.stringify(value)
@@ -143,10 +213,10 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
         )}
       </div>
 
-      <div className="mt-4 pt-3 border-t border-gray-200">
+      <div className="mt-4 pt-3 border-t border-gray-600">
         <button
           onClick={handleClose}
-          className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+          className="w-full px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700/60 hover:bg-gray-600/60 rounded transition-colors"
         >
           Deselect Node
         </button>

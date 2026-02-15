@@ -8,6 +8,7 @@ import { useState, useMemo } from 'react';
 import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
 import { getBuildingConfig } from '../buildingGeometry';
+import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
 import type { TypedBuildingProps } from './types';
 
 const CRATE_COLOR = '#8B6914';
@@ -18,6 +19,7 @@ export function VariableCrate({ node, position }: TypedBuildingProps) {
   const selectNode = useCanvasStore((s) => s.selectNode);
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
   const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
+  const transitStyle = useTransitMapStyle();
 
   const isSelected = selectedNodeId === node.id;
   const config = useMemo(() => getBuildingConfig(node), [node]);
@@ -40,6 +42,8 @@ export function VariableCrate({ node, position }: TypedBuildingProps) {
           emissiveIntensity={isSelected ? 0.3 : 0}
           roughness={config.material.roughness}
           metalness={config.material.metalness}
+          opacity={transitStyle.opacity}
+          transparent={transitStyle.transparent}
         />
       </mesh>
       <Text

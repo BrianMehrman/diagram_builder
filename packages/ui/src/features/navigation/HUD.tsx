@@ -4,7 +4,7 @@
  * Heads-up display showing real-time workspace statistics.
  * Uses semantic HTML (dl/dt/dd) with ARIA attributes for accessibility.
  *
- * Stats: Nodes, Files, FPS, Control Mode
+ * Stats: Nodes, Files, FPS, Control Mode, LOD, Camera Coords, Selected/Hovered Node
  */
 
 import { useEffect, useState } from 'react'
@@ -18,7 +18,11 @@ interface HUDProps {
 
 export function HUD({ nodes = [], className = '' }: HUDProps) {
   const selectedNodeId = useCanvasStore((state) => state.selectedNodeId)
+  const hoveredNodeId = useCanvasStore((state) => state.hoveredNodeId)
   const controlMode = useCanvasStore((state) => state.controlMode)
+  const camera = useCanvasStore((state) => state.camera)
+  const lodLevel = useCanvasStore((state) => state.lodLevel)
+  const layoutPositions = useCanvasStore((state) => state.layoutPositions)
   const [fps, setFps] = useState(0)
 
   // FPS counter - throttled to 1s updates
@@ -45,11 +49,15 @@ export function HUD({ nodes = [], className = '' }: HUDProps) {
   }, [])
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId)
+  const hoveredNode = nodes.find((n) => n.id === hoveredNodeId)
   const totalNodes = nodes.length
   const fileCount = nodes.filter((n) => n.type === 'file').length
 
   const fpsColorClass = fps > 30 ? 'text-green-400' : 'text-red-400'
-  const modeLabel = controlMode === 'fly' ? 'Fly ✈️' : 'Orbit 🔄'
+  const modeLabel = controlMode === 'fly' ? 'Fly' : 'Orbit'
+
+  // Get layout position for selected node
+  const selectedLayoutPos = selectedNodeId ? layoutPositions.get(selectedNodeId) : undefined
 
   return (
     <div
@@ -84,7 +92,21 @@ export function HUD({ nodes = [], className = '' }: HUDProps) {
           <dt className="text-gray-400">Mode</dt>
           <dd className="font-semibold">{modeLabel}</dd>
         </div>
+
+        {/* LOD Level */}
+        <div className="flex justify-between items-center">
+          <dt className="text-gray-400">LOD</dt>
+          <dd className="font-semibold">{lodLevel}</dd>
+        </div>
       </dl>
+
+      {/* Camera Coordinates */}
+      <div className="border-t border-gray-600 mt-2 pt-2">
+        <div className="text-gray-400 text-[10px] uppercase tracking-wide mb-1">Camera</div>
+        <div className="font-mono text-[10px] text-gray-300">
+          {camera.position.x.toFixed(2)}, {camera.position.y.toFixed(2)}, {camera.position.z.toFixed(2)}
+        </div>
+      </div>
 
       {/* Selected Node Info */}
       {selectedNode && (
@@ -96,6 +118,28 @@ export function HUD({ nodes = [], className = '' }: HUDProps) {
           <div className="flex justify-between gap-2">
             <span className="text-gray-400">Type:</span>
             <span className="font-semibold capitalize">{selectedNode.type}</span>
+          </div>
+          {selectedLayoutPos && (
+            <div>
+              <span className="text-gray-400 text-[10px]">Pos: </span>
+              <span className="font-mono text-[10px] text-gray-300">
+                {selectedLayoutPos.x.toFixed(2)}, {selectedLayoutPos.y.toFixed(2)}, {selectedLayoutPos.z.toFixed(2)}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Hovered Node Info */}
+      {hoveredNode && hoveredNode.id !== selectedNodeId && (
+        <div className="border-t border-gray-600 mt-2 pt-2 space-y-1" data-testid="hovered-node-info">
+          <div className="flex justify-between gap-2">
+            <span className="text-gray-400">Hover:</span>
+            <span className="font-semibold truncate max-w-[120px]">{hoveredNode.label}</span>
+          </div>
+          <div className="flex justify-between gap-2">
+            <span className="text-gray-400">Type:</span>
+            <span className="font-semibold capitalize">{hoveredNode.type}</span>
           </div>
         </div>
       )}

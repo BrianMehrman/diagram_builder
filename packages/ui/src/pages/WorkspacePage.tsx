@@ -6,7 +6,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'react-router'
-import { Canvas3D, EmptyState, CodebaseStatusIndicator, ErrorNotification, SuccessNotification } from '../features/canvas'
+import { Canvas3D, EmptyState, CodebaseStatusIndicator, ErrorNotification, SuccessNotification, NodeDetails } from '../features/canvas'
 import { useCanvasStore } from '../features/canvas/store'
 import { MiniMap } from '../features/minimap'
 import { Navigation, SearchBarModal, useCameraFlight } from '../features/navigation'
@@ -398,6 +398,9 @@ export function WorkspacePage() {
 
         {/* HUD (Top Left) */}
         <HUD nodes={graphData?.nodes || []} className="z-20" />
+
+        {/* Node Details Panel (Top Right) */}
+        <NodeDetails nodes={graphData?.nodes || []} className="z-20" />
 
         {/* Navigation Panel (Top Center) */}
         <nav id="search" className="absolute top-4 left-1/2 -translate-x-1/2 z-20 max-w-md" aria-label="Graph navigation">

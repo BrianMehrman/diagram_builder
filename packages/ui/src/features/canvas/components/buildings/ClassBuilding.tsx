@@ -11,8 +11,9 @@ import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
 import { getBuildingConfig } from '../buildingGeometry';
 import { getDirectoryFromLabel, getDirectoryColor } from '../../views/cityViewUtils';
-import { getFloorCount, applyFloorBandColors } from './floorBandUtils';
+import { getFloorCount, applyFloorBandColors, getMethodCount } from './floorBandUtils';
 import { FloorLabels } from './FloorLabels';
+import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
 import type { ClassBuildingProps } from './types';
 
 export function ClassBuilding({ node, position, methods, lodLevel, encodingOptions }: ClassBuildingProps) {
@@ -21,6 +22,7 @@ export function ClassBuilding({ node, position, methods, lodLevel, encodingOptio
   const selectNode = useCanvasStore((s) => s.selectNode);
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
   const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
+  const transitStyle = useTransitMapStyle();
 
   const isSelected = selectedNodeId === node.id;
   const config = useMemo(() => getBuildingConfig(node, encodingOptions), [node, encodingOptions]);
@@ -29,21 +31,25 @@ export function ClassBuilding({ node, position, methods, lodLevel, encodingOptio
   const color = getDirectoryColor(directory);
   const fileName = (node.label ?? node.id).split('/').pop() ?? node.id;
 
-  const methodCount = methods?.length ?? node.methodCount ?? 0;
+  const methodCount = methods?.length ?? getMethodCount(node);
   const floorCount = getFloorCount(methodCount > 0 ? methodCount : undefined);
 
   const geometry = useMemo(() => {
     const geo = new THREE.BoxGeometry(width, height, depth, 1, floorCount, 1);
 
-    if (methods && methods.length > 0) {
-      const visibilities = methods.map((m) => m.visibility);
+    // Apply floor band colors when method count is known (from methods array or node.methodCount)
+    // Default to "public" coloring when individual method visibility data is unavailable (AC-4)
+    if (methodCount > 0) {
+      const visibilities: Array<string | undefined> = methods && methods.length > 0
+        ? methods.map((m) => m.visibility)
+        : new Array(floorCount).fill(undefined);
       applyFloorBandColors(geo, floorCount, visibilities, height);
     }
 
     return geo;
-  }, [width, height, depth, floorCount, methods]);
+  }, [width, height, depth, floorCount, methodCount, methods]);
 
-  const hasFloorBands = !!(methods && methods.length > 0);
+  const hasFloorBands = methodCount > 0;
 
   return (
     <group position={[position.x, position.y, position.z]}>
@@ -62,6 +68,8 @@ export function ClassBuilding({ node, position, methods, lodLevel, encodingOptio
           emissiveIntensity={hovered ? 0.4 : isSelected ? 0.3 : 0}
           roughness={config.material.roughness}
           metalness={config.material.metalness}
+          opacity={transitStyle.opacity}
+          transparent={transitStyle.transparent}
         />
       </mesh>
       {hovered && (

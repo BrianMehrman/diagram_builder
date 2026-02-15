@@ -161,14 +161,14 @@ development_status:
   10-11-configurable-height-encoding: review  # Height encoding dispatch: methodCount, dependencies, LOC, complexity, churn - COMPLETE (2026-02-11)
   # Epic 10-C: Sky Layer — Elevated Edges and Shadows (Phase 2)
   10-12-sky-edge-component: review  # Elevated bezier arc edges, type-based Y-height, color by edge type - COMPLETE (2026-02-12)
-  10-13-ground-shadow-component: not-started  # Orthographic Y=0 shadow projection for each sky edge
-  10-14-remove-intra-district-edge-lines: not-started  # Replace intra-district edge lines with proximity-based layout encoding
-  10-15-camera-tilt-assist: not-started  # Smooth camera pitch on node selection to reveal outgoing sky edges
-  10-16-transit-map-overlay-mode: not-started  # Toggle: fade buildings (0.15 opacity), emphasize edges (full opacity, double width)
-  10-17-update-citysky-orchestrator: not-started  # Wire SkyEdge + GroundShadow into CitySky, edge tier visibility controls
+  10-13-ground-shadow-component: review  # Orthographic Y=0 shadow projection for each sky edge - COMPLETE (2026-02-13)
+  10-14-remove-intra-district-edge-lines: review  # Replace intra-district edge lines with proximity-based layout encoding - COMPLETE (2026-02-13)
+  10-15-camera-tilt-assist: review  # Smooth camera pitch on node selection to reveal outgoing sky edges - COMPLETE (2026-02-13)
+  10-16-transit-map-overlay-mode: review  # Toggle: fade buildings (0.15 opacity), emphasize edges (full opacity, double width) - COMPLETE (2026-02-13)
+  10-17-update-citysky-orchestrator: review  # Wire SkyEdge + GroundShadow into CitySky, v1/v2 branching - COMPLETE (2026-02-14)
   # Epic 10-D: Atmosphere — Environmental Indicators (Phase 3)
-  10-18-construction-crane-indicator: not-started  # Crane mesh on high-churn buildings, toggleable, data-graceful
-  10-19-lighting-system-test-coverage: not-started  # Point lights for test coverage: bright=tested, dim=untested, toggleable
+  10-18-construction-crane-indicator: review  # Crane mesh on high-churn buildings, toggleable, data-graceful - COMPLETE (2026-02-14)
+  10-19-lighting-system-test-coverage: review  # Point lights for test coverage: bright=tested, dim=untested, toggleable - COMPLETE (2026-02-15)
   10-20-smog-overlay-complexity: not-started  # Semi-transparent particle cloud over high-complexity districts, toggleable
   10-21-deprecated-indicator: not-started  # Material swap for deprecated buildings (dark, striped), toggleable
   10-22-cityatmosphere-orchestrator: not-started  # Wire all indicators into CityAtmosphere, LOD 3+ visibility

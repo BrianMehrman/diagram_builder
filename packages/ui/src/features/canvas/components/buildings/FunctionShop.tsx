@@ -9,6 +9,7 @@ import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
 import { getBuildingConfig } from '../buildingGeometry';
 import { getDirectoryFromLabel, getDirectoryColor } from '../../views/cityViewUtils';
+import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
 import type { TypedBuildingProps } from './types';
 
 export function FunctionShop({ node, position }: TypedBuildingProps) {
@@ -17,6 +18,7 @@ export function FunctionShop({ node, position }: TypedBuildingProps) {
   const selectNode = useCanvasStore((s) => s.selectNode);
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
   const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
+  const transitStyle = useTransitMapStyle();
 
   const isSelected = selectedNodeId === node.id;
   const config = useMemo(() => getBuildingConfig(node), [node]);
@@ -41,6 +43,8 @@ export function FunctionShop({ node, position }: TypedBuildingProps) {
           emissiveIntensity={isSelected ? 0.3 : 0}
           roughness={config.material.roughness}
           metalness={config.material.metalness}
+          opacity={transitStyle.opacity}
+          transparent={transitStyle.transparent}
         />
       </mesh>
       <Text

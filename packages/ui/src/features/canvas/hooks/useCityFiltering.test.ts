@@ -322,5 +322,143 @@ describe('useCityFiltering', () => {
 
       expect(result.current.visibleEdges).toHaveLength(2);
     });
+
+    it('includes inherits edges', () => {
+      const nodes = [
+        createNode('a', 'file', 'src/models'),
+        createNode('b', 'file', 'src/services'),
+      ];
+      const graph: Graph = {
+        nodes,
+        edges: [createEdge('a', 'b', 'inherits')],
+        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
+      };
+      const positions = buildPositions(nodes);
+
+      const { result } = renderHook(() => useCityFiltering(graph, positions));
+
+      expect(result.current.visibleEdges).toHaveLength(1);
+    });
+  });
+
+  describe('visibleEdges — city-v2 cross-district filtering', () => {
+    it('hides intra-district imports in v2 mode', () => {
+      useCanvasStore.getState().setCityVersion('v2');
+
+      // Both nodes in same directory
+      const nodes = [
+        createNode('a', 'file', 'src/features'),
+        createNode('b', 'file', 'src/features'),
+      ];
+      const graph: Graph = {
+        nodes,
+        edges: [createEdge('a', 'b', 'imports')],
+        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
+      };
+      const positions = buildPositions(nodes);
+
+      const { result } = renderHook(() => useCityFiltering(graph, positions));
+
+      expect(result.current.visibleEdges).toHaveLength(0);
+    });
+
+    it('shows cross-district imports in v2 mode', () => {
+      useCanvasStore.getState().setCityVersion('v2');
+
+      // Nodes in different directories
+      const nodes = [
+        createNode('a', 'file', 'src/features'),
+        createNode('b', 'file', 'src/utils'),
+      ];
+      const graph: Graph = {
+        nodes,
+        edges: [createEdge('a', 'b', 'imports')],
+        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
+      };
+      const positions = buildPositions(nodes);
+
+      const { result } = renderHook(() => useCityFiltering(graph, positions));
+
+      expect(result.current.visibleEdges).toHaveLength(1);
+    });
+
+    it('shows all edges in v1 mode regardless of district', () => {
+      // v1 is the default
+      const nodes = [
+        createNode('a', 'file', 'src/features'),
+        createNode('b', 'file', 'src/features'),
+      ];
+      const graph: Graph = {
+        nodes,
+        edges: [createEdge('a', 'b', 'imports')],
+        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
+      };
+      const positions = buildPositions(nodes);
+
+      const { result } = renderHook(() => useCityFiltering(graph, positions));
+
+      expect(result.current.visibleEdges).toHaveLength(1);
+    });
+
+    it('still hides contains edges in v2 mode', () => {
+      useCanvasStore.getState().setCityVersion('v2');
+
+      const nodes = [
+        createNode('a', 'file', 'src/features'),
+        createNode('b', 'file', 'src/utils'),
+      ];
+      const graph: Graph = {
+        nodes,
+        edges: [createEdge('a', 'b', 'contains')],
+        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
+      };
+      const positions = buildPositions(nodes);
+
+      const { result } = renderHook(() => useCityFiltering(graph, positions));
+
+      expect(result.current.visibleEdges).toHaveLength(0);
+    });
+
+    it('hides intra-district depends_on and calls in v2 mode', () => {
+      useCanvasStore.getState().setCityVersion('v2');
+
+      const nodes = [
+        createNode('a', 'file', 'src/features'),
+        createNode('b', 'file', 'src/features'),
+        createNode('c', 'file', 'src/features'),
+      ];
+      const graph: Graph = {
+        nodes,
+        edges: [
+          createEdge('a', 'b', 'depends_on'),
+          createEdge('b', 'c', 'calls'),
+        ],
+        metadata: { repositoryId: 'test', name: 'T', totalNodes: 3, totalEdges: 2 },
+      };
+      const positions = buildPositions(nodes);
+
+      const { result } = renderHook(() => useCityFiltering(graph, positions));
+
+      expect(result.current.visibleEdges).toHaveLength(0);
+    });
+
+    it('keeps cross-district inherits in v2 mode', () => {
+      useCanvasStore.getState().setCityVersion('v2');
+
+      const nodes = [
+        createNode('a', 'file', 'src/models'),
+        createNode('b', 'file', 'src/services'),
+      ];
+      const graph: Graph = {
+        nodes,
+        edges: [createEdge('a', 'b', 'inherits')],
+        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
+      };
+      const positions = buildPositions(nodes);
+
+      const { result } = renderHook(() => useCityFiltering(graph, positions));
+
+      expect(result.current.visibleEdges).toHaveLength(1);
+    });
   });
 });

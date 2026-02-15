@@ -50,6 +50,7 @@ export function useCityFiltering(
 ): CityFilteringResult {
   const lodLevel = useCanvasStore((s) => s.lodLevel);
   const isXRayMode = useCanvasStore((s) => s.isXRayMode);
+  const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion);
 
   // Separate internal and external nodes
   const internalNodes = useMemo(
@@ -74,6 +75,17 @@ export function useCityFiltering(
     }
     return groups;
   }, [internalNodes]);
+
+  // Reverse lookup: nodeId → district path (for cross-district edge detection)
+  const nodeDistrict = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const [dir, nodeIds] of districtGroups) {
+      for (const id of nodeIds) {
+        map.set(id, dir);
+      }
+    }
+    return map;
+  }, [districtGroups]);
 
   // Compute cluster metadata for districts that exceed the threshold
   const clusters = useMemo(() => {
@@ -130,15 +142,32 @@ export function useCityFiltering(
     return map;
   }, [graph.nodes]);
 
-  // Filter edges to only those with both endpoints having layout positions
+  // Filter edges to only those with both endpoints having layout positions.
+  // In city-v2 mode, additionally exclude intra-district edges (proximity-encoded).
   const visibleEdges = useMemo(() => {
-    return graph.edges.filter(
-      (e) =>
-        (e.type === 'imports' || e.type === 'depends_on' || e.type === 'calls') &&
-        positions.has(e.source) &&
-        positions.has(e.target),
-    );
-  }, [graph.edges, positions]);
+    return graph.edges.filter((e) => {
+      // Always exclude non-renderable edge types
+      if (e.type !== 'imports' && e.type !== 'depends_on' && e.type !== 'calls' && e.type !== 'inherits') {
+        return false;
+      }
+
+      // Both endpoints must have positions
+      if (!positions.has(e.source) || !positions.has(e.target)) {
+        return false;
+      }
+
+      // In v2 mode, only render cross-district edges
+      if (cityVersion === 'v2') {
+        const srcDistrict = nodeDistrict.get(e.source);
+        const tgtDistrict = nodeDistrict.get(e.target);
+        if (srcDistrict !== undefined && tgtDistrict !== undefined && srcDistrict === tgtDistrict) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [graph.edges, positions, cityVersion, nodeDistrict]);
 
   return {
     internalNodes,

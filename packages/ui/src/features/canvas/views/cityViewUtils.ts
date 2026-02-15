@@ -117,23 +117,28 @@ export interface EncodedHeightOptions {
  *
  * All encodings use log2 scaling for visual consistency.
  * Falls back to methodCount when data is unavailable.
+ *
+ * @param resolvedMethodCount - Pre-resolved method count (from getMethodCount utility)
+ *   so callers can check node.methodCount, metadata.methods, etc. before calling.
  */
 export function getEncodedHeight(
   node: { methodCount?: number; depth?: number; metadata?: Record<string, unknown> },
   options: EncodedHeightOptions,
+  resolvedMethodCount?: number,
 ): number {
   const { encoding, incomingEdgeCount } = options;
+  const mc = resolvedMethodCount ?? node.methodCount;
 
   switch (encoding) {
     case 'methodCount':
-      return getMethodBasedHeight(node.methodCount, node.depth);
+      return getMethodBasedHeight(mc, node.depth);
 
     case 'dependencies': {
       const count = incomingEdgeCount ?? 0;
       if (count > 0) {
         return Math.max(Math.log2(count + 1), 1) * FLOOR_HEIGHT;
       }
-      return getMethodBasedHeight(node.methodCount, node.depth);
+      return getMethodBasedHeight(mc, node.depth);
     }
 
     case 'loc': {
@@ -141,7 +146,7 @@ export function getEncodedHeight(
       if (loc > 0) {
         return Math.max(Math.log2(loc / 50 + 1), 1) * FLOOR_HEIGHT;
       }
-      return getMethodBasedHeight(node.methodCount, node.depth);
+      return getMethodBasedHeight(mc, node.depth);
     }
 
     case 'complexity': {
@@ -149,7 +154,7 @@ export function getEncodedHeight(
       if (complexity > 0) {
         return Math.max(Math.log2(complexity + 1), 1) * FLOOR_HEIGHT;
       }
-      return getMethodBasedHeight(node.methodCount, node.depth);
+      return getMethodBasedHeight(mc, node.depth);
     }
 
     case 'churn': {
@@ -158,11 +163,11 @@ export function getEncodedHeight(
         return Math.max(Math.log2(churn + 1), 1) * FLOOR_HEIGHT;
       }
       // Churn requires git data — graceful fallback to methodCount
-      return getMethodBasedHeight(node.methodCount, node.depth);
+      return getMethodBasedHeight(mc, node.depth);
     }
 
     default:
-      return getMethodBasedHeight(node.methodCount, node.depth);
+      return getMethodBasedHeight(mc, node.depth);
   }
 }
 

@@ -1,6 +1,6 @@
 # Story 10.19: Create Lighting System for Test Coverage
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -71,13 +71,24 @@ Point lights are expensive in Three.js. Limit to one light per file block (not p
 ## Dev Agent Record
 
 ### Implementation Plan
-_To be filled during implementation_
+- Created `coverageLightingUtils.ts` with coverage extraction and intensity/color mapping
+- Created `CoverageLighting.tsx` R3F component rendering `<pointLight>` above buildings
+- Created `CoverageLighting.test.ts` with 18 unit tests covering utilities and store gating
 
 ### Completion Notes
-_To be filled on completion_
+- Follows the ConstructionCrane (10-18) sister pattern exactly: same props interface, same store gating, same test structure
+- `getTestCoverage` returns `null` (not 0) for absent data — distinguishes "untested" from "no data" (AC-5)
+- Intensity mapping: 0-30% → 0, 30-80% → linearly interpolated 0–1.5, 80-100% → 1.5–2.0
+- Color mapping: warm white `#FFF5E0` for high coverage, RGB-lerped blend for mid-range, neutral `#FFFFFF` fallback
+- Point light positioned at `buildingHeight * 1.3` Y, with `distance = buildingHeight * 4` and `decay = 2`
+- All 18 tests passing, no new TypeScript errors introduced
 
 ## File List
-_To be filled during implementation_
+- `packages/ui/src/features/canvas/components/atmosphere/coverageLightingUtils.ts` — **Created** — coverage extraction, intensity mapping, color mapping
+- `packages/ui/src/features/canvas/components/atmosphere/CoverageLighting.tsx` — **Created** — R3F point light component
+- `packages/ui/src/features/canvas/components/atmosphere/CoverageLighting.test.ts` — **Created** — 18 co-located unit tests
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` — **Modified** — marked 10-19 as review
+- `_bmad-output/implementation-artifacts/10-19-lighting-system-test-coverage.md` — **Modified** — dev agent record
 
 ---
 

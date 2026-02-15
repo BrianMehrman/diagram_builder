@@ -76,6 +76,7 @@ export interface CitySettings {
   atmosphereOverlays: AtmosphereOverlays;
   edgeTierVisibility: EdgeTierVisibility;
   cityVersion: CityVersion;
+  cameraTiltAssist: boolean;
 }
 
 /**
@@ -170,6 +171,7 @@ interface CanvasState {
   toggleTransitMapMode: () => void;
   toggleAtmosphereOverlay: (key: AtmosphereOverlayKey) => void;
   toggleEdgeTierVisibility: (key: EdgeTierKey) => void;
+  toggleCameraTiltAssist: () => void;
 
   // Reset to defaults
   reset: () => void;
@@ -192,6 +194,7 @@ const DEFAULT_CITY_SETTINGS: CitySettings = {
     inheritance: true,
   },
   cityVersion: 'v1',
+  cameraTiltAssist: true,
 };
 
 /**
@@ -384,6 +387,13 @@ export const useCanvasStore = create<CanvasState>((set) => ({
           ...state.citySettings.edgeTierVisibility,
           [key]: !state.citySettings.edgeTierVisibility[key],
         },
+      },
+    })),
+  toggleCameraTiltAssist: () =>
+    set((state) => ({
+      citySettings: {
+        ...state.citySettings,
+        cameraTiltAssist: !state.citySettings.cameraTiltAssist,
       },
     })),
 

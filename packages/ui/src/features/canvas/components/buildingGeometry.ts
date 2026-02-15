@@ -23,6 +23,7 @@ import {
   getBuildingHeight,
 } from '../views/cityViewUtils';
 import type { EncodedHeightOptions } from '../views/cityViewUtils';
+import { getMethodCount } from './buildings/floorBandUtils';
 
 /**
  * Geometry shape types for Three.js
@@ -69,9 +70,10 @@ export function getBuildingConfig(
   node: GraphNode,
   encodingOptions?: EncodedHeightOptions,
 ): BuildingConfig {
+  const resolvedMethodCount = getMethodCount(node);
   const classHeight = encodingOptions
-    ? getEncodedHeight(node, encodingOptions)
-    : getMethodBasedHeight(node.methodCount, node.depth);
+    ? getEncodedHeight(node, encodingOptions, resolvedMethodCount)
+    : getMethodBasedHeight(resolvedMethodCount || undefined, node.depth);
 
   switch (node.type) {
     case 'class':

@@ -18,6 +18,7 @@ import { UndergroundLayer } from './UndergroundLayer';
 import { LodController } from '../components/LodController';
 import { useCanvasStore } from '../store';
 import { useCityLayout } from '../hooks/useCityLayout';
+import { useCameraTiltAssist } from '../hooks/useCameraTiltAssist';
 import { computeGroundOpacity } from '../undergroundUtils';
 import type { Graph } from '../../../shared/types';
 
@@ -30,6 +31,9 @@ export function CityView({ graph }: CityViewProps) {
   const visibleLayers = useCanvasStore((s) => s.visibleLayers);
 
   const { positions, groundWidth, groundDepth } = useCityLayout(graph);
+
+  // Tilt camera upward on node selection to reveal sky edges
+  useCameraTiltAssist();
 
   return (
     <group name="city-view">

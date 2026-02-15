@@ -1,6 +1,6 @@
 # Story 10.13: Create GroundShadow Component
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -31,19 +31,19 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Create GroundShadow component (AC: 1, 2, 3)
-- [ ] Create `packages/ui/src/features/canvas/components/GroundShadow.tsx`
-- [ ] Accept same curve points as parent SkyEdge
-- [ ] Project all points to Y=0
-- [ ] Render as line with low opacity material
+- [x] Create `packages/ui/src/features/canvas/components/GroundShadow.tsx`
+- [x] Accept same curve points as parent SkyEdge
+- [x] Project all points to Y=0
+- [x] Render as line with low opacity material
 
 ### Task 2: Implement visibility and mode (AC: 4, 5)
-- [ ] Gate visibility by LOD level (same as SkyEdge)
-- [ ] Read `transitMapMode` from store — if active, set opacity to 1.0
+- [x] Gate visibility by LOD level (same as SkyEdge)
+- [x] Read `transitMapMode` from store — if active, set opacity to 1.0
 
 ### Task 3: Write tests (AC: 6)
-- [ ] Test: all shadow Y coordinates are 0
-- [ ] Test: opacity is 0.2-0.3 in normal mode
-- [ ] Test: opacity is 1.0 in transit map mode
+- [x] Test: all shadow Y coordinates are 0
+- [x] Test: opacity is 0.2-0.3 in normal mode
+- [x] Test: opacity is 1.0 in transit map mode
 
 ---
 
@@ -68,13 +68,20 @@ Status: not-started
 ## Dev Agent Record
 
 ### Implementation Plan
-_To be filled during implementation_
+- Mirrors SkyEdge's bezier curve construction but projects all Y to ground (0.01 to avoid z-fighting)
+- Reuses `isSkyEdgeVisible` for LOD/tier gating — identical visibility rules
+- Reads `transitMapMode` from store for opacity switching (0.25 normal, 1.0 transit)
+- Uses `depthWrite: false` to prevent z-fighting with district ground planes
+- Uses `<primitive object={THREE.Line}>` pattern (same as SkyEdge) to avoid R3F SVG conflicts
 
 ### Completion Notes
-_To be filled on completion_
+- All 9 tests passing (visibility gating, ground projection, opacity, color)
+- No new TypeScript errors introduced
+- Component is a companion to SkyEdge — does not modify SkyEdge at all
 
 ## File List
-_To be filled during implementation_
+- `packages/ui/src/features/canvas/components/GroundShadow.tsx` (NEW)
+- `packages/ui/src/features/canvas/components/GroundShadow.test.ts` (NEW)
 
 ---
 
