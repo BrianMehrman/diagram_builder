@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+
 /**
  * Codebase Import E2E Tests
  *
@@ -5,40 +7,97 @@
  * Coverage: Import codebase functionality (local and Git)
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../support/fixtures'
+import type { Page, APIResponse } from '@playwright/test'
+
+const API_BASE_URL = 'http://localhost:4000/api'
+
+type ImportType = 'git' | 'local'
+type CodebaseStatus = 'pending' | 'processing' | 'completed' | 'failed'
+
+interface CodebaseSummary {
+  id?: string
+  type: ImportType
+  source: string
+  status: CodebaseStatus
+  repositoryId?: string | null
+  error?: string | null
+  importedAt?: string
+}
+
+interface WorkspaceCodebasesResponse {
+  count: number
+  codebases: CodebaseSummary[]
+}
+
+interface GraphNode {
+  id?: string
+  type: string
+  [key: string]: unknown
+}
+
+interface GraphEdge {
+  id?: string
+  type?: string
+  source?: string
+  target?: string
+  [key: string]: unknown
+}
+
+interface GraphResponsePayload {
+  nodes?: GraphNode[]
+  edges?: GraphEdge[]
+}
+
+interface GraphResponse {
+  nodes: GraphNode[]
+  edges: GraphEdge[]
+}
+
+const parseJson = async <T>(response: APIResponse): Promise<T> => {
+  return (await response.json()) as T
+}
+
+const normalizeWorkspaceCodebases = (
+  payload: Partial<WorkspaceCodebasesResponse>
+): WorkspaceCodebasesResponse => ({
+  count: payload.count ?? payload.codebases?.length ?? 0,
+  codebases: payload.codebases ?? [],
+})
+
+const fetchWorkspaceCodebases = async (
+  page: Page,
+  workspaceId: string
+): Promise<WorkspaceCodebasesResponse> => {
+  const response = await page.request.get(`${API_BASE_URL}/workspaces/${workspaceId}/codebases`)
+  expect(response.ok()).toBe(true)
+  const payload = await parseJson<Partial<WorkspaceCodebasesResponse>>(response)
+  return normalizeWorkspaceCodebases(payload)
+}
+
+const fetchGraphData = async (page: Page, repositoryId: string): Promise<GraphResponse> => {
+  const response = await page.request.get(`${API_BASE_URL}/graph/${repositoryId}`)
+  expect(response.ok()).toBe(true)
+  const payload = await parseJson<GraphResponsePayload>(response)
+  return {
+    nodes: payload.nodes ?? [],
+    edges: payload.edges ?? [],
+  }
+}
+
+const groupNodesByType = (nodes: GraphNode[]): Record<string, number> => {
+  return nodes.reduce<Record<string, number>>((acc, node) => {
+    const nodeType = node.type ?? 'unknown'
+    acc[nodeType] = (acc[nodeType] || 0) + 1
+    return acc
+  }, {})
+}
 
 test.describe('Codebase Import @P1', () => {
-  test.beforeEach(async ({ page }) => {
-    // Skip authentication in dev mode
-    await page.goto('/login')
-    const skipButton = page.getByRole('button', { name: /skip login/i })
-    await skipButton.click()
-
-    // Wait for redirect to home page
-    await page.waitForURL('/')
-
-    // Wait for workspace list to load
-    await page.waitForSelector('[data-testid="page-title"]', { timeout: 10000 })
-
-    // Wait for workspace card or create button to appear
-    await page.waitForSelector('a[href^="/workspace/"], button:has-text("Create Workspace")', {
-      timeout: 10000,
-    })
-
-    // If there's a workspace card, click it; otherwise create one
-    const workspaceCard = page.locator('a[href^="/workspace/"]').first()
-    const createButton = page.locator('button:has-text("Create Workspace")')
-
-    if (await workspaceCard.isVisible().catch(() => false)) {
-      await workspaceCard.click()
-    } else if (await createButton.isVisible().catch(() => false)) {
-      await createButton.click()
-      // Wait for workspace to be created and navigated to
-      await page.waitForTimeout(2000)
-    }
-
-    // Now we should be on a workspace page
-    await page.waitForURL(/\/workspace\/.*/, { timeout: 10000 })
+  test.beforeEach(async ({ page, testWorkspace }) => {
+    // Navigate directly to the fixture workspace
+    await page.goto(`/workspace/${testWorkspace.id}`)
+    await page.waitForLoadState('networkidle')
 
     // Open left panel to access Import Codebase button
     const menuButton = page
@@ -227,10 +286,13 @@ test.describe('Codebase Import @P1', () => {
   // Story 5.5-9: End-to-End Codebase Import Validation
   // This test validates the complete import → Parser → Neo4j → UI rendering pipeline
   // Tests Stories 3-4 (Parser), 5.5-4 (API), and 5.5-5 (UI) integration
-  test('[P0] should render code in 3D canvas after importing Git repository', async ({ page }) => {
+  test('[P0] should render code in 3D canvas after importing Git repository', async ({
+    page,
+    testWorkspace,
+  }) => {
     // Set up console listener at the very start to capture ALL logs
     const allLogs: string[] = []
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       const text = msg.text()
       allLogs.push(text)
       if (text.includes('[WorkspacePage]') || text.includes('Failed')) {
@@ -291,7 +353,7 @@ test.describe('Codebase Import @P1', () => {
       const data = imageData.data
 
       // Check if any pixels are non-transparent
-      for (let i = 3; i < data.length; i += 4) {
+      for (let i: number = 3; i < data.length; i += 4) {
         if (data[i] > 0) return true // Found a non-transparent pixel
       }
       return false
@@ -311,38 +373,27 @@ test.describe('Codebase Import @P1', () => {
     await page.waitForTimeout(2000) // Allow time for repository to be cloned and parsed (mitt is small)
 
     // THEN: Verify the API shows the codebase was imported
-    // Get the workspace ID from the URL (format: /workspace/:id)
-    const url = page.url()
-    const workspaceIdMatch = url.match(/\/workspace\/([^\/]+)/)
-    const currentWorkspaceId = workspaceIdMatch ? workspaceIdMatch[1] : null
-    expect(currentWorkspaceId).toBeTruthy()
+    expect(testWorkspace.id).toBeTruthy()
 
-    const response = await page.request.get(
-      `http://localhost:4000/api/workspaces/${currentWorkspaceId}/codebases`
-    )
-    expect(response.ok()).toBe(true)
-    const data = await response.json()
-    expect(data.count).toBeGreaterThan(0)
+    const workspaceCodebases = await fetchWorkspaceCodebases(page, testWorkspace.id)
+    expect(workspaceCodebases.count).toBeGreaterThan(0)
 
-    console.log('Codebase data:', JSON.stringify(data, null, 2))
+    console.warn('Codebase data:', JSON.stringify(workspaceCodebases, null, 2))
 
     // THEN: Wait for parsing to complete (codebase status should be 'completed')
     // Polling for status change (real async processing takes time)
     let attempts = 0
     const maxAttempts = 60 // 60 seconds max for real parsing
-    let finalCodebase
+    let finalCodebase: CodebaseSummary | undefined
     while (attempts < maxAttempts) {
-      const statusResponse = await page.request.get(
-        `http://localhost:4000/api/workspaces/${currentWorkspaceId}/codebases`
-      )
-      const statusData = await statusResponse.json()
+      const statusData = await fetchWorkspaceCodebases(page, testWorkspace.id)
 
       // Find the most recent mitt import
-      const codebase = statusData.codebases?.find(
-        (cb: any) => cb.type === 'git' && cb.source === 'https://github.com/developit/mitt.git'
+      const codebase = statusData.codebases.find(
+        (cb) => cb.type === 'git' && cb.source === 'https://github.com/developit/mitt.git'
       )
 
-      console.log(`Attempt ${attempts + 1}: Codebase status = ${codebase?.status}`)
+      console.warn(`Attempt ${attempts + 1}: Codebase status = ${codebase?.status ?? 'unknown'}`)
 
       if (codebase?.status === 'completed') {
         finalCodebase = codebase
@@ -351,7 +402,7 @@ test.describe('Codebase Import @P1', () => {
 
       if (codebase?.status === 'failed') {
         console.error('Codebase import failed:', codebase.error)
-        throw new Error(`Codebase import failed: ${codebase.error}`)
+        throw new Error(`Codebase import failed: ${codebase.error ?? 'Unknown error'}`)
       }
 
       await page.waitForTimeout(1000)
@@ -359,59 +410,66 @@ test.describe('Codebase Import @P1', () => {
     }
 
     // Verify we got a completed codebase
-    expect(finalCodebase?.status).toBe('completed')
-    expect(finalCodebase?.repositoryId).toBeTruthy()
+    if (!finalCodebase) {
+      throw new Error('Git repository import did not complete within the expected window')
+    }
 
-    console.log('✅ Codebase import completed successfully')
-    console.log('   Repository ID:', finalCodebase.repositoryId)
+    expect(finalCodebase.status).toBe('completed')
+    expect(finalCodebase.repositoryId).toBeTruthy()
+    if (!finalCodebase.repositoryId) {
+      throw new Error('Repository ID missing after completed import')
+    }
+
+    console.warn('✅ Codebase import completed successfully')
+    console.warn('   Repository ID:', finalCodebase.repositoryId)
 
     // THEN: Verify Neo4j has the parsed graph data
     // This validates Stories 3-4 (Parser), 5.5-4 (API), 5.5-5 (UI Import) integration
-    const graphResponse = await page.request.get(
-      `http://localhost:4000/api/graph/${finalCodebase.repositoryId}`
-    )
-    expect(graphResponse.ok()).toBe(true)
-
-    const graphData = await graphResponse.json()
-    console.log('✅ Graph data retrieved from Neo4j')
-    console.log('   Nodes:', graphData.nodes?.length || 0)
-    console.log('   Edges:', graphData.edges?.length || 0)
+    const graphData = await fetchGraphData(page, finalCodebase.repositoryId)
+    console.warn('✅ Graph data retrieved from Neo4j')
+    console.warn('   Nodes:', graphData.nodes.length)
+    console.warn('   Edges:', graphData.edges.length)
 
     // Verify graph has actual data
-    expect(graphData.nodes).toBeDefined()
+    expect(graphData.nodes.length).toBeGreaterThan(0)
 
     // Count nodes by type
-    const nodesByType = graphData.nodes?.reduce((acc: any, node: any) => {
-      acc[node.type] = (acc[node.type] || 0) + 1
-      return acc
-    }, {})
-    console.log('   Nodes by type:', JSON.stringify(nodesByType, null, 2))
+    const nodesByType = groupNodesByType(graphData.nodes)
+    console.warn('   Nodes by type:', JSON.stringify(nodesByType, null, 2))
 
     // CRITICAL BUG DETECTOR: mitt repo has 2-3 TypeScript files (src/index.ts + types), so we expect:
     // - At least 2 File nodes (main source files)
     // - At least 2 Function nodes (mitt(), EventHandler types, etc.)
     // - At least 3 edges (CONTAINS, module structure)
-    const fileNodes = graphData.nodes?.filter((n: any) => n.type === 'file') || []
-    const functionNodes = graphData.nodes?.filter((n: any) => n.type === 'function') || []
-    console.log('⚠️  PARSER BUG CHECK (GIT): Found', fileNodes.length, 'file nodes (expected >= 2)')
-    console.log('⚠️  PARSER BUG CHECK (GIT): Found', functionNodes.length, 'function nodes (expected >= 2)')
-    console.log('⚠️  PARSER BUG CHECK (GIT): Found', graphData.edges?.length || 0, 'edges (expected >= 3)')
+    const fileNodes = graphData.nodes.filter((node) => node.type === 'file')
+    const functionNodes = graphData.nodes.filter((node) => node.type === 'function')
+    console.warn(
+      '⚠️  PARSER BUG CHECK (GIT): Found',
+      fileNodes.length,
+      'file nodes (expected >= 2)'
+    )
+    console.warn(
+      '⚠️  PARSER BUG CHECK (GIT): Found',
+      functionNodes.length,
+      'function nodes (expected >= 2)'
+    )
+    console.warn(
+      '⚠️  PARSER BUG CHECK (GIT): Found',
+      graphData.edges.length,
+      'edges (expected >= 3)'
+    )
 
     // GREEN PHASE ASSERTIONS: Should PASS now that we're using a TypeScript repository
     expect(fileNodes.length).toBeGreaterThanOrEqual(2) // mitt has at least 2 TS files
     expect(functionNodes.length).toBeGreaterThanOrEqual(1) // Should have function nodes from AST analysis
-    expect(graphData.edges?.length || 0).toBeGreaterThanOrEqual(2) // Should have edges for relationships
+    expect(graphData.edges.length).toBeGreaterThanOrEqual(2) // Should have edges for relationships
 
-    console.log('')
-    console.log('✅ GIT REPOSITORY PARSING SUCCESS:')
-    console.log(`   Found ${graphData.nodes.length} total nodes, ${graphData.edges?.length || 0} edges`)
-    console.log(`   TypeScript files parsed correctly`)
-    console.log(`   AST analysis working (functions/classes extracted)`)
-    console.log(`   Relationships built between nodes`)
-
-    // Basic sanity check - at least some nodes exist
-    expect(graphData.nodes.length).toBeGreaterThan(0)
-    expect(graphData.edges).toBeDefined()
+    console.warn('')
+    console.warn('✅ GIT REPOSITORY PARSING SUCCESS:')
+    console.warn(`   Found ${graphData.nodes.length} total nodes, ${graphData.edges.length} edges`)
+    console.warn('   TypeScript files parsed correctly')
+    console.warn('   AST analysis working (functions/classes extracted)')
+    console.warn('   Relationships built between nodes')
 
     console.log('')
     console.log('🔧 TESTING UI REFRESH FIX (Story 6-4):')
@@ -426,9 +484,9 @@ test.describe('Codebase Import @P1', () => {
     await page.waitForTimeout(7000) // Wait longer to ensure polling completes
 
     // Show captured WorkspacePage logs
-    const workspacePageLogs = allLogs.filter(l => l.includes('[WorkspacePage]'))
+    const workspacePageLogs = allLogs.filter((l) => l.includes('[WorkspacePage]'))
     console.log('   Captured WorkspacePage logs:', workspacePageLogs.length)
-    workspacePageLogs.forEach(log => console.log('     ', log))
+    workspacePageLogs.forEach((log) => console.log('     ', log))
 
     // CRITICAL: Wait for React to finish re-rendering after state changes
     // The logs show graphData is set, but DOM might not have updated yet
@@ -467,7 +525,11 @@ test.describe('Codebase Import @P1', () => {
     const isEmptyStateVisible = await page.evaluate(() => {
       // Check if the empty state text is in the DOM
       const bodyText = document.body.innerText
-      return bodyText.includes('Import') && bodyText.includes('codebase') && bodyText.includes('Get started')
+      return (
+        bodyText.includes('Import') &&
+        bodyText.includes('codebase') &&
+        bodyText.includes('Get started')
+      )
     })
     console.log('   EmptyState visible (fresh query):', isEmptyStateVisible)
 
@@ -543,91 +605,90 @@ test.describe('Codebase Import @P1', () => {
     // Wait for R3F to fully initialize (retry mechanism)
     let retryCount = 0
     const maxRetries = 5
-    let sceneData: any = null
+    let sceneData: Record<string, unknown> | null = null
 
     while (retryCount < maxRetries) {
       console.log(`   Attempt ${retryCount + 1}/${maxRetries}: Checking R3F store...`)
 
       sceneData = await page.evaluate(() => {
-      const canvas = document.querySelector('canvas') as HTMLCanvasElement
-      if (!canvas) return { success: false, error: 'No canvas found' }
+        const canvas = document.querySelector('canvas') as HTMLCanvasElement
+        if (!canvas) return { success: false, error: 'No canvas found' }
 
-      // Wait for R3F to attach its internal state
-      // React Three Fiber stores scene data on canvas.__r3f
-      const r3f = (canvas as any).__r3f
+        // Wait for R3F to attach its internal state
+        // React Three Fiber stores scene data on canvas.__r3f
+        const r3f = (canvas as Record<string, unknown>).__r3f as Record<string, unknown> | undefined
 
-      // If R3F hasn't initialized yet, return partial success with canvas info
-      if (!r3f || !r3f.root || !r3f.root.store) {
-        return {
-          success: false,
-          error: 'R3F store not initialized',
-          canvasExists: true,
-          canvasWidth: canvas.width,
-          canvasHeight: canvas.height
+        // If R3F hasn't initialized yet, return partial success with canvas info
+        if (!r3f || !r3f.root || !(r3f.root as Record<string, unknown>).store) {
+          return {
+            success: false,
+            error: 'R3F store not initialized',
+            canvasExists: true,
+            canvasWidth: canvas.width,
+            canvasHeight: canvas.height,
+          }
         }
-      }
 
-      const state = r3f.root.store.getState()
-      const scene = state.scene
+        const state = ((r3f.root as Record<string, unknown>).store as { getState: () => Record<string, unknown> }).getState()
+        const scene = state.scene as { children: unknown[]; traverse: (fn: (obj: Record<string, unknown>) => void) => void } | undefined
 
-      if (!scene) {
-        return { success: false, error: 'No scene found in R3F store' }
-      }
+        if (!scene) {
+          return { success: false, error: 'No scene found in R3F store' }
+        }
 
-      // Collect mesh data from the scene
-      const meshes: any[] = []
-      const lines: any[] = []
-      const groups: any[] = []
+        // Collect mesh data from the scene
+        const meshes: Record<string, unknown>[] = []
+        const lines: Record<string, unknown>[] = []
+        const groups: Record<string, unknown>[] = []
 
-      scene.traverse((object: any) => {
-        if (object.type === 'Mesh') {
-          meshes.push({
-            type: object.type,
-            uuid: object.uuid,
-            name: object.name,
-            hasGeometry: !!object.geometry,
-            hasMaterial: !!object.material,
-            visible: object.visible,
-            position: {
-              x: object.position.x,
-              y: object.position.y,
-              z: object.position.z
-            },
-            geometryType: object.geometry?.type,
-            vertexCount: object.geometry?.attributes?.position?.count || 0
-          })
-        } else if (object.type === 'Line' || object.type === 'LineSegments') {
-          lines.push({
-            type: object.type,
-            uuid: object.uuid,
-            visible: object.visible
-          })
-        } else if (object.type === 'Group') {
-          groups.push({
-            type: object.type,
-            childCount: object.children.length
-          })
+        scene.traverse((object: Record<string, unknown>) => {
+          if (object.type === 'Mesh') {
+            const geometry = object.geometry as Record<string, unknown> | undefined
+            const position = object.position as { x: number; y: number; z: number }
+            meshes.push({
+              type: object.type,
+              uuid: object.uuid,
+              name: object.name,
+              hasGeometry: !!geometry,
+              hasMaterial: !!object.material,
+              visible: object.visible,
+              position: { x: position.x, y: position.y, z: position.z },
+              geometryType: geometry?.type,
+              vertexCount: ((geometry?.attributes as Record<string, unknown>)?.position as Record<string, unknown>)?.count || 0,
+            })
+          } else if (object.type === 'Line' || object.type === 'LineSegments') {
+            lines.push({
+              type: object.type,
+              uuid: object.uuid,
+              visible: object.visible,
+            })
+          } else if (object.type === 'Group') {
+            groups.push({
+              type: object.type,
+              childCount: (object.children as unknown[]).length,
+            })
+          }
+        })
+
+        const camera = state.camera as { position: { x: number; y: number; z: number } }
+        return {
+          success: true,
+          sceneChildCount: scene.children.length,
+          meshCount: meshes.length,
+          lineCount: lines.length,
+          groupCount: groups.length,
+          meshes,
+          lines,
+          cameraPosition: {
+            x: camera.position.x,
+            y: camera.position.y,
+            z: camera.position.z,
+          },
         }
       })
 
-      return {
-        success: true,
-        sceneChildCount: scene.children.length,
-        meshCount: meshes.length,
-        lineCount: lines.length,
-        groupCount: groups.length,
-        meshes,
-        lines,
-        cameraPosition: {
-          x: state.camera.position.x,
-          y: state.camera.position.y,
-          z: state.camera.position.z
-        }
-      }
-    })
-
       // If R3F store is initialized, break out of retry loop
-      if (sceneData.success) {
+      if (sceneData && (sceneData as Record<string, unknown>).success) {
         console.log('   ✅ R3F store initialized successfully')
         break
       }
@@ -642,11 +703,11 @@ test.describe('Codebase Import @P1', () => {
 
     console.log('')
     console.log('   Scene inspection results:')
-    console.log('   - Success:', sceneData.success)
-    if (!sceneData.success) {
-      console.log('   - Error:', sceneData.error)
-      console.log('   - Canvas exists:', sceneData.canvasExists)
-      console.log('   - Canvas dimensions:', sceneData.canvasWidth, 'x', sceneData.canvasHeight)
+    console.log('   - Success:', sceneData?.success)
+    if (!sceneData?.success) {
+      console.log('   - Error:', sceneData?.error)
+      console.log('   - Canvas exists:', sceneData?.canvasExists)
+      console.log('   - Canvas dimensions:', sceneData?.canvasWidth, 'x', sceneData?.canvasHeight)
     } else {
       console.log('   - Total scene children:', sceneData.sceneChildCount)
       console.log('   - Mesh count:', sceneData.meshCount)
@@ -654,46 +715,47 @@ test.describe('Codebase Import @P1', () => {
       console.log('   - Group count:', sceneData.groupCount)
       console.log('   - Camera position:', JSON.stringify(sceneData.cameraPosition))
 
-      if (sceneData.meshes.length > 0) {
-        console.log('   - Sample mesh:', JSON.stringify(sceneData.meshes[0], null, 2))
+      const meshes = sceneData.meshes as Record<string, unknown>[]
+      if (meshes.length > 0) {
+        console.log('   - Sample mesh:', JSON.stringify(meshes[0], null, 2))
       }
     }
 
     // ASSERTIONS for 3D mesh rendering
-    if (sceneData.success) {
+    if (sceneData?.success) {
       // Should have meshes for nodes (7 nodes from mitt repo)
-      expect(sceneData.meshCount).toBeGreaterThan(0)
+      expect(sceneData.meshCount as number).toBeGreaterThan(0)
       console.log(`✅ Found ${sceneData.meshCount} mesh objects in scene`)
 
       // Each mesh should have geometry and material
-      sceneData.meshes.forEach((mesh: any, index: number) => {
+      const meshes = sceneData.meshes as Record<string, unknown>[]
+      meshes.forEach((mesh: Record<string, unknown>) => {
         expect(mesh.hasGeometry).toBe(true)
         expect(mesh.hasMaterial).toBe(true)
         expect(mesh.visible).toBe(true)
-        expect(mesh.vertexCount).toBeGreaterThan(0)
+        expect(mesh.vertexCount as number).toBeGreaterThan(0)
       })
       console.log('✅ All meshes have valid geometry and materials')
 
       // Should have edges (lines) between nodes
-      if (sceneData.lineCount > 0) {
+      if ((sceneData.lineCount as number) > 0) {
         console.log(`✅ Found ${sceneData.lineCount} edge lines in scene`)
       }
 
       // Take screenshot for visual regression testing
       await page.screenshot({
         path: 'test-results/3d-scene-rendering.png',
-        fullPage: false
+        fullPage: false,
       })
       console.log('✅ Screenshot saved for visual verification')
-
     } else {
       // If R3F store not accessible, use visual pixel analysis
       console.log('⚠️  R3F store not accessible, using visual pixel analysis')
 
       // Take screenshot for visual comparison
-      const screenshot = await page.screenshot({
+      await page.screenshot({
         path: 'test-results/3d-scene-rendering.png',
-        fullPage: false
+        fullPage: false,
       })
 
       // Analyze canvas pixels to verify it's not blank
@@ -718,7 +780,7 @@ test.describe('Codebase Import @P1', () => {
             viewportSet: viewport && viewport[2] > 0 && viewport[3] > 0,
             viewport: viewport ? { width: viewport[2], height: viewport[3] } : null,
             scissorBox: scissorBox,
-            drawBuffers: drawBuffers !== undefined
+            drawBuffers: drawBuffers !== undefined,
           }
         }
 
@@ -736,7 +798,7 @@ test.describe('Codebase Import @P1', () => {
           method: '2d',
           nonTransparentPixels,
           totalPixels: data.length / 4,
-          percentageRendered: (nonTransparentPixels / (data.length / 4)) * 100
+          percentageRendered: (nonTransparentPixels / (data.length / 4)) * 100,
         }
       })
 
@@ -746,17 +808,22 @@ test.describe('Codebase Import @P1', () => {
       if (canvasPixelData.method === 'webgl') {
         expect(canvasPixelData.hasContent).toBe(true)
         expect(canvasPixelData.viewportSet).toBe(true)
-        console.log(`✅ WebGL viewport configured (${canvasPixelData.viewport.width}x${canvasPixelData.viewport.height})`)
+        const viewport = canvasPixelData.viewport as { width: number; height: number }
+        console.log(
+          `✅ WebGL viewport configured (${viewport.width}x${viewport.height})`
+        )
       } else if (canvasPixelData.method === '2d') {
         expect(canvasPixelData.hasContent).toBe(true)
-        expect(canvasPixelData.percentageRendered).toBeGreaterThan(1)
-        console.log(`✅ Canvas has ${canvasPixelData.percentageRendered.toFixed(2)}% rendered pixels`)
+        expect(canvasPixelData.percentageRendered as number).toBeGreaterThan(1)
+        console.log(
+          `✅ Canvas has ${(canvasPixelData.percentageRendered as number).toFixed(2)}% rendered pixels`
+        )
       }
 
       // Verify canvas dimensions
-      expect(sceneData.canvasExists).toBe(true)
-      expect(sceneData.canvasWidth).toBeGreaterThan(0)
-      expect(sceneData.canvasHeight).toBeGreaterThan(0)
+      expect(sceneData?.canvasExists).toBe(true)
+      expect(sceneData?.canvasWidth as number).toBeGreaterThan(0)
+      expect(sceneData?.canvasHeight as number).toBeGreaterThan(0)
       console.log('✅ Canvas exists with valid dimensions')
       console.log('✅ Screenshot saved for visual regression testing')
     }
@@ -767,7 +834,10 @@ test.describe('Codebase Import @P1', () => {
 
   // Task 2: Local Path Import Test
   // RED PHASE: This test documents expected behavior - will FAIL until parser bug fixed
-  test('[P0] should import local directory and parse all files', async ({ page }) => {
+  test('[P0] should import local directory and parse all files', async ({
+    page,
+    testWorkspace,
+  }) => {
     // GIVEN: User is on workspace page
     await expect(page.getByRole('button', { name: /import codebase/i })).toBeVisible()
 
@@ -782,7 +852,8 @@ test.describe('Codebase Import @P1', () => {
     await localRadio.click()
 
     // Enter absolute path to test fixture
-    const testFixturePath = '/Users/brianmehrman/projects/diagram_builder/tests/fixtures/test-codebase'
+    const testFixturePath =
+      '/Users/brianmehrman/projects/diagram_builder/tests/fixtures/test-codebase'
     const localPathInput = page
       .locator('input[placeholder*="path"]')
       .or(page.locator('input[name="localPath"]'))
@@ -798,24 +869,18 @@ test.describe('Codebase Import @P1', () => {
     })
 
     // THEN: Get workspace ID and fetch codebases
-    const url = page.url()
-    const workspaceIdMatch = url.match(/\/workspace\/([^\/]+)/)
-    const currentWorkspaceId = workspaceIdMatch ? workspaceIdMatch[1] : null
-    expect(currentWorkspaceId).toBeTruthy()
+    expect(testWorkspace.id).toBeTruthy()
 
     // Wait for parsing to complete
     let attempts = 0
     const maxAttempts = 30 // 30 seconds max for local path (should be faster than Git)
-    let finalCodebase
+    let finalCodebase: CodebaseSummary | undefined
     while (attempts < maxAttempts) {
-      const statusResponse = await page.request.get(
-        `http://localhost:4000/api/workspaces/${currentWorkspaceId}/codebases`
-      )
-      const statusData = await statusResponse.json()
+      const statusData = await fetchWorkspaceCodebases(page, testWorkspace.id)
 
       // Find the codebase we just imported (most recent local import)
-      const codebase = statusData.codebases?.find(
-        (cb: any) => cb.type === 'local' && cb.source === testFixturePath
+      const codebase = statusData.codebases.find(
+        (cb) => cb.type === 'local' && cb.source === testFixturePath
       )
 
       console.log(`Attempt ${attempts + 1}: Codebase status = ${codebase?.status}`)
@@ -839,24 +904,17 @@ test.describe('Codebase Import @P1', () => {
     expect(finalCodebase?.repositoryId).toBeTruthy()
 
     console.log('✅ Local codebase import completed')
-    console.log('   Repository ID:', finalCodebase.repositoryId)
+    console.log('   Repository ID:', finalCodebase!.repositoryId)
 
     // Verify Neo4j has ALL parsed files
-    const graphResponse = await page.request.get(
-      `http://localhost:4000/api/graph/${finalCodebase.repositoryId}`
-    )
-    expect(graphResponse.ok()).toBe(true)
+    const graphData = await fetchGraphData(page, finalCodebase!.repositoryId!)
 
-    const graphData = await graphResponse.json()
     console.log('📊 Graph data from Neo4j:')
-    console.log('   Total nodes:', graphData.nodes?.length || 0)
-    console.log('   Total edges:', graphData.edges?.length || 0)
+    console.log('   Total nodes:', graphData.nodes.length)
+    console.log('   Total edges:', graphData.edges.length)
 
     // Count nodes by type
-    const nodesByType = graphData.nodes?.reduce((acc: any, node: any) => {
-      acc[node.type] = (acc[node.type] || 0) + 1
-      return acc
-    }, {})
+    const nodesByType = groupNodesByType(graphData.nodes)
     console.log('   Nodes by type:', JSON.stringify(nodesByType, null, 2))
 
     // RED PHASE ASSERTIONS: These document what SUCCESS looks like
@@ -870,25 +928,29 @@ test.describe('Codebase Import @P1', () => {
     expect(graphData.nodes).toBeDefined()
 
     // CRITICAL BUG DETECTOR: Parser should find at least 3 files (index, User, helpers)
-    const fileNodes = graphData.nodes?.filter((n: any) => n.type === 'file') || []
+    const fileNodes = graphData.nodes.filter((n) => n.type === 'file')
     console.log('⚠️  PARSER BUG CHECK: Found', fileNodes.length, 'file nodes (expected >= 3)')
     expect(fileNodes.length).toBeGreaterThanOrEqual(3) // Will FAIL if parser finds 0 files
 
     // Should have Class nodes (User class)
-    const classNodes = graphData.nodes?.filter((n: any) => n.type === 'class') || []
+    const classNodes = graphData.nodes.filter((n) => n.type === 'class')
     console.log('⚠️  PARSER BUG CHECK: Found', classNodes.length, 'class nodes (expected >= 1)')
     expect(classNodes.length).toBeGreaterThanOrEqual(1) // Will FAIL if parser doesn't analyze AST
 
     // Should have edges (CONTAINS, DEPENDS_ON relationships)
-    console.log('⚠️  PARSER BUG CHECK: Found', graphData.edges?.length || 0, 'edges (expected >= 4)')
-    expect(graphData.edges?.length || 0).toBeGreaterThanOrEqual(4) // Will FAIL if no relationships
+    console.log(
+      '⚠️  PARSER BUG CHECK: Found',
+      graphData.edges.length,
+      'edges (expected >= 4)'
+    )
+    expect(graphData.edges.length).toBeGreaterThanOrEqual(4) // Will FAIL if no relationships
 
     console.log('✅ LOCAL PATH IMPORT VALIDATION PASSED')
   })
 
   // Task 5: Error Handling Tests
   test.describe('Error Handling Validation @P1', () => {
-    test('[P1] should handle invalid local path gracefully', async ({ page }) => {
+    test('[P1] should handle invalid local path gracefully', async ({ page, testWorkspace }) => {
       await expect(page.getByRole('button', { name: /import codebase/i })).toBeVisible()
 
       await page.getByRole('button', { name: /import codebase/i }).click()
@@ -909,22 +971,14 @@ test.describe('Codebase Import @P1', () => {
 
       await page.waitForTimeout(1000)
 
-      // Get workspace ID
-      const url = page.url()
-      const workspaceIdMatch = url.match(/\/workspace\/([^\/]+)/)
-      const currentWorkspaceId = workspaceIdMatch ? workspaceIdMatch[1] : null
-
       // Poll for status - should be 'failed'
       let attempts = 0
-      let failedCodebase
+      let failedCodebase: CodebaseSummary | undefined
       while (attempts < 10) {
-        const statusResponse = await page.request.get(
-          `http://localhost:4000/api/workspaces/${currentWorkspaceId}/codebases`
-        )
-        const statusData = await statusResponse.json()
+        const statusData = await fetchWorkspaceCodebases(page, testWorkspace.id)
 
-        const codebase = statusData.codebases?.find(
-          (cb: any) => cb.type === 'local' && cb.source === invalidPath
+        const codebase = statusData.codebases.find(
+          (cb) => cb.type === 'local' && cb.source === invalidPath
         )
 
         if (codebase?.status === 'failed') {
@@ -944,7 +998,7 @@ test.describe('Codebase Import @P1', () => {
       console.log('✅ Invalid path handled gracefully:', failedCodebase?.error)
     })
 
-    test('[P1] should handle invalid Git URL gracefully', async ({ page }) => {
+    test('[P1] should handle invalid Git URL gracefully', async ({ page, testWorkspace }) => {
       await expect(page.getByRole('button', { name: /import codebase/i })).toBeVisible()
 
       await page.getByRole('button', { name: /import codebase/i }).click()
@@ -965,22 +1019,14 @@ test.describe('Codebase Import @P1', () => {
 
       await page.waitForTimeout(1000)
 
-      // Get workspace ID
-      const url = page.url()
-      const workspaceIdMatch = url.match(/\/workspace\/([^\/]+)/)
-      const currentWorkspaceId = workspaceIdMatch ? workspaceIdMatch[1] : null
-
       // Poll for status - should be 'failed'
       let attempts = 0
-      let failedCodebase
+      let failedCodebase: CodebaseSummary | undefined
       while (attempts < 20) {
-        const statusResponse = await page.request.get(
-          `http://localhost:4000/api/workspaces/${currentWorkspaceId}/codebases`
-        )
-        const statusData = await statusResponse.json()
+        const statusData = await fetchWorkspaceCodebases(page, testWorkspace.id)
 
-        const codebase = statusData.codebases?.find(
-          (cb: any) => cb.type === 'git' && cb.source === invalidUrl
+        const codebase = statusData.codebases.find(
+          (cb) => cb.type === 'git' && cb.source === invalidUrl
         )
 
         if (codebase?.status === 'failed') {
@@ -1001,20 +1047,15 @@ test.describe('Codebase Import @P1', () => {
   })
 
   // Task 6: Performance Validation
-  test('[P1] should complete small repository import within 30 seconds', async ({ page }) => {
+  test('[P1] should complete small repository import within 30 seconds', async ({
+    page,
+    testWorkspace,
+  }) => {
     // GIVEN: User is on workspace page
     await expect(page.getByRole('button', { name: /import codebase/i })).toBeVisible()
 
-    // Get workspace ID first
-    const url = page.url()
-    const workspaceIdMatch = url.match(/\/workspace\/([^\/]+)/)
-    const currentWorkspaceId = workspaceIdMatch ? workspaceIdMatch[1] : null
-
     // Get count of existing codebases before import
-    const beforeResponse = await page.request.get(
-      `http://localhost:4000/api/workspaces/${currentWorkspaceId}/codebases`
-    )
-    const beforeData = await beforeResponse.json()
+    const beforeData = await fetchWorkspaceCodebases(page, testWorkspace.id)
     const beforeCount = beforeData.count || 0
 
     const startTime = Date.now()
@@ -1049,27 +1090,22 @@ test.describe('Codebase Import @P1', () => {
     // Poll for completion with timeout
     let attempts = 0
     const maxAttempts = 30 // 30 seconds
-    let completedCodebase
+    let completedCodebase: CodebaseSummary | undefined
     while (attempts < maxAttempts) {
-      const statusResponse = await page.request.get(
-        `http://localhost:4000/api/workspaces/${currentWorkspaceId}/codebases`
-      )
-      const statusData = await statusResponse.json()
+      const statusData = await fetchWorkspaceCodebases(page, testWorkspace.id)
 
       // Find the NEW codebase (count increased)
       if (statusData.count > beforeCount) {
         // Get the most recent mitt import (newest first by importedAt)
         const mittCodebases = statusData.codebases
-          ?.filter(
-            (cb: any) =>
-              cb.type === 'git' && cb.source === 'https://github.com/developit/mitt.git'
+          .filter(
+            (cb) => cb.type === 'git' && cb.source === 'https://github.com/developit/mitt.git'
           )
           .sort(
-            (a: any, b: any) =>
-              new Date(b.importedAt).getTime() - new Date(a.importedAt).getTime()
+            (a, b) => new Date(b.importedAt ?? '').getTime() - new Date(a.importedAt ?? '').getTime()
           )
 
-        const codebase = mittCodebases?.[0]
+        const codebase = mittCodebases[0]
 
         if (codebase?.status === 'completed') {
           completedCodebase = codebase

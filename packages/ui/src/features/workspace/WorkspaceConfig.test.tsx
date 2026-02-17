@@ -2,16 +2,57 @@
  * WorkspaceConfig Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { act } from 'react';
 import { WorkspaceConfig } from './WorkspaceConfig';
-import { useWorkspaceStore } from './store';
+import type { Workspace } from '../../shared/types';
+
+// Mock the API endpoints module
+vi.mock('../../shared/api/endpoints', () => ({
+  workspaces: {
+    create: vi.fn(),
+    update: vi.fn(),
+    get: vi.fn(),
+    delete: vi.fn(),
+    list: vi.fn(),
+  },
+}));
+
+// Import the mocked module
+import { workspaces as workspacesApi } from '../../shared/api/endpoints';
+const mockCreate = vi.mocked(workspacesApi.create);
+const mockUpdate = vi.mocked(workspacesApi.update);
+const mockGet = vi.mocked(workspacesApi.get);
+
+function buildWorkspace(overrides: Partial<Workspace> = {}): Workspace {
+  const now = new Date().toISOString();
+  return {
+    id: 'ws-1',
+    name: 'Test Workspace',
+    ownerId: 'dev-user',
+    repositories: [],
+    members: [],
+    settings: {
+      defaultLodLevel: 2,
+      autoRefresh: false,
+      collaborationEnabled: false,
+    },
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
+  };
+}
 
 describe('WorkspaceConfig', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   beforeEach(() => {
-    useWorkspaceStore.getState().reset();
+    vi.clearAllMocks();
+    mockCreate.mockResolvedValue(buildWorkspace({ id: 'ws-new', name: 'Created' }));
+    mockUpdate.mockResolvedValue(buildWorkspace());
   });
 
   it('renders with new workspace title', () => {
@@ -20,14 +61,14 @@ describe('WorkspaceConfig', () => {
     expect(screen.getByText('New Workspace')).toBeDefined();
   });
 
-  it('renders with edit workspace title when editing', () => {
-    const workspace = useWorkspaceStore.getState().createWorkspace({
-      name: 'Test Workspace',
+  it('renders with edit workspace title when editing', async () => {
+    mockGet.mockResolvedValue(buildWorkspace({ name: 'Test Workspace' }));
+
+    render(<WorkspaceConfig workspaceId="ws-1" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Edit Workspace')).toBeDefined();
     });
-
-    render(<WorkspaceConfig workspaceId={workspace.id} />);
-
-    expect(screen.getByText('Edit Workspace')).toBeDefined();
   });
 
   it('has name input field', () => {
@@ -70,7 +111,7 @@ describe('WorkspaceConfig', () => {
     expect(collaborationCheckbox.getAttribute('type')).toBe('checkbox');
   });
 
-  it('creates workspace on submit', async () => {
+  it('creates workspace via API on submit', async () => {
     const user = userEvent.setup();
     const onSave = vi.fn();
 
@@ -81,14 +122,17 @@ describe('WorkspaceConfig', () => {
 
     await user.click(screen.getByText('Create Workspace'));
 
-    const workspaces = useWorkspaceStore.getState().workspaces;
-    expect(workspaces).toHaveLength(1);
-    expect(workspaces[0].name).toBe('My Workspace');
+    await waitFor(() => {
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'My Workspace' })
+      );
+    });
   });
 
-  it('calls onSave callback with workspace ID', async () => {
+  it('calls onSave callback with workspace ID from API', async () => {
     const user = userEvent.setup();
     const onSave = vi.fn();
+    mockCreate.mockResolvedValue(buildWorkspace({ id: 'ws-new' }));
 
     render(<WorkspaceConfig onSave={onSave} />);
 
@@ -97,10 +141,12 @@ describe('WorkspaceConfig', () => {
 
     await user.click(screen.getByText('Create Workspace'));
 
-    expect(onSave).toHaveBeenCalledWith(expect.stringContaining('workspace-'));
+    await waitFor(() => {
+      expect(onSave).toHaveBeenCalledWith('ws-new');
+    });
   });
 
-  it('saves description if provided', async () => {
+  it('sends description to API if provided', async () => {
     const user = userEvent.setup();
 
     render(<WorkspaceConfig />);
@@ -113,11 +159,17 @@ describe('WorkspaceConfig', () => {
 
     await user.click(screen.getByText('Create Workspace'));
 
-    const workspaces = useWorkspaceStore.getState().workspaces;
-    expect(workspaces[0].description).toBe('Test description');
+    await waitFor(() => {
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Test Workspace',
+          description: 'Test description',
+        })
+      );
+    });
   });
 
-  it('does not save description if empty', async () => {
+  it('does not send description if empty', async () => {
     const user = userEvent.setup();
 
     render(<WorkspaceConfig />);
@@ -127,11 +179,14 @@ describe('WorkspaceConfig', () => {
 
     await user.click(screen.getByText('Create Workspace'));
 
-    const workspaces = useWorkspaceStore.getState().workspaces;
-    expect(workspaces[0].description).toBeUndefined();
+    await waitFor(() => {
+      expect(mockCreate).toHaveBeenCalled();
+      const arg = mockCreate.mock.calls[0]![0];
+      expect(arg.description).toBeUndefined();
+    });
   });
 
-  it('saves custom settings', async () => {
+  it('sends custom settings to API', async () => {
     const user = userEvent.setup();
 
     render(<WorkspaceConfig />);
@@ -146,35 +201,48 @@ describe('WorkspaceConfig', () => {
 
     await user.click(screen.getByText('Create Workspace'));
 
-    const workspaces = useWorkspaceStore.getState().workspaces;
-    expect(workspaces[0].settings.defaultLodLevel).toBe(3);
-    expect(workspaces[0].settings.autoRefresh).toBe(true);
+    await waitFor(() => {
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          settings: expect.objectContaining({
+            defaultLodLevel: 3,
+            autoRefresh: true,
+          }),
+        })
+      );
+    });
   });
 
-  it('loads existing workspace data when editing', () => {
-    const workspace = useWorkspaceStore.getState().createWorkspace({
-      name: 'Existing Workspace',
-      description: 'Existing description',
+  it('loads existing workspace data from API when editing', async () => {
+    mockGet.mockResolvedValue(
+      buildWorkspace({
+        name: 'Existing Workspace',
+        description: 'Existing description',
+      })
+    );
+
+    render(<WorkspaceConfig workspaceId="ws-1" />);
+
+    await waitFor(() => {
+      const nameInput = screen.getByLabelText(/name/i) as HTMLInputElement;
+      expect(nameInput.value).toBe('Existing Workspace');
     });
 
-    render(<WorkspaceConfig workspaceId={workspace.id} />);
-
-    const nameInput = screen.getByLabelText(/name/i) as HTMLInputElement;
     const descriptionInput = screen.getByLabelText(
       /description/i
     ) as HTMLTextAreaElement;
-
-    expect(nameInput.value).toBe('Existing Workspace');
     expect(descriptionInput.value).toBe('Existing description');
   });
 
-  it('updates workspace when editing', async () => {
+  it('calls update API when editing', async () => {
     const user = userEvent.setup();
-    const workspace = useWorkspaceStore.getState().createWorkspace({
-      name: 'Original Name',
-    });
+    mockGet.mockResolvedValue(buildWorkspace({ name: 'Original Name' }));
 
-    render(<WorkspaceConfig workspaceId={workspace.id} />);
+    render(<WorkspaceConfig workspaceId="ws-1" />);
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Original Name')).toBeDefined();
+    });
 
     const nameInput = screen.getByLabelText(/name/i);
     await user.clear(nameInput);
@@ -182,8 +250,12 @@ describe('WorkspaceConfig', () => {
 
     await user.click(screen.getByText('Save Changes'));
 
-    const workspaces = useWorkspaceStore.getState().workspaces;
-    expect(workspaces[0].name).toBe('Updated Name');
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalledWith(
+        'ws-1',
+        expect.objectContaining({ name: 'Updated Name' })
+      );
+    });
   });
 
   it('disables create button when name is empty', () => {
@@ -227,7 +299,9 @@ describe('WorkspaceConfig', () => {
 
     await user.click(screen.getByText('Create Workspace'));
 
-    expect(onClose).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(onClose).toHaveBeenCalled();
+    });
   });
 
   it('trims whitespace from name', async () => {
@@ -240,7 +314,43 @@ describe('WorkspaceConfig', () => {
 
     await user.click(screen.getByText('Create Workspace'));
 
-    const workspaces = useWorkspaceStore.getState().workspaces;
-    expect(workspaces[0].name).toBe('Test Workspace');
+    await waitFor(() => {
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Test Workspace' })
+      );
+    });
+  });
+
+  it('shows error message when API fails', async () => {
+    const user = userEvent.setup();
+    mockCreate.mockRejectedValue(new Error('Network error'));
+
+    render(<WorkspaceConfig />);
+
+    const nameInput = screen.getByLabelText(/name/i);
+    await user.type(nameInput, 'Test');
+
+    await user.click(screen.getByText('Create Workspace'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Network error')).toBeDefined();
+    });
+  });
+
+  it('shows saving state during API call', async () => {
+    const user = userEvent.setup();
+    // Never resolve so we can check the saving state
+    mockCreate.mockReturnValue(new Promise(() => {}));
+
+    render(<WorkspaceConfig />);
+
+    const nameInput = screen.getByLabelText(/name/i);
+    await user.type(nameInput, 'Test');
+
+    await user.click(screen.getByText('Create Workspace'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Saving...')).toBeDefined();
+    });
   });
 });

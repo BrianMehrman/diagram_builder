@@ -8,70 +8,6 @@
 import { test, expect } from '../support/fixtures'
 
 test.describe('Workspace Management @P1', () => {
-  test.beforeEach(async ({ page }) => {
-    // Mock workspace API
-    await page.route('**/api/workspaces', (route) => {
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify([
-          {
-            id: 'test-workspace-1',
-            name: 'Test Workspace',
-            description: 'Test workspace',
-            settings: {
-              defaultLodLevel: 2,
-              autoRefresh: false,
-              collaborationEnabled: false,
-            },
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        ]),
-      })
-    })
-
-    await page.route('**/api/workspaces/*', (route) => {
-      const url = route.request().url()
-      const method = route.request().method()
-
-      // Let test-specific codebases POST mocks handle those
-      if (method === 'POST' && url.includes('/codebases')) {
-        route.fallback()
-        return
-      }
-
-      if (method === 'GET' && url.includes('/codebases')) {
-        // Return empty codebases list
-        route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify([]),
-        })
-      } else if (method === 'GET') {
-        // Return workspace details
-        route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            id: 'test-workspace-1',
-            name: 'Test Workspace',
-            description: 'Test workspace',
-            settings: {
-              defaultLodLevel: 2,
-              autoRefresh: false,
-              collaborationEnabled: false,
-            },
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }),
-        })
-      } else {
-        route.fallback()
-      }
-    })
-  })
-
   test.skip('[P1] should display workspace switcher on canvas page', async ({
     page,
     mockGraph,
@@ -113,10 +49,14 @@ test.describe('Workspace Management @P1', () => {
     await expect(canvas).toBeVisible()
   })
 
-  test('[P1] should display import codebase button', async ({ page, mockGraph }) => {
+  test('[P1] should display import codebase button', async ({
+    page,
+    testWorkspace,
+    mockGraph,
+  }) => {
     // GIVEN: User is on workspace page
     await mockGraph()
-    await page.goto('/workspace/test-workspace-1')
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
 
     // Open left panel to show import button
@@ -129,10 +69,14 @@ test.describe('Workspace Management @P1', () => {
     await expect(importButton).toHaveText('Import Codebase')
   })
 
-  test('[P1] should open import modal when button is clicked', async ({ page, mockGraph }) => {
+  test('[P1] should open import modal when button is clicked', async ({
+    page,
+    testWorkspace,
+    mockGraph,
+  }) => {
     // GIVEN: User is on workspace page
     await mockGraph()
-    await page.goto('/workspace/test-workspace-1')
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
 
     // Open left panel
@@ -149,10 +93,14 @@ test.describe('Workspace Management @P1', () => {
     await expect(modal.locator('h2')).toContainText('Import Codebase')
   })
 
-  test('[P1] should switch between local and git import types', async ({ page, mockGraph }) => {
+  test('[P1] should switch between local and git import types', async ({
+    page,
+    testWorkspace,
+    mockGraph,
+  }) => {
     // GIVEN: Import modal is open
     await mockGraph()
-    await page.goto('/workspace/test-workspace-1')
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
     await page.locator('[data-testid="toggle-left-panel"]').click()
     await page.waitForTimeout(300)
@@ -174,10 +122,14 @@ test.describe('Workspace Management @P1', () => {
     await expect(page.locator('[data-testid="branch-input"]')).not.toBeVisible()
   })
 
-  test('[P1] should validate required fields', async ({ page, mockGraph }) => {
+  test('[P1] should validate required fields', async ({
+    page,
+    testWorkspace,
+    mockGraph,
+  }) => {
     // GIVEN: Import modal is open
     await mockGraph()
-    await page.goto('/workspace/test-workspace-1')
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
     await page.locator('[data-testid="toggle-left-panel"]').click()
     await page.waitForTimeout(300)
@@ -193,10 +145,14 @@ test.describe('Workspace Management @P1', () => {
     await expect(errorMessage).toHaveText(/required/i)
   })
 
-  test('[P1] should validate git URL format', async ({ page, mockGraph }) => {
+  test('[P1] should validate git URL format', async ({
+    page,
+    testWorkspace,
+    mockGraph,
+  }) => {
     // GIVEN: Import modal is open with git type selected
     await mockGraph()
-    await page.goto('/workspace/test-workspace-1')
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
     await page.locator('[data-testid="toggle-left-panel"]').click()
     await page.waitForTimeout(300)
@@ -214,44 +170,23 @@ test.describe('Workspace Management @P1', () => {
     await expect(errorMessage).toHaveText(/invalid/i)
   })
 
-  test('[P1] should successfully import local codebase', async ({ page, mockGraph }) => {
+  test('[P1] should successfully import local codebase', async ({
+    page,
+    testWorkspace,
+    mockGraph,
+  }) => {
     // GIVEN: Import modal is open
     await mockGraph()
 
-    // Unroute the beforeEach handler that might interfere
-    await page.unroute('**/api/workspaces/*')
-
-    // Re-add basic workspace mocks
-    await page.route('**/api/workspaces/test-workspace-1', async (route) => {
-      if (route.request().method() === 'GET') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            id: 'test-workspace-1',
-            name: 'Test Workspace',
-            description: 'Test workspace',
-            settings: {
-              defaultLodLevel: 2,
-              autoRefresh: false,
-              collaborationEnabled: false,
-            },
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }),
-        })
-      }
-    })
-
     // Mock the import API endpoint
-    await page.route('**/api/workspaces/test-workspace-1/codebases', async (route) => {
+    await page.route(`**/api/workspaces/${testWorkspace.id}/codebases`, async (route) => {
       if (route.request().method() === 'POST') {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({
             codebaseId: 'cb-123',
-            workspaceId: 'test-workspace-1',
+            workspaceId: testWorkspace.id,
             source: '/path/to/repo',
             type: 'local',
             status: 'pending',
@@ -262,12 +197,12 @@ test.describe('Workspace Management @P1', () => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([]),
+          body: JSON.stringify({ codebases: [] }),
         })
       }
     })
 
-    await page.goto('/workspace/test-workspace-1')
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
     await page.locator('[data-testid="toggle-left-panel"]').click()
     await page.waitForTimeout(300)
@@ -300,19 +235,23 @@ test.describe('Workspace Management @P1', () => {
     // Modal may close automatically - that's expected behavior
   })
 
-  test('[P1] should successfully import git repository', async ({ page, mockGraph }) => {
+  test('[P1] should successfully import git repository', async ({
+    page,
+    testWorkspace,
+    mockGraph,
+  }) => {
     // GIVEN: Import modal is open with git type selected
     await mockGraph()
 
     // Mock the import API endpoint
-    await page.route('**/api/workspaces/test-workspace-1/codebases', async (route) => {
+    await page.route(`**/api/workspaces/${testWorkspace.id}/codebases`, async (route) => {
       if (route.request().method() === 'POST') {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({
             codebaseId: 'cb-456',
-            workspaceId: 'test-workspace-1',
+            workspaceId: testWorkspace.id,
             source: 'https://github.com/user/repo.git',
             type: 'git',
             branch: 'develop',
@@ -324,12 +263,12 @@ test.describe('Workspace Management @P1', () => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([]),
+          body: JSON.stringify({ codebases: [] }),
         })
       }
     })
 
-    await page.goto('/workspace/test-workspace-1')
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
     await page.locator('[data-testid="toggle-left-panel"]').click()
     await page.waitForTimeout(300)
@@ -356,12 +295,16 @@ test.describe('Workspace Management @P1', () => {
     expect(response.ok()).toBe(true)
   })
 
-  test('[P1] should handle import errors gracefully', async ({ page, mockGraph }) => {
+  test('[P1] should handle import errors gracefully', async ({
+    page,
+    testWorkspace,
+    mockGraph,
+  }) => {
     // GIVEN: Import modal is open
     await mockGraph()
 
     // Mock the import API endpoint to return error (RFC 7807 format)
-    await page.route('**/api/workspaces/test-workspace-1/codebases', async (route) => {
+    await page.route(`**/api/workspaces/${testWorkspace.id}/codebases`, async (route) => {
       if (route.request().method() === 'POST') {
         await route.fulfill({
           status: 500,
@@ -371,19 +314,19 @@ test.describe('Workspace Management @P1', () => {
             title: 'Repository not found',
             status: 500,
             detail: 'The specified repository could not be found or accessed',
-            instance: '/api/workspaces/test-workspace-1/codebases',
+            instance: `/api/workspaces/${testWorkspace.id}/codebases`,
           }),
         })
       } else {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([]),
+          body: JSON.stringify({ codebases: [] }),
         })
       }
     })
 
-    await page.goto('/workspace/test-workspace-1')
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
     await page.locator('[data-testid="toggle-left-panel"]').click()
     await page.waitForTimeout(300)
@@ -411,10 +354,14 @@ test.describe('Workspace Management @P1', () => {
     await expect(errorMessage).toBeVisible({ timeout: 5000 })
   })
 
-  test('[P2] should close modal when cancel button is clicked', async ({ page, mockGraph }) => {
+  test('[P2] should close modal when cancel button is clicked', async ({
+    page,
+    testWorkspace,
+    mockGraph,
+  }) => {
     // GIVEN: Import modal is open
     await mockGraph()
-    await page.goto('/workspace/test-workspace-1')
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
     await page.locator('[data-testid="toggle-left-panel"]').click()
     await page.waitForTimeout(300)
@@ -430,7 +377,11 @@ test.describe('Workspace Management @P1', () => {
     await expect(modal).not.toBeVisible()
   })
 
-  test('[P2] should disable close button during import', async ({ page, mockGraph }) => {
+  test('[P2] should disable close button during import', async ({
+    page,
+    testWorkspace,
+    mockGraph,
+  }) => {
     // GIVEN: Import is in progress
     await mockGraph()
 
@@ -442,7 +393,7 @@ test.describe('Workspace Management @P1', () => {
         contentType: 'application/json',
         body: JSON.stringify({
           codebaseId: 'cb-789',
-          workspaceId: 'test-workspace',
+          workspaceId: testWorkspace.id,
           source: '/path/to/repo',
           type: 'local',
           status: 'pending',
@@ -451,7 +402,7 @@ test.describe('Workspace Management @P1', () => {
       })
     })
 
-    await page.goto('/workspace/test-workspace-1')
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
     await page.locator('[data-testid="toggle-left-panel"]').click()
     await page.waitForTimeout(300)

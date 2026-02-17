@@ -10,40 +10,21 @@ import { createGraph } from '../support/factories'
 
 test.describe('3D Canvas Visualization @P0 @smoke', () => {
   test.beforeEach(async ({ page }) => {
-    // Mock workspace API to prevent 404s
-    await page.route('**/api/workspaces/*', (route) => {
-      if (route.request().method() === 'GET') {
-        route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            id: 'test-workspace-1',
-            name: 'Test Workspace',
-            description: 'Test workspace for canvas tests',
-            settings: {
-              defaultLodLevel: 2,
-              autoRefresh: false,
-              collaborationEnabled: false,
-            },
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }),
-        })
-      } else {
-        route.continue()
-      }
-    })
-
+    // Mock codebases endpoint for controlled test data
     await page.route('**/api/workspaces/*/codebases', (route) => {
       route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([]),
+        body: JSON.stringify({ codebases: [] }),
       })
     })
   })
 
-  test('[P0] should load workspace with canvas', async ({ page, mockGraph }) => {
+  test('[P0] should load workspace with canvas', async ({
+    page,
+    testWorkspace,
+    mockGraph,
+  }) => {
     // GIVEN: Graph with specific node/edge counts
     await mockGraph({
       metadata: {
@@ -54,13 +35,17 @@ test.describe('3D Canvas Visualization @P0 @smoke', () => {
     })
 
     // WHEN: User navigates to workspace
-    await page.goto('/workspace/test-workspace-1')
+    await page.goto(`/workspace/${testWorkspace.id}`)
 
     // THEN: Workspace header is visible
     await expect(page.locator('[data-testid="workspace-header"]')).toBeVisible()
   })
 
-  test('[P0] should render workspace without errors', async ({ page, mockGraph }) => {
+  test('[P0] should render workspace without errors', async ({
+    page,
+    testWorkspace,
+    mockGraph,
+  }) => {
     // GIVEN: Valid graph data
     await mockGraph()
 
@@ -71,7 +56,7 @@ test.describe('3D Canvas Visualization @P0 @smoke', () => {
     })
 
     // WHEN: User navigates to workspace
-    await page.goto('/workspace/test-workspace-1')
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
 
     // THEN: No page errors occurred
@@ -81,10 +66,14 @@ test.describe('3D Canvas Visualization @P0 @smoke', () => {
     await expect(page.locator('[data-testid="workspace-header"]')).toBeVisible()
   })
 
-  test('[P2] should display export button', async ({ page, mockGraph }) => {
+  test('[P2] should display export button', async ({
+    page,
+    testWorkspace,
+    mockGraph,
+  }) => {
     // GIVEN: User is on workspace page
     await mockGraph()
-    await page.goto('/workspace/test-workspace-1')
+    await page.goto(`/workspace/${testWorkspace.id}`)
 
     // WHEN: Page loads and user opens right panel
     await page.waitForLoadState('networkidle')

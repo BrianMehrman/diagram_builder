@@ -64,7 +64,15 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
 
   const handleDelete = async (workspaceId: string) => {
     if (confirm('Are you sure you want to delete this workspace?')) {
-      setWorkspaceList((prev) => prev.filter((w) => w.id !== workspaceId));
+      try {
+        await workspacesApi.delete(workspaceId);
+        setWorkspaceList((prev) => prev.filter((w) => w.id !== workspaceId));
+        if (currentWorkspaceId === workspaceId) {
+          navigate('/');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to delete workspace');
+      }
     }
   };
 

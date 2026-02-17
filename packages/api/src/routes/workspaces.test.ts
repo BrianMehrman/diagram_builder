@@ -49,7 +49,7 @@ vi.mock('../database/query-utils', () => {
       }
 
       // Mock GET workspace
-      if (query.includes('MATCH (w:Workspace {id: $id})') && !query.includes('SET w')) {
+      if (query.includes('MATCH (w:Workspace {id: $id})') && !query.includes('SET w') && !query.includes('DETACH DELETE')) {
         const id = params.id as string;
         const workspace = mockWorkspaces.get(id);
         if (!workspace) {
@@ -72,7 +72,7 @@ vi.mock('../database/query-utils', () => {
       }
 
       // Mock list user workspaces
-      if (query.includes('WHERE w.ownerId = $userId OR $userId IN')) {
+      if (query.includes('WHERE w.ownerId = $userId')) {
         const userId = params.userId as string;
         const userWorkspaces = Array.from(mockWorkspaces.values()).filter((w) => {
           if (w.ownerId === userId) return true;
@@ -665,6 +665,13 @@ describe('Workspace Endpoints', () => {
         .set('Authorization', `Bearer ${authToken}`);
 
       expect(response.status).toBe(204);
+
+      // Verify workspace is actually deleted
+      const getResponse = await request(app)
+        .get(`/api/workspaces/${workspaceId}`)
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(getResponse.status).toBe(404);
     });
 
     it('should return 404 when workspace not found', async () => {

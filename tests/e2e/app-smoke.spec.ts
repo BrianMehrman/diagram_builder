@@ -11,83 +11,21 @@
  * - Handle authentication flow
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../support/fixtures'
 
 test.describe('Application Smoke Tests @P0 @smoke', () => {
   test.beforeEach(async ({ page }) => {
-    // Mock API endpoints to prevent 500 errors
-    await page.route('**/api/workspaces', (route) => {
-      route.fulfill({
+    // Mock graph/codebases endpoints for controlled test data
+    await page.route('**/api/workspaces/*/codebases', async (route) => {
+      await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([
-          {
-            id: 'test-workspace-1',
-            name: 'Default Workspace',
-            description: 'Test workspace',
-            settings: {
-              defaultLodLevel: 2,
-              autoRefresh: false,
-              collaborationEnabled: false,
-            },
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        ]),
+        body: JSON.stringify({ codebases: [] }),
       })
     })
 
-    await page.route('**/api/workspaces/*', (route) => {
-      const url = route.request().url()
-      if (route.request().method() === 'GET') {
-        route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            id: 'test-workspace-1',
-            name: 'Default Workspace',
-            description: 'Test workspace',
-            settings: {
-              defaultLodLevel: 2,
-              autoRefresh: false,
-              collaborationEnabled: false,
-            },
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }),
-        })
-      } else if (route.request().method() === 'POST') {
-        route.fulfill({
-          status: 201,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            id: 'test-workspace-new',
-            name: 'Default Workspace',
-            description: 'Auto-created workspace',
-            settings: {
-              defaultLodLevel: 2,
-              autoRefresh: false,
-              collaborationEnabled: false,
-            },
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }),
-        })
-      } else {
-        route.continue()
-      }
-    })
-
-    await page.route('**/api/workspaces/*/codebases', (route) => {
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify([]),
-      })
-    })
-
-    await page.route('**/api/graph/**', (route) => {
-      route.fulfill({
+    await page.route('**/api/graph/**', async (route) => {
+      await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
@@ -198,25 +136,18 @@ test.describe('Application Smoke Tests @P0 @smoke', () => {
     expect(errors).toHaveLength(0)
   })
 
-  test('[P0] should load workspace page with all components', async ({ page }) => {
+  test('[P0] should load workspace page with all components', async ({
+    page,
+    testWorkspace,
+  }) => {
     const errors: string[] = []
     page.on('pageerror', (error) => {
       errors.push(error.message)
     })
 
-    // GIVEN: User skips auth
-    await page.goto('/login')
-    await page.getByRole('button', { name: /skip login/i }).click()
-
-    // WHEN: User navigates to workspace (auto-created or manual)
+    // GIVEN: Navigate directly to workspace page (real workspace from fixture)
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
-
-    // Wait for either home page workspaces or auto-navigation to workspace
-    const currentUrl = page.url()
-    if (!currentUrl.includes('/workspace/')) {
-      // If still on home, wait for auto-navigation or workspace creation
-      await page.waitForURL(/\/workspace\/.*/, { timeout: 10000 })
-    }
 
     // Wait for workspace header to be visible
     await expect(page.locator('[data-testid="workspace-header"]')).toBeVisible({ timeout: 5000 })
@@ -235,21 +166,18 @@ test.describe('Application Smoke Tests @P0 @smoke', () => {
     await expect(page.locator('[data-testid="import-codebase-button"]')).toBeVisible()
   })
 
-  test('[P0] should open and close import codebase modal', async ({ page }) => {
+  test('[P0] should open and close import codebase modal', async ({
+    page,
+    testWorkspace,
+  }) => {
     const errors: string[] = []
     page.on('pageerror', (error) => {
       errors.push(error.message)
     })
 
     // GIVEN: User is on workspace page
-    await page.goto('/login')
-    await page.getByRole('button', { name: /skip login/i }).click()
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
-
-    const currentUrl = page.url()
-    if (!currentUrl.includes('/workspace/')) {
-      await page.waitForURL(/\/workspace\/.*/, { timeout: 10000 })
-    }
 
     // Open left panel to access Import button
     await page.locator('[data-testid="toggle-left-panel"]').click()
@@ -275,21 +203,18 @@ test.describe('Application Smoke Tests @P0 @smoke', () => {
     await expect(page.locator('[data-testid="import-codebase-modal"]')).not.toBeVisible()
   })
 
-  test('[P0] should open and close export dialog', async ({ page }) => {
+  test('[P0] should open and close export dialog', async ({
+    page,
+    testWorkspace,
+  }) => {
     const errors: string[] = []
     page.on('pageerror', (error) => {
       errors.push(error.message)
     })
 
     // GIVEN: User is on workspace page
-    await page.goto('/login')
-    await page.getByRole('button', { name: /skip login/i }).click()
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
-
-    const currentUrl = page.url()
-    if (!currentUrl.includes('/workspace/')) {
-      await page.waitForURL(/\/workspace\/.*/, { timeout: 10000 })
-    }
 
     // Open right panel to access Export button
     await page.locator('[data-testid="toggle-right-panel"]').click()
@@ -314,8 +239,8 @@ test.describe('Application Smoke Tests @P0 @smoke', () => {
 
   test('[P0] should handle API errors gracefully', async ({ page }) => {
     // GIVEN: API returns errors
-    await page.route('**/api/workspaces', (route) => {
-      route.fulfill({
+    await page.route('**/api/workspaces', async (route) => {
+      await route.fulfill({
         status: 500,
         contentType: 'application/json',
         body: JSON.stringify({ error: 'Internal Server Error' }),
@@ -345,21 +270,18 @@ test.describe('Application Smoke Tests @P0 @smoke', () => {
     expect(isOnValidPage).toBe(true)
   })
 
-  test('[P0] should verify all navigation components render', async ({ page }) => {
+  test('[P0] should verify all navigation components render', async ({
+    page,
+    testWorkspace,
+  }) => {
     const errors: string[] = []
     page.on('pageerror', (error) => {
       errors.push(error.message)
     })
 
     // GIVEN: User is on workspace page
-    await page.goto('/login')
-    await page.getByRole('button', { name: /skip login/i }).click()
+    await page.goto(`/workspace/${testWorkspace.id}`)
     await page.waitForLoadState('networkidle')
-
-    const currentUrl = page.url()
-    if (!currentUrl.includes('/workspace/')) {
-      await page.waitForURL(/\/workspace\/.*/, { timeout: 10000 })
-    }
 
     // Wait for workspace header to render
     await expect(page.locator('[data-testid="workspace-header"]')).toBeVisible({ timeout: 5000 })

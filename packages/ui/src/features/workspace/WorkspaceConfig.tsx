@@ -4,8 +4,8 @@
  * UI for creating and configuring workspaces
  */
 
-import { useState } from 'react';
-import { useWorkspaceStore } from './store';
+import { useState, useEffect } from 'react';
+import { workspaces as workspacesApi } from '../../shared/api/endpoints';
 import type { WorkspaceSettings } from '../../shared/types';
 
 interface WorkspaceConfigProps {
@@ -22,65 +22,86 @@ export function WorkspaceConfig({
   onClose,
   onSave,
 }: WorkspaceConfigProps) {
-  const workspaces = useWorkspaceStore((state) => state.workspaces);
-  const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
-  const updateWorkspace = useWorkspaceStore((state) => state.updateWorkspace);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [settings, setSettings] = useState<WorkspaceSettings>({
+    defaultLodLevel: 2,
+    autoRefresh: false,
+    collaborationEnabled: false,
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(!workspaceId);
 
-  const existingWorkspace = workspaceId
-    ? workspaces.find((w) => w.id === workspaceId)
-    : undefined;
+  // Load existing workspace data from API when editing
+  useEffect(() => {
+    if (!workspaceId) return;
+    workspacesApi.get(workspaceId).then((workspace) => {
+      setName(workspace.name);
+      setDescription(workspace.description ?? '');
+      setSettings(workspace.settings);
+      setLoaded(true);
+    }).catch((err) => {
+      console.error('Failed to load workspace:', err);
+      setError('Failed to load workspace');
+      setLoaded(true);
+    });
+  }, [workspaceId]);
 
-  const [name, setName] = useState(existingWorkspace?.name || '');
-  const [description, setDescription] = useState(
-    existingWorkspace?.description || ''
-  );
-  const [settings, setSettings] = useState<WorkspaceSettings>(
-    existingWorkspace?.settings || {
-      defaultLodLevel: 2,
-      autoRefresh: false,
-      collaborationEnabled: false,
-    }
-  );
-
-  const handleSave = () => {
-    if (!name.trim()) {
+  const handleSave = async () => {
+    if (!name.trim() || saving) {
       return;
     }
 
-    if (workspaceId && existingWorkspace) {
-      // Update existing workspace
-      const updateData = {
-        name: name.trim(),
-        settings,
-        ...(description.trim() && { description: description.trim() }),
-      };
-      updateWorkspace(workspaceId, updateData);
-      if (onSave) {
-        onSave(workspaceId);
-      }
-    } else {
-      // Create new workspace
-      const createData = {
-        name: name.trim(),
-        settings,
-        ...(description.trim() && { description: description.trim() }),
-      };
-      const workspace = createWorkspace(createData);
-      if (onSave) {
-        onSave(workspace.id);
-      }
-    }
+    setSaving(true);
+    setError(null);
 
-    if (onClose) {
-      onClose();
+    try {
+      if (workspaceId) {
+        // Update existing workspace via API
+        await workspacesApi.update(workspaceId, {
+          name: name.trim(),
+          settings,
+          ...(description.trim() && { description: description.trim() }),
+        });
+        onSave?.(workspaceId);
+      } else {
+        // Create new workspace via API
+        const workspace = await workspacesApi.create({
+          name: name.trim(),
+          settings,
+          ...(description.trim() && { description: description.trim() }),
+        });
+        onSave?.(workspace.id);
+      }
+      onClose?.();
+    } catch (err) {
+      console.error('Failed to save workspace:', err);
+      setError(err instanceof Error ? err.message : 'Failed to save workspace');
+    } finally {
+      setSaving(false);
     }
   };
+
+  if (!loaded) {
+    return (
+      <div className="bg-white rounded-lg shadow-lg p-6 text-center text-gray-500">
+        Loading workspace...
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
       <h2 className="text-xl font-bold text-gray-900 mb-6">
         {workspaceId ? 'Edit Workspace' : 'New Workspace'}
       </h2>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+          <p className="text-sm text-red-800">{error}</p>
+        </div>
+      )}
 
       <div className="space-y-4">
         {/* Name */}
@@ -200,11 +221,15 @@ export function WorkspaceConfig({
         {/* Actions */}
         <div className="flex gap-2 pt-4">
           <button
-            onClick={handleSave}
-            disabled={!name.trim()}
+            onClick={() => void handleSave()}
+            disabled={!name.trim() || saving}
             className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold rounded-md transition-colors"
           >
-            {workspaceId ? 'Save Changes' : 'Create Workspace'}
+            {saving
+              ? 'Saving...'
+              : workspaceId
+                ? 'Save Changes'
+                : 'Create Workspace'}
           </button>
           {onClose && (
             <button

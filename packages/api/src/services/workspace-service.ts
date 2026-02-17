@@ -81,6 +81,9 @@ export async function createWorkspace(
     updatedAt: workspace.updatedAt,
   });
 
+  // Invalidate the user's workspace list cache
+  await cache.invalidate(buildCacheKey('workspace', `user:${userId}:list`));
+
   return workspace;
 }
 
@@ -233,8 +236,9 @@ export async function updateWorkspace(
 
   await runQuery(query, params);
 
-  // Invalidate cache
+  // Invalidate both the workspace cache and the user's list cache
   await cache.invalidate(buildCacheKey('workspace', workspaceId));
+  await cache.invalidate(buildCacheKey('workspace', `user:${userId}:list`));
 
   // Return updated workspace
   return getWorkspace(workspaceId);
@@ -269,8 +273,9 @@ export async function deleteWorkspace(
 
   await runQuery(query, { id: workspaceId });
 
-  // Invalidate cache
+  // Invalidate both the workspace cache and the user's list cache
   await cache.invalidate(buildCacheKey('workspace', workspaceId));
+  await cache.invalidate(buildCacheKey('workspace', `user:${userId}:list`));
 
   return true;
 }

@@ -8,8 +8,29 @@ import { test as base, Page, APIRequestContext } from '@playwright/test';
 import { createGraph, createRepository, createViewpoint } from '../factories';
 import type { Graph, Repository, Viewpoint } from '../factories';
 
+const API_BASE_URL = 'http://localhost:4000/api';
+
+/** Shape returned by POST /api/workspaces */
+export interface Workspace {
+  id: string;
+  name: string;
+  description: string;
+  ownerId: string;
+  repositories: unknown[];
+  members: unknown[];
+  settings: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Type definition for custom fixtures
 type TestFixtures = {
+  /**
+   * Creates a real workspace via the API before each test and deletes it afterward.
+   * Exposes the workspace object (id, name, etc.) for use in tests.
+   */
+  testWorkspace: Workspace;
+
   /**
    * Mock graph data fixture
    * Intercepts /api/graph requests and returns mock data
@@ -45,6 +66,25 @@ type TestFixtures = {
  *   });
  */
 export const test = base.extend<TestFixtures>({
+  /**
+   * Real workspace created via API — cleaned up after each test
+   */
+  testWorkspace: async ({ request }, use) => {
+    const response = await request.post(`${API_BASE_URL}/workspaces`, {
+      data: { name: `E2E Test ${Date.now()}` },
+    });
+
+    if (!response.ok()) {
+      throw new Error(`Failed to create test workspace: ${response.status()} ${await response.text()}`);
+    }
+
+    const workspace = (await response.json()) as Workspace;
+    await use(workspace);
+
+    // Cleanup: delete workspace (ignore errors — best effort)
+    await request.delete(`${API_BASE_URL}/workspaces/${workspace.id}`).catch(() => {});
+  },
+
   /**
    * Mock graph data - intercepts graph API calls
    */

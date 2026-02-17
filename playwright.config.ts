@@ -13,7 +13,7 @@ export default defineConfig({
 
   // Parallelization
   fullyParallel: true,
-  workers: process.env.CI ? 1 : undefined,
+  ...(process.env.CI ? { workers: 1 } : {}),
 
   // Retries (CI only)
   forbidOnly: !!process.env.CI,
