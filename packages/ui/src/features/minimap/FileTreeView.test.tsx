@@ -2,8 +2,8 @@
  * FileTreeView Tests
  */
 
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, cleanup } from '@testing-library/react';
 import { act } from 'react';
 import { FileTreeView } from './FileTreeView';
 import type { GraphNode } from '../../shared/types';
@@ -36,6 +36,10 @@ const mockNodes: GraphNode[] = [
 ];
 
 describe('FileTreeView', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it('renders file nodes', () => {
     render(<FileTreeView nodes={mockNodes} />);
 

@@ -1,6 +1,6 @@
 # Story 10.20: Create SmogOverlay Indicator
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -32,20 +32,20 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Create smog overlay (AC: 1, 2, 6)
-- [ ] Create `packages/ui/src/features/canvas/components/atmosphere/SmogOverlay.tsx`
-- [ ] Calculate average complexity per district
-- [ ] Render semi-transparent sprites above districts above 75th percentile
-- [ ] Use `<points>` or `<sprite>` for performance
+- [x] Create `packages/ui/src/features/canvas/components/atmosphere/SmogOverlay.tsx`
+- [x] Calculate average complexity per district
+- [x] Render semi-transparent sprites above districts above 75th percentile
+- [x] Use `<sprite>` for performance
 
 ### Task 2: Implement controls (AC: 3, 4, 5)
-- [ ] Read `atmosphereOverlays.smog` from store
-- [ ] Gate by LOD 3+
-- [ ] No data: no smog rendered
+- [x] Read `atmosphereOverlays.smog` from store
+- [x] Gate by LOD 3+
+- [x] No data: no smog rendered
 
 ### Task 3: Write tests (AC: 7)
-- [ ] Test: smog above 75th percentile threshold
-- [ ] Test: no smog when data absent
-- [ ] Test: toggle off → no sprites
+- [x] Test: smog above 75th percentile threshold
+- [x] Test: no smog when data absent
+- [x] Test: toggle off → no sprites
 
 ---
 
@@ -66,13 +66,24 @@ Status: not-started
 ## Dev Agent Record
 
 ### Implementation Plan
-_To be filled during implementation_
+Followed established atmosphere indicator pattern from ConstructionCrane (10-18) and CoverageLighting (10-19):
+- Separate utils file for pure data extraction and threshold logic
+- Component reads store for LOD gating and toggle state
+- Sprite-based rendering for performance (AC-6)
+- Per-district average complexity with 75th percentile threshold
 
 ### Completion Notes
-_To be filled on completion_
+- 26 tests passing (utility extraction, average calculation, threshold, shouldShow, opacity, visibility gating)
+- Zero TypeScript errors
+- Component accepts `districts` and `districtNodeMap` props — caller provides district-to-node mapping
+- Sprite particles distributed deterministically across district arc geometry
+- Opacity scales with complexity above threshold (0.15 to 0.45 range)
+- NOT wired into CityAtmosphere (that's Story 10-22)
 
 ## File List
-_To be filled during implementation_
+- `packages/ui/src/features/canvas/components/atmosphere/SmogOverlay.tsx` (NEW)
+- `packages/ui/src/features/canvas/components/atmosphere/smogUtils.ts` (NEW)
+- `packages/ui/src/features/canvas/components/atmosphere/SmogOverlay.test.ts` (NEW)
 
 ---
 

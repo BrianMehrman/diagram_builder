@@ -56,7 +56,7 @@ export function CityView({ graph }: CityViewProps) {
       )}
 
       {/* Atmospheric effects */}
-      <CityAtmosphere />
+      <CityAtmosphere graph={graph} />
 
       {/* Underground dependency tunnels */}
       {visibleLayers.underground && (

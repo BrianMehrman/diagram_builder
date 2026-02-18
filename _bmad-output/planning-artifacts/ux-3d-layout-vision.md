@@ -95,6 +95,13 @@ Flying into a building reveals its internal structure: **floors** representing a
 
 ### Vertical Organization
 
+> ⚠️ **SUPERSEDED** — See `city-metaphor-vertical-layering-spec.md`.
+> Building height is now driven by **containment** (must be tall enough to hold method rooms), not abstraction depth.
+> Methods render as box-shaped rooms inside class buildings (public on lower floors, private on upper).
+> The floor-by-abstraction-depth model below is replaced by the vertical layering model:
+> Underground (imports/inheritance) → Foundation (files) → Buildings (classes) → Rooms (methods) → Overhead wires (method calls).
+> The diagram below is preserved for historical reference only.
+
 ```
     ┌─────────────────────────────────────┐
     │  ┌─────┐  ┌─────┐  ┌─────┐         │  ← Top Floor: Utilities
@@ -117,20 +124,24 @@ Flying into a building reveals its internal structure: **floors** representing a
 
 ### Layout Rules
 
+> ⚠️ **SUPERSEDED** — See `city-metaphor-vertical-layering-spec.md`. The table below used floors to represent import-chain depth. The new model uses floors to represent **method rooms** inside class buildings, with public methods on lower floors and private on upper. Preserved for historical reference.
+
 | Element | Representation |
 |---------|----------------|
-| **Ground floor** | Entry points (main.ts, index.ts, app.ts) |
-| **Floor N** | Code that is N levels deep in the import chain |
-| **Rooms on a floor** | Classes/modules at that abstraction level |
-| **Connections between rooms** | Internal imports at that level |
-| **Stairs/elevators** | Import relationships between floors |
+| ~~**Ground floor**~~ | ~~Entry points (main.ts, index.ts, app.ts)~~ |
+| ~~**Floor N**~~ | ~~Code that is N levels deep in the import chain~~ |
+| ~~**Rooms on a floor**~~ | ~~Classes/modules at that abstraction level~~ |
+| ~~**Connections between rooms**~~ | ~~Internal imports at that level~~ |
+| ~~**Stairs/elevators**~~ | ~~Import relationships between floors~~ |
 
 ### Building Shape Semantics
 
+> ⚠️ **PARTIALLY SUPERSEDED** — Per `city-metaphor-vertical-layering-spec.md`, building height is now driven by method containment (number of method rooms), not abstraction depth. Tall = many methods, short = few methods. Base classes get distinct color scheme + box profile.
+
 | Building Shape | Meaning |
 |----------------|---------|
-| **Tall, narrow** | Deep abstraction, many layers |
-| **Short, wide** | Flat structure, everything near entry |
+| **Tall, narrow** | ~~Deep abstraction, many layers~~ → Many methods |
+| **Short, wide** | ~~Flat structure, everything near entry~~ → Few methods, broad API |
 | **Irregular** | Organic growth, possible architectural issues |
 
 ### Scale Reference

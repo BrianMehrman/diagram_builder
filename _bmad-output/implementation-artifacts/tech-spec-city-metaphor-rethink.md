@@ -19,9 +19,9 @@ A complete rethink of the city metaphor organized in five layers:
 
 1. **Land (Files):** Files become city blocks — bounded plots of land. Classes and functions are structures *on* that land. Directory-size-aware: small directories (1-3 files) render as compound blocks; larger directories show individual file blocks.
 
-2. **Buildings (Classes, Functions):** Classes are multi-story buildings with visible floor bands (one per method, log-scaled height). Standalone functions are small shops. Building height is configurable (method count, LOC, complexity, dependency count, change frequency).
+2. **Buildings (Classes, Functions):** ⚠️ **PARTIALLY SUPERSEDED** — See `city-metaphor-vertical-layering-spec.md`. Floor bands remain as LOD 1-2 simplification only; at LOD 3+, methods render as **box-shaped rooms inside buildings**. Building height is now driven primarily by containment (must accommodate method rooms). Base classes get distinct color scheme + box profile. Standalone functions are kiosks/small shops. Original text preserved below for reference: ~~Classes are multi-story buildings with visible floor bands (one per method, log-scaled height). Standalone functions are small shops. Building height is configurable (method count, LOC, complexity, dependency count, change frequency).~~
 
-3. **Sky (Edges):** Dependency edges are elevated arcs tiered by type. Intra-district relationships encoded as spatial proximity (no lines). Cross-district imports as mid-sky arcs. Inheritance/implementation as high arcs. Ground shadows provide discoverability. Transit map overlay mode available.
+3. **Sky (Edges):** ⚠️ **PARTIALLY SUPERSEDED** — See `city-metaphor-vertical-layering-spec.md`. Inheritance (`extends`) and `implements` now route **underground** as plumbing, NOT as sky edges. Only method-to-method calls and composition remain overhead as wires. Original text preserved below for reference: ~~Dependency edges are elevated arcs tiered by type. Intra-district relationships encoded as spatial proximity (no lines). Cross-district imports as mid-sky arcs. Inheritance/implementation as high arcs. Ground shadows provide discoverability. Transit map overlay mode available.~~
 
 4. **Atmosphere (Indicators):** City-native environmental indicators for code health metrics. Construction cranes (change frequency), smog (complexity), lighting (test coverage), boarded-up facades (deprecated). All toggleable and data-graceful.
 
@@ -202,6 +202,8 @@ A complete rethink of the city metaphor organized in five layers:
   - File name label at edge of block (visible at LOD 2+)
 
 - [ ] **Task 1.3:** Implement floor band rendering on class buildings
+  - ⚠️ **PARTIALLY SUPERSEDED** — See `city-metaphor-vertical-layering-spec.md` Section 5.
+  - Floor bands remain valid as **LOD 1-2 simplification only**. At LOD 3+, methods render as box-shaped rooms inside buildings with public methods on lower floors and private/protected on upper floors.
   - Modify `ClassBuilding.tsx`:
     - Height = `log2(methodCount + 1) * FLOOR_HEIGHT` (log-scaled)
     - Floor bands rendered as vertex coloring on single mesh geometry (NOT separate meshes)
@@ -235,15 +237,19 @@ A complete rethink of the city metaphor organized in five layers:
 
 ### Phase 2: Sky Layer — Elevated Edges and Shadows
 
-> Goal: Cross-district edges become elevated arcs. Ground shadows provide discoverability.
+> ⚠️ **PARTIALLY SUPERSEDED** — See `city-metaphor-vertical-layering-spec.md` Section 6.
+> Inheritance (`extends`) and `implements` now route **underground** as plumbing lines, NOT as sky edges.
+> Overhead wires are reserved for **method-to-method calls and composition** only.
+> Cross-district `import` lines also move underground. The sky/overhead layer is exclusively for runtime relationships.
 
 - [ ] **Task 2.1:** Create SkyEdge component
-  - Renders bezier arc between source and target buildings
-  - Y-height determined by edge type (NOT distance):
-    - `imports` cross-district: Y = 30-50 (mid sky)
-    - `extends`: Y = 60+ (high sky)
-    - `implements`: Y = 60+ (high sky, dashed)
-  - Color by edge type: imports = blue, extends = green, implements = purple
+  - ⚠️ **SUPERSEDED** — Edge type routing has changed. `extends` and `implements` are underground, not sky edges. Rework this task per the vertical layering spec.
+  - ~~Renders bezier arc between source and target buildings~~
+  - ~~Y-height determined by edge type (NOT distance):~~
+    - ~~`imports` cross-district: Y = 30-50 (mid sky)~~
+    - ~~`extends`: Y = 60+ (high sky)~~
+    - ~~`implements`: Y = 60+ (high sky, dashed)~~
+  - ~~Color by edge type: imports = blue, extends = green, implements = purple~~
   - Visibility gated by LOD and `edgeTierVisibility` store settings
   - Edge visibility threshold: show top N edges by weight at LOD 2, all at LOD 3
 

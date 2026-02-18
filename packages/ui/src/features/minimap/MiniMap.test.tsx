@@ -2,8 +2,8 @@
  * MiniMap Tests
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { MiniMap } from './MiniMap';
 import { useCanvasStore } from '../canvas/store';
 import type { GraphNode } from '../../shared/types';
@@ -39,6 +39,10 @@ const mockNodes: GraphNode[] = [
 ];
 
 describe('MiniMap', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   beforeEach(() => {
     useCanvasStore.getState().reset();
     mockFlyToNode.mockClear();

@@ -1,6 +1,6 @@
 # Story 10.21: Create Deprecated Indicator
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -30,18 +30,19 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Create deprecated visual (AC: 1, 2)
-- [ ] Create `packages/ui/src/features/canvas/components/atmosphere/DeprecatedOverlay.tsx`
-- [ ] Or: modify building components to accept `isDeprecated` prop for material swap
-- [ ] Darker base color + striped/hatched pattern (repeating texture or shader)
+- [x] Create `packages/ui/src/features/canvas/components/atmosphere/DeprecatedOverlay.tsx`
+- [x] Create `packages/ui/src/features/canvas/components/atmosphere/deprecatedUtils.ts`
+- [x] Darker base color + diagonal striped pattern via canvas texture
 
 ### Task 2: Implement controls (AC: 3, 4)
-- [ ] Read `atmosphereOverlays.deprecated` from store
-- [ ] No `isDeprecated` flag: render normally
+- [x] Read `atmosphereOverlays.deprecated` from store
+- [x] No `isDeprecated` flag: caller checks via `isDeprecated()` utility before rendering
 
 ### Task 3: Write tests (AC: 5)
-- [ ] Test: deprecated node gets dark material
-- [ ] Test: non-deprecated node unchanged
-- [ ] Test: toggle off → normal rendering
+- [x] Test: deprecated node detection (direct, metadata, nested)
+- [x] Test: non-deprecated node returns false
+- [x] Test: toggle off → overlay not rendered
+- [x] Test: material constants verified
 
 ---
 
@@ -62,13 +63,24 @@ Status: not-started
 ## Dev Agent Record
 
 ### Implementation Plan
-_To be filled during implementation_
+Followed established atmosphere indicator pattern:
+- Separate utils file for detection logic and material constants
+- Component renders a semi-transparent striped overlay mesh matching building dimensions
+- Diagonal stripe pattern created via canvas texture (CanvasTexture)
+- Toggle-gated via `atmosphereOverlays.deprecated` store setting
 
 ### Completion Notes
-_To be filled on completion_
+- 16 tests passing (detection with direct/metadata/nested paths, constants, visibility gating)
+- Zero TypeScript errors
+- Component is an overlay mesh rendered on top of existing building — does not modify building itself
+- Slight z-offset (0.02) to prevent z-fighting
+- Stripe texture uses diagonal lines for "boarded-up" aesthetic
+- NOT wired into CityAtmosphere (that's Story 10-22)
 
 ## File List
-_To be filled during implementation_
+- `packages/ui/src/features/canvas/components/atmosphere/DeprecatedOverlay.tsx` (NEW)
+- `packages/ui/src/features/canvas/components/atmosphere/deprecatedUtils.ts` (NEW)
+- `packages/ui/src/features/canvas/components/atmosphere/DeprecatedOverlay.test.ts` (NEW)
 
 ---
 

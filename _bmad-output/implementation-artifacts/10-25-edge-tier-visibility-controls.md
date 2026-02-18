@@ -1,6 +1,6 @@
 # Story 10.25: Add Edge Tier Visibility Controls
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -31,18 +31,18 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Create edge tier toggles (AC: 1, 3)
-- [ ] Toggle switches for cross-district imports and inheritance/implementation
-- [ ] Wire to `toggleEdgeTierVisibility(tier)` store action
+- [x] Toggle switches for cross-district imports and inheritance/implementation
+- [x] Wire to `toggleEdgeTierVisibility(tier)` store action
 
 ### Task 2: Create transit map toggle (AC: 2, 5)
-- [ ] Prominent button for transit map mode
-- [ ] Distinct active state (highlighted background, icon change)
-- [ ] Wire to `toggleTransitMapMode()` store action
+- [x] Prominent button for transit map mode
+- [x] Distinct active state (blue background + ring when active, gray when inactive)
+- [x] Wire to `toggleTransitMapMode()` store action
 
 ### Task 3: Verify immediate feedback (AC: 4, 6)
-- [ ] Toggling edge tiers → SkyEdges appear/disappear
-- [ ] Transit map toggle → building opacity changes, edge emphasis activates
-- [ ] Follow existing toolbar styling
+- [x] Toggling edge tiers → store updates drive SkyEdge visibility
+- [x] Transit map toggle → store updates drive building opacity / edge emphasis
+- [x] Follow existing toolbar styling (Tailwind, same patterns as LayerToggle/AtmosphereTogglePanel)
 
 ---
 
@@ -64,13 +64,19 @@ Status: not-started
 ## Dev Agent Record
 
 ### Implementation Plan
-_To be filled during implementation_
+Two-part component: (1) checkbox group for edge tier visibility (crossDistrict, inheritance), (2) prominent toggle button for transit map mode. All wired to store actions. City-view-only.
 
 ### Completion Notes
-_To be filled on completion_
+- 14 tests passing (edge tier defaults, toggle on/off, independence, reset; transit map toggle on/off, reset, independence; view mode gating, state persistence)
+- Zero new TypeScript errors
+- Component rendered in RightPanel in "Edges" section between Atmosphere and Export
+- Transit map button: blue bg + ring when active, gray when inactive, `aria-pressed` for accessibility
+- Edge tiers default to ON (both visible), transit map defaults to OFF
 
 ## File List
-_To be filled during implementation_
+- `packages/ui/src/features/canvas/components/EdgeTierControls.tsx` (NEW)
+- `packages/ui/src/features/canvas/components/EdgeTierControls.test.ts` (NEW)
+- `packages/ui/src/features/panels/RightPanel.tsx` (MODIFIED — added import + Edges section)
 
 ---
 

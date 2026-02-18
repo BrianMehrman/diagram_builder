@@ -52,7 +52,9 @@ function MiniNode({
     }
   };
 
-  const displayLabel = (node.label || node.id).split('/').pop() ?? node.label;
+  // Prefer metadata.label (IVM format from API), then top-level label, then extract from id
+  const rawLabel = (node.metadata?.label as string) || node.label || node.id;
+  const displayLabel = rawLabel.includes('/') ? rawLabel.split('/').pop()! : rawLabel;
 
   return (
     <group position={[position.x, position.y, position.z]}>

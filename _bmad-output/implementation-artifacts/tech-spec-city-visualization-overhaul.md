@@ -289,8 +289,8 @@ Overhaul the city visualization across 4 priority themes, each building on the p
   - Test: `packages/ui/src/features/canvas/components/buildingGeometry.test.ts`
 
 - [ ] 4.2: Create typed building components
-  - `ClassBuilding` — multi-story box, height = method count × floor height, opaque walls
-  - `FunctionShop` — single-story wide building, distinct from class
+  - `ClassBuilding` — multi-story box, height = method count × floor height, opaque walls. ⚠️ **NOTE:** Per `city-metaphor-vertical-layering-spec.md`, at LOD 3+ methods render as box-shaped rooms inside the building (not just floor bands). Base classes get distinct color scheme + box profile. Public methods on lower floors, private on upper.
+  - `FunctionShop` — ⚠️ **UPDATED:** Per `city-metaphor-vertical-layering-spec.md`, standalone functions render as **kiosks/small shops** (compact single-story structures). Original: ~~single-story wide building, distinct from class~~
   - `InterfaceBuilding` — glass material (transparent, 0.3 opacity), visible edges/wireframe overlay
   - `AbstractBuilding` — dashed edge lines, semi-transparent fill (0.5 opacity)
   - `VariableCrate` — small box geometry with wood-like color/texture

@@ -169,13 +169,33 @@ development_status:
   # Epic 10-D: Atmosphere — Environmental Indicators (Phase 3)
   10-18-construction-crane-indicator: review  # Crane mesh on high-churn buildings, toggleable, data-graceful - COMPLETE (2026-02-14)
   10-19-lighting-system-test-coverage: review  # Point lights for test coverage: bright=tested, dim=untested, toggleable - COMPLETE (2026-02-15)
-  10-20-smog-overlay-complexity: not-started  # Semi-transparent particle cloud over high-complexity districts, toggleable
-  10-21-deprecated-indicator: not-started  # Material swap for deprecated buildings (dark, striped), toggleable
-  10-22-cityatmosphere-orchestrator: not-started  # Wire all indicators into CityAtmosphere, LOD 3+ visibility
+  10-20-smog-overlay-complexity: review  # Semi-transparent sprite smog over high-complexity districts (75th percentile), toggleable, LOD 3+ - COMPLETE (2026-02-17)
+  10-21-deprecated-indicator: review  # Dark striped overlay on deprecated buildings, toggleable via atmosphereOverlays.deprecated - COMPLETE (2026-02-17)
+  10-22-cityatmosphere-orchestrator: review  # Wire all 4 indicators into CityAtmosphere, LOD 3+ gating, data-graceful, zero-cost when off - COMPLETE (2026-02-17)
   # Epic 10-E: Configurability & UX (Phase 4)
-  10-23-height-encoding-selector-ui: not-started  # Dropdown in canvas toolbar for height encoding selection
-  10-24-atmosphere-toggle-panel: not-started  # Checkbox group for atmospheric indicators with disabled state
-  10-25-edge-tier-visibility-controls: not-started  # Toggle switches for edge tiers + transit map mode button
+  10-23-height-encoding-selector-ui: review  # Dropdown in canvas toolbar for height encoding selection - COMPLETE (2026-02-17)
+  10-24-atmosphere-toggle-panel: review  # Checkbox group for atmospheric indicators - COMPLETE (2026-02-17)
+  10-25-edge-tier-visibility-controls: review  # Toggle switches for edge tiers + transit map mode button - COMPLETE (2026-02-17)
+
+  # Epic 11: Vertical Layering — 3D Semantic City
+  epic-11: not-started
+  # Epic 11-A: Method Rooms & Building Containment
+  11-1-containment-driven-building-height: not-started  # Building height driven by method room containment, Z-positioning above file blocks
+  11-2-method-room-component: not-started  # Box-shaped room geometries for methods inside class buildings
+  11-3-method-room-floor-ordering: not-started  # Public methods lower floors, private upper; constructor/static distinction
+  11-4-lod-room-transition: not-started  # Floor bands at LOD 1-2, method rooms at LOD 3+ with smooth transition
+  # Epic 11-B: Base Class Visual Differentiation
+  11-5-base-class-detection-utility: not-started  # Detect classes inherited from, mid-chain inheritance handling
+  11-6-base-class-building-component: not-started  # Distinct color scheme + box profile for base class buildings
+  11-7-mid-chain-inheritance-visual: not-started  # Validation of mid-chain and diamond inheritance visual treatment
+  # Epic 11-C: Underground Connection Layer
+  11-8-underground-pipe-component: not-started  # Pipe/conduit geometry below Z=0 for structural dependencies
+  11-9-reclassify-edge-routing: not-started  # Split edges: imports/extends/implements underground, method calls/composition overhead
+  11-10-underground-toggle-ui: not-started  # Toggle underground visibility, external deps hidden by default
+  # Epic 11-D: Overhead Wire Layer
+  11-11-overhead-wire-component: not-started  # Thin wire arcs above rooftops for method calls and composition
+  11-12-standalone-function-kiosk: not-started  # Refine FunctionShop to kiosk/small shop visual on file blocks
+  11-13-wire-differentiation: not-started  # Visual distinction between method call wires and composition wires
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun
@@ -442,4 +462,38 @@ epics:
       - "No parser changes needed — all metadata already exists in graph model"
       - "Key implementation rules: single-mesh floor bands (vertex coloring), type-based edge heights, grid-based child placement"
       - "Deferred: edge bundling, LOD 4 interior view, underground layer"
+
+  epic-11:
+    name: "Vertical Layering — 3D Semantic City"
+    description: "Use all three spatial axes meaningfully. Z-axis encodes containment hierarchy (file → class → methods). Methods render as rooms inside class buildings. Structural relationships (imports, inheritance) route underground as plumbing. Runtime relationships (method calls, composition) route overhead as wires. Base classes get distinct visual treatment."
+    stories:
+      # Epic 11-A: Method Rooms & Building Containment
+      - 11-1-containment-driven-building-height
+      - 11-2-method-room-component
+      - 11-3-method-room-floor-ordering
+      - 11-4-lod-room-transition
+      # Epic 11-B: Base Class Visual Differentiation
+      - 11-5-base-class-detection-utility
+      - 11-6-base-class-building-component
+      - 11-7-mid-chain-inheritance-visual
+      # Epic 11-C: Underground Connection Layer
+      - 11-8-underground-pipe-component
+      - 11-9-reclassify-edge-routing
+      - 11-10-underground-toggle-ui
+      # Epic 11-D: Overhead Wire Layer
+      - 11-11-overhead-wire-component
+      - 11-12-standalone-function-kiosk
+      - 11-13-wire-differentiation
+    dependencies:
+      - "Epic 10: City Metaphor Rethink (hierarchical layout, sky edges, floor bands, CityView decomposition)"
+      - "Spec: city-metaphor-vertical-layering-spec.md"
+    notes:
+      - "4 sub-epics: 11-A (Method Rooms, 4 stories), 11-B (Base Class, 3 stories), 11-C (Underground, 3 stories), 11-D (Overhead, 3 stories)"
+      - "Critical path: 11-1 → 11-2 → 11-3 → 11-4 (rooms must exist before LOD transition)"
+      - "11-B depends on 11-A (base class buildings need room support)"
+      - "11-C and 11-D can run in parallel (underground and overhead are independent layers)"
+      - "11-5 has no dependencies (data utility, can start early)"
+      - "11-8 has no dependencies (pipe component, can start early)"
+      - "Supersedes sections in tech-spec-city-metaphor-rethink.md and ux-3d-layout-vision.md"
+      - "Key design decisions: public methods on lower floors, base class = different color + profile, external pipes toggle-able, standalone functions = kiosks"
 

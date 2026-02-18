@@ -119,7 +119,7 @@ export function MiniMap({ nodes = [], className = '' }: MiniMapProps) {
       {/* Content - hidden when collapsed */}
       {!collapsed && (
         <>
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto">
             {viewMode === 'tree' ? (
               <FileTreeView
                 nodes={nodes}

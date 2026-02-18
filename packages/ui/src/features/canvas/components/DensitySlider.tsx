@@ -35,6 +35,7 @@ export function DensitySlider() {
         value={layoutDensity}
         onChange={(e) => setLayoutDensity(parseFloat(e.target.value))}
         className="w-full h-1 accent-blue-500 cursor-pointer"
+        data-testid="density-slider"
         aria-label="Layout density"
       />
     </div>

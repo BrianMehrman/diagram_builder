@@ -1,6 +1,6 @@
 # Story 10.22: Update CityAtmosphere Orchestrator
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -30,17 +30,20 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Wire indicators into CityAtmosphere (AC: 1, 2)
-- [ ] Read `atmosphereOverlays` from store
-- [ ] Conditionally mount: `{cranes && <ConstructionCrane />}`
-- [ ] Conditionally mount: `{lighting && <CoverageLighting />}`
-- [ ] Conditionally mount: `{smog && <SmogOverlay />}`
-- [ ] Conditionally mount: `{deprecated && <DeprecatedOverlay />}`
-- [ ] Gate all by `lodLevel >= 3`
+- [x] Read `atmosphereOverlays` from store
+- [x] Conditionally mount: `{cranes && shouldShowCrane && <ConstructionCrane />}`
+- [x] Conditionally mount: `{lighting && getTestCoverage != null && <CoverageLighting />}`
+- [x] Conditionally mount: `{smog && <SmogOverlay />}`
+- [x] Conditionally mount: `{deprecated && isDeprecated && <DeprecatedOverlay />}`
+- [x] Gate all by `lodLevel >= 3` (early return null)
 
 ### Task 2: Verify clean state (AC: 3, 4, 5)
-- [ ] All toggles off: CityAtmosphere renders nothing (returns null)
-- [ ] No data available: indicators don't mount
-- [ ] Performance: unmounted components have zero render cost
+- [x] All toggles off: CityAtmosphere returns null (zero render cost)
+- [x] No data available: qualification checks prevent mounting
+- [x] Performance: unmounted components have zero render cost
+
+### Task 3: Update CityView integration
+- [x] Pass `graph` prop to CityAtmosphere in CityView
 
 ---
 
@@ -63,13 +66,21 @@ Status: not-started
 ## Dev Agent Record
 
 ### Implementation Plan
-_To be filled during implementation_
+CityAtmosphere accepts `graph` prop and uses `useCityLayout` + `useCityFiltering` hooks to get node positions, districts, and node data. Iterates building-type nodes for per-building indicators (crane, lighting, deprecated) and provides district-level data for smog overlay.
 
 ### Completion Notes
-_To be filled on completion_
+- 20 tests passing (master toggle gating, LOD gating, data-graceful behavior, indicator qualification, building type filtering)
+- Zero TypeScript errors
+- CityView updated to pass `graph` prop to CityAtmosphere
+- Early return null when all toggles off OR LOD < 3 (AC-5 zero render cost)
+- Per-building: crane (top 10% changeCount), lighting (testCoverage != null), deprecated (isDeprecated flag)
+- Per-district: smog (75th percentile avg complexity)
+- Building type filter: class, function, interface, abstract_class only
 
 ## File List
-_To be filled during implementation_
+- `packages/ui/src/features/canvas/views/CityAtmosphere.tsx` (MODIFIED — full implementation)
+- `packages/ui/src/features/canvas/views/CityAtmosphere.test.ts` (NEW)
+- `packages/ui/src/features/canvas/views/CityView.tsx` (MODIFIED — pass graph prop)
 
 ---
 

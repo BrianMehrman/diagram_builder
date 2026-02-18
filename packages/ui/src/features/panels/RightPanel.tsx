@@ -11,6 +11,9 @@ import { ViewpointPanel } from '../viewpoints/ViewpointPanel';
 import UserPresence from '../collaboration/UserPresence';
 import { DensitySlider } from '../canvas/components/DensitySlider';
 import { LayerToggle } from '../canvas/components/LayerToggle';
+import { HeightEncodingSelector } from '../canvas/components/HeightEncodingSelector';
+import { AtmosphereTogglePanel } from '../canvas/components/AtmosphereTogglePanel';
+import { EdgeTierControls } from '../canvas/components/EdgeTierControls';
 
 export function RightPanel() {
   const isOpen = useUIStore((state) => state.isRightPanelOpen);
@@ -51,7 +54,24 @@ export function RightPanel() {
               Layout
             </h3>
             <DensitySlider />
+            <HeightEncodingSelector />
             <LayerToggle />
+          </div>
+
+          {/* Atmosphere */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Atmosphere
+            </h3>
+            <AtmosphereTogglePanel />
+          </div>
+
+          {/* Edges */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Edges
+            </h3>
+            <EdgeTierControls />
           </div>
 
           {/* Export */}
