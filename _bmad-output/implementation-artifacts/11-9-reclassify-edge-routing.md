@@ -1,6 +1,6 @@
 # Story 11.9: Reclassify Edge Routing — Underground vs Overhead
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -86,9 +86,15 @@ Status: not-started
 - 10-12 (existing SkyEdge component to modify)
 - 10-17 (existing CitySky orchestrator to modify)
 
-## Files Expected
-- `packages/ui/src/features/canvas/views/cityViewUtils.ts` (MODIFIED — classifier)
-- `packages/ui/src/features/canvas/components/CityUnderground.tsx` (NEW)
-- `packages/ui/src/features/canvas/components/CityUnderground.test.tsx` (NEW)
-- `packages/ui/src/features/canvas/components/SkyEdge.tsx` (MODIFIED)
-- `packages/ui/src/features/canvas/components/CitySky.tsx` (MODIFIED)
+## Files Modified / Created
+
+- `packages/ui/src/features/canvas/views/cityViewUtils.ts` — Added `classifyEdgeRouting()` and `EdgeRouting` type
+- `packages/ui/src/features/canvas/views/cityViewUtils.test.ts` — Added 11 classifier tests
+- `packages/ui/src/features/canvas/components/CityUnderground.tsx` — NEW orchestrator filtering underground edges → UndergroundPipe
+- `packages/ui/src/features/canvas/components/CityUnderground.test.ts` — NEW 6 pure utility tests
+- `packages/ui/src/features/canvas/components/skyEdgeUtils.ts` — Updated: only `calls` maps to sky tier; `inherits`/`imports`/`depends_on` return null
+- `packages/ui/src/features/canvas/components/skyEdgeUtils.test.ts` — Rewritten to reflect new sky-only routing
+- `packages/ui/src/features/canvas/components/SkyEdge.test.ts` — Rewritten: tests now use `calls` as sky edge
+- `packages/ui/src/features/canvas/components/GroundShadow.test.ts` — Updated: tests use `calls` instead of `imports`
+- `packages/ui/src/features/canvas/views/CitySky.tsx` — Pre-filters edges in v2 mode: only overhead edges reach SkyEdge
+- `packages/ui/src/features/canvas/views/CityView.tsx` — Added CityUnderground in v2 mode underground block

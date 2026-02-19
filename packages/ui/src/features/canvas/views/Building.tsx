@@ -13,17 +13,19 @@ import type { GraphNode, Position3D } from '../../../shared/types';
 import {
   getDirectoryColor,
   getDirectoryFromLabel,
-  getBuildingHeight,
   BUILDING_WIDTH,
   BUILDING_DEPTH,
 } from './cityViewUtils';
+import { getBuildingConfig } from '../components/buildingGeometry';
+import type { EncodedHeightOptions } from './cityViewUtils';
 
 interface BuildingProps {
   node: GraphNode;
   position: Position3D;
+  encodingOptions?: EncodedHeightOptions;
 }
 
-export function Building({ node, position }: BuildingProps) {
+export function Building({ node, position, encodingOptions }: BuildingProps) {
   const [hovered, setHovered] = useState(false);
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
@@ -32,7 +34,8 @@ export function Building({ node, position }: BuildingProps) {
   const transitStyle = useTransitMapStyle();
 
   const isSelected = selectedNodeId === node.id;
-  const buildingHeight = getBuildingHeight(node.depth);
+  const config = getBuildingConfig(node, encodingOptions);
+  const buildingHeight = config.geometry.height;
   const directory = getDirectoryFromLabel(node.label);
   const color = getDirectoryColor(directory);
   const label = node.label ?? '';

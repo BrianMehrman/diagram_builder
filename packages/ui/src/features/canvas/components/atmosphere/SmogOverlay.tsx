@@ -76,12 +76,7 @@ export function SmogOverlay({ districts, districtNodeMap }: SmogOverlayProps) {
     (s) => s.citySettings.atmosphereOverlays.smog,
   );
 
-  // AC-5: visible at LOD 3+ only
-  // AC-3: toggleable via atmosphereOverlays.smog
-  if (lodLevel < 3 || !smogEnabled) return null;
-
-  // Compute per-district averages and threshold
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // All hooks must be called unconditionally (React rules of hooks)
   const smogDistricts = useMemo(() => {
     const districtAverages: { district: DistrictArcMetadata; avg: number }[] = [];
 
@@ -106,6 +101,10 @@ export function SmogOverlay({ districts, districtNodeMap }: SmogOverlayProps) {
         particles: generateParticlePositions(d.district, PARTICLES_PER_DISTRICT),
       }));
   }, [districts, districtNodeMap]);
+
+  // AC-5: visible at LOD 3+ only
+  // AC-3: toggleable via atmosphereOverlays.smog
+  if (lodLevel < 3 || !smogEnabled) return null;
 
   // AC-4: graceful when no qualifying districts
   if (smogDistricts.length === 0) return null;

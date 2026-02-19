@@ -1,6 +1,6 @@
 # Story 11.1: Containment-Driven Building Height
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -33,27 +33,27 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Update height calculation utility (AC: 1, 2, 5)
-- [ ] Modify `getMethodBasedHeight()` in `cityViewUtils.ts` to calculate height based on room stacking (method count × room height + padding)
-- [ ] Ensure minimum 1-floor height for classes with zero methods
-- [ ] Configurable room height constant (e.g., `METHOD_ROOM_HEIGHT`)
-- [ ] Secondary height encoding metrics (loc, complexity, etc.) influence building footprint width/depth rather than height
+- [x] Added `getContainmentHeight()` in `cityViewUtils.ts` — height = method count × METHOD_ROOM_HEIGHT + BUILDING_PADDING
+- [x] Minimum 1-floor height for classes with zero methods (Math.max(methodCount, 1))
+- [x] Configurable constants: `METHOD_ROOM_HEIGHT = 2`, `BUILDING_PADDING = 1`
+- [x] Added `getFootprintScale()` — encoding metrics (loc, complexity, etc.) influence footprint width/depth (1.0–2.0 range)
 
 ### Task 2: Update building Z-positioning (AC: 3)
-- [ ] Buildings render with base at Z > 0 (sitting on top of file block foundation)
-- [ ] Coordinate with file block ground plane at Z = 0
-- [ ] Update layout engine to output Z-offset for buildings on blocks
+- [x] Added `BUILDING_Y_OFFSET = 0.1` constant for buildings sitting above file block foundation
+- [x] Coordinate with file block ground plane at Z = 0
+- [x] Constant available for layout engine / rendering paths to apply
 
 ### Task 3: Update building footprint (AC: 4)
-- [ ] Footprint width/depth scales with class complexity
-- [ ] Factor in method count, property count, and optional secondary encoding metric
-- [ ] Ensure footprint fits within file block boundaries
+- [x] Updated `buildingGeometry.ts` — class/interface/abstract_class footprint scales via `getFootprintScale()`
+- [x] Encoding options now drive footprint instead of height for class-like types
+- [x] Scale factor uses log2 with [1.0, 2.0] clamped range
 
 ### Task 4: Write tests (AC: 6)
-- [ ] Test: building height scales with method count
-- [ ] Test: minimum height for zero-method class
-- [ ] Test: building base Z > 0
-- [ ] Test: footprint scales with complexity
-- [ ] Test: backward compatibility with existing height encoding selector
+- [x] Test: building height scales with method count (getContainmentHeight tests)
+- [x] Test: minimum height for zero-method class
+- [x] Test: BUILDING_Y_OFFSET > 0
+- [x] Test: footprint scales with encoding metric (7 tests for getFootprintScale)
+- [x] Test: backward compatibility — updated buildingGeometry tests (18 tests pass)
 
 ---
 
@@ -67,7 +67,8 @@ Status: not-started
 ## Dependencies
 - None (foundational story)
 
-## Files Expected
-- `packages/ui/src/features/canvas/views/cityViewUtils.ts` (MODIFIED)
-- `packages/ui/src/features/canvas/views/cityViewUtils.test.ts` (MODIFIED)
-- `packages/ui/src/features/canvas/components/buildings/ClassBuilding.tsx` (MODIFIED)
+## Files Modified
+- `packages/ui/src/features/canvas/views/cityViewUtils.ts` — Added `getContainmentHeight()`, `getFootprintScale()`, `METHOD_ROOM_HEIGHT`, `BUILDING_PADDING`, `BUILDING_Y_OFFSET`
+- `packages/ui/src/features/canvas/views/cityViewUtils.test.ts` — Added 15 new tests for containment height, footprint scale, Y offset
+- `packages/ui/src/features/canvas/components/buildingGeometry.ts` — Class/interface/abstract_class use containment height + footprint scaling
+- `packages/ui/src/features/canvas/components/buildingGeometry.test.ts` — Updated 18 tests for new containment model

@@ -1,3 +1,10 @@
+/**
+ * skyEdgeUtils Tests
+ *
+ * After Story 11-9 reclassification:
+ * - Only 'calls' (and future 'composes') are overhead/sky edges.
+ * - 'imports', 'depends_on', 'inherits' moved to underground layer.
+ */
 import { describe, it, expect } from 'vitest';
 import {
   getSkyEdgeTier,
@@ -13,13 +20,20 @@ type EdgeType = GraphEdge['type'];
 describe('skyEdgeUtils', () => {
   // ── getSkyEdgeTier ─────────────────────────────────────────────
   describe('getSkyEdgeTier', () => {
-    it.each<[EdgeType, string | null]>([
-      ['imports', 'crossDistrict'],
-      ['depends_on', 'crossDistrict'],
-      ['calls', 'crossDistrict'],
-      ['inherits', 'inheritance'],
-    ])('maps "%s" → "%s"', (edgeType, expected) => {
-      expect(getSkyEdgeTier(edgeType)).toBe(expected);
+    it('maps "calls" → "crossDistrict" (the only overhead type)', () => {
+      expect(getSkyEdgeTier('calls')).toBe('crossDistrict');
+    });
+
+    it('returns null for "imports" — now routes underground', () => {
+      expect(getSkyEdgeTier('imports')).toBeNull();
+    });
+
+    it('returns null for "depends_on" — now routes underground', () => {
+      expect(getSkyEdgeTier('depends_on')).toBeNull();
+    });
+
+    it('returns null for "inherits" — now routes underground', () => {
+      expect(getSkyEdgeTier('inherits')).toBeNull();
     });
 
     it('returns null for "contains"', () => {
@@ -29,28 +43,30 @@ describe('skyEdgeUtils', () => {
 
   // ── getSkyEdgeHeight ───────────────────────────────────────────
   describe('getSkyEdgeHeight', () => {
-    it.each<[EdgeType, number]>([
-      ['imports', 40],
-      ['depends_on', 40],
-      ['calls', 40],
-      ['inherits', 65],
-      ['contains', 0],
-    ])('returns %d for "%s"', (edgeType, expected) => {
-      expect(getSkyEdgeHeight(edgeType)).toBe(expected);
+    it('returns 40 for "calls" (method call arc height)', () => {
+      expect(getSkyEdgeHeight('calls')).toBe(40);
     });
+
+    it.each<EdgeType>(['imports', 'depends_on', 'inherits', 'contains'])(
+      'returns 0 for "%s" (not a sky edge)',
+      (edgeType) => {
+        expect(getSkyEdgeHeight(edgeType)).toBe(0);
+      },
+    );
   });
 
   // ── getSkyEdgeColor ────────────────────────────────────────────
   describe('getSkyEdgeColor', () => {
-    it.each<[EdgeType, string]>([
-      ['imports', '#60a5fa'],
-      ['depends_on', '#a78bfa'],
-      ['calls', '#34d399'],
-      ['inherits', '#f97316'],
-      ['contains', '#6b7280'],
-    ])('returns "%s" for "%s"', (edgeType, expected) => {
-      expect(getSkyEdgeColor(edgeType)).toBe(expected);
+    it('returns green for "calls"', () => {
+      expect(getSkyEdgeColor('calls')).toBe('#34d399');
     });
+
+    it.each<EdgeType>(['imports', 'depends_on', 'inherits', 'contains'])(
+      'returns fallback gray for "%s" (not a sky edge)',
+      (edgeType) => {
+        expect(getSkyEdgeColor(edgeType)).toBe('#6b7280');
+      },
+    );
   });
 
   // ── isSkyEdgeVisible ──────────────────────────────────────────
@@ -59,49 +75,43 @@ describe('skyEdgeUtils', () => {
     const allDisabled = { crossDistrict: false, inheritance: false };
 
     it('returns false when lodLevel < 2', () => {
-      expect(isSkyEdgeVisible('imports', 1, allEnabled)).toBe(false);
-      expect(isSkyEdgeVisible('inherits', 0, allEnabled)).toBe(false);
+      expect(isSkyEdgeVisible('calls', 1, allEnabled)).toBe(false);
+      expect(isSkyEdgeVisible('calls', 0, allEnabled)).toBe(false);
     });
 
     it('returns false for "contains" at any LOD', () => {
       expect(isSkyEdgeVisible('contains', 3, allEnabled)).toBe(false);
     });
 
-    it('returns true for crossDistrict edge at LOD 2+ with tier enabled', () => {
-      expect(isSkyEdgeVisible('imports', 2, allEnabled)).toBe(true);
-      expect(isSkyEdgeVisible('depends_on', 3, allEnabled)).toBe(true);
+    it('returns true for "calls" at LOD 2+ with crossDistrict enabled', () => {
       expect(isSkyEdgeVisible('calls', 2, allEnabled)).toBe(true);
+      expect(isSkyEdgeVisible('calls', 3, allEnabled)).toBe(true);
     });
 
-    it('returns false for crossDistrict edge when crossDistrict disabled', () => {
-      expect(isSkyEdgeVisible('imports', 3, { crossDistrict: false, inheritance: true })).toBe(false);
+    it('returns false for "calls" when crossDistrict disabled', () => {
+      expect(isSkyEdgeVisible('calls', 3, allDisabled)).toBe(false);
     });
 
-    it('returns true for inheritance edge at LOD 2+ with tier enabled', () => {
-      expect(isSkyEdgeVisible('inherits', 2, allEnabled)).toBe(true);
+    it('returns false for "imports" — now underground, not a sky edge', () => {
+      expect(isSkyEdgeVisible('imports', 3, allEnabled)).toBe(false);
     });
 
-    it('returns false for inheritance edge when inheritance disabled', () => {
-      expect(isSkyEdgeVisible('inherits', 3, { crossDistrict: true, inheritance: false })).toBe(false);
+    it('returns false for "depends_on" — now underground, not a sky edge', () => {
+      expect(isSkyEdgeVisible('depends_on', 3, allEnabled)).toBe(false);
     });
 
-    it('returns false when all tiers disabled', () => {
-      expect(isSkyEdgeVisible('imports', 3, allDisabled)).toBe(false);
-      expect(isSkyEdgeVisible('inherits', 3, allDisabled)).toBe(false);
+    it('returns false for "inherits" — now underground, not a sky edge', () => {
+      expect(isSkyEdgeVisible('inherits', 3, allEnabled)).toBe(false);
     });
   });
 
   // ── isSkyEdgeDashed ───────────────────────────────────────────
   describe('isSkyEdgeDashed', () => {
-    it('returns true only for "inherits"', () => {
-      expect(isSkyEdgeDashed('inherits')).toBe(true);
+    it('returns false for all edge types (dashes removed — inherits is now underground)', () => {
+      const allTypes: EdgeType[] = ['imports', 'depends_on', 'calls', 'inherits', 'contains'];
+      for (const t of allTypes) {
+        expect(isSkyEdgeDashed(t)).toBe(false);
+      }
     });
-
-    it.each<EdgeType>(['imports', 'depends_on', 'calls', 'contains'])(
-      'returns false for "%s"',
-      (edgeType) => {
-        expect(isSkyEdgeDashed(edgeType)).toBe(false);
-      },
-    );
   });
 });

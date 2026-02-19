@@ -1,16 +1,24 @@
 /**
- * InterfaceBuilding Component
+ * BaseClassBuilding Component
  *
- * Glass building with transparent walls and wireframe edge overlay.
- * Supports per-method visibility-colored floor bands via vertex coloring.
+ * Visually distinct building for classes that are inherited by other classes.
+ * Uses a warm sandstone/amber color palette and a wider footprint to communicate
+ * "foundational, load-bearing" at city-level zoom (LOD 1-2).
+ *
+ * Supports the same method room rendering at LOD 3+ as ClassBuilding.
  */
 
 import { useState, useMemo } from 'react';
 import * as THREE from 'three';
-import { Text, Edges } from '@react-three/drei';
+import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
 import { getBuildingConfig } from '../buildingGeometry';
-import { getDirectoryFromLabel, getDirectoryColor, sortMethodsByVisibility, getLodTransition, BASE_CLASS_EMISSIVE } from '../../views/cityViewUtils';
+import {
+  sortMethodsByVisibility,
+  getLodTransition,
+  BASE_CLASS_COLOR,
+  BASE_CLASS_EMISSIVE,
+} from '../../views/cityViewUtils';
 import { getFloorCount, applyFloorBandColors, getMethodCount } from './floorBandUtils';
 import { FloorLabels } from './FloorLabels';
 import { MethodRoom } from './MethodRoom';
@@ -18,7 +26,7 @@ import { calculateRoomLayout } from './roomLayout';
 import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
 import type { ClassBuildingProps } from './types';
 
-export function InterfaceBuilding({ node, position, methods, lodLevel, encodingOptions, isBaseClass }: ClassBuildingProps) {
+export function BaseClassBuilding({ node, position, methods, lodLevel, encodingOptions }: ClassBuildingProps) {
   const [hovered, setHovered] = useState(false);
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
@@ -27,13 +35,12 @@ export function InterfaceBuilding({ node, position, methods, lodLevel, encodingO
   const transitStyle = useTransitMapStyle();
 
   const isSelected = selectedNodeId === node.id;
-  const config = useMemo(() => getBuildingConfig(node, encodingOptions), [node, encodingOptions]);
-  const { width, height } = config.geometry;
-  const directory = getDirectoryFromLabel(node.label);
-  const color = getDirectoryColor(directory);
+  // Pass isBaseClass=true so the factory returns the wider footprint + stone material
+  const config = useMemo(() => getBuildingConfig(node, encodingOptions, true), [node, encodingOptions]);
+  const { width, height, depth } = config.geometry;
   const fileName = (node.label ?? node.id).split('/').pop() ?? node.id;
 
-  // Sort methods by visibility: public (bottom) → protected → private (top)
+  // Sort methods: public (ground floor) → protected → private (top)
   const sortedMethods = useMemo(
     () => (methods && methods.length > 0 ? sortMethodsByVisibility(methods) : methods),
     [methods],
@@ -43,7 +50,7 @@ export function InterfaceBuilding({ node, position, methods, lodLevel, encodingO
   const floorCount = getFloorCount(methodCount > 0 ? methodCount : undefined);
 
   const geometry = useMemo(() => {
-    const geo = new THREE.CylinderGeometry(width / 2, width / 2, height, 8, floorCount);
+    const geo = new THREE.BoxGeometry(width, height, depth, 1, floorCount, 1);
 
     if (methodCount > 0) {
       const visibilities: Array<string | undefined> = sortedMethods && sortedMethods.length > 0
@@ -53,7 +60,7 @@ export function InterfaceBuilding({ node, position, methods, lodLevel, encodingO
     }
 
     return geo;
-  }, [width, height, floorCount, methodCount, sortedMethods]);
+  }, [width, height, depth, floorCount, methodCount, sortedMethods]);
 
   const hasFloorBands = methodCount > 0;
   const currentLod = lodLevel ?? 2;
@@ -62,9 +69,12 @@ export function InterfaceBuilding({ node, position, methods, lodLevel, encodingO
 
   const roomPlacements = useMemo(() => {
     if (!sortedMethods || sortedMethods.length === 0) return [];
-    // Cylinder interior uses width for both dimensions
-    return calculateRoomLayout(sortedMethods.length, width, height, width);
-  }, [sortedMethods, width, height]);
+    return calculateRoomLayout(sortedMethods.length, width, height, depth);
+  }, [sortedMethods, width, height, depth]);
+
+  // Warm amber glow always present (even when not selected) — signals "foundational"
+  const emissiveColor = hovered ? '#fbbf24' : isSelected ? BASE_CLASS_COLOR : BASE_CLASS_EMISSIVE;
+  const emissiveIntensity = hovered ? 0.5 : isSelected ? 0.4 : 0.15;
 
   return (
     <group position={[position.x, position.y, position.z]}>
@@ -77,47 +87,19 @@ export function InterfaceBuilding({ node, position, methods, lodLevel, encodingO
         onPointerOut={() => { setHovered(false); setHoveredNode(null); document.body.style.cursor = 'auto'; }}
       >
         <meshStandardMaterial
-          color={hasFloorBands ? '#ffffff' : color}
+          color={hasFloorBands ? '#ffffff' : BASE_CLASS_COLOR}
           vertexColors={hasFloorBands}
-          opacity={showRooms
-            ? (bandOpacity * (transitStyle.transparent ? transitStyle.opacity : config.material.opacity) + (1 - bandOpacity) * 0.3)
-            : (transitStyle.transparent ? transitStyle.opacity : config.material.opacity)}
-          transparent={showRooms || transitStyle.transparent || config.material.transparent}
-          emissive={hovered ? '#f59e0b' : isSelected ? color : isBaseClass ? BASE_CLASS_EMISSIVE : '#000000'}
-          emissiveIntensity={hovered ? 0.4 : isSelected ? 0.3 : isBaseClass ? 0.15 : 0}
+          emissive={emissiveColor}
+          emissiveIntensity={emissiveIntensity}
           roughness={config.material.roughness}
           metalness={config.material.metalness}
-        />
-        <Edges
-          threshold={15}
-          color={isSelected ? '#ffffff' : isBaseClass ? BASE_CLASS_EMISSIVE : color}
-          lineWidth={isBaseClass ? 2 : 1}
+          opacity={showRooms
+            ? bandOpacity * transitStyle.opacity + (1 - bandOpacity) * 0.3
+            : transitStyle.opacity}
+          transparent={showRooms || transitStyle.transparent}
         />
       </mesh>
-      {hovered && (
-        <Text
-          position={[0, height + 1.0, 0]}
-          fontSize={0.25}
-          color="#fbbf24"
-          anchorX="center"
-          anchorY="bottom"
-          outlineWidth={0.01}
-          outlineColor="#000000"
-        >
-          {methodCount} methods
-        </Text>
-      )}
-      <Text
-        position={[0, height + 0.5, 0]}
-        fontSize={0.35}
-        color="#94a3b8"
-        anchorX="center"
-        anchorY="bottom"
-        outlineWidth={0.02}
-        outlineColor="#000000"
-      >
-        {fileName}
-      </Text>
+
       {/* Method rooms — visible at LOD 3+ */}
       {showRooms && (
         <group position={[0, 0, 0]}>
@@ -136,6 +118,31 @@ export function InterfaceBuilding({ node, position, methods, lodLevel, encodingO
           })}
         </group>
       )}
+
+      {hovered && (
+        <Text
+          position={[0, height + 1.0, 0]}
+          fontSize={0.25}
+          color="#fbbf24"
+          anchorX="center"
+          anchorY="bottom"
+          outlineWidth={0.01}
+          outlineColor="#000000"
+        >
+          {methodCount} methods
+        </Text>
+      )}
+      <Text
+        position={[0, height + 0.5, 0]}
+        fontSize={0.35}
+        color={BASE_CLASS_COLOR}
+        anchorX="center"
+        anchorY="bottom"
+        outlineWidth={0.02}
+        outlineColor="#000000"
+      >
+        {fileName}
+      </Text>
       {sortedMethods && sortedMethods.length > 0 && (
         <FloorLabels
           methods={sortedMethods}

@@ -28,6 +28,12 @@ export function ConstructionCrane({ position, buildingHeight }: ConstructionCran
     (s) => s.citySettings.atmosphereOverlays.cranes,
   );
 
+  // Memoize the material so it's shared across instances
+  const material = useMemo(
+    () => new THREE.MeshStandardMaterial({ color: CRANE_COLOR, roughness: 0.6, metalness: 0.3 }),
+    [],
+  );
+
   // AC-5: visible at LOD 3+ only
   // AC-3: toggleable via atmosphereOverlays.cranes
   if (lodLevel < 3 || !cranesEnabled) return null;
@@ -35,13 +41,6 @@ export function ConstructionCrane({ position, buildingHeight }: ConstructionCran
   const poleHeight = buildingHeight * 0.6;
   const armLength = buildingHeight * 0.5;
   const hookLength = buildingHeight * 0.15;
-
-  // Memoize the material so it's shared across instances
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const material = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: CRANE_COLOR, roughness: 0.6, metalness: 0.3 }),
-    [],
-  );
 
   return (
     <group position={[position.x, buildingHeight, position.z]}>

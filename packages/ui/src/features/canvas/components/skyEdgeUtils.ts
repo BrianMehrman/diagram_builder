@@ -8,55 +8,52 @@
 import type { GraphEdge } from '../../../shared/types';
 import type { EdgeTierVisibility } from '../store';
 
-/** Sky-edge tier classification */
-export type SkyEdgeTier = 'crossDistrict' | 'inheritance';
+/**
+ * Sky-edge tier classification.
+ *
+ * After Story 11-9: only runtime relationships render as sky arcs.
+ * - crossDistrict: method calls
+ *
+ * Structural relationships (imports, depends_on, inherits) were moved to the
+ * underground layer in Story 11-9 and no longer appear in the sky.
+ */
+export type SkyEdgeTier = 'crossDistrict';
 
 /**
  * Map a GraphEdge type to its sky-edge tier.
- * Returns null for edge types that are not rendered as sky edges (e.g. 'contains').
+ * Returns null for edge types that are not rendered as sky edges.
+ *
+ * After Story 11-9: only 'calls' edges arc overhead.
+ * Imports/inherits route underground and are excluded here.
  */
 export function getSkyEdgeTier(edgeType: GraphEdge['type']): SkyEdgeTier | null {
   switch (edgeType) {
-    case 'imports':
-    case 'depends_on':
     case 'calls':
       return 'crossDistrict';
-    case 'inherits':
-      return 'inheritance';
-    case 'contains':
+    default:
       return null;
   }
 }
 
 /**
  * Type-based Y-height for the bezier arc peak.
- * Cross-district edges arc at Y=40; inheritance edges at Y=65.
+ * Method-call edges arc at Y=40.
  */
 export function getSkyEdgeHeight(edgeType: GraphEdge['type']): number {
   switch (edgeType) {
-    case 'imports':
-    case 'depends_on':
     case 'calls':
       return 40;
-    case 'inherits':
-      return 65;
-    case 'contains':
+    default:
       return 0;
   }
 }
 
-/** Edge color by type */
+/** Edge color by type. Method calls = green. */
 export function getSkyEdgeColor(edgeType: GraphEdge['type']): string {
   switch (edgeType) {
-    case 'imports':
-      return '#60a5fa';
-    case 'depends_on':
-      return '#a78bfa';
     case 'calls':
       return '#34d399';
-    case 'inherits':
-      return '#f97316';
-    case 'contains':
+    default:
       return '#6b7280';
   }
 }
@@ -66,7 +63,7 @@ export function getSkyEdgeColor(edgeType: GraphEdge['type']): string {
  * and the user's edge-tier visibility settings.
  *
  * - LOD < 2 → always hidden
- * - 'contains' edges → never shown as sky edges
+ * - Edge type not in sky tiers → hidden
  * - The matching tier toggle must be enabled
  */
 export function isSkyEdgeVisible(
@@ -82,7 +79,7 @@ export function isSkyEdgeVisible(
   return edgeTierVisibility[tier];
 }
 
-/** Whether the edge should render as a dashed line (only 'inherits'). */
-export function isSkyEdgeDashed(edgeType: GraphEdge['type']): boolean {
-  return edgeType === 'inherits';
+/** Whether the edge should render as a dashed line. None currently. */
+export function isSkyEdgeDashed(_edgeType: GraphEdge['type']): boolean {
+  return false;
 }

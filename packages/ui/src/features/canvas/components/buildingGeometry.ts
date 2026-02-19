@@ -12,15 +12,23 @@ import {
   CLASS_DEPTH,
   SHOP_WIDTH,
   SHOP_DEPTH,
+  KIOSK_WIDTH,
+  KIOSK_DEPTH,
+  KIOSK_HEIGHT,
   CRATE_SIZE,
   FLOOR_HEIGHT,
   GLASS_OPACITY,
   ABSTRACT_OPACITY,
   BUILDING_WIDTH,
   BUILDING_DEPTH,
+  BASE_CLASS_ROUGHNESS,
+  BASE_CLASS_METALNESS,
+  BASE_CLASS_FOOTPRINT_MULTIPLIER,
   getMethodBasedHeight,
   getEncodedHeight,
   getBuildingHeight,
+  getContainmentHeight,
+  getFootprintScale,
 } from '../views/cityViewUtils';
 import type { EncodedHeightOptions } from '../views/cityViewUtils';
 import { getMethodCount } from './buildings/floorBandUtils';
@@ -65,49 +73,65 @@ export interface BuildingConfig {
  *
  * When `encodingOptions` is provided, height is calculated using the
  * specified encoding metric instead of the default methodCount.
+ *
+ * When `isBaseClass` is true and the node is a class, returns the wider
+ * stone-profile configuration for base class visual differentiation (Story 11-6).
  */
 export function getBuildingConfig(
   node: GraphNode,
   encodingOptions?: EncodedHeightOptions,
+  isBaseClass?: boolean,
 ): BuildingConfig {
   const resolvedMethodCount = getMethodCount(node);
-  const classHeight = encodingOptions
+
+  // For class-like types, height is driven by containment (method room stacking).
+  // The encoding metric shifts to footprint scaling instead of height.
+  const containmentHeight = getContainmentHeight(resolvedMethodCount);
+  const footprintScale = encodingOptions
+    ? getFootprintScale(node, encodingOptions)
+    : 1.0;
+
+  // For non-class types, use the legacy height calculation
+  const legacyHeight = encodingOptions
     ? getEncodedHeight(node, encodingOptions, resolvedMethodCount)
     : getMethodBasedHeight(resolvedMethodCount || undefined, node.depth);
 
   switch (node.type) {
-    case 'class':
+    case 'class': {
+      const baseMultiplier = isBaseClass ? BASE_CLASS_FOOTPRINT_MULTIPLIER : 1.0;
       return {
         geometry: {
           shape: 'box',
-          width: CLASS_WIDTH,
-          height: classHeight,
-          depth: CLASS_DEPTH,
+          width: CLASS_WIDTH * footprintScale * baseMultiplier,
+          height: containmentHeight,
+          depth: CLASS_DEPTH * footprintScale * baseMultiplier,
         },
         material: {
           opacity: 1,
           transparent: false,
           wireframe: false,
-          roughness: 0.7,
-          metalness: 0.1,
+          roughness: isBaseClass ? BASE_CLASS_ROUGHNESS : 0.7,
+          metalness: isBaseClass ? BASE_CLASS_METALNESS : 0.1,
           dashed: false,
         },
       };
+    }
 
     case 'function':
+      // Kiosk visual (Story 11-12): compact single-story box, smaller than any class building
       return {
         geometry: {
-          shape: 'cylinder',
-          width: SHOP_WIDTH,
-          height: FLOOR_HEIGHT,
-          depth: SHOP_DEPTH,
+          shape: 'box',
+          width: KIOSK_WIDTH,
+          height: KIOSK_HEIGHT,
+          depth: KIOSK_DEPTH,
         },
         material: {
           opacity: 1,
           transparent: false,
           wireframe: false,
-          roughness: 0.6,
-          metalness: 0.15,
+          roughness: 0.5,
+          metalness: 0.2,
           dashed: false,
         },
       };
@@ -134,9 +158,9 @@ export function getBuildingConfig(
       return {
         geometry: {
           shape: 'octagonal',
-          width: CLASS_WIDTH,
-          height: classHeight,
-          depth: CLASS_DEPTH,
+          width: CLASS_WIDTH * footprintScale,
+          height: containmentHeight,
+          depth: CLASS_DEPTH * footprintScale,
         },
         material: {
           opacity: GLASS_OPACITY,
@@ -152,9 +176,9 @@ export function getBuildingConfig(
       return {
         geometry: {
           shape: 'cone',
-          width: CLASS_WIDTH,
-          height: classHeight,
-          depth: CLASS_DEPTH,
+          width: CLASS_WIDTH * footprintScale,
+          height: containmentHeight,
+          depth: CLASS_DEPTH * footprintScale,
         },
         material: {
           opacity: ABSTRACT_OPACITY,
@@ -185,12 +209,13 @@ export function getBuildingConfig(
       };
 
     // file, method, and any unknown types use default
-    default:
+    default: {
+      const defaultHeight = legacyHeight;
       return {
         geometry: {
           shape: 'box',
           width: BUILDING_WIDTH,
-          height: getBuildingHeight(node.depth),
+          height: defaultHeight,
           depth: BUILDING_DEPTH,
         },
         material: {
@@ -202,5 +227,6 @@ export function getBuildingConfig(
           dashed: false,
         },
       };
+    }
   }
 }

@@ -1,7 +1,7 @@
 /**
  * Types of nodes in the dependency graph
  */
-export type DependencyNodeType = 'file' | 'class' | 'function' | 'interface' | 'module'
+export type DependencyNodeType = 'file' | 'class' | 'function' | 'method' | 'interface' | 'module'
 
 /**
  * Types of edges in the dependency graph

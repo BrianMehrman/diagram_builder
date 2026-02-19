@@ -48,6 +48,19 @@ export function convertToIVM(
   // Step 2: Convert edges
   const edgeInputs = convertEdges(depGraph.getEdges())
 
+  // Step 2.5: Derive parentId from 'contains' edges
+  const containsEdges = depGraph.getEdges().filter(e => e.type === 'contains')
+  const parentIdMap = new Map<string, string>()
+  for (const edge of containsEdges) {
+    parentIdMap.set(edge.target, edge.source)
+  }
+  for (const node of nodeInputs) {
+    const parentId = parentIdMap.get(node.id)
+    if (parentId) {
+      node.parentId = parentId
+    }
+  }
+
   // Step 3: Create initial GraphInput
   const graphInput: GraphInput = {
     nodes: nodeInputs,

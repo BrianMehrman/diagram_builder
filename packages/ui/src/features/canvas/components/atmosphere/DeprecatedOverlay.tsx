@@ -73,11 +73,7 @@ export function DeprecatedOverlay({
     (s) => s.citySettings.atmosphereOverlays.deprecated,
   );
 
-  // AC-3: toggleable via atmosphereOverlays.deprecated
-  if (!deprecatedEnabled) return null;
-
   // Memoize the striped material
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const material = useMemo(() => {
     const texture = createStripedTexture();
     return new THREE.MeshStandardMaterial({
@@ -90,6 +86,9 @@ export function DeprecatedOverlay({
       depthWrite: false,
     });
   }, []);
+
+  // AC-3: toggleable via atmosphereOverlays.deprecated
+  if (!deprecatedEnabled) return null;
 
   // Slight offset to prevent z-fighting with the building underneath
   const offset = 0.02;

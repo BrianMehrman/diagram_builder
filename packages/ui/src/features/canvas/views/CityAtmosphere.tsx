@@ -42,27 +42,18 @@ export function CityAtmosphere({ graph }: CityAtmosphereProps) {
   const { positions, districtArcs } = useCityLayout(graph);
   const { internalNodes, districtGroups, nodeMap } = useCityFiltering(graph, positions);
 
-  // AC-5: If all toggles are off OR LOD < 3, render nothing (zero cost)
-  const anyEnabled = overlays.cranes || overlays.lighting || overlays.smog || overlays.deprecated;
-  if (!anyEnabled || lodLevel < 3) return null;
-
-  // Filter to building-type nodes with positions
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // All hooks must be called unconditionally (React rules of hooks)
   const buildingNodes = useMemo(() => {
     return internalNodes.filter(
       (n) => BUILDING_TYPES.has(n.type) && positions.has(n.id),
     );
   }, [internalNodes, positions]);
 
-  // Crane threshold (top 10% by changeCount)
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const craneThreshold = useMemo(
     () => (overlays.cranes ? computeCraneThreshold(buildingNodes) : Infinity),
     [buildingNodes, overlays.cranes],
   );
 
-  // District node map for smog overlay
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const districtNodeMap = useMemo(() => {
     const map = new Map<string, GraphNode[]>();
     for (const [dir, nodeIds] of districtGroups) {
@@ -75,6 +66,10 @@ export function CityAtmosphere({ graph }: CityAtmosphereProps) {
     }
     return map;
   }, [districtGroups, nodeMap]);
+
+  // AC-5: If all toggles are off OR LOD < 3, render nothing (zero cost)
+  const anyEnabled = overlays.cranes || overlays.lighting || overlays.smog || overlays.deprecated;
+  if (!anyEnabled || lodLevel < 3) return null;
 
   return (
     <group name="city-atmosphere">

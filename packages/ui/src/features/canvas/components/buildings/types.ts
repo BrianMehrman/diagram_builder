@@ -20,4 +20,6 @@ export interface ClassBuildingProps extends TypedBuildingProps {
   methods?: GraphNode[];
   lodLevel?: number;
   encodingOptions?: EncodedHeightOptions;
+  /** True when this class/interface is inherited or implemented by other classes (Story 11-6/11-7). */
+  isBaseClass?: boolean;
 }

@@ -32,6 +32,8 @@ interface Neo4jNode {
   endLine?: number;
   startColumn?: number;
   endColumn?: number;
+  visibility?: string;
+  methodCount?: number;
   properties?: Record<string, unknown>;
 }
 
@@ -103,6 +105,7 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
            n.dependencyCount as dependencyCount, n.dependentCount as dependentCount,
            n.startLine as startLine, n.endLine as endLine,
            n.startColumn as startColumn, n.endColumn as endColumn,
+           n.visibility as visibility, n.methodCount as methodCount,
            n.properties as properties
   `;
   const nodeResults = await runQuery<Neo4jNode>(nodesQuery, { repoId });
@@ -119,8 +122,9 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
   `;
   const edgeResults = await runQuery<Neo4jEdge>(edgesQuery, { repoId });
 
-  // Transform Neo4j results to IVM format
-  const nodes: IVMNode[] = nodeResults.map(node => ({
+  // Transform Neo4j results to graph format
+  // Uses IVMNode as base but adds top-level fields for UI consumption
+  const nodes = nodeResults.map(node => ({
     id: node.id,
     type: node.type,
     position: {
@@ -130,6 +134,8 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
     },
     lod: (node.lod ?? 3) as LODLevel,
     ...(node.parentId && { parentId: node.parentId }),
+    ...(node.visibility && { visibility: node.visibility }),
+    ...(node.methodCount !== undefined && node.methodCount !== null && { methodCount: node.methodCount }),
     metadata: {
       label: node.label,
       path: node.path,

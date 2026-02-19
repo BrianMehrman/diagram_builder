@@ -84,7 +84,7 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
     }
     graph.addNode(fileNode)
 
-    // Create class nodes
+    // Create class nodes and their method children
     for (const classInfo of analysis.classes) {
       const classNodeId = createNodeId('class', `${file.filePath}:${classInfo.name}`)
       const classNode: DependencyNode = {
@@ -94,6 +94,7 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
         path: file.filePath,
         metadata: {
           methods: classInfo.methods.map((m) => m.name),
+          methodCount: classInfo.methods.length,
           properties: classInfo.properties.map((p) => p.name),
           isAbstract: classInfo.isAbstract,
         },
@@ -107,6 +108,35 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
         type: 'exports',
         metadata: {},
       })
+
+      // Create individual method nodes as children of the class
+      for (const methodInfo of classInfo.methods) {
+        const methodNodeId = createNodeId('method', `${file.filePath}:${classInfo.name}.${methodInfo.name}`)
+        const methodNode: DependencyNode = {
+          id: methodNodeId,
+          type: 'method',
+          name: `${classInfo.name}.${methodInfo.name}`,
+          path: file.filePath,
+          metadata: {
+            visibility: methodInfo.visibility ?? 'public',
+            isStatic: methodInfo.isStatic,
+            isAsync: methodInfo.isAsync,
+            isGenerator: methodInfo.isGenerator,
+            isConstructor: methodInfo.name === 'constructor',
+            parameters: methodInfo.parameters.length,
+            returnType: methodInfo.returnType,
+          },
+        }
+        graph.addNode(methodNode)
+
+        // Create containment edge from class to method
+        graph.addEdge({
+          source: classNodeId,
+          target: methodNodeId,
+          type: 'contains',
+          metadata: {},
+        })
+      }
     }
 
     // Create function nodes (only top-level functions)

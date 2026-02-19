@@ -15,8 +15,8 @@ export interface ContainmentResult {
 /** Node types that can act as containers */
 const CONTAINER_TYPES = new Set(['file', 'class', 'module'])
 
-/** Node types that are contained by files */
-const FILE_CHILD_TYPES = new Set(['class', 'function', 'interface'])
+/** Node types that are contained by files or classes */
+const FILE_CHILD_TYPES = new Set(['class', 'function', 'interface', 'method'])
 
 /**
  * Analyzes DependencyNodes and DependencyEdges to establish containment

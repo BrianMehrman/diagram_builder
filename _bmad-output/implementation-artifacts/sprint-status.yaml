@@ -145,7 +145,7 @@ development_status:
   9-21-layer-toggle-store-ui: done  # Layer toggle store + UI (above ground / underground) - COMPLETE (2026-02-05)
 
   # Epic 10: City Metaphor Rethink — Hierarchical Containment, Sky Edges, Atmosphere
-  epic-10: in-progress
+  epic-10: review
   # Epic 10-A: Structural Refactoring (Phase 0)
   10-1-cityview-interaction-test-suite: review  # Write regression test suite for CityView interactions BEFORE decomposition
   10-2-extract-shared-hooks: review  # Extract useCityLayout, useCityFiltering, useDistrictMap from CityView - COMPLETE (2026-02-11)
@@ -178,24 +178,24 @@ development_status:
   10-25-edge-tier-visibility-controls: review  # Toggle switches for edge tiers + transit map mode button - COMPLETE (2026-02-17)
 
   # Epic 11: Vertical Layering — 3D Semantic City
-  epic-11: not-started
+  epic-11: in-progress
   # Epic 11-A: Method Rooms & Building Containment
-  11-1-containment-driven-building-height: not-started  # Building height driven by method room containment, Z-positioning above file blocks
-  11-2-method-room-component: not-started  # Box-shaped room geometries for methods inside class buildings
-  11-3-method-room-floor-ordering: not-started  # Public methods lower floors, private upper; constructor/static distinction
-  11-4-lod-room-transition: not-started  # Floor bands at LOD 1-2, method rooms at LOD 3+ with smooth transition
+  11-1-containment-driven-building-height: review  # Containment-driven height + footprint scaling - COMPLETE (2026-02-17)  # Building height driven by method room containment, Z-positioning above file blocks
+  11-2-method-room-component: review  # MethodRoom component + roomLayout utility, LOD 3+ rendering in ClassBuilding - COMPLETE (2026-02-17)  # Box-shaped room geometries for methods inside class buildings
+  11-3-method-room-floor-ordering: review  # sortMethodsByVisibility (public→protected→private), METHOD_ROOM_COLORS palette, ClassBuilding wired - COMPLETE (2026-02-18)
+  11-4-lod-room-transition: review  # getLodTransition() crossfade, ROOM_LOD_THRESHOLD=3, rooms in AbstractBuilding+InterfaceBuilding - COMPLETE (2026-02-18)
   # Epic 11-B: Base Class Visual Differentiation
-  11-5-base-class-detection-utility: not-started  # Detect classes inherited from, mid-chain inheritance handling
-  11-6-base-class-building-component: not-started  # Distinct color scheme + box profile for base class buildings
-  11-7-mid-chain-inheritance-visual: not-started  # Validation of mid-chain and diamond inheritance visual treatment
+  11-5-base-class-detection-utility: review  # isBaseClass() + detectBaseClasses(), handles extends/implements/inherits, mid-chain - COMPLETE (2026-02-18)
+  11-6-base-class-building-component: review  # BaseClassBuilding component, wider footprint, amber/sandstone palette, CityBlocks routing - COMPLETE (2026-02-18)
+  11-7-mid-chain-inheritance-visual: review  # isBaseClass prop on ClassBuildingProps, warm tint on Interface+Abstract, chain/diamond tests - COMPLETE (2026-02-18)
   # Epic 11-C: Underground Connection Layer
-  11-8-underground-pipe-component: not-started  # Pipe/conduit geometry below Z=0 for structural dependencies
-  11-9-reclassify-edge-routing: not-started  # Split edges: imports/extends/implements underground, method calls/composition overhead
-  11-10-underground-toggle-ui: not-started  # Toggle underground visibility, external deps hidden by default
+  11-8-underground-pipe-component: review  # UndergroundPipe component, calculatePipeRoute, getPipeDepth, PIPE_COLORS/RADIUS constants - COMPLETE (2026-02-18)
+  11-9-reclassify-edge-routing: review  # classifyEdgeRouting() + CityUnderground orchestrator + CitySky overhead-only filter - COMPLETE (2026-02-18)
+  11-10-underground-toggle-ui: review  # undergroundVisible + externalPipesVisible store settings, CityUnderground gating, LayerToggle UI, ground opacity - COMPLETE (2026-02-18)
   # Epic 11-D: Overhead Wire Layer
-  11-11-overhead-wire-component: not-started  # Thin wire arcs above rooftops for method calls and composition
-  11-12-standalone-function-kiosk: not-started  # Refine FunctionShop to kiosk/small shop visual on file blocks
-  11-13-wire-differentiation: not-started  # Visual distinction between method call wires and composition wires
+  11-11-overhead-wire-component: review  # OverheadWire component, calculateWireArcPeak, isWireVisible, getWireColor - COMPLETE (2026-02-18)
+  11-12-standalone-function-kiosk: review  # FunctionShop → kiosk box+awning, KIOSK_WIDTH/DEPTH/HEIGHT constants, buildingGeometry updated - COMPLETE (2026-02-18)
+  11-13-wire-differentiation: review  # getWireMaterialType(), WIRE_DASHED_TYPES, LineDashedMaterial for composes, wire legend in LayerToggle - COMPLETE (2026-02-18)
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun

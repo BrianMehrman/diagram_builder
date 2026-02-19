@@ -16,6 +16,7 @@ import { GroundShadow } from '../components/GroundShadow';
 import { useCityLayout } from '../hooks/useCityLayout';
 import { useCityFiltering } from '../hooks/useCityFiltering';
 import { useCanvasStore } from '../store';
+import { classifyEdgeRouting } from './cityViewUtils';
 import type { Graph } from '../../../shared/types';
 
 interface CitySkyProps {
@@ -29,10 +30,16 @@ export function CitySky({ graph }: CitySkyProps) {
 
   const isV2 = cityVersion === 'v2';
 
+  // In v2 mode: CitySky renders only overhead edges (method calls, composition).
+  // Structural edges (imports, inherits, depends_on) route underground via CityUnderground.
+  const edgesToRender = isV2
+    ? visibleEdges.filter((e) => classifyEdgeRouting(e.type) === 'overhead')
+    : visibleEdges;
+
   return (
     <>
       {/* Dependency edges between buildings */}
-      {visibleEdges.map((edge) => {
+      {edgesToRender.map((edge) => {
         const srcPos = positions.get(edge.source)!;
         const tgtPos = positions.get(edge.target)!;
 

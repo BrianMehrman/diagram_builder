@@ -211,5 +211,69 @@ describe('Graph Builder', () => {
       expect(graph.getNodeCount()).toBe(0)
       expect(graph.getEdgeCount()).toBe(0)
     })
+
+    it('should create method nodes as children of class nodes', () => {
+      const sourceCode = `
+        export class UserService {
+          private name: string;
+
+          constructor(name: string) {
+            this.name = name;
+          }
+
+          public getName(): string {
+            return this.name;
+          }
+
+          static create(name: string): UserService {
+            return new UserService(name);
+          }
+        }
+      `
+
+      const graph = buildDependencyGraph([
+        { filePath: '/src/user-service.ts', content: sourceCode },
+      ])
+
+      const nodes = graph.getNodes()
+      const edges = graph.getEdges()
+
+      // Class node should exist with methodCount
+      const classNode = nodes.find(n => n.type === 'class')
+      expect(classNode).toBeDefined()
+      expect(classNode?.name).toBe('UserService')
+      expect(classNode?.metadata.methodCount).toBe(3)
+
+      // Method nodes should exist
+      const methodNodes = nodes.filter(n => n.type === 'method')
+      expect(methodNodes.length).toBe(3)
+
+      // Check constructor method
+      const ctorNode = methodNodes.find(n => n.name.includes('constructor'))
+      expect(ctorNode).toBeDefined()
+      expect(ctorNode?.metadata.isConstructor).toBe(true)
+
+      // Check getName method
+      const getNameNode = methodNodes.find(n => n.name.includes('getName'))
+      expect(getNameNode).toBeDefined()
+      expect(getNameNode?.metadata.visibility).toBe('public')
+
+      // Check static method
+      const createNode = methodNodes.find(n => n.name.includes('create'))
+      expect(createNode).toBeDefined()
+      expect(createNode?.metadata.isStatic).toBe(true)
+
+      // Contains edges from class to methods
+      const containsEdges = edges.filter(e => e.type === 'contains')
+      const classMethodEdges = containsEdges.filter(
+        e => e.source === classNode?.id && methodNodes.some(m => m.id === e.target)
+      )
+      expect(classMethodEdges.length).toBe(3)
+
+      // Method nodes should have same path as class
+      for (const method of methodNodes) {
+        expect(method.path).toBe('/src/user-service.ts')
+      }
+    })
   })
 })

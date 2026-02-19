@@ -302,5 +302,66 @@ describe('useCanvasStore', () => {
         });
       });
     });
+
+    // ── Story 11-10: Underground settings ────────────────────────────
+    describe('undergroundVisible (Story 11-10)', () => {
+      it('defaults to false', () => {
+        expect(useCanvasStore.getState().citySettings.undergroundVisible).toBe(false);
+      });
+
+      it('toggleUndergroundVisible toggles from false to true', () => {
+        useCanvasStore.getState().toggleUndergroundVisible();
+        expect(useCanvasStore.getState().citySettings.undergroundVisible).toBe(true);
+      });
+
+      it('toggleUndergroundVisible toggles back to false', () => {
+        useCanvasStore.getState().toggleUndergroundVisible();
+        useCanvasStore.getState().toggleUndergroundVisible();
+        expect(useCanvasStore.getState().citySettings.undergroundVisible).toBe(false);
+      });
+
+      it('does not affect other citySettings fields', () => {
+        useCanvasStore.getState().setCityVersion('v2');
+        useCanvasStore.getState().toggleUndergroundVisible();
+        const { citySettings } = useCanvasStore.getState();
+        expect(citySettings.undergroundVisible).toBe(true);
+        expect(citySettings.cityVersion).toBe('v2');
+        expect(citySettings.externalPipesVisible).toBe(false);
+      });
+
+      it('resets to false on reset()', () => {
+        useCanvasStore.getState().toggleUndergroundVisible();
+        useCanvasStore.getState().reset();
+        expect(useCanvasStore.getState().citySettings.undergroundVisible).toBe(false);
+      });
+    });
+
+    describe('externalPipesVisible (Story 11-10)', () => {
+      it('defaults to false', () => {
+        expect(useCanvasStore.getState().citySettings.externalPipesVisible).toBe(false);
+      });
+
+      it('toggleExternalPipes toggles from false to true', () => {
+        useCanvasStore.getState().toggleExternalPipes();
+        expect(useCanvasStore.getState().citySettings.externalPipesVisible).toBe(true);
+      });
+
+      it('toggleExternalPipes toggles back to false', () => {
+        useCanvasStore.getState().toggleExternalPipes();
+        useCanvasStore.getState().toggleExternalPipes();
+        expect(useCanvasStore.getState().citySettings.externalPipesVisible).toBe(false);
+      });
+
+      it('does not affect undergroundVisible', () => {
+        useCanvasStore.getState().toggleExternalPipes();
+        expect(useCanvasStore.getState().citySettings.undergroundVisible).toBe(false);
+      });
+
+      it('resets to false on reset()', () => {
+        useCanvasStore.getState().toggleExternalPipes();
+        useCanvasStore.getState().reset();
+        expect(useCanvasStore.getState().citySettings.externalPipesVisible).toBe(false);
+      });
+    });
   });
 });

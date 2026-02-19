@@ -77,6 +77,10 @@ export interface CitySettings {
   edgeTierVisibility: EdgeTierVisibility;
   cityVersion: CityVersion;
   cameraTiltAssist: boolean;
+  /** Whether the underground pipe layer is visible (Story 11-10). Default: false. */
+  undergroundVisible: boolean;
+  /** Whether external dependency pipes are shown when underground is on (Story 11-10). Default: false. */
+  externalPipesVisible: boolean;
 }
 
 /**
@@ -172,6 +176,10 @@ interface CanvasState {
   toggleAtmosphereOverlay: (key: AtmosphereOverlayKey) => void;
   toggleEdgeTierVisibility: (key: EdgeTierKey) => void;
   toggleCameraTiltAssist: () => void;
+  /** Toggle underground pipe layer on/off (Story 11-10) */
+  toggleUndergroundVisible: () => void;
+  /** Toggle external dependency pipes on/off (Story 11-10) */
+  toggleExternalPipes: () => void;
 
   // Reset to defaults
   reset: () => void;
@@ -195,6 +203,8 @@ const DEFAULT_CITY_SETTINGS: CitySettings = {
   },
   cityVersion: 'v1',
   cameraTiltAssist: true,
+  undergroundVisible: false,
+  externalPipesVisible: false,
 };
 
 /**
@@ -394,6 +404,20 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       citySettings: {
         ...state.citySettings,
         cameraTiltAssist: !state.citySettings.cameraTiltAssist,
+      },
+    })),
+  toggleUndergroundVisible: () =>
+    set((state) => ({
+      citySettings: {
+        ...state.citySettings,
+        undergroundVisible: !state.citySettings.undergroundVisible,
+      },
+    })),
+  toggleExternalPipes: () =>
+    set((state) => ({
+      citySettings: {
+        ...state.citySettings,
+        externalPipesVisible: !state.citySettings.externalPipesVisible,
       },
     })),
 

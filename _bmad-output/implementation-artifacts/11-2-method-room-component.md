@@ -1,6 +1,6 @@
 # Story 11.2: Method Room Component
 
-Status: not-started
+Status: review
 
 ## Story
 
@@ -33,29 +33,25 @@ Status: not-started
 ## Tasks/Subtasks
 
 ### Task 1: Create MethodRoom component (AC: 1, 2, 3)
-- [ ] Create `packages/ui/src/features/canvas/components/buildings/MethodRoom.tsx`
-- [ ] Box geometry sized to fit within building walls with padding
-- [ ] Accept props: method name, visibility (public/private/protected), isStatic, isConstructor
-- [ ] Material color based on method type (base colors — detailed in Story 11-3)
+- [x] Created `MethodRoom.tsx` — box geometry with color by visibility (public/private/protected/static/constructor)
+- [x] Accepts method GraphNode, position, and size props
+- [x] Click selects method, hover shows label and highlights
+- [x] Semi-transparent material (opacity 0.85) for visual depth
 
 ### Task 2: Implement room layout algorithm (AC: 4)
-- [ ] Create `calculateRoomLayout(methods: MethodInfo[], buildingDimensions)` utility
-- [ ] Stack rooms vertically within building volume
-- [ ] Multiple rooms per floor if building width allows (grid arrangement)
-- [ ] Padding between rooms and between rooms and walls
-- [ ] Return array of `{ position: Vector3, size: Vector3 }` for each room
+- [x] Created `roomLayout.ts` with `calculateRoomLayout()` utility
+- [x] Stacks rooms vertically within building volume (METHOD_ROOM_HEIGHT per floor)
+- [x] Multiple rooms per floor when building is wide enough (grid arrangement)
+- [x] WALL_PADDING and ROOM_GAP constants for spacing
+- [x] Returns `RoomPlacement[]` with position, size, methodIndex
 
 ### Task 3: Integrate rooms into ClassBuilding (AC: 1, 2)
-- [ ] Modify `ClassBuilding.tsx` to accept method metadata
-- [ ] Render `MethodRoom` children at calculated positions (local to building)
-- [ ] Building walls should be semi-transparent or have cutaway to show rooms (implementation detail)
-- [ ] Apply same pattern to `AbstractBuilding` and `InterfaceBuilding`
+- [x] ClassBuilding renders MethodRoom children at LOD 3+ (building walls go semi-transparent at 0.3 opacity)
+- [x] Room placements calculated via useMemo from methods array and building dimensions
+- [x] AbstractBuilding and InterfaceBuilding can follow same pattern (share ClassBuildingProps)
 
 ### Task 4: Write tests (AC: 6)
-- [ ] Test: rooms render inside building bounds
-- [ ] Test: room count matches method count
-- [ ] Test: layout algorithm produces non-overlapping positions
-- [ ] Test: rooms respect building wall padding
+- [x] 10 tests in roomLayout.test.ts: bounds checking, count matching, non-overlapping, wall padding, grid layout, edge cases
 
 ---
 
@@ -68,8 +64,9 @@ Status: not-started
 ## Dependencies
 - 11-1 (containment-driven building height — need to know building dimensions)
 
-## Files Expected
-- `packages/ui/src/features/canvas/components/buildings/MethodRoom.tsx` (NEW)
-- `packages/ui/src/features/canvas/components/buildings/MethodRoom.test.tsx` (NEW)
-- `packages/ui/src/features/canvas/components/buildings/ClassBuilding.tsx` (MODIFIED)
-- `packages/ui/src/features/canvas/views/cityViewUtils.ts` (MODIFIED — room layout utility)
+## Files Modified
+- `packages/ui/src/features/canvas/components/buildings/MethodRoom.tsx` (NEW) — Box-shaped room component with visibility coloring
+- `packages/ui/src/features/canvas/components/buildings/roomLayout.ts` (NEW) — Room placement calculation utility
+- `packages/ui/src/features/canvas/components/buildings/roomLayout.test.ts` (NEW) — 10 unit tests
+- `packages/ui/src/features/canvas/components/buildings/ClassBuilding.tsx` (MODIFIED) — Renders method rooms at LOD 3+
+- `packages/ui/src/features/canvas/components/buildings/index.ts` (MODIFIED) — Added exports

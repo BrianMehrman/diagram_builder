@@ -21,6 +21,7 @@ import { ClusterBuilding } from '../components/ClusterBuilding';
 import { FileBlock } from '../components/FileBlock';
 import {
   ClassBuilding,
+  BaseClassBuilding,
   FunctionShop,
   InterfaceBuilding,
   AbstractBuilding,
@@ -31,7 +32,7 @@ import {
 import { getBuildingConfig } from '../components/buildingGeometry';
 import { getDistrictColor } from '../components/districtGroundUtils';
 import { getSignType, getSignVisibility, renderSign } from '../components/signs';
-import { buildIncomingEdgeCounts } from './cityViewUtils';
+import { buildIncomingEdgeCounts, detectBaseClasses } from './cityViewUtils';
 import {
   PowerStation,
   WaterTower,
@@ -94,6 +95,7 @@ function renderInfrastructureLandmark(
  * Renders the appropriate typed building component based on node.type.
  * Falls back to the generic Building component for unrecognized types.
  * Adds RooftopGarden for container types with nested children.
+ * Routes base classes to BaseClassBuilding for distinct visual treatment (Story 11-6).
  */
 function renderTypedBuilding(
   node: GraphNode,
@@ -102,22 +104,26 @@ function renderTypedBuilding(
   methodsByClass: Map<string, GraphNode[]>,
   lodLevel: number,
   encodingOptions?: EncodedHeightOptions,
+  baseClassIds?: Set<string>,
 ) {
   const props = { key: node.id, node, position };
   const hasNested = CONTAINER_TYPES.has(node.type) && nestedMap.has(node.id);
   const classMethods = methodsByClass.get(node.id);
   const classExtras = encodingOptions ? { encodingOptions } : {};
+  const nodeIsBase = baseClassIds?.has(node.id) ?? false;
   const methodProps = classMethods
-    ? { methods: classMethods, lodLevel, ...classExtras }
-    : { lodLevel, ...classExtras };
+    ? { methods: classMethods, lodLevel, isBaseClass: nodeIsBase, ...classExtras }
+    : { lodLevel, isBaseClass: nodeIsBase, ...classExtras };
 
   let building: React.JSX.Element;
   switch (node.type) {
     case 'class':
-      building = <ClassBuilding {...props} {...methodProps} />;
+      building = nodeIsBase
+        ? <BaseClassBuilding {...props} {...methodProps} />
+        : <ClassBuilding {...props} {...methodProps} />;
       break;
     case 'function':
-      building = <FunctionShop {...props} />;
+      building = <FunctionShop {...props} {...classExtras} />;
       break;
     case 'interface':
       building = <InterfaceBuilding {...props} {...methodProps} />;
@@ -132,7 +138,7 @@ function renderTypedBuilding(
       building = <EnumCrate {...props} />;
       break;
     default:
-      building = <Building key={node.id} node={node} position={position} />;
+      building = <Building key={node.id} node={node} position={position} {...(encodingOptions ? { encodingOptions } : {})} />;
       break;
   }
 
@@ -142,7 +148,7 @@ function renderTypedBuilding(
   return (
     <group key={node.id} position={[position.x, position.y, position.z]}>
       {/* Re-render building at origin since group handles position */}
-      {renderTypedBuildingInner(node, methodsByClass, lodLevel, encodingOptions)}
+      {renderTypedBuildingInner(node, methodsByClass, lodLevel, encodingOptions, baseClassIds)}
       <RooftopGarden
         parentNode={node}
         parentWidth={config.geometry.width}
@@ -161,21 +167,25 @@ function renderTypedBuildingInner(
   methodsByClass: Map<string, GraphNode[]>,
   lodLevel: number,
   encodingOptions?: EncodedHeightOptions,
+  baseClassIds?: Set<string>,
 ) {
   const origin = { x: 0, y: 0, z: 0 };
   const props = { key: `inner-${node.id}`, node, position: origin };
   const classMethods = methodsByClass.get(node.id);
   const classExtras = encodingOptions ? { encodingOptions } : {};
+  const nodeIsBase = baseClassIds?.has(node.id) ?? false;
   const methodProps = classMethods
-    ? { methods: classMethods, lodLevel, ...classExtras }
-    : { lodLevel, ...classExtras };
+    ? { methods: classMethods, lodLevel, isBaseClass: nodeIsBase, ...classExtras }
+    : { lodLevel, isBaseClass: nodeIsBase, ...classExtras };
   switch (node.type) {
     case 'class':
-      return <ClassBuilding {...props} {...methodProps} />;
+      return nodeIsBase
+        ? <BaseClassBuilding {...props} {...methodProps} />
+        : <ClassBuilding {...props} {...methodProps} />;
     case 'abstract_class':
       return <AbstractBuilding {...props} {...methodProps} />;
     default:
-      return <Building key={`inner-${node.id}`} node={node} position={origin} />;
+      return <Building key={`inner-${node.id}`} node={node} position={origin} {...(encodingOptions ? { encodingOptions } : {})} />;
   }
 }
 
@@ -193,6 +203,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
   const { nestedTypeMap } = useDistrictMap(graph.nodes);
 
   const incomingEdgeCounts = useMemo(() => buildIncomingEdgeCounts(graph.edges), [graph.edges]);
+  const baseClassIds = useMemo(() => detectBaseClasses(graph.edges), [graph.edges]);
 
   const isV2 = cityVersion === 'v2';
 
@@ -286,7 +297,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
 
                   return (
                     <group key={node.id}>
-                      {renderTypedBuilding(node, worldPos, nestedTypeMap, methodsByClass, lodLevel, nodeEncoding)}
+                      {renderTypedBuilding(node, worldPos, nestedTypeMap, methodsByClass, lodLevel, nodeEncoding, baseClassIds)}
                       {renderSign({
                         key: `sign-${node.id}`,
                         signType,
@@ -358,7 +369,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
 
             return (
               <group key={node.id}>
-                {renderTypedBuilding(node, pos, nestedTypeMap, methodsByClass, lodLevel, nodeEncoding)}
+                {renderTypedBuilding(node, pos, nestedTypeMap, methodsByClass, lodLevel, nodeEncoding, baseClassIds)}
                 {renderSign({
                   key: `sign-${node.id}`,
                   signType,

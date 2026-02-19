@@ -302,6 +302,8 @@ async function triggerParserImport(
             n.language = $language,
             n.loc = $loc,
             n.complexity = $complexity,
+            n.visibility = $visibility,
+            n.methodCount = $methodCount,
             n.metadata = $metadata
         MERGE (r)-[:CONTAINS]->(n)
         `,
@@ -319,6 +321,8 @@ async function triggerParserImport(
           language: node.metadata.language || null,
           loc: node.metadata.loc || null,
           complexity: node.metadata.complexity || null,
+          visibility: (node.metadata.properties as Record<string, unknown>)?.visibility as string || null,
+          methodCount: (node.metadata.properties as Record<string, unknown>)?.methodCount as number || null,
           metadata: JSON.stringify(node.metadata || {}),
         }
       );

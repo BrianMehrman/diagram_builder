@@ -1,8 +1,8 @@
 /**
  * ClassBuilding Component
  *
- * Multi-story building representing a class. Height uses log-scaled methodCount.
- * Per-method visibility-colored floor bands via vertex coloring on a single mesh.
+ * Multi-story building representing a class. Height driven by containment
+ * (method rooms). Floor bands at LOD 1-2, method rooms visible at LOD 3+.
  */
 
 import { useState, useMemo } from 'react';
@@ -10,9 +10,11 @@ import * as THREE from 'three';
 import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
 import { getBuildingConfig } from '../buildingGeometry';
-import { getDirectoryFromLabel, getDirectoryColor } from '../../views/cityViewUtils';
+import { getDirectoryFromLabel, getDirectoryColor, sortMethodsByVisibility, getLodTransition } from '../../views/cityViewUtils';
 import { getFloorCount, applyFloorBandColors, getMethodCount } from './floorBandUtils';
 import { FloorLabels } from './FloorLabels';
+import { MethodRoom } from './MethodRoom';
+import { calculateRoomLayout } from './roomLayout';
 import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
 import type { ClassBuildingProps } from './types';
 
@@ -31,25 +33,40 @@ export function ClassBuilding({ node, position, methods, lodLevel, encodingOptio
   const color = getDirectoryColor(directory);
   const fileName = (node.label ?? node.id).split('/').pop() ?? node.id;
 
-  const methodCount = methods?.length ?? getMethodCount(node);
+  // Sort methods by visibility: public (bottom) → protected → private (top)
+  const sortedMethods = useMemo(
+    () => (methods && methods.length > 0 ? sortMethodsByVisibility(methods) : methods),
+    [methods],
+  );
+
+  const methodCount = sortedMethods?.length ?? getMethodCount(node);
   const floorCount = getFloorCount(methodCount > 0 ? methodCount : undefined);
 
   const geometry = useMemo(() => {
     const geo = new THREE.BoxGeometry(width, height, depth, 1, floorCount, 1);
 
-    // Apply floor band colors when method count is known (from methods array or node.methodCount)
+    // Apply floor band colors when method count is known (from sorted methods array or node.methodCount)
     // Default to "public" coloring when individual method visibility data is unavailable (AC-4)
     if (methodCount > 0) {
-      const visibilities: Array<string | undefined> = methods && methods.length > 0
-        ? methods.map((m) => m.visibility)
+      const visibilities: Array<string | undefined> = sortedMethods && sortedMethods.length > 0
+        ? sortedMethods.map((m) => m.visibility)
         : new Array(floorCount).fill(undefined);
       applyFloorBandColors(geo, floorCount, visibilities, height);
     }
 
     return geo;
-  }, [width, height, depth, floorCount, methodCount, methods]);
+  }, [width, height, depth, floorCount, methodCount, sortedMethods]);
 
   const hasFloorBands = methodCount > 0;
+  const currentLod = lodLevel ?? 2;
+  const { bandOpacity, roomOpacity, showRooms: lodShowRooms } = getLodTransition(currentLod);
+  const showRooms = lodShowRooms && sortedMethods != null && sortedMethods.length > 0;
+
+  // Calculate room placements for LOD 3+ rendering (uses sorted order)
+  const roomPlacements = useMemo(() => {
+    if (!sortedMethods || sortedMethods.length === 0) return [];
+    return calculateRoomLayout(sortedMethods.length, width, height, depth);
+  }, [sortedMethods, width, height, depth]);
 
   return (
     <group position={[position.x, position.y, position.z]}>
@@ -68,10 +85,32 @@ export function ClassBuilding({ node, position, methods, lodLevel, encodingOptio
           emissiveIntensity={hovered ? 0.4 : isSelected ? 0.3 : 0}
           roughness={config.material.roughness}
           metalness={config.material.metalness}
-          opacity={transitStyle.opacity}
-          transparent={transitStyle.transparent}
+          opacity={showRooms
+            ? bandOpacity * transitStyle.opacity + (1 - bandOpacity) * 0.3
+            : transitStyle.opacity}
+          transparent={showRooms || transitStyle.transparent}
         />
       </mesh>
+
+      {/* Method rooms — visible at LOD 3+ */}
+      {showRooms && (
+        <group position={[0, 0, 0]}>
+          {roomPlacements.map((placement) => {
+            const method = sortedMethods[placement.methodIndex];
+            if (!method) return null;
+            return (
+              <MethodRoom
+                key={method.id}
+                method={method}
+                position={placement.position}
+                size={placement.size}
+                opacity={roomOpacity}
+              />
+            );
+          })}
+        </group>
+      )}
+
       {hovered && (
         <Text
           position={[0, height + 1.0, 0]}
@@ -96,12 +135,13 @@ export function ClassBuilding({ node, position, methods, lodLevel, encodingOptio
       >
         {fileName}
       </Text>
+      {/* Floor labels at LOD 3+ (alongside rooms) */}
       {methods && methods.length > 0 && (
         <FloorLabels
           methods={methods}
           totalHeight={height}
           buildingWidth={width}
-          lodLevel={lodLevel ?? 2}
+          lodLevel={currentLod}
         />
       )}
     </group>
