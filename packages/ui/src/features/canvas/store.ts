@@ -121,6 +121,10 @@ interface CanvasState {
   highlightedNodeId: string | null;
   setHighlightedNode: (nodeId: string | null) => void;
 
+  // Connection radial overlay
+  showRadialOverlay: boolean;
+  toggleRadialOverlay: () => void;
+
   // Flight state (for breadcrumb updates during flight)
   isFlying: boolean;
   flightTargetNodeId: string | null;
@@ -265,6 +269,11 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   // Highlighted node state (for arrival feedback)
   highlightedNodeId: null,
   setHighlightedNode: (nodeId) => set({ highlightedNodeId: nodeId }),
+
+  // Connection radial overlay
+  showRadialOverlay: false,
+  toggleRadialOverlay: () =>
+    set((state) => ({ showRadialOverlay: !state.showRadialOverlay })),
 
   // Flight state (for breadcrumb updates during flight)
   isFlying: false,
@@ -433,6 +442,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       selectedNodeId: null,
       hoveredNodeId: null,
       highlightedNodeId: null,
+      showRadialOverlay: false,
       isFlying: false,
       flightTargetNodeId: null,
       pendingFlyToNodeId: null,

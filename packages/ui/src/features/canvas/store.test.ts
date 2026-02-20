@@ -364,4 +364,25 @@ describe('useCanvasStore', () => {
       });
     });
   });
+
+  // Radial overlay tests
+  describe('showRadialOverlay', () => {
+    it('defaults showRadialOverlay to false', () => {
+      expect(useCanvasStore.getState().showRadialOverlay).toBe(false);
+    });
+
+    it('toggleRadialOverlay sets showRadialOverlay to true then false', () => {
+      useCanvasStore.getState().toggleRadialOverlay();
+      expect(useCanvasStore.getState().showRadialOverlay).toBe(true);
+
+      useCanvasStore.getState().toggleRadialOverlay();
+      expect(useCanvasStore.getState().showRadialOverlay).toBe(false);
+    });
+
+    it('reset clears showRadialOverlay', () => {
+      useCanvasStore.getState().toggleRadialOverlay();
+      useCanvasStore.getState().reset();
+      expect(useCanvasStore.getState().showRadialOverlay).toBe(false);
+    });
+  });
 });
