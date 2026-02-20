@@ -169,8 +169,8 @@ describe('useCanvasStore', () => {
         expect(edgeTierVisibility.inheritance).toBe(true);
       });
 
-      it('has default cityVersion of v1', () => {
-        expect(useCanvasStore.getState().citySettings.cityVersion).toBe('v1');
+      it('has default cityVersion of v2', () => {
+        expect(useCanvasStore.getState().citySettings.cityVersion).toBe('v2');
       });
     });
 
@@ -287,7 +287,7 @@ describe('useCanvasStore', () => {
         useCanvasStore.getState().reset();
 
         const { citySettings } = useCanvasStore.getState();
-        expect(citySettings.cityVersion).toBe('v1');
+        expect(citySettings.cityVersion).toBe('v2');
         expect(citySettings.heightEncoding).toBe('methodCount');
         expect(citySettings.transitMapMode).toBe(false);
         expect(citySettings.atmosphereOverlays).toEqual({

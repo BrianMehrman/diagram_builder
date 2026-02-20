@@ -372,11 +372,11 @@ describe('cityViewUtils', () => {
       expect(result.roomOpacity).toBe(0);
     });
 
-    it('returns showRooms=false and bandOpacity=1 at LOD 2 (district zoom)', () => {
+    it('returns showRooms=true and rooms fully visible at LOD 2 (district zoom, threshold)', () => {
       const result = getLodTransition(2);
-      expect(result.showRooms).toBe(false);
-      expect(result.bandOpacity).toBe(1);
-      expect(result.roomOpacity).toBe(0);
+      expect(result.showRooms).toBe(true);
+      expect(result.bandOpacity).toBeCloseTo(0);
+      expect(result.roomOpacity).toBeCloseTo(1);
     });
 
     it('begins transition at ROOM_LOD_THRESHOLD - 0.5', () => {
@@ -386,21 +386,21 @@ describe('cityViewUtils', () => {
       expect(result.roomOpacity).toBeCloseTo(0);
     });
 
-    it('is mid-way through transition at LOD 2.75', () => {
-      const result = getLodTransition(2.75);
+    it('is mid-way through transition at LOD 1.75', () => {
+      const result = getLodTransition(1.75);
       expect(result.showRooms).toBe(true);
       expect(result.bandOpacity).toBeCloseTo(0.5);
       expect(result.roomOpacity).toBeCloseTo(0.5);
     });
 
-    it('completes transition at ROOM_LOD_THRESHOLD (LOD 3)', () => {
+    it('completes transition at ROOM_LOD_THRESHOLD (LOD 2)', () => {
       const result = getLodTransition(ROOM_LOD_THRESHOLD);
       expect(result.showRooms).toBe(true);
       expect(result.bandOpacity).toBeCloseTo(0);
       expect(result.roomOpacity).toBeCloseTo(1);
     });
 
-    it('stays fully in room mode above LOD 3', () => {
+    it('stays fully in room mode above LOD 2', () => {
       const result = getLodTransition(4);
       expect(result.showRooms).toBe(true);
       expect(result.bandOpacity).toBe(0);
@@ -408,7 +408,7 @@ describe('cityViewUtils', () => {
     });
 
     it('bandOpacity + roomOpacity = 1 throughout transition', () => {
-      for (const lod of [2.5, 2.6, 2.7, 2.8, 2.9, 3.0]) {
+      for (const lod of [1.5, 1.6, 1.7, 1.8, 1.9, 2.0]) {
         const { bandOpacity, roomOpacity } = getLodTransition(lod);
         expect(bandOpacity + roomOpacity).toBeCloseTo(1);
       }

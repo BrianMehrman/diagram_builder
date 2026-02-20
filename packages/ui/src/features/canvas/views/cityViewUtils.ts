@@ -428,7 +428,7 @@ export function calculatePipeRoute(
  * Below this value, floor bands render. Above it, individual rooms render.
  * Transition happens over the half-unit range [threshold-0.5, threshold].
  */
-export const ROOM_LOD_THRESHOLD = 3;
+export const ROOM_LOD_THRESHOLD = 2;
 
 /**
  * Calculate LOD transition state for floor-band → method-room crossfade (Story 11-4).
