@@ -371,10 +371,13 @@ describe('useCanvasStore', () => {
       expect(useCanvasStore.getState().showRadialOverlay).toBe(false);
     });
 
-    it('toggleRadialOverlay sets showRadialOverlay to true then false', () => {
+    it('toggleRadialOverlay toggles from false to true', () => {
       useCanvasStore.getState().toggleRadialOverlay();
       expect(useCanvasStore.getState().showRadialOverlay).toBe(true);
+    });
 
+    it('toggleRadialOverlay toggles back to false', () => {
+      useCanvasStore.getState().toggleRadialOverlay();
       useCanvasStore.getState().toggleRadialOverlay();
       expect(useCanvasStore.getState().showRadialOverlay).toBe(false);
     });
