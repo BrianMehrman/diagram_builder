@@ -10,8 +10,6 @@ import type { GraphNode } from '../../../shared/types';
 import {
   CLASS_WIDTH,
   CLASS_DEPTH,
-  SHOP_WIDTH,
-  SHOP_DEPTH,
   KIOSK_WIDTH,
   KIOSK_DEPTH,
   KIOSK_HEIGHT,

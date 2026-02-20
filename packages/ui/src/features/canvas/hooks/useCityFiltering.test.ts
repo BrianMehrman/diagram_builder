@@ -181,6 +181,59 @@ describe('useCityFiltering', () => {
       expect(result.current.clusteredNodeIds.size).toBe(0);
     });
 
+    it('only counts file nodes toward the clustering threshold', () => {
+      useCanvasStore.getState().setLodLevel(1);
+
+      // 5 files (below threshold of 20) + 20 classes — classes must not trigger clustering
+      const nodes: GraphNode[] = [];
+      for (let i = 0; i < 5; i++) {
+        nodes.push(createNode(`file-${i}`, 'file', 'src/big'));
+      }
+      for (let i = 0; i < 20; i++) {
+        nodes.push(createNode(`class-${i}`, 'class', 'src/big', { parentId: `file-${i % 5}` }));
+      }
+      const graph: Graph = {
+        nodes,
+        edges: [],
+        metadata: { repositoryId: 'test', name: 'T', totalNodes: nodes.length, totalEdges: 0 },
+      };
+      const positions = buildPositions(nodes);
+
+      const { result } = renderHook(() => useCityFiltering(graph, positions));
+
+      expect(result.current.clusters).toHaveLength(0);
+      expect(result.current.clusteredNodeIds.size).toBe(0);
+    });
+
+    it('also hides child nodes of clustered files', () => {
+      useCanvasStore.getState().setLodLevel(1);
+
+      const nodes: GraphNode[] = [];
+      // 25 file nodes — triggers clustering
+      for (let i = 0; i < 25; i++) {
+        nodes.push(createNode(`file-${i}`, 'file', 'src/big'));
+      }
+      // 5 classes as children of file-0
+      for (let i = 0; i < 5; i++) {
+        nodes.push(createNode(`class-${i}`, 'class', 'src/big', { parentId: 'file-0' }));
+      }
+      // 2 methods as grandchildren (children of class-0)
+      for (let i = 0; i < 2; i++) {
+        nodes.push(createNode(`method-${i}`, 'method', 'src/big', { parentId: 'class-0' }));
+      }
+      const graph: Graph = {
+        nodes,
+        edges: [],
+        metadata: { repositoryId: 'test', name: 'T', totalNodes: nodes.length, totalEdges: 0 },
+      };
+      const positions = buildPositions(nodes);
+
+      const { result } = renderHook(() => useCityFiltering(graph, positions));
+
+      // 25 files + 5 classes + 2 methods = 32 hidden nodes
+      expect(result.current.clusteredNodeIds.size).toBe(32);
+    });
+
     it('does not cluster small districts', () => {
       useCanvasStore.getState().setLodLevel(1);
 

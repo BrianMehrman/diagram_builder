@@ -136,9 +136,9 @@ export function ClassBuilding({ node, position, methods, lodLevel, encodingOptio
         {fileName}
       </Text>
       {/* Floor labels at LOD 3+ (alongside rooms) */}
-      {methods && methods.length > 0 && (
+      {sortedMethods && sortedMethods.length > 0 && (
         <FloorLabels
-          methods={methods}
+          methods={sortedMethods}
           totalHeight={height}
           buildingWidth={width}
           lodLevel={currentLod}

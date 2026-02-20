@@ -63,10 +63,26 @@ export function useCityFiltering(
     [graph.nodes],
   );
 
-  // Group internal files by directory for clustering
+  // Group ALL internal nodes by directory — used for cross-district edge detection
+  // and district-level data (CityAtmosphere). Includes files, classes, methods, etc.
   const districtGroups = useMemo(() => {
     const groups = new Map<string, string[]>();
     for (const node of internalNodes) {
+      const filePath = (node.metadata?.path as string) ?? node.label ?? '';
+      const lastSlash = filePath.lastIndexOf('/');
+      const dir = lastSlash >= 0 ? filePath.substring(0, lastSlash) : 'root';
+      if (!groups.has(dir)) groups.set(dir, []);
+      groups.get(dir)!.push(node.id);
+    }
+    return groups;
+  }, [internalNodes]);
+
+  // Group only FILE nodes by directory for clustering — mirrors radialCityLayout's
+  // district grouping so cluster counts and centroids match the visible scene.
+  const fileDistrictGroups = useMemo(() => {
+    const groups = new Map<string, string[]>();
+    for (const node of internalNodes) {
+      if (node.type !== 'file') continue;
       const filePath = (node.metadata?.path as string) ?? node.label ?? '';
       const lastSlash = filePath.lastIndexOf('/');
       const dir = lastSlash >= 0 ? filePath.substring(0, lastSlash) : 'root';
@@ -87,19 +103,22 @@ export function useCityFiltering(
     return map;
   }, [districtGroups]);
 
-  // Compute cluster metadata for districts that exceed the threshold
+  // Compute cluster metadata for districts that exceed the threshold.
+  // Uses fileDistrictGroups so counts and centroids match the layout engine's districts.
   const clusters = useMemo(() => {
     if (lodLevel > 1) return [];
     const result: ClusterMetadata[] = [];
-    for (const [districtId, nodeIds] of districtGroups) {
+    for (const [districtId, nodeIds] of fileDistrictGroups) {
       if (shouldCluster(nodeIds.length, DEFAULT_CLUSTER_THRESHOLD)) {
         result.push(createClusterMetadata(districtId, nodeIds, positions));
       }
     }
     return result;
-  }, [districtGroups, positions, lodLevel]);
+  }, [fileDistrictGroups, positions, lodLevel]);
 
-  // Set of node IDs that are clustered (hidden as individual buildings at LOD 1)
+  // Set of node IDs hidden by clustering at LOD 1.
+  // Includes the clustered file nodes AND their children (classes, methods, functions)
+  // so none of them render individually while the ClusterBuilding represents the district.
   const clusteredNodeIds = useMemo(() => {
     const ids = new Set<string>();
     for (const cluster of clusters) {
@@ -107,8 +126,16 @@ export function useCityFiltering(
         ids.add(id);
       }
     }
+    // Two passes handle file → class → method nesting depth
+    for (let pass = 0; pass < 2; pass++) {
+      for (const node of internalNodes) {
+        if (node.parentId && ids.has(node.parentId)) {
+          ids.add(node.id);
+        }
+      }
+    }
     return ids;
-  }, [clusters]);
+  }, [clusters, internalNodes]);
 
   // Build a map of class id -> method child nodes (always computed for floor bands)
   const methodsByClass = useMemo(

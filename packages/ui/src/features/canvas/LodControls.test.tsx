@@ -13,46 +13,60 @@ describe('LodControls', () => {
     useCanvasStore.getState().reset();
   });
 
-  it('renders all LOD level buttons', () => {
+  it('renders level buttons 0–4', () => {
     render(<LodControls />);
 
-    expect(screen.getByText('Files Only')).toBeDefined();
-    expect(screen.getByText('Files + Classes')).toBeDefined();
-    expect(screen.getByText('+ Functions')).toBeDefined();
-    expect(screen.getByText('+ Methods')).toBeDefined();
-    expect(screen.getByText('All Details')).toBeDefined();
+    for (let i = 0; i <= 4; i++) {
+      expect(screen.getByRole('button', { name: new RegExp(`LOD ${i}`) })).toBeDefined();
+    }
   });
 
-  it('shows current LOD level', () => {
+  it('shows Auto mode by default', () => {
     render(<LodControls />);
 
-    expect(screen.getByText('Current Level: 2')).toBeDefined();
+    expect(screen.getByRole('button', { name: /toggle manual lod/i }).textContent).toBe('Auto');
   });
 
-  it('changes LOD level on button click', () => {
+  it('clicking a level button switches to Manual and updates lodLevel', () => {
     render(<LodControls />);
 
     act(() => {
-      screen.getByText('Files Only').click();
+      screen.getByRole('button', { name: /LOD 0/ }).click();
     });
 
     expect(useCanvasStore.getState().lodLevel).toBe(0);
+    expect(useCanvasStore.getState().lodManualOverride).toBe(true);
+    expect(screen.getByRole('button', { name: /toggle manual lod/i }).textContent).toBe('Manual');
   });
 
-  it('highlights active LOD level', () => {
-    render(<LodControls />);
-
-    const activeButton = screen.getByText('+ Functions');
-    expect(activeButton.className).toContain('bg-primary-600');
-  });
-
-  it('updates when LOD level changes', () => {
+  it('toggle button enables and disables manual override', () => {
     render(<LodControls />);
 
     act(() => {
-      screen.getByText('All Details').click();
+      screen.getByRole('button', { name: /toggle manual lod/i }).click();
     });
 
-    expect(screen.getByText('Current Level: 4')).toBeDefined();
+    expect(useCanvasStore.getState().lodManualOverride).toBe(true);
+
+    act(() => {
+      screen.getByRole('button', { name: /toggle manual lod/i }).click();
+    });
+
+    expect(useCanvasStore.getState().lodManualOverride).toBe(false);
+  });
+
+  it('highlights the active LOD level button', () => {
+    render(<LodControls />);
+
+    // Default lodLevel is 1
+    const activeButton = screen.getByRole('button', { name: /LOD 1/ });
+    expect(activeButton.className).toContain('bg-blue-600');
+  });
+
+  it('shows level label below buttons', () => {
+    render(<LodControls />);
+
+    // Default level 1 = 'Files + Classes'
+    expect(screen.getByText('Files + Classes')).toBeDefined();
   });
 });

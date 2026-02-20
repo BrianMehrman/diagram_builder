@@ -1,5 +1,6 @@
 import type { GraphNode, Position3D } from '../../../../shared/types';
 import type { BlockLayout } from '../types';
+import { BUILDING_Y_OFFSET } from '../../views/cityViewUtils';
 
 /**
  * Calculate the footprint (width x depth) of a file block based on child count and types.
@@ -53,7 +54,7 @@ export function placeChildrenInGrid(
 
     return {
       nodeId: child.id,
-      localPosition: { x: localX, y: 0, z: localZ },
+      localPosition: { x: localX, y: BUILDING_Y_OFFSET, z: localZ },
     };
   });
 }

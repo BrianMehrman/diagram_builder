@@ -214,6 +214,34 @@ describe('useCameraTiltAssist', () => {
     expect(finalTargetY).toBeCloseTo(initialTargetY + TILT_TARGET_Y_OFFSET, 3);
   });
 
+  it('focuses camera on node position when layout position is known', () => {
+    renderHook(() => useCameraTiltAssist());
+
+    // Register a layout position for the node
+    act(() => {
+      useCanvasStore.getState().setLayoutPositions(new Map([
+        ['node-1', { x: 10, y: 0, z: 20 }],
+      ]));
+    });
+
+    act(() => {
+      useCanvasStore.getState().selectNode('node-1');
+    });
+
+    expect(rafCallbacks.length).toBe(1);
+
+    // Advance to end of animation
+    vi.spyOn(performance, 'now').mockReturnValue(TILT_DURATION_MS + 10);
+    act(() => {
+      rafCallbacks[0]!(TILT_DURATION_MS + 10);
+    });
+
+    const finalTarget = useCanvasStore.getState().camera.target;
+    expect(finalTarget.x).toBeCloseTo(10, 3);
+    expect(finalTarget.y).toBeCloseTo(TILT_TARGET_Y_OFFSET, 3); // nodePos.y (0) + offset
+    expect(finalTarget.z).toBeCloseTo(20, 3);
+  });
+
   it('does not re-tilt when selecting the same node', () => {
     renderHook(() => useCameraTiltAssist());
 

@@ -27,14 +27,20 @@ export function easeOutCubic(t: number): number {
 }
 
 /**
- * Hook that tilts the camera upward when a node is selected,
- * revealing outgoing sky edges above the building.
+ * Hook that focuses the camera on a selected node and optionally tilts
+ * upward to reveal outgoing sky edges above the building.
+ *
+ * When the selected node has a known layout position, the camera target
+ * animates to that node's position (+ Y tilt offset if enabled), so the
+ * selected node is centered in view. Without a known position it falls
+ * back to a Y-only tilt from the current target.
  */
 export function useCameraTiltAssist(): void {
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const cameraTiltAssist = useCanvasStore((s) => s.citySettings.cameraTiltAssist);
   const viewMode = useCanvasStore((s) => s.viewMode);
   const isFlying = useCanvasStore((s) => s.isFlying);
+  const layoutPositions = useCanvasStore((s) => s.layoutPositions);
 
   const animFrameRef = useRef<number | null>(null);
   const prevSelectedRef = useRef<string | null>(null);
@@ -68,14 +74,17 @@ export function useCameraTiltAssist(): void {
 
     const state = useCanvasStore.getState();
     const startTarget = { ...state.camera.target };
-    const endTargetY = startTarget.y + TILT_TARGET_Y_OFFSET;
 
-    // Reduced motion: instant tilt
+    // If we know the node's layout position, focus the camera on it.
+    // Otherwise fall back to a Y-only tilt from the current target.
+    const nodePos = layoutPositions.get(selectedNodeId);
+    const endTarget = nodePos
+      ? { x: nodePos.x, y: nodePos.y + TILT_TARGET_Y_OFFSET, z: nodePos.z }
+      : { ...startTarget, y: startTarget.y + TILT_TARGET_Y_OFFSET };
+
+    // Reduced motion: instant focus
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      useCanvasStore.getState().setCameraTarget({
-        ...startTarget,
-        y: endTargetY,
-      });
+      useCanvasStore.getState().setCameraTarget(endTarget);
       return;
     }
 
@@ -99,15 +108,15 @@ export function useCameraTiltAssist(): void {
         Math.abs(currentPos.z - startCameraPos.z);
 
       if (posDrift > 0.01) {
-        // User moved the camera — cancel tilt
+        // User moved the camera — cancel focus
         animFrameRef.current = null;
         return;
       }
 
-      const newTargetY = startTarget.y + (endTargetY - startTarget.y) * eased;
       useCanvasStore.getState().setCameraTarget({
-        ...startTarget,
-        y: newTargetY,
+        x: startTarget.x + (endTarget.x - startTarget.x) * eased,
+        y: startTarget.y + (endTarget.y - startTarget.y) * eased,
+        z: startTarget.z + (endTarget.z - startTarget.z) * eased,
       });
 
       if (progress < 1) {
@@ -122,7 +131,7 @@ export function useCameraTiltAssist(): void {
     return () => {
       cancelTilt();
     };
-  }, [selectedNodeId, cameraTiltAssist, viewMode, isFlying, cancelTilt]);
+  }, [selectedNodeId, cameraTiltAssist, viewMode, isFlying, layoutPositions, cancelTilt]);
 
   // Cleanup on unmount
   useEffect(() => {

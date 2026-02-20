@@ -1,55 +1,80 @@
 /**
  * LOD Controls Component
  *
- * UI controls for adjusting Level of Detail
+ * Panel control for Level of Detail. Supports two modes:
+ * - Auto: camera distance drives LOD automatically
+ * - Manual: user pins a specific LOD level
+ *
+ * Rendered inside the RightPanel Layout section.
  */
 
 import { useCanvasStore } from './store';
 
-interface LodControlsProps {
-  className?: string;
-}
+const LOD_LEVELS = [
+  { value: 0, label: 'Files only' },
+  { value: 1, label: 'Files + Classes' },
+  { value: 2, label: '+ Functions' },
+  { value: 3, label: '+ Methods' },
+  { value: 4, label: 'All details' },
+];
 
-/**
- * LOD controls UI component
- */
-export function LodControls({ className = '' }: LodControlsProps) {
-  const lodLevel = useCanvasStore((state) => state.lodLevel);
-  const setLodLevel = useCanvasStore((state) => state.setLodLevel);
+export function LodControls() {
+  const lodLevel = useCanvasStore((s) => s.lodLevel);
+  const setLodLevel = useCanvasStore((s) => s.setLodLevel);
+  const lodManualOverride = useCanvasStore((s) => s.lodManualOverride);
+  const setLodManualOverride = useCanvasStore((s) => s.setLodManualOverride);
 
-  const lodLevels = [
-    { value: 0, label: 'Files Only' },
-    { value: 1, label: 'Files + Classes' },
-    { value: 2, label: '+ Functions' },
-    { value: 3, label: '+ Methods' },
-    { value: 4, label: 'All Details' },
-  ];
+  function handleToggleManual() {
+    setLodManualOverride(!lodManualOverride);
+  }
+
+  function handleSelectLevel(value: number) {
+    if (!lodManualOverride) setLodManualOverride(true);
+    setLodLevel(value);
+  }
 
   return (
-    <div className={`absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-4 ${className}`}>
-      <h3 className="text-sm font-semibold text-gray-900 mb-3">Level of Detail</h3>
+    <div className="space-y-2">
+      {/* Auto / Manual toggle */}
+      <div className="flex items-center justify-between">
+        <span className="text-gray-300 text-xs">
+          {lodManualOverride ? `Level ${lodLevel}` : `Auto (${lodLevel})`}
+        </span>
+        <button
+          onClick={handleToggleManual}
+          className={`text-xs px-2 py-0.5 rounded transition-colors ${
+            lodManualOverride
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+          }`}
+          aria-pressed={lodManualOverride}
+          aria-label="Toggle manual LOD override"
+        >
+          {lodManualOverride ? 'Manual' : 'Auto'}
+        </button>
+      </div>
 
-      <div className="flex flex-col gap-2">
-        {lodLevels.map((level) => (
+      {/* Level buttons — always visible, clicking auto-enables manual mode */}
+      <div className="grid grid-cols-5 gap-1">
+        {LOD_LEVELS.map((level) => (
           <button
             key={level.value}
-            onClick={() => setLodLevel(level.value)}
-            className={`px-4 py-2 text-sm font-medium rounded transition-colors text-left ${
+            onClick={() => handleSelectLevel(level.value)}
+            title={level.label}
+            aria-label={`LOD ${level.value}: ${level.label}`}
+            className={`py-1 text-xs font-mono rounded transition-colors ${
               lodLevel === level.value
-                ? 'bg-primary-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
             }`}
           >
-            {level.label}
+            {level.value}
           </button>
         ))}
       </div>
 
-      <div className="mt-3 pt-3 border-t border-gray-200">
-        <div className="text-xs text-gray-500">
-          Current Level: {lodLevel}
-        </div>
-      </div>
+      {/* Level label */}
+      <p className="text-gray-500 text-xs">{LOD_LEVELS[lodLevel]?.label ?? ''}</p>
     </div>
   );
 }

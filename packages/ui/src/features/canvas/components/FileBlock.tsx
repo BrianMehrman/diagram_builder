@@ -11,9 +11,10 @@
  * <primitive> for THREE.Line to avoid SVG conflict).
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { Text } from '@react-three/drei';
+import { useCanvasStore } from '../store';
 import type { BlockLayout } from '../layout/types';
 
 export interface FileBlockProps {
@@ -25,6 +26,29 @@ export interface FileBlockProps {
 export function FileBlock({ block, districtColor, lodLevel }: FileBlockProps) {
   const { position, footprint, isMerged, fileId } = block;
   const { width, depth } = footprint;
+
+  const [hovered, setHovered] = useState(false);
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
+  const selectNode = useCanvasStore((s) => s.selectNode);
+  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
+
+  const isSelected = selectedNodeId === fileId;
+
+  const handleClick = () => {
+    selectNode(isSelected ? null : fileId);
+  };
+
+  const handlePointerOver = () => {
+    setHovered(true);
+    setHoveredNode(fileId);
+    document.body.style.cursor = 'pointer';
+  };
+
+  const handlePointerOut = () => {
+    setHovered(false);
+    setHoveredNode(null);
+    document.body.style.cursor = 'auto';
+  };
 
   // Boundary line geometry — rectangle from 5 vertices (4 corners + close)
   const boundaryGeometry = useMemo(() => {
@@ -51,12 +75,18 @@ export function FileBlock({ block, districtColor, lodLevel }: FileBlockProps) {
   return (
     <group position={[position.x, position.y, position.z]} name={`file-block-${fileId}`}>
       {/* 1. Ground plane */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.01, 0]}
+        onClick={handleClick}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+      >
         <planeGeometry args={[width, depth]} />
         <meshBasicMaterial
-          color={districtColor}
+          color={isSelected ? '#f59e0b' : hovered ? '#d4a017' : districtColor}
           transparent
-          opacity={0.25}
+          opacity={isSelected ? 0.55 : hovered ? 0.4 : 0.25}
           side={THREE.DoubleSide}
           depthWrite={false}
         />

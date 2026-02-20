@@ -25,6 +25,9 @@ export function useLodCalculator(): void {
   const currentLodRef = useRef(useCanvasStore.getState().lodLevel);
 
   useFrame(({ camera }) => {
+    // Skip auto-update when the user has locked LOD manually
+    if (useCanvasStore.getState().lodManualOverride) return;
+
     const distance = cameraDistanceToOrigin(
       camera.position.x,
       camera.position.y,

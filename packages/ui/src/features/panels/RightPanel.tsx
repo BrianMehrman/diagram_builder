@@ -14,6 +14,7 @@ import { LayerToggle } from '../canvas/components/LayerToggle';
 import { HeightEncodingSelector } from '../canvas/components/HeightEncodingSelector';
 import { AtmosphereTogglePanel } from '../canvas/components/AtmosphereTogglePanel';
 import { EdgeTierControls } from '../canvas/components/EdgeTierControls';
+import { LodControls } from '../canvas/LodControls';
 
 export function RightPanel() {
   const isOpen = useUIStore((state) => state.isRightPanelOpen);
@@ -56,6 +57,14 @@ export function RightPanel() {
             <DensitySlider />
             <HeightEncodingSelector />
             <LayerToggle />
+          </div>
+
+          {/* Level of Detail */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Level of Detail
+            </h3>
+            <LodControls />
           </div>
 
           {/* Atmosphere */}

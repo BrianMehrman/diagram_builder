@@ -17,7 +17,6 @@ import { Building } from './Building';
 import { ExternalBuilding } from './ExternalBuilding';
 import { XRayBuilding } from './XRayBuilding';
 import { DistrictGround } from '../components/DistrictGround';
-import { ClusterBuilding } from '../components/ClusterBuilding';
 import { FileBlock } from '../components/FileBlock';
 import {
   ClassBuilding,
@@ -198,7 +197,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
   const heightEncoding = useCanvasStore((s) => s.citySettings.heightEncoding);
 
   const { positions, districtArcs, districts } = useCityLayout(graph);
-  const { internalNodes, externalNodes, clusters, clusteredNodeIds, childrenByFile, methodsByClass, nodeMap } =
+  const { internalNodes, externalNodes, childrenByFile, methodsByClass, nodeMap } =
     useCityFiltering(graph, positions);
   const { nestedTypeMap } = useDistrictMap(graph.nodes);
 
@@ -321,8 +320,8 @@ export function CityBlocks({ graph }: CityBlocksProps) {
       {/* ===== V1: Flat rendering path (original) ===== */}
       {!isV2 && (
         <>
-          {/* Cluster buildings (LOD 1 only) */}
-          {clusters.map((cluster) => (
+          {/* Cluster buildings (LOD 1 only) — temporarily disabled */}
+          {/* {clusters.map((cluster) => (
             <ClusterBuilding
               key={`cluster-${cluster.districtId}`}
               position={cluster.center}
@@ -330,13 +329,12 @@ export function CityBlocks({ graph }: CityBlocksProps) {
               districtName={cluster.districtId}
               size={cluster.size}
             />
-          ))}
+          ))} */}
 
-          {/* Internal buildings with signs (skip clustered nodes at LOD 1) */}
-          {internalNodes.map((node) => {
+          {/* Internal buildings with signs — file nodes are land in v2; skip them in v1 */}
+          {internalNodes.filter((n) => n.type !== 'file').map((node) => {
             const pos = positions.get(node.id);
             if (!pos) return null;
-            if (clusteredNodeIds.has(node.id)) return null;
 
             if (isXRayMode) {
               const dx = cameraPosition.x - pos.x;

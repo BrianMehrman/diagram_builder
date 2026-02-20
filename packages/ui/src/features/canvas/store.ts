@@ -129,6 +129,8 @@ interface CanvasState {
   // LOD level
   lodLevel: number;
   setLodLevel: (level: number) => void;
+  lodManualOverride: boolean;
+  setLodManualOverride: (manual: boolean) => void;
 
   // View mode (city-to-cell navigation)
   viewMode: ViewMode;
@@ -201,7 +203,7 @@ const DEFAULT_CITY_SETTINGS: CitySettings = {
     crossDistrict: true,
     inheritance: true,
   },
-  cityVersion: 'v1',
+  cityVersion: 'v2',
   cameraTiltAssist: true,
   undergroundVisible: false,
   externalPipesVisible: false,
@@ -273,6 +275,8 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   // LOD level (default to 1 = city level; LOD calculator drives up on zoom)
   lodLevel: 1,
   setLodLevel: (level) => set({ lodLevel: level }),
+  lodManualOverride: false,
+  setLodManualOverride: (manual) => set({ lodManualOverride: manual }),
 
   // View mode (city-to-cell navigation)
   viewMode: 'city' as ViewMode,
@@ -433,6 +437,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       flightTargetNodeId: null,
       pendingFlyToNodeId: null,
       lodLevel: 1,
+      lodManualOverride: false,
       viewMode: 'city' as ViewMode,
       focusedNodeId: null,
       focusHistory: [],

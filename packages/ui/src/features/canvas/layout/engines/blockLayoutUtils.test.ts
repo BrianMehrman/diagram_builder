@@ -7,6 +7,7 @@ import {
   createCompoundBlock,
   positionBlocksInArc,
 } from './blockLayoutUtils';
+import { BUILDING_Y_OFFSET } from '../../views/cityViewUtils';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -100,7 +101,7 @@ describe('placeChildrenInGrid', () => {
     // 1x1 grid, cell center: (0.5*4 - 2, 0.5*4 - 2) = (0, 0)
     expect(result[0]!.localPosition.x).toBe(0);
     expect(result[0]!.localPosition.z).toBe(0);
-    expect(result[0]!.localPosition.y).toBe(0);
+    expect(result[0]!.localPosition.y).toBe(BUILDING_Y_OFFSET);
   });
 
   it('places 4 children in a 2x2 grid', () => {
