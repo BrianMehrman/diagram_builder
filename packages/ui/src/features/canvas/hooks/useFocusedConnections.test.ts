@@ -47,6 +47,8 @@ describe('useFocusedConnections', () => {
     useCanvasStore.getState().selectNode('A');
     const { result } = renderHook(() => useFocusedConnections(graph));
     expect(result.current.secondHopNodeIds.has('D')).toBe(true);
+    expect(result.current.secondHopNodeIds.size).toBe(1);
+    expect(result.current.secondHopEdges).toHaveLength(1);
   });
 
   it('does not include the focused node itself in direct or second-hop sets', () => {

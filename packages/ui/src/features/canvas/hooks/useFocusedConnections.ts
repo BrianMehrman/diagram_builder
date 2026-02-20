@@ -1,3 +1,9 @@
+/**
+ * useFocusedConnections Hook
+ *
+ * Derives the 1-hop and 2-hop connection sets for the currently selected node.
+ * Used to drive focus-mode opacity and edge highlighting in CityView.
+ */
 import { useMemo } from 'react';
 import { useCanvasStore } from '../store';
 import type { Graph, GraphEdge } from '../../../shared/types';
@@ -56,5 +62,5 @@ export function useFocusedConnections(graph: Graph): FocusedConnectionsResult {
     }
 
     return { directNodeIds, secondHopNodeIds, directEdges, secondHopEdges };
-  }, [graph, selectedNodeId]);
+  }, [graph.edges, selectedNodeId]);
 }
