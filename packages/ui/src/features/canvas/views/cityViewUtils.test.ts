@@ -20,6 +20,7 @@ import {
   detectBaseClasses,
   classifyEdgeRouting,
   computeUndergroundGroundOpacity,
+  getNodeFocusOpacity,
   METHOD_ROOM_COLORS,
   ROOM_LOD_THRESHOLD,
   COLOR_PALETTE,
@@ -752,6 +753,28 @@ describe('cityViewUtils', () => {
       const hidden = computeUndergroundGroundOpacity(false);
       const visible = computeUndergroundGroundOpacity(true);
       expect(hidden).not.toBe(visible);
+    });
+  });
+
+  describe('getNodeFocusOpacity', () => {
+    it('returns 1.0 when no node is focused (selectedNodeId is null)', () => {
+      expect(getNodeFocusOpacity('A', null, new Set(), new Set())).toBe(1.0);
+    });
+
+    it('returns 1.0 for the focused node itself', () => {
+      expect(getNodeFocusOpacity('A', 'A', new Set(['B']), new Set())).toBe(1.0);
+    });
+
+    it('returns 1.0 for directly connected nodes', () => {
+      expect(getNodeFocusOpacity('B', 'A', new Set(['B']), new Set())).toBe(1.0);
+    });
+
+    it('returns 0.5 for second-hop nodes', () => {
+      expect(getNodeFocusOpacity('C', 'A', new Set(['B']), new Set(['C']))).toBe(0.5);
+    });
+
+    it('returns 0.15 for unrelated nodes', () => {
+      expect(getNodeFocusOpacity('D', 'A', new Set(['B']), new Set(['C']))).toBe(0.15);
     });
   });
 });

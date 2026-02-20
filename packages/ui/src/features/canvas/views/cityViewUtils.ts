@@ -627,6 +627,32 @@ export function getWireColor(edgeType: string): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
+ * Returns the opacity a building should render at based on its relationship
+ * to the currently focused (selected) node.
+ *
+ * - 1.0: no focus mode, or this IS the focused node, or directly connected
+ * - 0.5: second-hop (connected via a direct neighbour)
+ * - 0.15: unrelated (dim but not invisible)
+ *
+ * @param nodeId           The node being rendered
+ * @param selectedNodeId   The currently focused node (null = focus mode off)
+ * @param directNodeIds    Nodes directly connected to the focused node
+ * @param secondHopNodeIds Nodes connected via one intermediate hop
+ */
+export function getNodeFocusOpacity(
+  nodeId: string,
+  selectedNodeId: string | null,
+  directNodeIds: Set<string>,
+  secondHopNodeIds: Set<string>,
+): number {
+  if (!selectedNodeId) return 1.0;
+  if (nodeId === selectedNodeId) return 1.0;
+  if (directNodeIds.has(nodeId)) return 1.0;
+  if (secondHopNodeIds.has(nodeId)) return 0.5;
+  return 0.15;
+}
+
+/**
  * Visibility sort priority. Lower number = lower floor (closer to ground).
  * Public API is the "storefront" — placed at the bottom.
  */
