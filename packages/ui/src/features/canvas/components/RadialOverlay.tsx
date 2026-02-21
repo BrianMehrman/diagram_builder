@@ -10,6 +10,7 @@
  */
 
 import { useMemo } from 'react';
+import type React from 'react';
 import { useCanvasStore } from '../store';
 import { useFocusedConnections } from '../hooks/useFocusedConnections';
 import type { Graph, GraphNode } from '../../../shared/types';
@@ -24,6 +25,7 @@ const EDGE_COLORS: Record<string, string> = {
 };
 const DEFAULT_EDGE_COLOR = '#94a3b8';
 const DASHED_TYPES = new Set(['imports', 'depends_on', 'inherits', 'contains']);
+const DASH_PATTERN = '6,3';
 
 // SVG layout constants
 const CX = 400;
@@ -38,6 +40,21 @@ function shortLabel(node: GraphNode | undefined): string {
   if (!node) return '?';
   const label = node.label ?? node.id;
   return label.split('/').pop() ?? label;
+}
+
+function arrowHead(x2: number, y2: number, dx: number, dy: number, color: string): React.JSX.Element | null {
+  const len = Math.sqrt(dx * dx + dy * dy);
+  if (len === 0) return null;
+  const nx = dx / len;
+  const ny = dy / len;
+  const px = -ny * 5;
+  const py = nx * 5;
+  return (
+    <polygon
+      points={`${x2},${y2} ${x2 - nx * 10 + px},${y2 - ny * 10 + py} ${x2 - nx * 10 - px},${y2 - ny * 10 - py}`}
+      fill={color}
+    />
+  );
 }
 
 interface RadialOverlayProps {
@@ -98,27 +115,6 @@ export function RadialOverlay({ graph }: RadialOverlayProps) {
 
   for (const p of secondHopPositions) posMap.set(p.id, { x: p.x, y: p.y });
 
-  function arrowHead(
-    x2: number,
-    y2: number,
-    dx: number,
-    dy: number,
-    color: string,
-  ): React.ReactElement | null {
-    const len = Math.sqrt(dx * dx + dy * dy);
-    if (len === 0) return null;
-    const nx = dx / len;
-    const ny = dy / len;
-    const px = -ny * 5;
-    const py = nx * 5;
-    return (
-      <polygon
-        points={`${x2},${y2} ${x2 - nx * 10 + px},${y2 - ny * 10 + py} ${x2 - nx * 10 - px},${y2 - ny * 10 - py}`}
-        fill={color}
-      />
-    );
-  }
-
   function handleNodeClick(nodeId: string) {
     selectNode(nodeId);
     // Overlay stays open and re-renders centered on the new node
@@ -157,7 +153,7 @@ export function RadialOverlay({ graph }: RadialOverlayProps) {
                 y2={tgt.y}
                 stroke={color}
                 strokeWidth={1.5}
-                strokeDasharray={DASHED_TYPES.has(edge.type) ? '5,3' : undefined}
+                strokeDasharray={DASHED_TYPES.has(edge.type) ? DASH_PATTERN : undefined}
               />
               {arrowHead(tgt.x, tgt.y, dx, dy, color)}
             </g>
@@ -183,7 +179,7 @@ export function RadialOverlay({ graph }: RadialOverlayProps) {
                 y2={tgt.y}
                 stroke={color}
                 strokeWidth={2}
-                strokeDasharray={DASHED_TYPES.has(edge.type) ? '6,3' : undefined}
+                strokeDasharray={DASHED_TYPES.has(edge.type) ? DASH_PATTERN : undefined}
               />
               {arrowHead(tgt.x, tgt.y, dx, dy, color)}
               <text
