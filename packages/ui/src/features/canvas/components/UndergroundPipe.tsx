@@ -36,6 +36,8 @@ const TUBE_SEGMENTS = 24;
 const RADIAL_SEGMENTS = 6;
 /** Outer glow tube radius addend. */
 const GLOW_OFFSET = 0.04;
+/** Pipe and arrowhead opacity in normal mode. */
+const PIPE_OPACITY = 0.75;
 /** Arrowhead cone height (world units). */
 const ARROW_HEIGHT = 0.5;
 /** Arrowhead cone base radius. */
@@ -70,7 +72,7 @@ export function UndergroundPipe({
 
     const cone = new Mesh(
       new ConeGeometry(ARROW_RADIUS, ARROW_HEIGHT, 6),
-      new MeshBasicMaterial({ color, transparent: true, opacity: 0.75 }),
+      new MeshBasicMaterial({ color, transparent: true, opacity: PIPE_OPACITY }),
     );
 
     // Align cone to tangent direction
@@ -91,7 +93,7 @@ export function UndergroundPipe({
           roughness={0.85}
           metalness={0.3}
           transparent
-          opacity={0.75}
+          opacity={PIPE_OPACITY}
         />
       </mesh>
 
