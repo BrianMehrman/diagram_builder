@@ -12,6 +12,7 @@
  * Updated in Story 11-11 to replace SkyEdge with OverheadWire for v2.
  */
 
+import { Html } from '@react-three/drei';
 import { CityEdge } from './CityEdge';
 import { OverheadWire } from '../components/OverheadWire';
 import { GroundShadow } from '../components/GroundShadow';
@@ -47,6 +48,7 @@ export function CitySky({ graph }: CitySkyProps) {
   const { visibleEdges, nodeMap } = useCityFiltering(graph, positions);
   const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion);
   const edgeTierVisibility = useCanvasStore((s) => s.citySettings.edgeTierVisibility);
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
 
   const isV2 = cityVersion === 'v2';
 
@@ -83,6 +85,28 @@ export function CitySky({ graph }: CitySkyProps) {
                 sourcePosition={srcPos}
                 targetPosition={tgtPos}
               />
+              {(edge.source === selectedNodeId || edge.target === selectedNodeId) && selectedNodeId && (
+                <Html
+                  position={[
+                    (srcPos.x + tgtPos.x) / 2,
+                    Math.max(getNodeRooftopY(srcNode), getNodeRooftopY(tgtNode)) + 2,
+                    (srcPos.z + tgtPos.z) / 2,
+                  ]}
+                  center
+                  style={{ pointerEvents: 'none' }}
+                >
+                  <div style={{
+                    background: 'rgba(0,0,0,0.7)',
+                    color: '#fff',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {edge.type}
+                  </div>
+                </Html>
+              )}
             </group>
           );
         }

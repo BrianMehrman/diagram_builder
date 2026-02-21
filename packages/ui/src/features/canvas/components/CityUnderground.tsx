@@ -29,6 +29,8 @@ export function CityUnderground({ graph }: CityUndergroundProps) {
   const undergroundVisible = useCanvasStore((s) => s.citySettings.undergroundVisible);
   const externalPipesVisible = useCanvasStore((s) => s.citySettings.externalPipesVisible);
   const edgeTierVisibility = useCanvasStore((s) => s.citySettings.edgeTierVisibility);
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
+  const isFocusMode = selectedNodeId !== null;
 
   const { positions } = useCityLayout(graph);
   const { visibleEdges } = useCityFiltering(graph, positions);
@@ -42,20 +44,28 @@ export function CityUnderground({ graph }: CityUndergroundProps) {
     return ids;
   }, [graph.nodes]);
 
-  // Master gate — render nothing when underground layer is off
-  if (!undergroundVisible) return null;
+  // Master gate — render nothing when underground layer is off and not in focus mode
+  if (!undergroundVisible && !isFocusMode) return null;
 
   // Filter to underground-routed edges, then apply external and inheritance visibility rules
   const pipesToRender = visibleEdges.filter((edge) => {
     if (classifyEdgeRouting(edge.type) !== 'underground') return false;
+
+    // In focus mode: only show pipes connected to the focused building
+    if (isFocusMode && selectedNodeId) {
+      if (edge.source !== selectedNodeId && edge.target !== selectedNodeId) return false;
+    }
+
     const isExternal =
       externalNodeIds.has(edge.source) || externalNodeIds.has(edge.target);
-    // External pipes only shown when both toggles are on
-    if (isExternal && !externalPipesVisible) return false;
+    // In focus mode, show external pipes too (the user selected this node and wants to see all connections)
+    if (isExternal && !externalPipesVisible && !isFocusMode) return false;
+
     // Inheritance pipes (extends/implements/inherits) gated by the inheritance tier toggle
     const t = edge.type.toLowerCase();
     const isInheritance = t === 'extends' || t === 'implements' || t === 'inherits';
     if (isInheritance && !edgeTierVisibility.inheritance) return false;
+
     return true;
   });
 
