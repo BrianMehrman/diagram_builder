@@ -102,6 +102,7 @@ function renderTypedBuilding(
   nestedMap: Map<string, GraphNode[]>,
   methodsByClass: Map<string, GraphNode[]>,
   lodLevel: number,
+  graph: Graph,
   encodingOptions?: EncodedHeightOptions,
   baseClassIds?: Set<string>,
 ) {
@@ -137,7 +138,7 @@ function renderTypedBuilding(
       building = <EnumCrate {...props} />;
       break;
     default:
-      building = <Building key={node.id} node={node} position={position} {...(encodingOptions ? { encodingOptions } : {})} />;
+      building = <Building key={node.id} node={node} position={position} graph={graph} {...(encodingOptions ? { encodingOptions } : {})} />;
       break;
   }
 
@@ -147,7 +148,7 @@ function renderTypedBuilding(
   return (
     <group key={node.id} position={[position.x, position.y, position.z]}>
       {/* Re-render building at origin since group handles position */}
-      {renderTypedBuildingInner(node, methodsByClass, lodLevel, encodingOptions, baseClassIds)}
+      {renderTypedBuildingInner(node, methodsByClass, lodLevel, graph, encodingOptions, baseClassIds)}
       <RooftopGarden
         parentNode={node}
         parentWidth={config.geometry.width}
@@ -165,6 +166,7 @@ function renderTypedBuildingInner(
   node: GraphNode,
   methodsByClass: Map<string, GraphNode[]>,
   lodLevel: number,
+  graph: Graph,
   encodingOptions?: EncodedHeightOptions,
   baseClassIds?: Set<string>,
 ) {
@@ -184,7 +186,7 @@ function renderTypedBuildingInner(
     case 'abstract_class':
       return <AbstractBuilding {...props} {...methodProps} />;
     default:
-      return <Building key={`inner-${node.id}`} node={node} position={origin} {...(encodingOptions ? { encodingOptions } : {})} />;
+      return <Building key={`inner-${node.id}`} node={node} position={origin} graph={graph} {...(encodingOptions ? { encodingOptions } : {})} />;
   }
 }
 
@@ -296,7 +298,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
 
                   return (
                     <group key={node.id}>
-                      {renderTypedBuilding(node, worldPos, nestedTypeMap, methodsByClass, lodLevel, nodeEncoding, baseClassIds)}
+                      {renderTypedBuilding(node, worldPos, nestedTypeMap, methodsByClass, lodLevel, graph, nodeEncoding, baseClassIds)}
                       {renderSign({
                         key: `sign-${node.id}`,
                         signType,
@@ -367,7 +369,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
 
             return (
               <group key={node.id}>
-                {renderTypedBuilding(node, pos, nestedTypeMap, methodsByClass, lodLevel, nodeEncoding, baseClassIds)}
+                {renderTypedBuilding(node, pos, nestedTypeMap, methodsByClass, lodLevel, graph, nodeEncoding, baseClassIds)}
                 {renderSign({
                   key: `sign-${node.id}`,
                   signType,

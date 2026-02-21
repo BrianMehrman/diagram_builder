@@ -9,12 +9,14 @@ import { useState, useMemo } from 'react';
 import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../store';
 import { useTransitMapStyle } from '../hooks/useTransitMapStyle';
-import type { GraphNode, Position3D } from '../../../shared/types';
+import { useFocusedConnections } from '../hooks/useFocusedConnections';
+import type { GraphNode, Position3D, Graph } from '../../../shared/types';
 import {
   getDirectoryColor,
   getDirectoryFromLabel,
   BUILDING_WIDTH,
   BUILDING_DEPTH,
+  getNodeFocusOpacity,
 } from './cityViewUtils';
 import { getBuildingConfig } from '../components/buildingGeometry';
 import type { EncodedHeightOptions } from './cityViewUtils';
@@ -23,9 +25,10 @@ interface BuildingProps {
   node: GraphNode;
   position: Position3D;
   encodingOptions?: EncodedHeightOptions;
+  graph: Graph;
 }
 
-export function Building({ node, position, encodingOptions }: BuildingProps) {
+export function Building({ node, position, encodingOptions, graph }: BuildingProps) {
   const [hovered, setHovered] = useState(false);
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
@@ -34,6 +37,9 @@ export function Building({ node, position, encodingOptions }: BuildingProps) {
   const transitStyle = useTransitMapStyle();
 
   const isSelected = selectedNodeId === node.id;
+  const { directNodeIds, secondHopNodeIds } = useFocusedConnections(graph);
+  const isFocusMode = selectedNodeId !== null;
+  const focusOpacity = getNodeFocusOpacity(node.id, selectedNodeId, directNodeIds, secondHopNodeIds);
   const config = getBuildingConfig(node, encodingOptions);
   const buildingHeight = config.geometry.height;
   const directory = getDirectoryFromLabel(node.label);
@@ -80,13 +86,25 @@ export function Building({ node, position, encodingOptions }: BuildingProps) {
         <meshStandardMaterial
           color={hovered ? '#f59e0b' : color}
           emissive={emissiveColor}
-          emissiveIntensity={isSelected ? 0.3 : 0}
+          emissiveIntensity={isSelected ? 0.4 : 0}
           roughness={0.7}
           metalness={0.1}
-          opacity={transitStyle.opacity}
-          transparent={transitStyle.transparent}
+          opacity={isFocusMode ? focusOpacity : transitStyle.opacity}
+          transparent={isFocusMode || transitStyle.transparent}
         />
       </mesh>
+
+      {/* Selection highlight ring at the base of the building */}
+      {isSelected && (
+        <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[
+            Math.max(BUILDING_WIDTH, BUILDING_DEPTH) * 0.6,
+            Math.max(BUILDING_WIDTH, BUILDING_DEPTH) * 0.75,
+            32,
+          ]} />
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.8} />
+        </mesh>
+      )}
 
       {/* Building label */}
       <Text
