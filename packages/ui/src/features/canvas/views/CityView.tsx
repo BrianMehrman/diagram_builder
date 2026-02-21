@@ -20,6 +20,7 @@ import { LodController } from '../components/LodController';
 import { useCanvasStore } from '../store';
 import { useCityLayout } from '../hooks/useCityLayout';
 import { useCameraTiltAssist } from '../hooks/useCameraTiltAssist';
+import { useFocusEscape } from '../hooks/useFocusEscape';
 import { computeGroundOpacity } from '../undergroundUtils';
 import { computeUndergroundGroundOpacity } from './cityViewUtils';
 import type { Graph } from '../../../shared/types';
@@ -38,6 +39,9 @@ export function CityView({ graph }: CityViewProps) {
 
   // Tilt camera upward on node selection to reveal sky edges
   useCameraTiltAssist();
+
+  // Escape key clears node selection and closes the radial overlay
+  useFocusEscape();
 
   // In v2 mode, ground opacity tracks the new underground toggle.
   // In v1 mode, keep the existing isUndergroundMode-based opacity.

@@ -11,6 +11,8 @@ import { useCanvasStore } from './store';
 import { ViewModeRenderer } from './views';
 import { TransitionOrchestrator } from './transitions';
 import { DependencyLegend } from './components/DependencyLegend';
+import { FocusToggleButton } from './components/FocusToggleButton';
+import { RadialOverlay } from './components/RadialOverlay';
 import type { Graph } from '../../shared/types';
 
 interface Canvas3DProps {
@@ -183,6 +185,8 @@ export function Canvas3D({ className = '', graph }: Canvas3DProps) {
         <CameraController graph={graph} />
         {graph !== undefined ? <Scene graph={graph} /> : <Scene />}
       </Canvas>
+      <FocusToggleButton />
+      {graph !== undefined && <RadialOverlay graph={graph} />}
     </div>
   );
 }
