@@ -13,7 +13,7 @@ import type { TypedBuildingProps } from './types';
 
 const CRATE_COLOR = '#8B6914';
 
-export function VariableCrate({ node, position }: TypedBuildingProps) {
+export function VariableCrate({ node, position, graph: _graph }: TypedBuildingProps) {
   const [hovered, setHovered] = useState(false);
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);

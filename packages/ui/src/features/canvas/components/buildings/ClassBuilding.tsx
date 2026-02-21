@@ -10,21 +10,25 @@ import * as THREE from 'three';
 import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
 import { getBuildingConfig } from '../buildingGeometry';
-import { getDirectoryFromLabel, getDirectoryColor, sortMethodsByVisibility, getLodTransition } from '../../views/cityViewUtils';
+import { getDirectoryFromLabel, getDirectoryColor, sortMethodsByVisibility, getLodTransition, getNodeFocusOpacity } from '../../views/cityViewUtils';
 import { getFloorCount, applyFloorBandColors, getMethodCount } from './floorBandUtils';
 import { FloorLabels } from './FloorLabels';
 import { MethodRoom } from './MethodRoom';
 import { calculateRoomLayout } from './roomLayout';
 import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
+import { useFocusedConnections } from '../../hooks/useFocusedConnections';
 import type { ClassBuildingProps } from './types';
 
-export function ClassBuilding({ node, position, methods, lodLevel, encodingOptions }: ClassBuildingProps) {
+export function ClassBuilding({ node, position, methods, lodLevel, encodingOptions, graph }: ClassBuildingProps) {
   const [hovered, setHovered] = useState(false);
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
   const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
   const transitStyle = useTransitMapStyle();
+  const { directNodeIds, secondHopNodeIds } = useFocusedConnections(graph);
+  const isFocusMode = selectedNodeId !== null;
+  const focusOpacity = getNodeFocusOpacity(node.id, selectedNodeId, directNodeIds, secondHopNodeIds);
 
   const isSelected = selectedNodeId === node.id;
   const config = useMemo(() => getBuildingConfig(node, encodingOptions), [node, encodingOptions]);
@@ -85,10 +89,10 @@ export function ClassBuilding({ node, position, methods, lodLevel, encodingOptio
           emissiveIntensity={hovered ? 0.4 : isSelected ? 0.3 : 0}
           roughness={config.material.roughness}
           metalness={config.material.metalness}
-          opacity={showRooms
+          opacity={isFocusMode ? focusOpacity : (showRooms
             ? bandOpacity * transitStyle.opacity + (1 - bandOpacity) * 0.3
-            : transitStyle.opacity}
-          transparent={showRooms || transitStyle.transparent}
+            : transitStyle.opacity)}
+          transparent={isFocusMode || showRooms || transitStyle.transparent}
         />
       </mesh>
 

@@ -2,7 +2,7 @@
  * Shared types for typed building components.
  */
 
-import type { GraphNode, Position3D } from '../../../../shared/types';
+import type { GraphNode, Position3D, Graph } from '../../../../shared/types';
 import type { EncodedHeightOptions } from '../../views/cityViewUtils';
 
 /**
@@ -11,6 +11,7 @@ import type { EncodedHeightOptions } from '../../views/cityViewUtils';
 export interface TypedBuildingProps {
   node: GraphNode;
   position: Position3D;
+  graph: Graph;
 }
 
 /**

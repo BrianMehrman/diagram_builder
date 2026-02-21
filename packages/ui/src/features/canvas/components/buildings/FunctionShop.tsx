@@ -21,8 +21,10 @@ import { getBuildingConfig } from '../buildingGeometry';
 import {
   KIOSK_AWNING_OVERHANG,
   KIOSK_AWNING_THICKNESS,
+  getNodeFocusOpacity,
 } from '../../views/cityViewUtils';
 import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
+import { useFocusedConnections } from '../../hooks/useFocusedConnections';
 import type { TypedBuildingProps } from './types';
 import type { EncodedHeightOptions } from '../../views/cityViewUtils';
 
@@ -37,13 +39,16 @@ interface FunctionShopProps extends TypedBuildingProps {
   encodingOptions?: EncodedHeightOptions;
 }
 
-export function FunctionShop({ node, position, encodingOptions }: FunctionShopProps) {
+export function FunctionShop({ node, position, encodingOptions, graph }: FunctionShopProps) {
   const [hovered, setHovered] = useState(false);
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
   const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
   const transitStyle = useTransitMapStyle();
+  const { directNodeIds, secondHopNodeIds } = useFocusedConnections(graph);
+  const isFocusMode = selectedNodeId !== null;
+  const focusOpacity = getNodeFocusOpacity(node.id, selectedNodeId, directNodeIds, secondHopNodeIds);
 
   const isSelected = selectedNodeId === node.id;
   const config = useMemo(() => getBuildingConfig(node, encodingOptions), [node, encodingOptions]);
@@ -82,8 +87,8 @@ export function FunctionShop({ node, position, encodingOptions }: FunctionShopPr
           emissiveIntensity={isSelected ? 0.4 : 0}
           roughness={config.material.roughness}
           metalness={config.material.metalness}
-          opacity={transitStyle.opacity}
-          transparent={transitStyle.transparent}
+          opacity={isFocusMode ? focusOpacity : transitStyle.opacity}
+          transparent={isFocusMode || transitStyle.transparent}
         />
       </mesh>
 

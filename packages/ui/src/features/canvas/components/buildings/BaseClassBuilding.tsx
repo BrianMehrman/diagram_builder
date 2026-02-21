@@ -18,21 +18,26 @@ import {
   getLodTransition,
   BASE_CLASS_COLOR,
   BASE_CLASS_EMISSIVE,
+  getNodeFocusOpacity,
 } from '../../views/cityViewUtils';
 import { getFloorCount, applyFloorBandColors, getMethodCount } from './floorBandUtils';
 import { FloorLabels } from './FloorLabels';
 import { MethodRoom } from './MethodRoom';
 import { calculateRoomLayout } from './roomLayout';
 import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
+import { useFocusedConnections } from '../../hooks/useFocusedConnections';
 import type { ClassBuildingProps } from './types';
 
-export function BaseClassBuilding({ node, position, methods, lodLevel, encodingOptions }: ClassBuildingProps) {
+export function BaseClassBuilding({ node, position, methods, lodLevel, encodingOptions, graph }: ClassBuildingProps) {
   const [hovered, setHovered] = useState(false);
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
   const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
   const transitStyle = useTransitMapStyle();
+  const { directNodeIds, secondHopNodeIds } = useFocusedConnections(graph);
+  const isFocusMode = selectedNodeId !== null;
+  const focusOpacity = getNodeFocusOpacity(node.id, selectedNodeId, directNodeIds, secondHopNodeIds);
 
   const isSelected = selectedNodeId === node.id;
   // Pass isBaseClass=true so the factory returns the wider footprint + stone material
@@ -93,10 +98,10 @@ export function BaseClassBuilding({ node, position, methods, lodLevel, encodingO
           emissiveIntensity={emissiveIntensity}
           roughness={config.material.roughness}
           metalness={config.material.metalness}
-          opacity={showRooms
+          opacity={isFocusMode ? focusOpacity : (showRooms
             ? bandOpacity * transitStyle.opacity + (1 - bandOpacity) * 0.3
-            : transitStyle.opacity}
-          transparent={showRooms || transitStyle.transparent}
+            : transitStyle.opacity)}
+          transparent={isFocusMode || showRooms || transitStyle.transparent}
         />
       </mesh>
 

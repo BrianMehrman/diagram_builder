@@ -119,23 +119,23 @@ function renderTypedBuilding(
   switch (node.type) {
     case 'class':
       building = nodeIsBase
-        ? <BaseClassBuilding {...props} {...methodProps} />
-        : <ClassBuilding {...props} {...methodProps} />;
+        ? <BaseClassBuilding {...props} {...methodProps} graph={graph} />
+        : <ClassBuilding {...props} {...methodProps} graph={graph} />;
       break;
     case 'function':
-      building = <FunctionShop {...props} {...classExtras} />;
+      building = <FunctionShop {...props} {...classExtras} graph={graph} />;
       break;
     case 'interface':
-      building = <InterfaceBuilding {...props} {...methodProps} />;
+      building = <InterfaceBuilding {...props} {...methodProps} graph={graph} />;
       break;
     case 'abstract_class':
-      building = <AbstractBuilding {...props} {...methodProps} />;
+      building = <AbstractBuilding {...props} {...methodProps} graph={graph} />;
       break;
     case 'variable':
-      building = <VariableCrate {...props} />;
+      building = <VariableCrate {...props} graph={graph} />;
       break;
     case 'enum':
-      building = <EnumCrate {...props} />;
+      building = <EnumCrate {...props} graph={graph} />;
       break;
     default:
       building = <Building key={node.id} node={node} position={position} graph={graph} {...(encodingOptions ? { encodingOptions } : {})} />;
@@ -181,10 +181,10 @@ function renderTypedBuildingInner(
   switch (node.type) {
     case 'class':
       return nodeIsBase
-        ? <BaseClassBuilding {...props} {...methodProps} />
-        : <ClassBuilding {...props} {...methodProps} />;
+        ? <BaseClassBuilding {...props} {...methodProps} graph={graph} />
+        : <ClassBuilding {...props} {...methodProps} graph={graph} />;
     case 'abstract_class':
-      return <AbstractBuilding {...props} {...methodProps} />;
+      return <AbstractBuilding {...props} {...methodProps} graph={graph} />;
     default:
       return <Building key={`inner-${node.id}`} node={node} position={origin} graph={graph} {...(encodingOptions ? { encodingOptions } : {})} />;
   }

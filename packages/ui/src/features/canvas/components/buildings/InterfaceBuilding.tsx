@@ -10,21 +10,25 @@ import * as THREE from 'three';
 import { Text, Edges } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
 import { getBuildingConfig } from '../buildingGeometry';
-import { getDirectoryFromLabel, getDirectoryColor, sortMethodsByVisibility, getLodTransition, BASE_CLASS_EMISSIVE } from '../../views/cityViewUtils';
+import { getDirectoryFromLabel, getDirectoryColor, sortMethodsByVisibility, getLodTransition, BASE_CLASS_EMISSIVE, getNodeFocusOpacity } from '../../views/cityViewUtils';
 import { getFloorCount, applyFloorBandColors, getMethodCount } from './floorBandUtils';
 import { FloorLabels } from './FloorLabels';
 import { MethodRoom } from './MethodRoom';
 import { calculateRoomLayout } from './roomLayout';
 import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
+import { useFocusedConnections } from '../../hooks/useFocusedConnections';
 import type { ClassBuildingProps } from './types';
 
-export function InterfaceBuilding({ node, position, methods, lodLevel, encodingOptions, isBaseClass }: ClassBuildingProps) {
+export function InterfaceBuilding({ node, position, methods, lodLevel, encodingOptions, isBaseClass, graph }: ClassBuildingProps) {
   const [hovered, setHovered] = useState(false);
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
   const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
   const transitStyle = useTransitMapStyle();
+  const { directNodeIds, secondHopNodeIds } = useFocusedConnections(graph);
+  const isFocusMode = selectedNodeId !== null;
+  const focusOpacity = getNodeFocusOpacity(node.id, selectedNodeId, directNodeIds, secondHopNodeIds);
 
   const isSelected = selectedNodeId === node.id;
   const config = useMemo(() => getBuildingConfig(node, encodingOptions), [node, encodingOptions]);
@@ -79,10 +83,10 @@ export function InterfaceBuilding({ node, position, methods, lodLevel, encodingO
         <meshStandardMaterial
           color={hasFloorBands ? '#ffffff' : color}
           vertexColors={hasFloorBands}
-          opacity={showRooms
+          opacity={isFocusMode ? focusOpacity : (showRooms
             ? (bandOpacity * (transitStyle.transparent ? transitStyle.opacity : config.material.opacity) + (1 - bandOpacity) * 0.3)
-            : (transitStyle.transparent ? transitStyle.opacity : config.material.opacity)}
-          transparent={showRooms || transitStyle.transparent || config.material.transparent}
+            : (transitStyle.transparent ? transitStyle.opacity : config.material.opacity))}
+          transparent={isFocusMode || showRooms || transitStyle.transparent || config.material.transparent}
           emissive={hovered ? '#f59e0b' : isSelected ? color : isBaseClass ? BASE_CLASS_EMISSIVE : '#000000'}
           emissiveIntensity={hovered ? 0.4 : isSelected ? 0.3 : isBaseClass ? 0.15 : 0}
           roughness={config.material.roughness}

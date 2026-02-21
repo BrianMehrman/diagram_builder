@@ -14,7 +14,7 @@ import type { TypedBuildingProps } from './types';
 
 const ENUM_COLOR = '#7c3aed';
 
-export function EnumCrate({ node, position }: TypedBuildingProps) {
+export function EnumCrate({ node, position, graph: _graph }: TypedBuildingProps) {
   const [hovered, setHovered] = useState(false);
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
   const selectNode = useCanvasStore((s) => s.selectNode);
