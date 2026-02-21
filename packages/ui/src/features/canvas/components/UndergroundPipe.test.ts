@@ -126,6 +126,29 @@ describe('PIPE_COLORS', () => {
   });
 });
 
+describe('arrowhead direction (last-segment tangent)', () => {
+  it('last two route points produce a non-zero tangent vector', () => {
+    const route = calculatePipeRoute(src, farTarget, LONG_PIPE_DEPTH);
+    const lastPt = route[route.length - 1]!;
+    const prevPt = route[route.length - 2]!;
+    const dx = lastPt.x - prevPt.x;
+    const dy = lastPt.y - prevPt.y;
+    const dz = lastPt.z - prevPt.z;
+    const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    expect(length).toBeGreaterThan(0);
+  });
+
+  it('last route point is at y=0 (surface exit for arrowhead placement)', () => {
+    const route = calculatePipeRoute(src, farTarget, LONG_PIPE_DEPTH);
+    expect(route[route.length - 1]!.y).toBe(0);
+  });
+
+  it('second-to-last route point is below surface (tangent points upward at exit)', () => {
+    const route = calculatePipeRoute(src, farTarget, LONG_PIPE_DEPTH);
+    expect(route[route.length - 2]!.y).toBeLessThan(0);
+  });
+});
+
 describe('PIPE_RADIUS', () => {
   it('inheritance pipes (extends/inherits) are thicker than import pipes', () => {
     expect(PIPE_RADIUS['extends']!).toBeGreaterThan(PIPE_RADIUS['imports']!);

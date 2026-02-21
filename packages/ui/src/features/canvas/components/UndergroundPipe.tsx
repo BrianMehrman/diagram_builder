@@ -10,7 +10,7 @@
  */
 
 import { useMemo } from 'react';
-import { CatmullRomCurve3, Vector3, BackSide } from 'three';
+import { CatmullRomCurve3, Vector3, BackSide, ConeGeometry, MeshBasicMaterial, Mesh, Quaternion } from 'three';
 import type { Position3D } from '../../../shared/types';
 import {
   calculatePipeRoute,
@@ -36,6 +36,10 @@ const TUBE_SEGMENTS = 24;
 const RADIAL_SEGMENTS = 6;
 /** Outer glow tube radius addend. */
 const GLOW_OFFSET = 0.04;
+/** Arrowhead cone height (world units). */
+const ARROW_HEIGHT = 0.5;
+/** Arrowhead cone base radius. */
+const ARROW_RADIUS = 0.15;
 
 export function UndergroundPipe({
   sourcePosition,
@@ -51,6 +55,31 @@ export function UndergroundPipe({
     const pts = calculatePipeRoute(sourcePosition, targetPosition, depth);
     return new CatmullRomCurve3(pts.map((p) => new Vector3(p.x, p.y, p.z)));
   }, [sourcePosition, targetPosition, depth]);
+
+  const arrowhead = useMemo(() => {
+    const pts = calculatePipeRoute(sourcePosition, targetPosition, depth);
+    // Last two points define the exit direction at the target surface
+    const lastPt = pts[pts.length - 1]!;
+    const prevPt = pts[pts.length - 2]!;
+
+    const tangent = new Vector3(
+      lastPt.x - prevPt.x,
+      lastPt.y - prevPt.y,
+      lastPt.z - prevPt.z,
+    ).normalize();
+
+    const cone = new Mesh(
+      new ConeGeometry(ARROW_RADIUS, ARROW_HEIGHT, 6),
+      new MeshBasicMaterial({ color, transparent: true, opacity: 0.75 }),
+    );
+
+    // Align cone to tangent direction
+    const up = new Vector3(0, 1, 0);
+    cone.quaternion.copy(new Quaternion().setFromUnitVectors(up, tangent));
+    cone.position.set(lastPt.x, lastPt.y, lastPt.z);
+
+    return cone;
+  }, [sourcePosition, targetPosition, depth, color]);
 
   return (
     <group>
@@ -76,6 +105,9 @@ export function UndergroundPipe({
           side={BackSide}
         />
       </mesh>
+
+      {/* Direction arrowhead at target surface exit */}
+      <primitive object={arrowhead} />
     </group>
   );
 }

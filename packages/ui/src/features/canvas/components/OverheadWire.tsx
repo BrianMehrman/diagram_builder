@@ -52,6 +52,11 @@ const CURVE_SEGMENTS = 24;
 /** Wire opacity in normal mode. */
 const WIRE_OPACITY = 0.7;
 
+/** Arrowhead cone height (world units). */
+const ARROW_HEIGHT = 0.6;
+/** Arrowhead cone base radius. */
+const ARROW_RADIUS = 0.18;
+
 export function OverheadWire({
   sourcePosition,
   targetPosition,
@@ -108,9 +113,53 @@ export function OverheadWire({
     return line;
   }, [sourcePosition, targetPosition, sourceHeight, targetHeight, edgeType]);
 
+  const arrowObject = useMemo(() => {
+    const dx = targetPosition.x - sourcePosition.x;
+    const dz = targetPosition.z - sourcePosition.z;
+    const horizontalDistance = Math.sqrt(dx * dx + dz * dz);
+    const peakY = calculateWireArcPeak(sourceHeight, targetHeight, horizontalDistance);
+    const midX = (sourcePosition.x + targetPosition.x) / 2;
+    const midZ = (sourcePosition.z + targetPosition.z) / 2;
+
+    const curve = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(sourcePosition.x, sourceHeight, sourcePosition.z),
+      new THREE.Vector3(midX, peakY, midZ),
+      new THREE.Vector3(targetPosition.x, targetHeight, targetPosition.z),
+    );
+
+    // Tangent at t=1 (the very end of the arc) — direction the wire arrives
+    const tangent = curve.getTangent(1).normalize();
+    const tip = new THREE.Vector3(targetPosition.x, targetHeight, targetPosition.z);
+
+    const coneGeometry = new THREE.ConeGeometry(ARROW_RADIUS, ARROW_HEIGHT, 6);
+    const color = getWireColor(edgeType);
+    const coneMaterial = new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: WIRE_OPACITY,
+    });
+    const cone = new THREE.Mesh(coneGeometry, coneMaterial);
+
+    // THREE.ConeGeometry points along +Y by default; rotate to align with tangent
+    const up = new THREE.Vector3(0, 1, 0);
+    const quaternion = new THREE.Quaternion().setFromUnitVectors(up, tangent);
+    cone.quaternion.copy(quaternion);
+    // Position the base of the cone at the tip of the wire
+    cone.position.copy(tip).addScaledVector(tangent, ARROW_HEIGHT / 2);
+
+    return cone;
+  }, [sourcePosition, targetPosition, sourceHeight, targetHeight, edgeType]);
+
   // LOD gate — wires visible at LOD 2+ only
+  // NOTE: both useMemo hooks above must be called unconditionally (Rules of Hooks);
+  // the early return must come after them.
   if (!isWireVisible(lodLevel)) return null;
 
   // Use <primitive> to avoid React reconciler / SVG <line> conflict
-  return <primitive object={lineObject} />;
+  return (
+    <group>
+      <primitive object={lineObject} />
+      <primitive object={arrowObject} />
+    </group>
+  );
 }
