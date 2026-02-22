@@ -1,10 +1,15 @@
 import type { Graph, Position3D } from '../../../shared/types';
 import type { LayoutEngine, LayoutResult, HierarchicalLayoutResult } from '../layout/types';
 
-// CitySettings is imported from the store — use the existing type
-// We re-declare a minimal shape here to avoid circular deps from store
+/**
+ * Visual settings passed to renderers.
+ *
+ * Intentionally kept separate from the Zustand store's CitySettings to avoid
+ * a circular dependency between visualization/types.ts and store.ts.
+ * Keep fields in sync with CitySettings manually when store evolves.
+ */
 export interface VisualizationSettings {
-  heightEncoding: string;
+  heightEncoding: 'methodCount' | 'dependencies' | 'loc' | 'complexity' | 'churn';
   cityVersion: 'v1' | 'v2';
   transitMapMode: boolean;
   undergroundVisible: boolean;
@@ -47,8 +52,8 @@ export interface VisualizationRenderer {
  * Bundles a layout engine with its matched renderer.
  */
 export interface VisualizationStyle {
-  id: string;
-  label: string;
+  readonly id: string;
+  readonly label: string;
   layoutEngine: LayoutEngine;
   renderer: VisualizationRenderer;
 }
