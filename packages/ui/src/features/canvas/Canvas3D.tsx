@@ -13,7 +13,9 @@ import { TransitionOrchestrator } from './transitions';
 import { DependencyLegend } from './components/DependencyLegend';
 import { FocusToggleButton } from './components/FocusToggleButton';
 import { RadialOverlay } from './components/RadialOverlay';
+import { useUIStore } from '../../shared/stores/uiStore';
 import type { Graph } from '../../shared/types';
+import './visualization/setup'; // register built-in visualization styles
 
 interface Canvas3DProps {
   className?: string;
@@ -155,6 +157,7 @@ function Scene({ graph }: { graph?: Graph }) {
  */
 export function Canvas3D({ className = '', graph }: Canvas3DProps) {
   const toggleControlMode = useCanvasStore((state) => state.toggleControlMode);
+  const closeAllPanels = useUIStore((state) => state.closeAllPanels);
 
   // Keyboard shortcut to toggle control mode
   React.useEffect(() => {
@@ -171,7 +174,7 @@ export function Canvas3D({ className = '', graph }: Canvas3DProps) {
   }, [toggleControlMode]);
 
   return (
-    <div className={`w-full h-full relative ${className}`}>
+    <div className={`w-full h-full relative ${className}`} onPointerDown={closeAllPanels}>
       <DependencyLegend />
       <Canvas
         shadows
