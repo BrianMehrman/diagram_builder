@@ -125,6 +125,24 @@ const docs = {
 - ✅ Lint: `npm run lint`
 - ✅ Update tests if behavior changed
 
+### ARIA / Test Selector Rule
+
+When you change **any** of these on a component:
+- `title` attribute
+- `aria-label` / `aria-labelledby`
+- `role`
+- `data-testid`
+- Text content used in `getByText`
+
+You MUST search for ALL matching test queries across the entire test suite:
+
+```bash
+# Find all tests that reference the old value
+grep -r "getByTitle\|getByRole\|getByLabelText\|getByText\|data-testid" packages/ui/src --include="*.test.*" -l
+```
+
+Update every stale query before committing. Stale queries cause silent failures.
+
 ---
 
 ## ✅ Sprint & Task Tracking
@@ -137,12 +155,17 @@ const docs = {
 
 ### When Completing Work
 
-> **CRITICAL:** You MUST update `sprint-status.yaml` every time you finish a story. This is non-optional.
+> **CRITICAL: Definition of Done — ALL items must be checked before a story is considered complete.**
 
-1. **ALWAYS update `sprint-status.yaml`** — mark the story as `review` with a completion date comment (e.g., `review  # Description - COMPLETE (2026-02-11)`)
-2. Mark tasks as `[x]` in `TASKS.md`
-3. Update story file with completion notes
-4. Document new/modified files in story file
+- [ ] All acceptance criteria implemented
+- [ ] `npm test` passes (zero new failures)
+- [ ] `npm run type-check` passes (zero TypeScript errors)
+- [ ] **`sprint-status.yaml` updated** — mark story as `review  # Description - COMPLETE (YYYY-MM-DD)`
+- [ ] Tasks marked `[x]` in `TASKS.md`
+- [ ] Story file updated with completion notes and file list
+
+**NEVER claim a story is done without completing every item above.**
+If `sprint-status.yaml` is not updated, the story is NOT done.
 
 ### Status Values
 
@@ -234,6 +257,83 @@ blocked        # Dependency or issue blocking
 - ❌ Ignore TypeScript errors
 - ❌ Use `any` types
 - ❌ Create type-based file organization
+
+---
+
+## 🔍 Debugging Guidelines
+
+### Root-Cause Before Fixing (MANDATORY)
+
+Before writing ANY fix, trace the bug through **all layers**:
+
+1. **Frontend** — component state, props, event handlers
+2. **Hooks/Store** — Zustand selectors, actions, derived state
+3. **API** — request/response, middleware, validation
+4. **Cache** — Redis TTL, invalidation logic, key construction
+5. **Database** — Neo4j query, relationship traversal, label/property naming
+
+Only apply a fix after identifying **which layer owns the defect**.
+
+❌ WRONG: Fix the first symptom you find.
+✅ RIGHT: List every layer the data flows through, then fix the owning layer.
+
+**Prompt yourself before coding:**
+> "Have I verified the fix addresses the root cause, not just a surface symptom?"
+
+### Multi-Layer Bug Checklist
+
+- I know which layer the defect lives in (not just where I first see it)
+- I've checked whether the fix could affect other callers of the same code
+- See **Testing & Quality → After Code Changes** for the full post-fix checklist
+
+### Constant/Default Drift Rule
+
+When changing an **exported constant** or **Zustand store default**, before and after the change:
+
+```bash
+# Find hardcoded test assertions using the old value
+grep -r "oldValue" packages/ --include="*.test.*"
+```
+
+Stale test assertions silently fail after constant renames. Always grep and update them.
+
+---
+
+## 🏙️ R3F / 3D Visualization Guidelines
+
+### Verify Data Before Using It
+
+When implementing any visual feature that reads node/edge metadata:
+
+1. **Confirm the field is populated** — search the parser and API to verify the property is actually set (e.g., `metadata.methods` vs `node.methodCount`).
+2. **Log a sample** — before building on a field, add a temporary `console.log(node)` to verify shape in dev.
+3. **Guard all optional paths** — if a field can be undefined, add a null check. Do not assume non-null.
+
+```tsx
+// ❌ WRONG — methodCount may never be populated
+const floors = node.methodCount ?? 1;
+
+// ✅ RIGHT — confirmed field from parser output
+const floors = node.metadata?.methods?.length ?? 1;
+```
+
+### vertexColors Safety Rule
+
+- **NEVER enable `vertexColors` on a geometry** unless you have confirmed the geometry already has a `color` attribute.
+- Enabling `vertexColors` without color attributes silently overwrites the material color, losing district/directory coloring.
+
+```tsx
+// ❌ WRONG
+<meshStandardMaterial vertexColors />
+
+// ✅ RIGHT — only when geometry has .attributes.color
+<meshStandardMaterial vertexColors={geometry.attributes.color != null} />
+```
+
+### R3F Line Rendering
+
+- Do NOT use `<line>` JSX — it conflicts with SVG line elements in React.
+- Use `<primitive object={new THREE.Line(geometry, material)} />` instead.
 
 ---
 
