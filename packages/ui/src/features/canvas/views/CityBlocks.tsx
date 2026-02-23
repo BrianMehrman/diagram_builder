@@ -13,22 +13,12 @@
  */
 
 import { useMemo } from 'react';
-import { Building } from './Building';
 import { ExternalBuilding } from './ExternalBuilding';
 import { XRayBuilding } from './XRayBuilding';
 import { DistrictGround } from '../components/DistrictGround';
 import { FileBlock } from '../components/FileBlock';
-import {
-  ClassBuilding,
-  BaseClassBuilding,
-  FunctionShop,
-  InterfaceBuilding,
-  AbstractBuilding,
-  VariableCrate,
-  EnumCrate,
-  RooftopGarden,
-} from '../components/buildings';
 import { getBuildingConfig } from '../components/buildingGeometry';
+import { createBuildingElement } from './BuildingFactory';
 import { getDistrictColor } from '../components/districtGroundUtils';
 import { getSignType, getSignVisibility, renderSign } from '../components/signs';
 import { buildIncomingEdgeCounts, detectBaseClasses } from './cityViewUtils';
@@ -54,9 +44,6 @@ interface CityBlocksProps {
 
 /** Distance threshold for showing x-ray internal detail */
 const XRAY_DETAIL_DISTANCE = 30;
-
-/** Types that can contain nested type definitions */
-const CONTAINER_TYPES = new Set(['class', 'abstract_class', 'file']);
 
 /**
  * Renders the appropriate infrastructure landmark for an external node
@@ -90,105 +77,6 @@ function renderInfrastructureLandmark(
   }
 }
 
-/**
- * Renders the appropriate typed building component based on node.type.
- * Falls back to the generic Building component for unrecognized types.
- * Adds RooftopGarden for container types with nested children.
- * Routes base classes to BaseClassBuilding for distinct visual treatment (Story 11-6).
- */
-function renderTypedBuilding(
-  node: GraphNode,
-  position: { x: number; y: number; z: number },
-  nestedMap: Map<string, GraphNode[]>,
-  methodsByClass: Map<string, GraphNode[]>,
-  lodLevel: number,
-  graph: Graph,
-  encodingOptions?: EncodedHeightOptions,
-  baseClassIds?: Set<string>,
-) {
-  const props = { key: node.id, node, position };
-  const hasNested = CONTAINER_TYPES.has(node.type) && nestedMap.has(node.id);
-  const classMethods = methodsByClass.get(node.id);
-  const classExtras = encodingOptions ? { encodingOptions } : {};
-  const nodeIsBase = baseClassIds?.has(node.id) ?? false;
-  const methodProps = classMethods
-    ? { methods: classMethods, lodLevel, isBaseClass: nodeIsBase, ...classExtras }
-    : { lodLevel, isBaseClass: nodeIsBase, ...classExtras };
-
-  let building: React.JSX.Element;
-  switch (node.type) {
-    case 'class':
-      building = nodeIsBase
-        ? <BaseClassBuilding {...props} {...methodProps} graph={graph} />
-        : <ClassBuilding {...props} {...methodProps} graph={graph} />;
-      break;
-    case 'function':
-      building = <FunctionShop {...props} {...classExtras} graph={graph} />;
-      break;
-    case 'interface':
-      building = <InterfaceBuilding {...props} {...methodProps} graph={graph} />;
-      break;
-    case 'abstract_class':
-      building = <AbstractBuilding {...props} {...methodProps} graph={graph} />;
-      break;
-    case 'variable':
-      building = <VariableCrate {...props} graph={graph} />;
-      break;
-    case 'enum':
-      building = <EnumCrate {...props} graph={graph} />;
-      break;
-    default:
-      building = <Building key={node.id} node={node} position={position} graph={graph} {...(encodingOptions ? { encodingOptions } : {})} />;
-      break;
-  }
-
-  if (!hasNested) return building;
-
-  const config = getBuildingConfig(node, encodingOptions);
-  return (
-    <group key={node.id} position={[position.x, position.y, position.z]}>
-      {/* Re-render building at origin since group handles position */}
-      {renderTypedBuildingInner(node, methodsByClass, lodLevel, graph, encodingOptions, baseClassIds)}
-      <RooftopGarden
-        parentNode={node}
-        parentWidth={config.geometry.width}
-        parentHeight={config.geometry.height}
-        nestedMap={nestedMap}
-      />
-    </group>
-  );
-}
-
-/**
- * Renders just the building mesh without position (used inside rooftop group).
- */
-function renderTypedBuildingInner(
-  node: GraphNode,
-  methodsByClass: Map<string, GraphNode[]>,
-  lodLevel: number,
-  graph: Graph,
-  encodingOptions?: EncodedHeightOptions,
-  baseClassIds?: Set<string>,
-) {
-  const origin = { x: 0, y: 0, z: 0 };
-  const props = { key: `inner-${node.id}`, node, position: origin };
-  const classMethods = methodsByClass.get(node.id);
-  const classExtras = encodingOptions ? { encodingOptions } : {};
-  const nodeIsBase = baseClassIds?.has(node.id) ?? false;
-  const methodProps = classMethods
-    ? { methods: classMethods, lodLevel, isBaseClass: nodeIsBase, ...classExtras }
-    : { lodLevel, isBaseClass: nodeIsBase, ...classExtras };
-  switch (node.type) {
-    case 'class':
-      return nodeIsBase
-        ? <BaseClassBuilding {...props} {...methodProps} graph={graph} />
-        : <ClassBuilding {...props} {...methodProps} graph={graph} />;
-    case 'abstract_class':
-      return <AbstractBuilding {...props} {...methodProps} graph={graph} />;
-    default:
-      return <Building key={`inner-${node.id}`} node={node} position={origin} graph={graph} {...(encodingOptions ? { encodingOptions } : {})} />;
-  }
-}
 
 export function CityBlocks({ graph }: CityBlocksProps) {
   const isXRayMode = useCanvasStore((s) => s.isXRayMode);
@@ -298,7 +186,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
 
                   return (
                     <group key={node.id}>
-                      {renderTypedBuilding(node, worldPos, nestedTypeMap, methodsByClass, lodLevel, graph, nodeEncoding, baseClassIds)}
+                      {createBuildingElement(node, worldPos, nestedTypeMap, methodsByClass, lodLevel, graph, nodeEncoding, baseClassIds)}
                       {renderSign({
                         key: `sign-${node.id}`,
                         signType,
@@ -369,7 +257,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
 
             return (
               <group key={node.id}>
-                {renderTypedBuilding(node, pos, nestedTypeMap, methodsByClass, lodLevel, graph, nodeEncoding, baseClassIds)}
+                {createBuildingElement(node, pos, nestedTypeMap, methodsByClass, lodLevel, graph, nodeEncoding, baseClassIds)}
                 {renderSign({
                   key: `sign-${node.id}`,
                   signType,
