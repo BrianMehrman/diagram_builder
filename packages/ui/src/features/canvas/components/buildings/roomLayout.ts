@@ -5,7 +5,7 @@
  * Rooms are stacked vertically within the building volume with padding.
  */
 
-import { METHOD_ROOM_HEIGHT } from '../../views/cityViewUtils';
+import { METHOD_ROOM_HEIGHT } from '../../views/heightUtils';
 
 /** Padding between room edges and building walls */
 export const WALL_PADDING = 0.15;

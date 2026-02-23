@@ -18,15 +18,12 @@ import { useState, useMemo } from 'react';
 import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
 import { getBuildingConfig } from '../buildingGeometry';
-import {
-  KIOSK_AWNING_OVERHANG,
-  KIOSK_AWNING_THICKNESS,
-  getNodeFocusOpacity,
-} from '../../views/cityViewUtils';
+import { KIOSK_AWNING_OVERHANG, KIOSK_AWNING_THICKNESS } from '../../views/heightUtils';
+import { getNodeFocusOpacity } from '../../views/focusUtils';
 import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
 import { useFocusedConnections } from '../../hooks/useFocusedConnections';
 import type { TypedBuildingProps } from './types';
-import type { EncodedHeightOptions } from '../../views/cityViewUtils';
+import type { EncodedHeightOptions } from '../../views/heightUtils';
 
 /** Base kiosk body colour (warm amber). */
 const KIOSK_COLOR = '#f59e0b';
@@ -67,8 +64,8 @@ export function FunctionShop({ node, position, encodingOptions, graph }: Functio
       {/* Kiosk body */}
       <mesh
         position={[0, height / 2, 0]}
-        onClick={() => selectNode(isSelected ? null : node.id)}
-        onDoubleClick={() => requestFlyToNode(node.id)}
+        onClick={(e) => { e.stopPropagation(); selectNode(node.id); }}
+        onDoubleClick={(e) => { e.stopPropagation(); requestFlyToNode(node.id); }}
         onPointerOver={() => {
           setHovered(true);
           setHoveredNode(node.id);

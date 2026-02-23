@@ -10,7 +10,10 @@ import * as THREE from 'three';
 import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
 import { getBuildingConfig } from '../buildingGeometry';
-import { getDirectoryFromLabel, getDirectoryColor, sortMethodsByVisibility, getLodTransition, getNodeFocusOpacity } from '../../views/cityViewUtils';
+import { getDirectoryFromLabel, getDirectoryColor } from '../../views/colorUtils';
+import { getLodTransition } from '../../views/heightUtils';
+import { getNodeFocusOpacity } from '../../views/focusUtils';
+import { sortMethodsByVisibility } from '../../views/methodUtils';
 import { getFloorCount, applyFloorBandColors, getMethodCount } from './floorBandUtils';
 import { FloorLabels } from './FloorLabels';
 import { MethodRoom } from './MethodRoom';
@@ -77,8 +80,8 @@ export function ClassBuilding({ node, position, methods, lodLevel, encodingOptio
       <mesh
         position={[0, height / 2, 0]}
         geometry={geometry}
-        onClick={() => selectNode(isSelected ? null : node.id)}
-        onDoubleClick={() => requestFlyToNode(node.id)}
+        onClick={(e) => { e.stopPropagation(); selectNode(node.id); }}
+        onDoubleClick={(e) => { e.stopPropagation(); requestFlyToNode(node.id); }}
         onPointerOver={() => { setHovered(true); setHoveredNode(node.id); document.body.style.cursor = 'pointer'; }}
         onPointerOut={() => { setHovered(false); setHoveredNode(null); document.body.style.cursor = 'auto'; }}
       >

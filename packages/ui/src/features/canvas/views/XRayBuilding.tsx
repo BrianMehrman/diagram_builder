@@ -8,11 +8,7 @@
 import { useMemo } from 'react';
 import { BoxGeometry, DoubleSide, EdgesGeometry } from 'three';
 import type { GraphNode, Position3D } from '../../../shared/types';
-import {
-  getBuildingHeight,
-  BUILDING_WIDTH,
-  BUILDING_DEPTH,
-} from './cityViewUtils';
+import { getBuildingHeight, BUILDING_WIDTH, BUILDING_DEPTH } from './heightUtils';
 
 interface XRayBuildingProps {
   node: GraphNode;

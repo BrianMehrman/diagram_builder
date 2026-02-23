@@ -11,15 +11,11 @@ import { useCanvasStore } from '../store';
 import { useTransitMapStyle } from '../hooks/useTransitMapStyle';
 import { useFocusedConnections } from '../hooks/useFocusedConnections';
 import type { GraphNode, Position3D, Graph } from '../../../shared/types';
-import {
-  getDirectoryColor,
-  getDirectoryFromLabel,
-  BUILDING_WIDTH,
-  BUILDING_DEPTH,
-  getNodeFocusOpacity,
-} from './cityViewUtils';
+import { getDirectoryColor, getDirectoryFromLabel } from './colorUtils';
+import { BUILDING_WIDTH, BUILDING_DEPTH } from './heightUtils';
+import { getNodeFocusOpacity } from './focusUtils';
 import { getBuildingConfig } from '../components/buildingGeometry';
-import type { EncodedHeightOptions } from './cityViewUtils';
+import type { EncodedHeightOptions } from './heightUtils';
 
 interface BuildingProps {
   node: GraphNode;
@@ -52,11 +48,13 @@ export function Building({ node, position, encodingOptions, graph }: BuildingPro
     return '#000000';
   }, [isSelected, color]);
 
-  const handleClick = () => {
-    selectNode(isSelected ? null : node.id);
+  const handleClick = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
+    selectNode(node.id);
   };
 
-  const handleDoubleClick = () => {
+  const handleDoubleClick = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
     requestFlyToNode(node.id);
   };
 

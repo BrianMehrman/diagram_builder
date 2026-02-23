@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../../store';
-import { METHOD_ROOM_COLORS } from '../../views/cityViewUtils';
+import { METHOD_ROOM_COLORS } from '../../views/heightUtils';
 import type { GraphNode } from '../../../../shared/types';
 
 export interface MethodRoomProps {

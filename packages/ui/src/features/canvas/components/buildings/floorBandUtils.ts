@@ -6,7 +6,7 @@
  */
 
 import * as THREE from 'three';
-import { FLOOR_HEIGHT, getBuildingHeight } from '../../views/cityViewUtils';
+import { FLOOR_HEIGHT, getBuildingHeight } from '../../views/heightUtils';
 import type { GraphNode } from '../../../../shared/types';
 
 /**

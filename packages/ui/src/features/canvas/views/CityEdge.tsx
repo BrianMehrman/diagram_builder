@@ -8,7 +8,7 @@
 import { useMemo } from 'react';
 import { Line } from '@react-three/drei';
 import type { GraphEdge, Position3D } from '../../../shared/types';
-import { getBuildingHeight } from './cityViewUtils';
+import { getBuildingHeight } from './heightUtils';
 
 interface CityEdgeProps {
   edge: GraphEdge;

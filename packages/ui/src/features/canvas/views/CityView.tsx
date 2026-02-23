@@ -22,7 +22,7 @@ import { useCityLayout } from '../hooks/useCityLayout';
 import { useCameraTiltAssist } from '../hooks/useCameraTiltAssist';
 import { useFocusEscape } from '../hooks/useFocusEscape';
 import { computeGroundOpacity } from '../undergroundUtils';
-import { computeUndergroundGroundOpacity } from './cityViewUtils';
+import { computeUndergroundGroundOpacity } from './heightUtils';
 import type { Graph } from '../../../shared/types';
 
 interface CityViewProps {

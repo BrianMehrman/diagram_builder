@@ -17,7 +17,7 @@ import { useMemo } from 'react';
 import { UndergroundPipe } from './UndergroundPipe';
 import { useCityLayout } from '../hooks/useCityLayout';
 import { useCityFiltering } from '../hooks/useCityFiltering';
-import { classifyEdgeRouting } from '../views/cityViewUtils';
+import { classifyEdgeRouting } from '../views/wireUtils';
 import { useCanvasStore } from '../store';
 import type { Graph } from '../../../shared/types';
 

@@ -3,7 +3,7 @@
  */
 
 import type { GraphNode, Position3D, Graph } from '../../../../shared/types';
-import type { EncodedHeightOptions } from '../../views/cityViewUtils';
+import type { EncodedHeightOptions } from '../../views/heightUtils';
 
 /**
  * Standard props accepted by all typed building components.

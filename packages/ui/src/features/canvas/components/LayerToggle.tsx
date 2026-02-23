@@ -9,7 +9,7 @@
  */
 
 import { useCanvasStore } from '../store';
-import { WIRE_COLORS } from '../views/cityViewUtils';
+import { WIRE_COLORS } from '../views/wireUtils';
 
 export function LayerToggle() {
   const visibleLayers = useCanvasStore((s) => s.visibleLayers);

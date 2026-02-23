@@ -19,7 +19,7 @@ import {
   PIPE_DEFAULT_COLOR,
   PIPE_RADIUS,
   PIPE_DEFAULT_RADIUS,
-} from '../views/cityViewUtils';
+} from '../views/pipeUtils';
 
 export interface UndergroundPipeProps {
   sourcePosition: Position3D;

@@ -19,16 +19,18 @@ import {
   ABSTRACT_OPACITY,
   BUILDING_WIDTH,
   BUILDING_DEPTH,
-  BASE_CLASS_ROUGHNESS,
-  BASE_CLASS_METALNESS,
-  BASE_CLASS_FOOTPRINT_MULTIPLIER,
   getMethodBasedHeight,
   getEncodedHeight,
   getBuildingHeight,
   getContainmentHeight,
   getFootprintScale,
-} from '../views/cityViewUtils';
-import type { EncodedHeightOptions } from '../views/cityViewUtils';
+} from '../views/heightUtils';
+import {
+  BASE_CLASS_ROUGHNESS,
+  BASE_CLASS_METALNESS,
+  BASE_CLASS_FOOTPRINT_MULTIPLIER,
+} from '../views/colorUtils';
+import type { EncodedHeightOptions } from '../views/heightUtils';
 import { getMethodCount } from './buildings/floorBandUtils';
 
 /**

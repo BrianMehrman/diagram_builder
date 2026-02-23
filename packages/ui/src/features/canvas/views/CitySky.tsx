@@ -19,12 +19,8 @@ import { GroundShadow } from '../components/GroundShadow';
 import { useCityLayout } from '../hooks/useCityLayout';
 import { useCityFiltering } from '../hooks/useCityFiltering';
 import { useCanvasStore } from '../store';
-import {
-  classifyEdgeRouting,
-  getContainmentHeight,
-  getBuildingHeight,
-  KIOSK_HEIGHT,
-} from './cityViewUtils';
+import { classifyEdgeRouting } from './wireUtils';
+import { getContainmentHeight, getBuildingHeight, KIOSK_HEIGHT } from './heightUtils';
 import type { Graph, GraphNode } from '../../../shared/types';
 
 /** Compute rooftop Y for a node so OverheadWire arcs start/end at the correct height. */

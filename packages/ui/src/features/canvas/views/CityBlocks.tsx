@@ -22,14 +22,14 @@ import { createBuildingElement } from './BuildingFactory';
 import { createInfrastructureElement } from './InfrastructureFactory';
 import { getDistrictColor } from '../components/districtGroundUtils';
 import { getSignType, getSignVisibility, renderSign } from '../components/signs';
-import { buildIncomingEdgeCounts, detectBaseClasses } from './cityViewUtils';
+import { buildIncomingEdgeCounts, detectBaseClasses } from './inheritanceUtils';
 import { useCanvasStore } from '../store';
 import { useCityLayout } from '../hooks/useCityLayout';
 import { useCityFiltering } from '../hooks/useCityFiltering';
 import { useDistrictMap } from '../hooks/useDistrictMap';
 import { computeXRayWallOpacity, shouldShowXRayDetail } from '../xrayUtils';
 import type { Graph, Position3D } from '../../../shared/types';
-import type { EncodedHeightOptions } from './cityViewUtils';
+import type { EncodedHeightOptions } from './heightUtils';
 
 interface CityBlocksProps {
   graph: Graph;

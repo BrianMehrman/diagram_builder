@@ -21,7 +21,7 @@ import {
 import { getBuildingConfig } from '../components/buildingGeometry';
 import { Building } from './Building';
 import type { Graph, GraphNode } from '../../../shared/types';
-import type { EncodedHeightOptions } from './cityViewUtils';
+import type { EncodedHeightOptions } from './heightUtils';
 
 /** Types that can contain nested type definitions */
 const CONTAINER_TYPES = new Set(['class', 'abstract_class', 'file']);

@@ -10,7 +10,7 @@ import { Text } from '@react-three/drei';
 import { useCanvasStore } from '../store';
 import { useTransitMapStyle } from '../hooks/useTransitMapStyle';
 import type { GraphNode, Position3D } from '../../../shared/types';
-import { EXTERNAL_COLOR } from './cityViewUtils';
+import { EXTERNAL_COLOR } from './colorUtils';
 
 interface ExternalBuildingProps {
   node: GraphNode;
@@ -31,8 +31,9 @@ export function ExternalBuilding({ node, position }: ExternalBuildingProps) {
   const label = node.label ?? '';
   const packageName = label.split('/').pop() ?? label;
 
-  const handleClick = () => {
-    selectNode(isSelected ? null : node.id);
+  const handleClick = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
+    selectNode(node.id);
   };
 
   const handlePointerOver = () => {

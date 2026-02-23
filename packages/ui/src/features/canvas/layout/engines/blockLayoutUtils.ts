@@ -1,6 +1,6 @@
 import type { GraphNode, Position3D } from '../../../../shared/types';
 import type { BlockLayout } from '../types';
-import { BUILDING_Y_OFFSET } from '../../views/cityViewUtils';
+import { BUILDING_Y_OFFSET } from '../../views/heightUtils';
 
 /**
  * Calculate the footprint (width x depth) of a file block based on child count and types.

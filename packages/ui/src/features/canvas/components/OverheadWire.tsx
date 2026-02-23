@@ -30,7 +30,7 @@ import {
   getWireMaterialType,
   WIRE_DASH_SIZE,
   WIRE_GAP_SIZE,
-} from '../views/cityViewUtils';
+} from '../views/wireUtils';
 import type { Position3D } from '../../../shared/types';
 
 export interface OverheadWireProps {
