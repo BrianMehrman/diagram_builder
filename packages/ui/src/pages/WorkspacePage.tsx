@@ -35,7 +35,6 @@ export function WorkspacePage() {
   const toggleLeftPanel = useUIStore((state) => state.toggleLeftPanel)
   const toggleRightPanel = useUIStore((state) => state.toggleRightPanel)
   const openLeftPanel = useUIStore((state) => state.openLeftPanel)
-  const closeAllPanels = useUIStore((state) => state.closeAllPanels)
   const [miniMapCollapsed, setMiniMapCollapsed] = useState(false)
 
   // Track if we've loaded graph data for completed status
@@ -442,12 +441,12 @@ export function WorkspacePage() {
           </div>
         </div>
 
-        {/* Overlay backdrop for closing panels */}
+        {/* Overlay backdrop for closing panels — pointer-events: none so canvas clicks pass through */}
         {(leftPanelOpen || rightPanelOpen) && (
           <div
             className="absolute inset-0 bg-black/30 z-20"
+            style={{ pointerEvents: 'none' }}
             data-testid="panel-overlay"
-            onClick={closeAllPanels}
           />
         )}
       </main>

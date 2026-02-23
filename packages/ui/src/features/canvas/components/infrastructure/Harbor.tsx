@@ -39,8 +39,8 @@ export function Harbor({ node, position }: InfrastructureProps) {
       {/* Dock platform */}
       <mesh
         position={[0, dockY + DOCK_H / 2, 0]}
-        onClick={() => selectNode(isSelected ? null : node.id)}
-        onDoubleClick={() => requestFlyToNode(node.id)}
+        onClick={(e) => { e.stopPropagation(); selectNode(node.id); }}
+        onDoubleClick={(e) => { e.stopPropagation(); requestFlyToNode(node.id); }}
         onPointerOver={() => { setHovered(true); setHoveredNode(node.id); document.body.style.cursor = 'pointer'; }}
         onPointerOut={() => { setHovered(false); setHoveredNode(null); document.body.style.cursor = 'auto'; }}
       >

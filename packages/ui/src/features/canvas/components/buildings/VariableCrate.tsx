@@ -30,8 +30,8 @@ export function VariableCrate({ node, position, graph: _graph }: TypedBuildingPr
     <group position={[position.x, position.y, position.z]}>
       <mesh
         position={[0, width / 2, 0]}
-        onClick={() => selectNode(isSelected ? null : node.id)}
-        onDoubleClick={() => requestFlyToNode(node.id)}
+        onClick={(e) => { e.stopPropagation(); selectNode(node.id); }}
+        onDoubleClick={(e) => { e.stopPropagation(); requestFlyToNode(node.id); }}
         onPointerOver={() => { setHovered(true); setHoveredNode(node.id); document.body.style.cursor = 'pointer'; }}
         onPointerOut={() => { setHovered(false); setHoveredNode(null); document.body.style.cursor = 'auto'; }}
       >

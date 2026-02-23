@@ -27,8 +27,9 @@ export function Room({ node, position }: RoomProps) {
   const isSelected = selectedNodeId === node.id;
   const color = getRoomColor(node.type);
 
-  const handleClick = () => {
-    selectNode(isSelected ? null : node.id);
+  const handleClick = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
+    selectNode(node.id);
   };
 
   const handlePointerOver = () => {

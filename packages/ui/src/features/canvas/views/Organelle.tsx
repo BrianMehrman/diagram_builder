@@ -26,8 +26,9 @@ export function Organelle({ node, position }: OrganelleProps) {
   const shape = getOrganelleShape(node.type);
   const size = getOrganelleSize(node.metadata);
 
-  const handleClick = () => {
-    selectNode(isSelected ? null : node.id);
+  const handleClick = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
+    selectNode(node.id);
   };
 
   const handlePointerOver = () => {

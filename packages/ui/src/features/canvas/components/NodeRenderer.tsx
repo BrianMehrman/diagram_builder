@@ -89,8 +89,9 @@ export function NodeRenderer({ node }: NodeRendererProps) {
     }
   });
 
-  const handleClick = () => {
-    selectNode(isSelected ? null : node.id);
+  const handleClick = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
+    selectNode(node.id);
   };
 
   const handlePointerOver = () => {

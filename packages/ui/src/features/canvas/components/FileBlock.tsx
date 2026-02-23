@@ -34,8 +34,9 @@ export function FileBlock({ block, districtColor, lodLevel }: FileBlockProps) {
 
   const isSelected = selectedNodeId === fileId;
 
-  const handleClick = () => {
-    selectNode(isSelected ? null : fileId);
+  const handleClick = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
+    selectNode(fileId);
   };
 
   const handlePointerOver = () => {
