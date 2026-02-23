@@ -19,23 +19,16 @@ import { DistrictGround } from '../components/DistrictGround';
 import { FileBlock } from '../components/FileBlock';
 import { getBuildingConfig } from '../components/buildingGeometry';
 import { createBuildingElement } from './BuildingFactory';
+import { createInfrastructureElement } from './InfrastructureFactory';
 import { getDistrictColor } from '../components/districtGroundUtils';
 import { getSignType, getSignVisibility, renderSign } from '../components/signs';
 import { buildIncomingEdgeCounts, detectBaseClasses } from './cityViewUtils';
-import {
-  PowerStation,
-  WaterTower,
-  MunicipalBuilding,
-  Harbor,
-  Airport,
-  CityGate,
-} from '../components/infrastructure';
 import { useCanvasStore } from '../store';
 import { useCityLayout } from '../hooks/useCityLayout';
 import { useCityFiltering } from '../hooks/useCityFiltering';
 import { useDistrictMap } from '../hooks/useDistrictMap';
 import { computeXRayWallOpacity, shouldShowXRayDetail } from '../xrayUtils';
-import type { Graph, GraphNode, Position3D } from '../../../shared/types';
+import type { Graph, Position3D } from '../../../shared/types';
 import type { EncodedHeightOptions } from './cityViewUtils';
 
 interface CityBlocksProps {
@@ -44,38 +37,6 @@ interface CityBlocksProps {
 
 /** Distance threshold for showing x-ray internal detail */
 const XRAY_DETAIL_DISTANCE = 30;
-
-/**
- * Renders the appropriate infrastructure landmark for an external node
- * based on its `metadata.infrastructureType`. Returns null for 'general'
- * or missing type, signaling fallback to ExternalBuilding.
- */
-function renderInfrastructureLandmark(
-  node: GraphNode,
-  position: Position3D,
-): React.JSX.Element | null {
-  const infraType = node.metadata?.infrastructureType as string | undefined;
-  if (!infraType || infraType === 'general') return null;
-
-  const props = { key: node.id, node, position };
-  switch (infraType) {
-    case 'database':
-      return <Harbor {...props} />;
-    case 'api':
-      return <Airport {...props} />;
-    case 'queue':
-      return <PowerStation {...props} />;
-    case 'cache':
-      return <WaterTower {...props} />;
-    case 'auth':
-      return <CityGate {...props} />;
-    case 'logging':
-    case 'filesystem':
-      return <MunicipalBuilding {...props} />;
-    default:
-      return null;
-  }
-}
 
 
 export function CityBlocks({ graph }: CityBlocksProps) {
@@ -280,7 +241,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
         const pos = positions.get(node.id);
         if (!pos) return null;
 
-        const landmark = renderInfrastructureLandmark(node, pos);
+        const landmark = createInfrastructureElement(node, pos);
         if (landmark) return landmark;
 
         return <ExternalBuilding key={node.id} node={node} position={pos} />;
