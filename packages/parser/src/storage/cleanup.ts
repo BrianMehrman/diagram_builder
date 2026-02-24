@@ -71,12 +71,10 @@ export async function runCleanupJob(options: CleanupOptions = {}): Promise<numbe
 export function scheduleCleanupJob(intervalMs: number = 60 * 60 * 1000, options: CleanupOptions = {}): NodeJS.Timeout {
   logger.info(`Scheduling cleanup job to run every ${intervalMs / 1000 / 60} minutes`);
 
-  const interval = setInterval(async () => {
-    try {
-      await runCleanupJob(options);
-    } catch (error) {
+  const interval = setInterval(() => {
+    void runCleanupJob(options).catch((error: unknown) => {
       logger.error('Cleanup job failed:', error);
-    }
+    });
   }, intervalMs);
 
   // Run immediately on start

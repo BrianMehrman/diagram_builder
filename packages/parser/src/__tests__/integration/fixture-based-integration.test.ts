@@ -11,6 +11,7 @@
 import { describe, it, expect } from 'vitest';
 import { join } from 'path';
 import { readFileSync } from 'fs';
+import type { IVMGraph, IVMNode, IVMEdge } from '../../../../core/src/ivm/types.js';
 import { loadRepository } from '../../repository/repository-loader';
 import { buildDependencyGraph } from '../../graph/graph-builder';
 import { convertToIVM } from '../../ivm/ivm-converter';
@@ -27,7 +28,7 @@ const EMPTY_REPO = join(FIXTURES_ROOT, 'empty-repo');
  * Helper function to validate graph quality
  * AC-3: Graph quality validation
  */
-function validateGraphQuality(graph: any, expectedMinNodes: number, expectedMinEdges: number) {
+function validateGraphQuality(graph: IVMGraph, expectedMinNodes: number, expectedMinEdges: number) {
   // Basic structure
   expect(graph.nodes).toBeDefined();
   expect(graph.edges).toBeDefined();
@@ -37,7 +38,7 @@ function validateGraphQuality(graph: any, expectedMinNodes: number, expectedMinE
   expect(graph.nodes.length).toBeGreaterThanOrEqual(expectedMinNodes);
 
   // Node validation
-  graph.nodes.forEach((node: any) => {
+  graph.nodes.forEach((node: IVMNode) => {
     expect(node.id).toBeDefined();
     expect(node.type).toBeDefined();
     expect(node.position).toBeDefined();
@@ -59,7 +60,7 @@ function validateGraphQuality(graph: any, expectedMinNodes: number, expectedMinE
   if (expectedMinEdges > 0) {
     expect(graph.edges.length).toBeGreaterThanOrEqual(expectedMinEdges);
 
-    graph.edges.forEach((edge: any) => {
+    graph.edges.forEach((edge: IVMEdge) => {
       expect(edge.id).toBeDefined();
       expect(edge.source).toBeDefined();
       expect(edge.target).toBeDefined();
@@ -72,8 +73,8 @@ function validateGraphQuality(graph: any, expectedMinNodes: number, expectedMinE
     });
 
     // Validate relationships reference real nodes
-    const nodeIds = new Set(graph.nodes.map((n: any) => n.id));
-    graph.edges.forEach((edge: any) => {
+    const nodeIds = new Set(graph.nodes.map((n: IVMNode) => n.id));
+    graph.edges.forEach((edge: IVMEdge) => {
       expect(nodeIds.has(edge.source)).toBe(true);
       expect(nodeIds.has(edge.target)).toBe(true);
     });
@@ -199,7 +200,7 @@ describe('Parser Integration Tests - Real Fixtures', () => {
       validateGraphQuality(ivm, 3, 1); // Min 3 nodes, min 1 edge
 
       // Should detect JavaScript classes (Calculator)
-      const classNodes = ivm.nodes.filter((n: any) => n.type === 'class');
+      const classNodes = ivm.nodes.filter((n: IVMNode) => n.type === 'class');
       expect(classNodes.length).toBeGreaterThanOrEqual(1);
 
       // Should have edges (imports/contains/etc)
@@ -232,7 +233,7 @@ describe('Parser Integration Tests - Real Fixtures', () => {
       validateGraphQuality(ivm, 2, 0); // Min 2 files, may have 0 edges if no imports
 
       // Verify both JS and TS files are represented
-      const fileNodes = ivm.nodes.filter((n: any) => n.type === 'file');
+      const fileNodes = ivm.nodes.filter((n: IVMNode) => n.type === 'file');
       expect(fileNodes.length).toBeGreaterThanOrEqual(2);
     });
   });
@@ -301,12 +302,12 @@ describe('Parser Integration Tests - Real Fixtures', () => {
 
       // Every node must have a valid type
       const validTypes = ['file', 'class', 'function', 'variable', 'interface', 'type'];
-      ivm.nodes.forEach((node: any) => {
+      ivm.nodes.forEach((node: IVMNode) => {
         expect(validTypes).toContain(node.type);
       });
 
       // Should have file nodes
-      const fileNodes = ivm.nodes.filter((n: any) => n.type === 'file');
+      const fileNodes = ivm.nodes.filter((n: IVMNode) => n.type === 'file');
       expect(fileNodes.length).toBeGreaterThan(0);
     });
 
@@ -326,7 +327,7 @@ describe('Parser Integration Tests - Real Fixtures', () => {
 
       // Every edge must have a valid type
       const validEdgeTypes = ['imports', 'exports', 'depends_on', 'contains', 'calls', 'inherits'];
-      ivm.edges.forEach((edge: any) => {
+      ivm.edges.forEach((edge: IVMEdge) => {
         expect(validEdgeTypes).toContain(edge.type);
       });
     });
@@ -346,7 +347,7 @@ describe('Parser Integration Tests - Real Fixtures', () => {
       const ivm = convertToIVM(depGraph, context, { name: 'test' });
 
       // Every node must have valid 3D coordinates
-      ivm.nodes.forEach((node: any) => {
+      ivm.nodes.forEach((node: IVMNode) => {
         expect(node.position).toBeDefined();
         expect(typeof node.position.x).toBe('number');
         expect(typeof node.position.y).toBe('number');
@@ -374,10 +375,10 @@ describe('Parser Integration Tests - Real Fixtures', () => {
       const ivm = convertToIVM(depGraph, context, { name: 'test' });
 
       // Build set of valid node IDs
-      const nodeIds = new Set(ivm.nodes.map((n: any) => n.id));
+      const nodeIds = new Set(ivm.nodes.map((n: IVMNode) => n.id));
 
       // Every edge must reference existing nodes
-      ivm.edges.forEach((edge: any) => {
+      ivm.edges.forEach((edge: IVMEdge) => {
         expect(nodeIds.has(edge.source)).toBe(true);
         expect(nodeIds.has(edge.target)).toBe(true);
       });

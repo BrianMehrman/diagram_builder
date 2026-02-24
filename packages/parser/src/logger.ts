@@ -28,7 +28,7 @@ export const logger = winston.createLogger({
         winston.format.colorize(),
         winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
           const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : ''
-          return `${timestamp} [${service}] ${level}: ${message}${metaStr}`
+          return `${String(timestamp)} [${String(service)}] ${String(level)}: ${String(message)}${metaStr}`
         })
       )
     })
@@ -47,20 +47,20 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Helper functions for common logging patterns
-export const logOperation = (operation: string, data?: Record<string, any>) => {
+export const logOperation = (operation: string, data?: Record<string, unknown>) => {
   logger.info(`[START] ${operation}`, data)
   return {
-    success: (result?: Record<string, any>) => {
+    success: (result?: Record<string, unknown>) => {
       logger.info(`[SUCCESS] ${operation}`, result)
     },
-    fail: (error: Error | string, context?: Record<string, any>) => {
+    fail: (error: Error | string, context?: Record<string, unknown>) => {
       if (error instanceof Error) {
         logger.error(`[FAIL] ${operation}`, { error: error.message, stack: error.stack, ...context })
       } else {
         logger.error(`[FAIL] ${operation}`, { error, ...context })
       }
     },
-    timing: (startTime: number, result?: Record<string, any>) => {
+    timing: (startTime: number, result?: Record<string, unknown>) => {
       const duration = Date.now() - startTime
       logger.info(`[COMPLETE] ${operation}`, { duration: `${duration}ms`, ...result })
     }

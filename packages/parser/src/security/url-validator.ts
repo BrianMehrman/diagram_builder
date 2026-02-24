@@ -6,6 +6,7 @@
  */
 
 import { URL } from 'url';
+import path from 'path';
 import { logger } from '../logger.js';
 
 export interface UrlValidationResult {
@@ -121,7 +122,6 @@ export function validateRepositoryUrl(urlString: string): UrlValidationResult {
 export function sanitizeFilePath(filePath: string, baseDir: string): string | null {
   try {
     // Normalize path and resolve to absolute
-    const path = require('path');
     const normalizedPath = path.normalize(filePath);
     const absolutePath = path.resolve(baseDir, normalizedPath);
 

@@ -5,7 +5,6 @@ import {
   isNodeBuiltin,
   detectExternalImports,
   type ExternalImportInfo,
-  type ExternalDetectionResult,
   type PackageJsonDeps,
 } from './externalDetector'
 

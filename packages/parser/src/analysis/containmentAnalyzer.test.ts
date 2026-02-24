@@ -1,9 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { DependencyNode, DependencyEdge } from '../graph/dependency-graph'
-import {
-  buildContainmentHierarchy,
-  type ContainmentResult,
-} from './containmentAnalyzer'
+import { buildContainmentHierarchy } from './containmentAnalyzer'
 
 // Helper to create a file node (matching graph-builder pattern)
 function makeFileNode(filePath: string): DependencyNode {

@@ -35,7 +35,7 @@ const SECRET_PATTERNS: Array<{ name: string; pattern: RegExp }> = [
   { name: 'GitHub OAuth Token', pattern: /gho_[a-zA-Z0-9]{36}/g },
 
   // GitLab
-  { name: 'GitLab Personal Access Token', pattern: /glpat-[a-zA-Z0-9_\-]{20}/g },
+  { name: 'GitLab Personal Access Token', pattern: /glpat-[a-zA-Z0-9_-]{20}/g },
 
   // Private Keys
   { name: 'Private Key', pattern: /-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----/g },

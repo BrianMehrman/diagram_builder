@@ -20,7 +20,7 @@ export interface SizeValidationError {
  * For Git repos, this would require calling GitHub/GitLab API
  * For local paths, this checks actual directory size
  */
-export async function validateRepositorySize(sizeBytes: number): Promise<SizeValidationError | null> {
+export function validateRepositorySize(sizeBytes: number): SizeValidationError | null {
   const config = getParserConfig();
   const limitBytes = config.MAX_REPO_SIZE_MB * 1024 * 1024;
 
@@ -128,7 +128,7 @@ export async function validateRepository(dirPath: string, files: string[]): Prom
 
   // Validate repository size
   const dirSize = await calculateDirectorySize(dirPath);
-  const sizeError = await validateRepositorySize(dirSize);
+  const sizeError = validateRepositorySize(dirSize);
   if (sizeError) {
     errors.push(sizeError);
   }

@@ -156,7 +156,6 @@ describe('Storage Cleanup Job', () => {
 
     it('should run cleanup at each interval', async () => {
       const intervalMs = 1000; // 1 second
-      let runCount = 0;
 
       // Mock the cleanup function to track calls
       const interval = scheduleCleanupJob(intervalMs, { dryRun: true });

@@ -275,7 +275,6 @@ describe('Size Validator', () => {
       // Create a file and then test validateRepositorySize directly with large size
       await fs.writeFile(path.join(dir, 'test-file.txt'), 'test content');
 
-      const files = ['test-file.txt'];
 
       // Test with a simulated large repository size (600 MB)
       const largeSize = 600 * 1024 * 1024;
