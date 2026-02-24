@@ -143,7 +143,9 @@ export function calculateAbstractionDepth(
   let maxDepth = 0
 
   while (head < queue.length) {
-    const { id, depth } = queue[head++]
+    const item = queue[head++];
+    if (!item) break;
+    const { id, depth } = item;
 
     const neighbors = adjacency.get(id) || []
     for (const neighbor of neighbors) {

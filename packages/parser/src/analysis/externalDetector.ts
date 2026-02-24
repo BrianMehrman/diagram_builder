@@ -76,7 +76,7 @@ export function extractPackageName(importPath: string): string {
   }
 
   // Regular packages: first path segment
-  return cleaned.split('/')[0]
+  return cleaned.split('/')[0] ?? cleaned
 }
 
 /**
