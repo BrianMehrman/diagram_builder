@@ -9,7 +9,6 @@ import {
   exportToGLTF,
   DEFAULT_GLTF_OPTIONS,
 } from '../gltf.js';
-import type { GLTFExportOptions } from '../gltf.js';
 import type { IVMGraph, IVMNode, IVMEdge } from '../../ivm/types.js';
 import { IVM_SCHEMA_VERSION } from '../../ivm/types.js';
 
@@ -61,7 +60,7 @@ function createTestGraph(
   };
 }
 
-function parseGLTF(content: string): any {
+function parseGLTF(content: string): unknown {
   return JSON.parse(content);
 }
 
@@ -422,7 +421,7 @@ describe('GLTFExporter', () => {
     });
 
     it('should return error for invalid LOD level', () => {
-      const errors = exporter.validateOptions({ lodLevel: 10 as any });
+      const errors = exporter.validateOptions({ lodLevel: 10 });
 
       expect(errors).toContain('lodLevel must be between 0 and 5');
     });

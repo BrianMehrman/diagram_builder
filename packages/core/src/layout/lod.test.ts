@@ -20,7 +20,7 @@ import {
   getCumulativeNodeCounts,
 } from './lod.js';
 import { buildGraph } from '../ivm/builder.js';
-import type { IVMGraph, IVMNode, IVMEdge, LODLevel } from '../ivm/types.js';
+import type { IVMGraph, IVMNode, IVMEdge } from '../ivm/types.js';
 
 describe('LOD System', () => {
   // Helper to create a hierarchical test graph
@@ -191,7 +191,7 @@ describe('LOD System', () => {
       const ancestorMap = buildAncestorMap(graph.nodes);
       const visibleNodeIds = new Set(['file1', 'file2', 'dir', 'pkg', 'repo']);
 
-      const { edges, collapsedEdges } = filterEdgesByLOD(
+      const { edges } = filterEdgesByLOD(
         graph.edges,
         5, // Allow all edges by LOD
         visibleNodeIds,

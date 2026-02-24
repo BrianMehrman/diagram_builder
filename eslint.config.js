@@ -98,6 +98,9 @@ const vitestGlobals = {
 }
 
 export default [
+  {
+    ignores: ['packages/core/src/ivm/builder.d.ts', 'packages/core/src/ivm/types.d.ts'],
+  },
   js.configs.recommended,
   {
     files: ['**/*.ts', '**/*.tsx'],

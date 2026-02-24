@@ -89,7 +89,7 @@ export const DEFAULT_PNG_OPTIONS: Required<Omit<PNGExportOptions, 'renderer'>> &
  * The SVG can be rendered client-side using this data URL.
  */
 export class DataURLRenderer implements PNGRenderer {
-  async render(svg: string, options: PNGRenderOptions): Promise<Buffer> {
+  render(svg: string, options: PNGRenderOptions): Promise<Buffer> {
     // Create an HTML document that renders the SVG
     const html = `<!DOCTYPE html>
 <html>
@@ -119,7 +119,7 @@ ${svg}
       message: 'Use a PNGRenderer implementation (e.g., puppeteer) for actual PNG output',
     };
 
-    return Buffer.from(JSON.stringify(wrapper));
+    return Promise.resolve(Buffer.from(JSON.stringify(wrapper)));
   }
 }
 
@@ -206,7 +206,7 @@ export function createPuppeteerRenderer(puppeteer: PuppeteerModule): PNGRenderer
 }
 
 // Type definitions for puppeteer (to avoid direct dependency)
-interface PuppeteerModule {
+export interface PuppeteerModule {
   launch(options: { headless: boolean; args: string[] }): Promise<PuppeteerBrowser>;
 }
 

@@ -14,16 +14,13 @@ import {
   calculateBounds,
   calculateStats,
   createNode,
-  createNodes,
   createEdge,
-  createEdges,
   buildGraph,
   addNode,
   addEdge,
   removeNode,
   removeEdge,
   updateNode,
-  IVMBuilder,
   createBuilder,
 } from './builder.js';
 import type { NodeInput, EdgeInput, IVMNode } from './types.js';

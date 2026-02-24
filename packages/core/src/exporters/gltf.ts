@@ -459,7 +459,7 @@ function generateOctahedronGeometry(
   const s = size;
 
   // 6 vertices
-  const vertices = [
+  const vertices: [number, number, number][] = [
     [0, s, 0],   // top
     [s, 0, 0],   // right
     [0, 0, s],   // front
@@ -469,7 +469,7 @@ function generateOctahedronGeometry(
   ];
 
   // 8 faces (indices into vertices)
-  const faces = [
+  const faces: [number, number, number][] = [
     [0, 2, 1], [0, 3, 2], [0, 4, 3], [0, 1, 4], // top 4
     [5, 1, 2], [5, 2, 3], [5, 3, 4], [5, 4, 1], // bottom 4
   ];
@@ -479,13 +479,13 @@ function generateOctahedronGeometry(
   const indices: number[] = [];
 
   faces.forEach((face, faceIdx) => {
-    const v0 = vertices[face[0]!]!;
-    const v1 = vertices[face[1]!]!;
-    const v2 = vertices[face[2]!]!;
+    const v0 = vertices[face[0]] ?? [0, 0, 0];
+    const v1 = vertices[face[1]] ?? [0, 0, 0];
+    const v2 = vertices[face[2]] ?? [0, 0, 0];
 
     // Calculate face normal
-    const ax = v1[0]! - v0[0]!, ay = v1[1]! - v0[1]!, az = v1[2]! - v0[2]!;
-    const bx = v2[0]! - v0[0]!, by = v2[1]! - v0[1]!, bz = v2[2]! - v0[2]!;
+    const ax = v1[0] - v0[0], ay = v1[1] - v0[1], az = v1[2] - v0[2];
+    const bx = v2[0] - v0[0], by = v2[1] - v0[1], bz = v2[2] - v0[2];
     const nx = ay * bz - az * by;
     const ny = az * bx - ax * bz;
     const nz = ax * by - ay * bx;
@@ -493,8 +493,8 @@ function generateOctahedronGeometry(
 
     const baseIdx = faceIdx * 3;
     face.forEach((vertIdx) => {
-      const v = vertices[vertIdx]!;
-      positions.push(v[0]!, v[1]!, v[2]!);
+      const v = vertices[vertIdx] ?? [0, 0, 0];
+      positions.push(v[0], v[1], v[2]);
       normals.push(nx / len, ny / len, nz / len);
     });
 
@@ -563,7 +563,7 @@ function encodeBufferAsDataURI(data: ArrayBuffer): string {
   const bytes = new Uint8Array(data);
   let binary = '';
   for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]!);
+    binary += String.fromCharCode(bytes[i] ?? 0);
   }
   return `data:application/octet-stream;base64,${btoa(binary)}`;
 }
@@ -648,44 +648,44 @@ function buildGLTFDocument(
 ): GLTFDocument {
   const { sceneScale, nodeSize, includeEdges, edgeThickness, embedBuffers, metallicFactor, roughnessFactor, useEmissive } = options;
 
+  const sceneNodes: number[] = [];
+  const gltfNodes: GLTFNode[] = [];
+  const gltfMeshes: GLTFMesh[] = [];
+  const gltfMaterials: GLTFMaterial[] = [];
+
   const gltf: GLTFDocument = {
     asset: {
       version: '2.0',
       generator: 'diagram-builder GLTF Exporter',
     },
     scene: 0,
-    scenes: [{ name: graphName, nodes: [] }],
-    nodes: [],
-    meshes: [],
+    scenes: [{ name: graphName, nodes: sceneNodes }],
+    nodes: gltfNodes,
+    meshes: gltfMeshes,
     accessors: [],
     bufferViews: [],
     buffers: [],
-    materials: [],
+    materials: gltfMaterials,
   };
 
   // Collect all buffer data
   const allPositions: number[] = [];
   const allNormals: number[] = [];
   const allIndices: number[] = [];
-  // @ts-expect-error - Reserved for future use
-  let _positionOffset = 0;
-  // @ts-expect-error - Reserved for future use
-  let _normalOffset = 0;
-  // @ts-expect-error - Reserved for future use
-  let _indexOffset = 0;
 
   // Material cache (by color)
   const materialCache = new Map<string, number>();
 
   function getOrCreateMaterial(color: string, highlighted: boolean = false): number {
     const key = `${color}-${highlighted}`;
-    if (materialCache.has(key)) {
-      return materialCache.get(key)!;
+    const cached = materialCache.get(key);
+    if (cached !== undefined) {
+      return cached;
     }
 
     const rgba = hexToRGBA(color);
     const material: GLTFMaterial = {
-      name: `material-${gltf.materials!.length}`,
+      name: `material-${gltfMaterials.length}`,
       pbrMetallicRoughness: {
         baseColorFactor: rgba,
         metallicFactor,
@@ -698,8 +698,8 @@ function buildGLTFDocument(
       material.emissiveFactor = [rgba[0] * 0.3, rgba[1] * 0.3, rgba[2] * 0.3];
     }
 
-    const idx = gltf.materials!.length;
-    gltf.materials!.push(material);
+    const idx = gltfMaterials.length;
+    gltfMaterials.push(material);
     materialCache.set(key, idx);
     return idx;
   }
@@ -718,20 +718,18 @@ function buildGLTFDocument(
     
     // Record buffer offsets
     const posStart = allPositions.length / 3;
-    // @ts-expect-error - Reserved for future use
-    const _idxStart = allIndices.length;
-    
+
     // Add geometry data
     allPositions.push(...geometry.positions);
     allNormals.push(...geometry.normals);
-    
+
     // Offset indices
     const offsetIndices = geometry.indices.map(i => i + posStart);
     allIndices.push(...offsetIndices);
 
     // Create mesh
-    const meshIdx = gltf.meshes!.length;
-    gltf.meshes!.push({
+    const meshIdx = gltfMeshes.length;
+    gltfMeshes.push({
       name: `mesh-${node.id}`,
       primitives: [{
         attributes: {
@@ -744,10 +742,10 @@ function buildGLTFDocument(
     });
 
     // Create GLTF node
-    const gltfNodeIdx = gltf.nodes!.length;
+    const gltfNodeIdx = gltfNodes.length;
     nodeIdToGLTFIdx.set(node.id, gltfNodeIdx);
-    
-    gltf.nodes!.push({
+
+    gltfNodes.push({
       name: node.metadata.label,
       mesh: meshIdx,
       translation: [
@@ -762,7 +760,7 @@ function buildGLTFDocument(
       },
     });
 
-    gltf.scenes![0]!.nodes!.push(gltfNodeIdx);
+    sceneNodes.push(gltfNodeIdx);
   }
 
   // Process edges if enabled
@@ -803,8 +801,8 @@ function buildGLTFDocument(
       allIndices.push(...offsetIndices);
 
       // Create mesh for edge
-      const meshIdx = gltf.meshes!.length;
-      gltf.meshes!.push({
+      const meshIdx = gltfMeshes.length;
+      gltfMeshes.push({
         name: `edge-${edge.id}`,
         primitives: [{
           attributes: {
@@ -817,8 +815,8 @@ function buildGLTFDocument(
       });
 
       // Create GLTF node for edge
-      const gltfNodeIdx = gltf.nodes!.length;
-      gltf.nodes!.push({
+      const gltfNodeIdx = gltfNodes.length;
+      gltfNodes.push({
         name: `edge-${edge.source}-${edge.target}`,
         mesh: meshIdx,
         translation: edgeGeometry.translation,
@@ -831,7 +829,7 @@ function buildGLTFDocument(
         },
       });
 
-      gltf.scenes![0]!.nodes!.push(gltfNodeIdx);
+      sceneNodes.push(gltfNodeIdx);
     }
   }
 
@@ -870,12 +868,15 @@ function buildGLTFDocument(
   let minX = Infinity, minY = Infinity, minZ = Infinity;
   let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
   for (let i = 0; i < allPositions.length; i += 3) {
-    minX = Math.min(minX, allPositions[i]!);
-    minY = Math.min(minY, allPositions[i + 1]!);
-    minZ = Math.min(minZ, allPositions[i + 2]!);
-    maxX = Math.max(maxX, allPositions[i]!);
-    maxY = Math.max(maxY, allPositions[i + 1]!);
-    maxZ = Math.max(maxZ, allPositions[i + 2]!);
+    const px = allPositions[i] ?? 0;
+    const py = allPositions[i + 1] ?? 0;
+    const pz = allPositions[i + 2] ?? 0;
+    minX = Math.min(minX, px);
+    minY = Math.min(minY, py);
+    minZ = Math.min(minZ, pz);
+    maxX = Math.max(maxX, px);
+    maxY = Math.max(maxY, py);
+    maxZ = Math.max(maxZ, pz);
   }
 
   // Accessors
@@ -903,7 +904,7 @@ function buildGLTFDocument(
   ];
 
   // Update mesh primitives with accessor indices
-  for (const mesh of gltf.meshes!) {
+  for (const mesh of gltfMeshes) {
     for (const primitive of mesh.primitives) {
       primitive.attributes.POSITION = 0;
       primitive.attributes.NORMAL = 1;

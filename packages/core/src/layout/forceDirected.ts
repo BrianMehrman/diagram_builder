@@ -57,17 +57,6 @@ function createLayoutEdge(edge: IVMEdge): LayoutEdge {
 // =============================================================================
 
 /**
- * Calculates the distance between two positions
- */
-// @ts-expect-error - Reserved for future use
-function _distance(p1: Position3D, p2: Position3D): number {
-  const dx = p2.x - p1.x;
-  const dy = p2.y - p1.y;
-  const dz = p2.z - p1.z;
-  return Math.sqrt(dx * dx + dy * dy + dz * dz);
-}
-
-/**
  * Calculates repulsion force between two nodes (Coulomb's law)
  * F = k * q1 * q2 / r^2
  */

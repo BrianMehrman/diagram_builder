@@ -9,7 +9,6 @@ import {
   exportToDrawio,
   DEFAULT_DRAWIO_OPTIONS,
 } from '../drawio.js';
-import type { DrawioExportOptions } from '../drawio.js';
 import type { IVMGraph, IVMNode, IVMEdge } from '../../ivm/types.js';
 import { IVM_SCHEMA_VERSION } from '../../ivm/types.js';
 
@@ -397,7 +396,7 @@ describe('DrawioExporter', () => {
     });
 
     it('should return error for invalid LOD level', () => {
-      const errors = exporter.validateOptions({ lodLevel: 10 as any });
+      const errors = exporter.validateOptions({ lodLevel: 10 });
 
       expect(errors).toContain('lodLevel must be between 0 and 5');
     });
@@ -529,7 +528,7 @@ describe('Draw.io Integration Tests', () => {
       'namespace', 'package', 'repository'
     ] as const;
 
-    const nodes = nodeTypes.map((type, i) => ({
+    const nodes = nodeTypes.map((type) => ({
       id: `node_${type}`,
       type,
       metadata: { label: `${type} node` },
@@ -557,7 +556,7 @@ describe('Draw.io Integration Tests', () => {
       { id: 'target', type: 'class' as const, metadata: { label: 'Target' } },
     ];
 
-    const edges = edgeTypes.map((type, i) => ({
+    const edges = edgeTypes.map((type) => ({
       id: `edge_${type}`,
       source: 'source',
       target: 'target',

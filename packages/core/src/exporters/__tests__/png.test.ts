@@ -15,6 +15,7 @@ import {
   PNGRenderOptions,
   DataURLRenderer,
   createPuppeteerRenderer,
+  type PuppeteerModule,
 } from '../png.js';
 
 // =============================================================================
@@ -397,7 +398,7 @@ describe('createPuppeteerRenderer', () => {
       launch: vi.fn(),
     };
 
-    const renderer = createPuppeteerRenderer(mockPuppeteer as any);
+    const renderer = createPuppeteerRenderer(mockPuppeteer as unknown as PuppeteerModule);
 
     expect(renderer).toHaveProperty('render');
     expect(typeof renderer.render).toBe('function');
@@ -408,7 +409,7 @@ describe('createPuppeteerRenderer', () => {
       launch: vi.fn(),
     };
 
-    const renderer = createPuppeteerRenderer(mockPuppeteer as any);
+    const renderer = createPuppeteerRenderer(mockPuppeteer as unknown as PuppeteerModule);
 
     expect(renderer).toHaveProperty('cleanup');
     expect(typeof renderer.cleanup).toBe('function');
@@ -431,7 +432,7 @@ describe('createPuppeteerRenderer', () => {
       launch: vi.fn().mockResolvedValue(mockBrowser),
     };
 
-    const renderer = createPuppeteerRenderer(mockPuppeteer as any);
+    const renderer = createPuppeteerRenderer(mockPuppeteer as unknown as PuppeteerModule);
     await renderer.render('<svg></svg>', {
       width: 100,
       height: 100,
@@ -464,7 +465,7 @@ describe('createPuppeteerRenderer', () => {
       launch: vi.fn().mockResolvedValue(mockBrowser),
     };
 
-    const renderer = createPuppeteerRenderer(mockPuppeteer as any);
+    const renderer = createPuppeteerRenderer(mockPuppeteer as unknown as PuppeteerModule);
     await renderer.render('<svg></svg>', { width: 100, height: 100, deviceScaleFactor: 1, transparent: false });
     await renderer.render('<svg></svg>', { width: 100, height: 100, deviceScaleFactor: 1, transparent: false });
 
@@ -489,7 +490,7 @@ describe('createPuppeteerRenderer', () => {
       launch: vi.fn().mockResolvedValue(mockBrowser),
     };
 
-    const renderer = createPuppeteerRenderer(mockPuppeteer as any);
+    const renderer = createPuppeteerRenderer(mockPuppeteer as unknown as PuppeteerModule);
     await renderer.render('<svg></svg>', { width: 100, height: 100, deviceScaleFactor: 1, transparent: false });
     await renderer.cleanup!();
 
@@ -513,7 +514,7 @@ describe('createPuppeteerRenderer', () => {
       launch: vi.fn().mockResolvedValue(mockBrowser),
     };
 
-    const renderer = createPuppeteerRenderer(mockPuppeteer as any);
+    const renderer = createPuppeteerRenderer(mockPuppeteer as unknown as PuppeteerModule);
     await renderer.render('<svg></svg>', {
       width: 1920,
       height: 1080,
@@ -545,7 +546,7 @@ describe('createPuppeteerRenderer', () => {
       launch: vi.fn().mockResolvedValue(mockBrowser),
     };
 
-    const renderer = createPuppeteerRenderer(mockPuppeteer as any);
+    const renderer = createPuppeteerRenderer(mockPuppeteer as unknown as PuppeteerModule);
     await renderer.render('<svg></svg>', {
       width: 100,
       height: 100,

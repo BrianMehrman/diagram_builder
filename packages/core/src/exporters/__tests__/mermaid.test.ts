@@ -9,7 +9,7 @@ import {
   exportToMermaid,
   DEFAULT_MERMAID_OPTIONS,
 } from '../mermaid.js';
-import type { MermaidExportOptions } from '../mermaid.js';
+import type { MermaidDiagramType, FlowchartDirection } from '../mermaid.js';
 import type { IVMGraph, IVMNode, IVMEdge } from '../../ivm/types.js';
 import { IVM_SCHEMA_VERSION } from '../../ivm/types.js';
 
@@ -374,19 +374,19 @@ describe('MermaidExporter', () => {
     });
 
     it('should return error for invalid LOD level', () => {
-      const errors = exporter.validateOptions({ lodLevel: 10 as any });
+      const errors = exporter.validateOptions({ lodLevel: 10 });
 
       expect(errors).toContain('lodLevel must be between 0 and 5');
     });
 
     it('should return error for invalid diagram type', () => {
-      const errors = exporter.validateOptions({ diagramType: 'invalid' as any });
+      const errors = exporter.validateOptions({ diagramType: 'invalid' as unknown as MermaidDiagramType });
 
       expect(errors.some(e => e.includes('diagramType'))).toBe(true);
     });
 
     it('should return error for invalid direction', () => {
-      const errors = exporter.validateOptions({ direction: 'XX' as any });
+      const errors = exporter.validateOptions({ direction: 'XX' as unknown as FlowchartDirection });
 
       expect(errors.some(e => e.includes('direction'))).toBe(true);
     });
@@ -554,7 +554,7 @@ describe('Mermaid Integration Tests', () => {
       'namespace', 'package', 'repository'
     ] as const;
 
-    const nodes = nodeTypes.map((type, i) => ({
+    const nodes = nodeTypes.map((type) => ({
       id: `node_${type}`,
       type,
       metadata: { label: `${type} node` },
@@ -581,7 +581,7 @@ describe('Mermaid Integration Tests', () => {
       { id: 'target', type: 'class' as const, metadata: { label: 'Target' } },
     ];
 
-    const edges = edgeTypes.map((type, i) => ({
+    const edges = edgeTypes.map((type) => ({
       id: `edge_${type}`,
       source: 'source',
       target: 'target',

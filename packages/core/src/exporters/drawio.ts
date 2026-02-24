@@ -276,10 +276,12 @@ function calculatePositions(
   const nodesByLod = new Map<number, IVMNode[]>();
   for (const node of nodes) {
     const lod = node.lod;
-    if (!nodesByLod.has(lod)) {
-      nodesByLod.set(lod, []);
+    const existing = nodesByLod.get(lod);
+    if (existing) {
+      existing.push(node);
+    } else {
+      nodesByLod.set(lod, [node]);
     }
-    nodesByLod.get(lod)!.push(node);
   }
 
   // Calculate positions row by row
@@ -287,7 +289,7 @@ function calculatePositions(
   let y = nodeSpacing;
 
   for (const lod of sortedLods) {
-    const lodNodes = nodesByLod.get(lod)!;
+    const lodNodes = nodesByLod.get(lod) ?? [];
     const totalWidth = lodNodes.length * nodeWidth + (lodNodes.length - 1) * nodeSpacing;
     let x = Math.max(nodeSpacing, (pageWidth - totalWidth) / 2);
 

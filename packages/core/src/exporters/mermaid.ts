@@ -157,29 +157,6 @@ const EDGE_TYPE_TO_CLASS_RELATION: Record<EdgeType, string> = {
 };
 
 // =============================================================================
-// C4 Diagram Mapping
-// =============================================================================
-
-/**
- * Maps IVM node types to C4 element types
- */
-const NODE_TYPE_TO_C4: Record<NodeType, string> = {
-  repository: 'System_Ext',
-  package: 'Container',
-  namespace: 'Container',
-  directory: 'Container',
-  module: 'Container',
-  file: 'Component',
-  class: 'Component',
-  interface: 'Component',
-  function: 'Component',
-  method: 'Component',
-  variable: 'Component',
-  type: 'Component',
-  enum: 'Component',
-};
-
-// =============================================================================
 // Helper Functions
 // =============================================================================
 
@@ -217,14 +194,6 @@ function getNodeColor(type: NodeType, colors: ColorScheme): string {
   return colors.nodeColors[type] ?? '#FFFFFF';
 }
 
-/**
- * Gets color for an edge type
- */
-// @ts-expect-error - Reserved for future use
-function _getEdgeColor(type: EdgeType, colors: ColorScheme): string {
-  return colors.edgeColors[type] ?? '#666666';
-}
-
 // =============================================================================
 // Flowchart Generator
 // =============================================================================
@@ -247,10 +216,12 @@ function generateFlowchart(
   const nodesByParent = new Map<string | undefined, IVMNode[]>();
   for (const node of graph.nodes) {
     const parentId = node.parentId;
-    if (!nodesByParent.has(parentId)) {
-      nodesByParent.set(parentId, []);
+    const existing = nodesByParent.get(parentId);
+    if (existing) {
+      existing.push(node);
+    } else {
+      nodesByParent.set(parentId, [node]);
     }
-    nodesByParent.get(parentId)!.push(node);
   }
 
   // Track rendered node IDs
@@ -444,9 +415,7 @@ function generateC4Diagram(
   options: Required<MermaidExportOptions>
 ): string[] {
   const lines: string[] = [];
-  const { diagramType, styling } = options;
-  // @ts-expect-error - Reserved for future use
-  const _colors = styling.colors ?? DEFAULT_COLOR_SCHEME;
+  const { diagramType } = options;
 
   // Diagram declaration based on C4 level
   switch (diagramType) {
@@ -473,8 +442,6 @@ function generateC4Diagram(
     const nodeId = sanitizeId(node.id);
     const label = escapeLabel(node.metadata.label);
     const description = (node.metadata.properties?.['description'] as string) ?? '';
-    // @ts-expect-error - Reserved for future use
-    const _c4Type = NODE_TYPE_TO_C4[node.type];
 
     switch (diagramType) {
       case 'c4Context':
