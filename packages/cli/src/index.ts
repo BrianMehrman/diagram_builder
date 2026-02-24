@@ -17,10 +17,10 @@ program
   .command('parse <repository>')
   .description('Parse a repository and generate a code diagram')
   .option('-o, --output <path>', 'Output file path')
-  .action((repository, options) => {
-    console.log(`Parsing repository: ${repository}`);
+  .action((repository: string, options: { output?: string }) => {
+    console.warn(`Parsing repository: ${repository}`);
     if (options.output) {
-      console.log(`Output will be saved to: ${options.output}`);
+      console.warn(`Output will be saved to: ${options.output}`);
     }
     // TODO: Implement parsing logic
   });
