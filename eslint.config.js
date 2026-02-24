@@ -2,6 +2,101 @@ import js from '@eslint/js'
 import tsPlugin from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
 
+/** Globals available in all browser environments */
+const browserGlobals = {
+  // DOM
+  document: 'readonly',
+  window: 'readonly',
+  navigator: 'readonly',
+  location: 'readonly',
+  history: 'readonly',
+  screen: 'readonly',
+  alert: 'readonly',
+  confirm: 'readonly',
+  prompt: 'readonly',
+  // DOM element types
+  HTMLElement: 'readonly',
+  HTMLInputElement: 'readonly',
+  HTMLButtonElement: 'readonly',
+  HTMLDivElement: 'readonly',
+  HTMLCanvasElement: 'readonly',
+  HTMLFormElement: 'readonly',
+  HTMLSelectElement: 'readonly',
+  HTMLTextAreaElement: 'readonly',
+  // Events
+  Event: 'readonly',
+  CustomEvent: 'readonly',
+  KeyboardEvent: 'readonly',
+  MouseEvent: 'readonly',
+  PointerEvent: 'readonly',
+  InputEvent: 'readonly',
+  FocusEvent: 'readonly',
+  EventTarget: 'readonly',
+  FrameRequestCallback: 'readonly',
+  // Timers / animation
+  requestAnimationFrame: 'readonly',
+  cancelAnimationFrame: 'readonly',
+  // Performance
+  performance: 'readonly',
+  // Storage
+  localStorage: 'readonly',
+  sessionStorage: 'readonly',
+  Storage: 'readonly',
+  // Fetch / network
+  fetch: 'readonly',
+  Request: 'readonly',
+  Response: 'readonly',
+  Headers: 'readonly',
+  // Encoding
+  btoa: 'readonly',
+  atob: 'readonly',
+  // URL
+  URL: 'readonly',
+  URLSearchParams: 'readonly',
+  FormData: 'readonly',
+  Blob: 'readonly',
+  File: 'readonly',
+  FileReader: 'readonly',
+  // Workers / observers
+  MutationObserver: 'readonly',
+  ResizeObserver: 'readonly',
+  IntersectionObserver: 'readonly',
+}
+
+/** Globals available only in Node.js environments */
+const nodeGlobals = {
+  process: 'readonly',
+  console: 'readonly',
+  Buffer: 'readonly',
+  setTimeout: 'readonly',
+  setInterval: 'readonly',
+  setImmediate: 'readonly',
+  clearTimeout: 'readonly',
+  clearInterval: 'readonly',
+  clearImmediate: 'readonly',
+  __dirname: 'readonly',
+  __filename: 'readonly',
+  NodeJS: 'readonly',
+  module: 'readonly',
+  require: 'readonly',
+  exports: 'readonly',
+  global: 'readonly',
+}
+
+/** Vitest globals injected by the test runner */
+const vitestGlobals = {
+  describe: 'readonly',
+  it: 'readonly',
+  test: 'readonly',
+  expect: 'readonly',
+  vi: 'readonly',
+  beforeEach: 'readonly',
+  afterEach: 'readonly',
+  beforeAll: 'readonly',
+  afterAll: 'readonly',
+  suite: 'readonly',
+}
+
 export default [
   js.configs.recommended,
   {
@@ -15,19 +110,8 @@ export default [
         project: ['./tsconfig.json', './packages/*/tsconfig.json'],
       },
       globals: {
-        // Node.js globals
-        process: 'readonly',
-        console: 'readonly',
-        Buffer: 'readonly',
-        setTimeout: 'readonly',
-        setInterval: 'readonly',
-        setImmediate: 'readonly',
-        clearTimeout: 'readonly',
-        clearInterval: 'readonly',
-        clearImmediate: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
-        NodeJS: 'readonly',
+        ...nodeGlobals,
+        ...browserGlobals,
       },
     },
     plugins: {
@@ -59,13 +143,9 @@ export default [
         sourceType: 'module',
       },
       globals: {
-        // Node.js globals for tests
-        process: 'readonly',
-        console: 'readonly',
-        Buffer: 'readonly',
-        setTimeout: 'readonly',
-        setInterval: 'readonly',
-        NodeJS: 'readonly',
+        ...nodeGlobals,
+        ...browserGlobals,
+        ...vitestGlobals,
       },
     },
     plugins: {
