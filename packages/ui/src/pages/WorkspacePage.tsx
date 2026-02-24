@@ -385,7 +385,7 @@ export function WorkspacePage() {
         {/* Left Side Panel */}
         <LeftPanel
           workspaceId={workspace.id}
-          selectedCodebaseId={selectedCodebaseId || undefined}
+          {...(selectedCodebaseId ? { selectedCodebaseId } : {})}
           onCodebaseSelected={handleCodebaseSelected}
           refreshTrigger={listRefreshTrigger}
           onImportSuccess={() => loadWorkspace(workspace.id)}

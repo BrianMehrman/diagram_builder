@@ -60,6 +60,7 @@ export class CityLayoutEngine implements LayoutEngine {
 
       for (let i = 0; i < sorted.length; i++) {
         const node = sorted[i];
+        if (!node) continue;
         const col = i % gridSize;
         const row = Math.floor(i / gridSize);
         const depth = node.depth ?? 0;
@@ -83,7 +84,7 @@ export class CityLayoutEngine implements LayoutEngine {
 
       for (let i = 0; i < sorted.length; i++) {
         const angle = i * angleStep;
-        positions.set(sorted[i].id, {
+        positions.set(sorted[i]!.id, {
           x: Math.cos(angle) * externalRingRadius,
           y: 0,
           z: Math.sin(angle) * externalRingRadius,

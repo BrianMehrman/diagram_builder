@@ -162,7 +162,7 @@ export class BuildingLayoutEngine implements LayoutEngine {
       const col = i % gridSize;
       const row = Math.floor(i / gridSize);
 
-      positions.set(nodes[i].id, {
+      positions.set(nodes[i]!.id, {
         x: origin.x + col * spacing + roomSize / 2,
         y: origin.y + floorY + roomSize / 2,
         z: origin.z + row * spacing + roomSize / 2,

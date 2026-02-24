@@ -73,13 +73,18 @@ export function CellView({ graph, focusedNodeId }: CellViewProps) {
       })}
 
       {/* Connections between organelles */}
-      {subgraph.edges.map((edge) => (
-        <OrganelleConnection
-          key={edge.id}
-          sourcePos={layout.positions.get(edge.source)}
-          targetPos={layout.positions.get(edge.target)}
-        />
-      ))}
+      {subgraph.edges.map((edge) => {
+        const sourcePos = layout.positions.get(edge.source);
+        const targetPos = layout.positions.get(edge.target);
+        if (!sourcePos || !targetPos) return null;
+        return (
+          <OrganelleConnection
+            key={edge.id}
+            sourcePos={sourcePos}
+            targetPos={targetPos}
+          />
+        );
+      })}
     </group>
   );
 }

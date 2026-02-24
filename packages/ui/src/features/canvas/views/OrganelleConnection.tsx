@@ -29,9 +29,7 @@ export function OrganelleConnection({
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
-          array={points}
-          count={2}
-          itemSize={3}
+          args={[points, 3]}
         />
       </bufferGeometry>
       <lineBasicMaterial

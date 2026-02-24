@@ -41,7 +41,7 @@ export interface RoomPlacement {
 export function calculateRoomLayout(
   methodCount: number,
   buildingWidth: number,
-  buildingHeight: number,
+  _buildingHeight: number,
   buildingDepth: number,
 ): RoomPlacement[] {
   if (methodCount <= 0) return [];
