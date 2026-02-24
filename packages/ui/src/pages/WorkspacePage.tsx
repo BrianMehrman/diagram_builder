@@ -6,7 +6,14 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'react-router'
-import { Canvas3D, EmptyState, CodebaseStatusIndicator, ErrorNotification, SuccessNotification, NodeDetails } from '../features/canvas'
+import {
+  Canvas3D,
+  EmptyState,
+  CodebaseStatusIndicator,
+  ErrorNotification,
+  SuccessNotification,
+  NodeDetails,
+} from '../features/canvas'
 import { useCanvasStore } from '../features/canvas/store'
 import { MiniMap } from '../features/minimap'
 import { Navigation, SearchBarModal, useCameraFlight } from '../features/navigation'
@@ -23,7 +30,9 @@ export function WorkspacePage() {
   const [graphData, setGraphData] = useState<Graph | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [processingStatus, setProcessingStatus] = useState<'pending' | 'processing' | 'completed' | 'failed' | null>(null)
+  const [processingStatus, setProcessingStatus] = useState<
+    'pending' | 'processing' | 'completed' | 'failed' | null
+  >(null)
   const [importError, setImportError] = useState<string | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
   const [selectedCodebaseId, setSelectedCodebaseId] = useState<string | null>(null)
@@ -56,14 +65,17 @@ export function WorkspacePage() {
   })
 
   // Handle node selection from search modal
-  const handleSearchNodeSelect = useCallback((nodeId: string, position?: Position3D) => {
-    // Prefer layout positions (from CityView/BuildingView), fall back to graph node position
-    const layoutPos = useCanvasStore.getState().layoutPositions.get(nodeId)
-    const targetPos = layoutPos ?? position
-    if (targetPos) {
-      flyToNode(nodeId, targetPos)
-    }
-  }, [flyToNode])
+  const handleSearchNodeSelect = useCallback(
+    (nodeId: string, position?: Position3D) => {
+      // Prefer layout positions (from CityView/BuildingView), fall back to graph node position
+      const layoutPos = useCanvasStore.getState().layoutPositions.get(nodeId)
+      const targetPos = layoutPos ?? position
+      if (targetPos) {
+        flyToNode(nodeId, targetPos)
+      }
+    },
+    [flyToNode]
+  )
 
   // Watch for pending fly-to requests from building double-clicks
   const pendingFlyToNodeId = useCanvasStore((s) => s.pendingFlyToNodeId)
@@ -90,7 +102,7 @@ export function WorkspacePage() {
       hasData: !!graphData,
       nodeCount: graphData?.nodes?.length || 0,
       actualNodes: graphData?.nodes || 'undefined',
-      graphDataKeys: graphData ? Object.keys(graphData) : 'null'
+      graphDataKeys: graphData ? Object.keys(graphData) : 'null',
     })
   }, [graphData])
 
@@ -99,7 +111,7 @@ export function WorkspacePage() {
     if (pendingCameraFlight && graphData?.nodes && graphData.nodes.length > 0) {
       // Find the root node - use the first file node as the entry point
       // Files are the top-level containers in the graph structure
-      const rootNode = graphData.nodes.find(node => node.type === 'file') || graphData.nodes[0]
+      const rootNode = graphData.nodes.find((node) => node.type === 'file') || graphData.nodes[0]
 
       if (rootNode) {
         console.log('[WorkspacePage] Flying camera to root node after import:', rootNode.id)
@@ -190,10 +202,12 @@ export function WorkspacePage() {
       // Get codebases for this workspace
       console.log('[WorkspacePage] Fetching codebases list...')
       const codebasesList = await codebases.list(workspaceId)
-      console.log('[WorkspacePage] Codebases response:', { count: codebasesList.codebases?.length || 0 })
+      console.log('[WorkspacePage] Codebases response:', {
+        count: codebasesList.codebases?.length || 0,
+      })
 
       // Trigger CodebaseList refresh
-      setListRefreshTrigger(prev => prev + 1)
+      setListRefreshTrigger((prev) => prev + 1)
 
       // Find the codebase to load
       let completedCodebase
@@ -215,7 +229,7 @@ export function WorkspacePage() {
         console.log('[WorkspacePage] Codebase details:', {
           id: completedCodebase.codebaseId,
           repositoryId: completedCodebase.repositoryId,
-          source: completedCodebase.source
+          source: completedCodebase.source,
         })
         // Update selected codebase ID
         setSelectedCodebaseId(completedCodebase.codebaseId)
@@ -227,9 +241,12 @@ export function WorkspacePage() {
         const graphResponse = await graph.getFullGraph(completedCodebase.repositoryId)
         console.log('[WorkspacePage] Graph loaded:', {
           nodes: graphResponse.nodes?.length || 0,
-          edges: graphResponse.edges?.length || 0
+          edges: graphResponse.edges?.length || 0,
         })
-        console.log('[WorkspacePage] Calling setGraphData with:', graphResponse ? 'valid data' : 'null')
+        console.log(
+          '[WorkspacePage] Calling setGraphData with:',
+          graphResponse ? 'valid data' : 'null'
+        )
         setGraphData(graphResponse)
         console.log('[WorkspacePage] setGraphData called')
         setProcessingStatus('completed')
@@ -239,9 +256,7 @@ export function WorkspacePage() {
         console.log('[WorkspacePage] All state updates queued')
       } else {
         // Check for failed codebases
-        const failedCodebase = codebasesList.codebases?.find(
-          (cb: any) => cb.status === 'failed'
-        )
+        const failedCodebase = codebasesList.codebases?.find((cb: any) => cb.status === 'failed')
 
         if (failedCodebase) {
           setProcessingStatus('failed')
@@ -273,9 +288,16 @@ export function WorkspacePage() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-900" role="status" aria-label="Loading workspace">
+      <div
+        className="h-screen flex items-center justify-center bg-gray-900"
+        role="status"
+        aria-label="Loading workspace"
+      >
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white" aria-hidden="true"></div>
+          <div
+            className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white"
+            aria-hidden="true"
+          ></div>
           <p className="mt-4 text-white">Loading workspace...</p>
         </div>
       </div>
@@ -351,18 +373,14 @@ export function WorkspacePage() {
       {/* Main Content */}
       <main id="main-content" className="flex-1 relative overflow-hidden" role="main">
         {/* 3D Canvas or Empty State */}
-        {graphData ? (
-          <Canvas3D graph={graphData} />
-        ) : (
-          <EmptyState onImportClick={openLeftPanel} />
-        )}
+        {graphData ? <Canvas3D graph={graphData} /> : <EmptyState onImportClick={openLeftPanel} />}
 
         {/* Status/Notification Region */}
         <div role="status" aria-live="polite" aria-atomic="true">
           {/* Processing Status Indicator */}
-          {processingStatus && processingStatus !== 'completed' && processingStatus !== 'failed' && (
-            <CodebaseStatusIndicator status={processingStatus} />
-          )}
+          {processingStatus &&
+            processingStatus !== 'completed' &&
+            processingStatus !== 'failed' && <CodebaseStatusIndicator status={processingStatus} />}
         </div>
 
         {/* Error Notification */}
@@ -402,11 +420,12 @@ export function WorkspacePage() {
         <NodeDetails nodes={graphData?.nodes || []} className="z-20" />
 
         {/* Navigation Panel (Top Center) */}
-        <nav id="search" className="absolute top-4 left-1/2 -translate-x-1/2 z-20 max-w-md" aria-label="Graph navigation">
-          <Navigation
-            nodes={graphData?.nodes || []}
-            onNodeSelect={handleSearchNodeSelect}
-          />
+        <nav
+          id="search"
+          className="absolute top-4 left-1/2 -translate-x-1/2 z-20 max-w-md"
+          aria-label="Graph navigation"
+        >
+          <Navigation nodes={graphData?.nodes || []} onNodeSelect={handleSearchNodeSelect} />
         </nav>
 
         {/* Collapsible MiniMap (Bottom Right) */}
@@ -452,10 +471,7 @@ export function WorkspacePage() {
       </main>
 
       {/* Global Search Modal (⌘K) */}
-      <SearchBarModal
-        nodes={graphData?.nodes || []}
-        onNodeSelect={handleSearchNodeSelect}
-      />
+      <SearchBarModal nodes={graphData?.nodes || []} onNodeSelect={handleSearchNodeSelect} />
     </div>
   )
 }

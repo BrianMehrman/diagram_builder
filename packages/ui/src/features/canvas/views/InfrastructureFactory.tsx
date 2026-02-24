@@ -10,6 +10,7 @@
  * abstraction plan (Task 9).
  */
 
+import React from 'react'
 import {
   PowerStation,
   WaterTower,
@@ -17,8 +18,8 @@ import {
   Harbor,
   Airport,
   CityGate,
-} from '../components/infrastructure';
-import type { GraphNode, Position3D } from '../../../shared/types';
+} from '../components/infrastructure'
+import type { GraphNode, Position3D } from '../../../shared/types'
 
 /**
  * Renders the appropriate infrastructure landmark for an external node
@@ -29,27 +30,27 @@ import type { GraphNode, Position3D } from '../../../shared/types';
  */
 export function createInfrastructureElement(
   node: GraphNode,
-  position: Position3D,
+  position: Position3D
 ): React.JSX.Element | null {
-  const infraType = node.metadata?.infrastructureType as string | undefined;
-  if (!infraType || infraType === 'general') return null;
+  const infraType = node.metadata?.infrastructureType as string | undefined
+  if (!infraType || infraType === 'general') return null
 
-  const props = { key: node.id, node, position };
+  const props = { key: node.id, node, position }
   switch (infraType) {
     case 'database':
-      return <Harbor {...props} />;
+      return <Harbor {...props} />
     case 'api':
-      return <Airport {...props} />;
+      return <Airport {...props} />
     case 'queue':
-      return <PowerStation {...props} />;
+      return <PowerStation {...props} />
     case 'cache':
-      return <WaterTower {...props} />;
+      return <WaterTower {...props} />
     case 'auth':
-      return <CityGate {...props} />;
+      return <CityGate {...props} />
     case 'logging':
     case 'filesystem':
-      return <MunicipalBuilding {...props} />;
+      return <MunicipalBuilding {...props} />
     default:
-      return null;
+      return null
   }
 }

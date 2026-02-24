@@ -11,53 +11,53 @@
  * <primitive> for THREE.Line to avoid SVG conflict).
  */
 
-import { useMemo, useState } from 'react';
-import * as THREE from 'three';
-import { Text } from '@react-three/drei';
-import { useCanvasStore } from '../store';
-import type { BlockLayout } from '../layout/types';
+import { useMemo, useState } from 'react'
+import * as THREE from 'three'
+import { Text } from '@react-three/drei'
+import { useCanvasStore } from '../store'
+import type { BlockLayout } from '../layout/types'
 
 export interface FileBlockProps {
-  block: BlockLayout;
-  districtColor: string;
-  lodLevel: number;
+  block: BlockLayout
+  districtColor: string
+  lodLevel: number
 }
 
 export function FileBlock({ block, districtColor, lodLevel }: FileBlockProps) {
-  const { position, footprint, isMerged, fileId } = block;
-  const { width, depth } = footprint;
+  const { position, footprint, isMerged, fileId } = block
+  const { width, depth } = footprint
 
-  const [hovered, setHovered] = useState(false);
-  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
-  const selectNode = useCanvasStore((s) => s.selectNode);
-  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
+  const [hovered, setHovered] = useState(false)
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
+  const selectNode = useCanvasStore((s) => s.selectNode)
+  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode)
 
-  const isSelected = selectedNodeId === fileId;
+  const isSelected = selectedNodeId === fileId
 
   const handleClick = (e: { stopPropagation: () => void }) => {
-    e.stopPropagation();
-    selectNode(fileId);
-  };
+    e.stopPropagation()
+    selectNode(fileId)
+  }
 
   const handlePointerOver = () => {
-    setHovered(true);
-    setHoveredNode(fileId);
-    document.body.style.cursor = 'pointer';
-  };
+    setHovered(true)
+    setHoveredNode(fileId)
+    document.body.style.cursor = 'pointer'
+  }
 
   const handlePointerOut = () => {
-    setHovered(false);
-    setHoveredNode(null);
-    document.body.style.cursor = 'auto';
-  };
+    setHovered(false)
+    setHoveredNode(null)
+    document.body.style.cursor = 'auto'
+  }
 
   // Boundary line geometry — rectangle from 5 vertices (4 corners + close)
   const boundaryGeometry = useMemo(() => {
-    if (isMerged) return null;
+    if (isMerged) return null
 
-    const hw = width / 2;
-    const hd = depth / 2;
-    const y = 0.02; // slightly above ground plane to avoid z-fighting
+    const hw = width / 2
+    const hd = depth / 2
+    const y = 0.02 // slightly above ground plane to avoid z-fighting
 
     const points = [
       new THREE.Vector3(-hw, y, -hd),
@@ -65,13 +65,13 @@ export function FileBlock({ block, districtColor, lodLevel }: FileBlockProps) {
       new THREE.Vector3(hw, y, hd),
       new THREE.Vector3(-hw, y, hd),
       new THREE.Vector3(-hw, y, -hd), // close the loop
-    ];
+    ]
 
-    return new THREE.BufferGeometry().setFromPoints(points);
-  }, [width, depth, isMerged]);
+    return new THREE.BufferGeometry().setFromPoints(points)
+  }, [width, depth, isMerged])
 
   // Extract filename from full path
-  const fileName = fileId.split('/').pop() ?? fileId;
+  const fileName = fileId.split('/').pop() ?? fileId
 
   return (
     <group position={[position.x, position.y, position.z]} name={`file-block-${fileId}`}>
@@ -103,7 +103,7 @@ export function FileBlock({ block, districtColor, lodLevel }: FileBlockProps) {
                 color: districtColor,
                 transparent: true,
                 opacity: 0.3,
-              }),
+              })
             )
           }
         />
@@ -125,5 +125,5 @@ export function FileBlock({ block, districtColor, lodLevel }: FileBlockProps) {
         </Text>
       )}
     </group>
-  );
+  )
 }

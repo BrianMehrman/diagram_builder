@@ -5,48 +5,48 @@
  * Uses wireframe material to visually distinguish from internal buildings.
  */
 
-import { useState } from 'react';
-import { Text } from '@react-three/drei';
-import { useCanvasStore } from '../store';
-import { useTransitMapStyle } from '../hooks/useTransitMapStyle';
-import type { GraphNode, Position3D } from '../../../shared/types';
-import { EXTERNAL_COLOR } from './colorUtils';
+import { useState } from 'react'
+import { Text } from '@react-three/drei'
+import { useCanvasStore } from '../store'
+import { useTransitMapStyle } from '../hooks/useTransitMapStyle'
+import type { GraphNode, Position3D } from '../../../shared/types'
+import { EXTERNAL_COLOR } from './colorUtils'
 
 interface ExternalBuildingProps {
-  node: GraphNode;
-  position: Position3D;
+  node: GraphNode
+  position: Position3D
 }
 
-const EXTERNAL_SIZE = 1.2;
-const EXTERNAL_HEIGHT = 2;
+const EXTERNAL_SIZE = 1.2
+const EXTERNAL_HEIGHT = 2
 
 export function ExternalBuilding({ node, position }: ExternalBuildingProps) {
-  const [hovered, setHovered] = useState(false);
-  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
-  const selectNode = useCanvasStore((s) => s.selectNode);
-  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
-  const transitStyle = useTransitMapStyle();
+  const [hovered, setHovered] = useState(false)
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
+  const selectNode = useCanvasStore((s) => s.selectNode)
+  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode)
+  const transitStyle = useTransitMapStyle()
 
-  const isSelected = selectedNodeId === node.id;
-  const label = node.label ?? '';
-  const packageName = label.split('/').pop() ?? label;
+  const isSelected = selectedNodeId === node.id
+  const label = node.label ?? ''
+  const packageName = label.split('/').pop() ?? label
 
   const handleClick = (e: { stopPropagation: () => void }) => {
-    e.stopPropagation();
-    selectNode(node.id);
-  };
+    e.stopPropagation()
+    selectNode(node.id)
+  }
 
   const handlePointerOver = () => {
-    setHovered(true);
-    setHoveredNode(node.id);
-    document.body.style.cursor = 'pointer';
-  };
+    setHovered(true)
+    setHoveredNode(node.id)
+    document.body.style.cursor = 'pointer'
+  }
 
   const handlePointerOut = () => {
-    setHovered(false);
-    setHoveredNode(null);
-    document.body.style.cursor = 'auto';
-  };
+    setHovered(false)
+    setHoveredNode(null)
+    document.body.style.cursor = 'auto'
+  }
 
   return (
     <group position={[position.x, position.y, position.z]}>
@@ -81,5 +81,5 @@ export function ExternalBuilding({ node, position }: ExternalBuildingProps) {
         {packageName}
       </Text>
     </group>
-  );
+  )
 }

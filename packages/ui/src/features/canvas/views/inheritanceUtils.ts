@@ -8,7 +8,7 @@
  * Edge types that represent inheritance/implementation relationships (Story 11-5).
  * Handles both parser output ('extends', 'implements') and IVM/UI type ('inherits').
  */
-const INHERITANCE_EDGE_TYPES = new Set(['extends', 'implements', 'inherits']);
+const INHERITANCE_EDGE_TYPES = new Set(['extends', 'implements', 'inherits'])
 
 /**
  * Determine whether a single node is a base class (i.e. inherited or implemented by another class).
@@ -23,11 +23,9 @@ const INHERITANCE_EDGE_TYPES = new Set(['extends', 'implements', 'inherits']);
  */
 export function isBaseClass(
   nodeId: string,
-  edges: ReadonlyArray<{ source: string; target: string; type: string }>,
+  edges: ReadonlyArray<{ source: string; target: string; type: string }>
 ): boolean {
-  return edges.some(
-    (e) => e.target === nodeId && INHERITANCE_EDGE_TYPES.has(e.type),
-  );
+  return edges.some((e) => e.target === nodeId && INHERITANCE_EDGE_TYPES.has(e.type))
 }
 
 /**
@@ -40,15 +38,15 @@ export function isBaseClass(
  * @returns Set of node IDs that are base classes
  */
 export function detectBaseClasses(
-  edges: ReadonlyArray<{ source: string; target: string; type: string }>,
+  edges: ReadonlyArray<{ source: string; target: string; type: string }>
 ): Set<string> {
-  const baseClasses = new Set<string>();
+  const baseClasses = new Set<string>()
   for (const edge of edges) {
     if (INHERITANCE_EDGE_TYPES.has(edge.type)) {
-      baseClasses.add(edge.target);
+      baseClasses.add(edge.target)
     }
   }
-  return baseClasses;
+  return baseClasses
 }
 
 /**
@@ -56,11 +54,11 @@ export function detectBaseClasses(
  * Counts edges where the node is the target.
  */
 export function buildIncomingEdgeCounts(
-  edges: ReadonlyArray<{ target: string }>,
+  edges: ReadonlyArray<{ target: string }>
 ): Map<string, number> {
-  const counts = new Map<string, number>();
+  const counts = new Map<string, number>()
   for (const edge of edges) {
-    counts.set(edge.target, (counts.get(edge.target) ?? 0) + 1);
+    counts.set(edge.target, (counts.get(edge.target) ?? 0) + 1)
   }
-  return counts;
+  return counts
 }

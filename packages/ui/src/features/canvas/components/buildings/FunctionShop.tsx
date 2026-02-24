@@ -14,67 +14,73 @@
  * Overhead wires from Story 11-11 connect to kiosk rooftops (Y = KIOSK_HEIGHT).
  */
 
-import { useState, useMemo } from 'react';
-import { Text } from '@react-three/drei';
-import { useCanvasStore } from '../../store';
-import { getBuildingConfig } from '../buildingGeometry';
-import { KIOSK_AWNING_OVERHANG, KIOSK_AWNING_THICKNESS } from '../../views/heightUtils';
-import { getNodeFocusOpacity } from '../../views/focusUtils';
-import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
-import { useFocusedConnections } from '../../hooks/useFocusedConnections';
-import type { TypedBuildingProps } from './types';
-import type { EncodedHeightOptions } from '../../views/heightUtils';
+import { useState, useMemo } from 'react'
+import { Text } from '@react-three/drei'
+import { useCanvasStore } from '../../store'
+import { getBuildingConfig } from '../buildingGeometry'
+import { KIOSK_AWNING_OVERHANG, KIOSK_AWNING_THICKNESS } from '../../views/heightUtils'
+import { getNodeFocusOpacity } from '../../views/focusUtils'
+import { useTransitMapStyle } from '../../hooks/useTransitMapStyle'
+import { useFocusedConnections } from '../../hooks/useFocusedConnections'
+import type { TypedBuildingProps } from './types'
+import type { EncodedHeightOptions } from '../../views/heightUtils'
 
 /** Base kiosk body colour (warm amber). */
-const KIOSK_COLOR = '#f59e0b';
+const KIOSK_COLOR = '#f59e0b'
 /** Awning colour (slightly darker amber). */
-const KIOSK_AWNING_COLOR = '#b45309';
+const KIOSK_AWNING_COLOR = '#b45309'
 /** Hover highlight colour. */
-const KIOSK_HOVER_COLOR = '#fbbf24';
+const KIOSK_HOVER_COLOR = '#fbbf24'
 
 interface FunctionShopProps extends TypedBuildingProps {
-  encodingOptions?: EncodedHeightOptions;
+  encodingOptions?: EncodedHeightOptions
 }
 
 export function FunctionShop({ node, position, encodingOptions, graph }: FunctionShopProps) {
-  const [hovered, setHovered] = useState(false);
-  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
-  const selectNode = useCanvasStore((s) => s.selectNode);
-  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
-  const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
-  const transitStyle = useTransitMapStyle();
-  const { directNodeIds, secondHopNodeIds } = useFocusedConnections(graph);
-  const isFocusMode = selectedNodeId !== null;
-  const focusOpacity = getNodeFocusOpacity(node.id, selectedNodeId, directNodeIds, secondHopNodeIds);
+  const [hovered, setHovered] = useState(false)
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
+  const selectNode = useCanvasStore((s) => s.selectNode)
+  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode)
+  const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode)
+  const transitStyle = useTransitMapStyle()
+  const { directNodeIds, secondHopNodeIds } = useFocusedConnections(graph)
+  const isFocusMode = selectedNodeId !== null
+  const focusOpacity = getNodeFocusOpacity(node.id, selectedNodeId, directNodeIds, secondHopNodeIds)
 
-  const isSelected = selectedNodeId === node.id;
-  const config = useMemo(() => getBuildingConfig(node, encodingOptions), [node, encodingOptions]);
-  const { width, height, depth } = config.geometry;
+  const isSelected = selectedNodeId === node.id
+  const config = useMemo(() => getBuildingConfig(node, encodingOptions), [node, encodingOptions])
+  const { width, height, depth } = config.geometry
 
-  const bodyColor = hovered ? KIOSK_HOVER_COLOR : KIOSK_COLOR;
-  const awningWidth = width + KIOSK_AWNING_OVERHANG * 2;
-  const awningDepth = depth + KIOSK_AWNING_OVERHANG * 2;
+  const bodyColor = hovered ? KIOSK_HOVER_COLOR : KIOSK_COLOR
+  const awningWidth = width + KIOSK_AWNING_OVERHANG * 2
+  const awningDepth = depth + KIOSK_AWNING_OVERHANG * 2
   // Awning sits just above the kiosk body (~80% up the wall)
-  const awningY = height * 0.8 + KIOSK_AWNING_THICKNESS / 2;
+  const awningY = height * 0.8 + KIOSK_AWNING_THICKNESS / 2
 
-  const fileName = (node.label ?? node.id).split('/').pop() ?? node.id;
+  const fileName = (node.label ?? node.id).split('/').pop() ?? node.id
 
   return (
     <group position={[position.x, position.y, position.z]}>
       {/* Kiosk body */}
       <mesh
         position={[0, height / 2, 0]}
-        onClick={(e) => { e.stopPropagation(); selectNode(node.id); }}
-        onDoubleClick={(e) => { e.stopPropagation(); requestFlyToNode(node.id); }}
+        onClick={(e) => {
+          e.stopPropagation()
+          selectNode(node.id)
+        }}
+        onDoubleClick={(e) => {
+          e.stopPropagation()
+          requestFlyToNode(node.id)
+        }}
         onPointerOver={() => {
-          setHovered(true);
-          setHoveredNode(node.id);
-          document.body.style.cursor = 'pointer';
+          setHovered(true)
+          setHoveredNode(node.id)
+          document.body.style.cursor = 'pointer'
         }}
         onPointerOut={() => {
-          setHovered(false);
-          setHoveredNode(null);
-          document.body.style.cursor = 'auto';
+          setHovered(false)
+          setHoveredNode(null)
+          document.body.style.cursor = 'auto'
         }}
       >
         <boxGeometry args={[width, height, depth]} />
@@ -113,5 +119,5 @@ export function FunctionShop({ node, position, encodingOptions, graph }: Functio
         {fileName}
       </Text>
     </group>
-  );
+  )
 }

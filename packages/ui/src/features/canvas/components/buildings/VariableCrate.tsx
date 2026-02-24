@@ -4,36 +4,50 @@
  * Small box representing a variable, with warm brown wood-like color.
  */
 
-import { useState, useMemo } from 'react';
-import { Text } from '@react-three/drei';
-import { useCanvasStore } from '../../store';
-import { getBuildingConfig } from '../buildingGeometry';
-import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
-import type { TypedBuildingProps } from './types';
+import { useState, useMemo } from 'react'
+import { Text } from '@react-three/drei'
+import { useCanvasStore } from '../../store'
+import { getBuildingConfig } from '../buildingGeometry'
+import { useTransitMapStyle } from '../../hooks/useTransitMapStyle'
+import type { TypedBuildingProps } from './types'
 
-const CRATE_COLOR = '#8B6914';
+const CRATE_COLOR = '#8B6914'
 
 export function VariableCrate({ node, position, graph: _graph }: TypedBuildingProps) {
-  const [hovered, setHovered] = useState(false);
-  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
-  const selectNode = useCanvasStore((s) => s.selectNode);
-  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
-  const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
-  const transitStyle = useTransitMapStyle();
+  const [hovered, setHovered] = useState(false)
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
+  const selectNode = useCanvasStore((s) => s.selectNode)
+  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode)
+  const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode)
+  const transitStyle = useTransitMapStyle()
 
-  const isSelected = selectedNodeId === node.id;
-  const config = useMemo(() => getBuildingConfig(node), [node]);
-  const { width } = config.geometry;
-  const fileName = (node.label ?? node.id).split('/').pop() ?? node.id;
+  const isSelected = selectedNodeId === node.id
+  const config = useMemo(() => getBuildingConfig(node), [node])
+  const { width } = config.geometry
+  const fileName = (node.label ?? node.id).split('/').pop() ?? node.id
 
   return (
     <group position={[position.x, position.y, position.z]}>
       <mesh
         position={[0, width / 2, 0]}
-        onClick={(e) => { e.stopPropagation(); selectNode(node.id); }}
-        onDoubleClick={(e) => { e.stopPropagation(); requestFlyToNode(node.id); }}
-        onPointerOver={() => { setHovered(true); setHoveredNode(node.id); document.body.style.cursor = 'pointer'; }}
-        onPointerOut={() => { setHovered(false); setHoveredNode(null); document.body.style.cursor = 'auto'; }}
+        onClick={(e) => {
+          e.stopPropagation()
+          selectNode(node.id)
+        }}
+        onDoubleClick={(e) => {
+          e.stopPropagation()
+          requestFlyToNode(node.id)
+        }}
+        onPointerOver={() => {
+          setHovered(true)
+          setHoveredNode(node.id)
+          document.body.style.cursor = 'pointer'
+        }}
+        onPointerOut={() => {
+          setHovered(false)
+          setHoveredNode(null)
+          document.body.style.cursor = 'auto'
+        }}
       >
         <sphereGeometry args={[width / 2, 32, 16]} />
         <meshStandardMaterial
@@ -58,5 +72,5 @@ export function VariableCrate({ node, position, graph: _graph }: TypedBuildingPr
         {fileName}
       </Text>
     </group>
-  );
+  )
 }

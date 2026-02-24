@@ -1,6 +1,6 @@
-import React from 'react';
-import { CityView } from '../../../views/CityView';
-import type { VisualizationRenderer, RenderContext } from '../../types';
+import React from 'react'
+import { CityView } from '../../../views/CityView'
+import type { VisualizationRenderer, RenderContext } from '../../types'
 
 /**
  * CityRenderer implements VisualizationRenderer for the radial city layout.
@@ -12,12 +12,12 @@ const cityRenderer: VisualizationRenderer = {
   type: 'radial-city',
 
   render(ctx: RenderContext): React.JSX.Element {
-    return <CityView graph={ctx.graph} />;
+    return <CityView graph={ctx.graph} />
   },
 
   canRender(layoutType: string): boolean {
-    return layoutType === 'radial-city';
+    return layoutType === 'radial-city'
   },
-};
+}
 
-export { cityRenderer };
+export { cityRenderer }

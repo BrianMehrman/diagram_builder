@@ -1,8 +1,8 @@
-import type { Graph, Position3D } from '../../../../shared/types';
-import type { LayoutEngine, LayoutResult, LayoutConfig, BoundingBox } from '../types';
+import type { Graph, Position3D } from '../../../../shared/types'
+import type { LayoutEngine, LayoutResult, LayoutConfig, BoundingBox } from '../types'
 
-const VERTICAL_SPACING = 8;
-const HORIZONTAL_SPACING = 6;
+const VERTICAL_SPACING = 8
+const HORIZONTAL_SPACING = 6
 
 /**
  * Top-down tree layout engine.
@@ -12,45 +12,46 @@ const HORIZONTAL_SPACING = 6;
  * Nodes at the same depth are spread evenly along the x axis.
  */
 export class TreeLayoutEngine implements LayoutEngine {
-  readonly type = 'tree';
+  readonly type = 'tree'
 
   layout(graph: Graph, _config: LayoutConfig): LayoutResult {
-    const positions = new Map<string, Position3D>();
+    const positions = new Map<string, Position3D>()
 
     // Group nodes by depth
-    const byDepth = new Map<number, string[]>();
+    const byDepth = new Map<number, string[]>()
     for (const node of graph.nodes) {
-      const d = node.depth ?? 0;
-      if (!byDepth.has(d)) byDepth.set(d, []);
-      byDepth.get(d)!.push(node.id);
+      const d = node.depth ?? 0
+      if (!byDepth.has(d)) byDepth.set(d, [])
+      const ids = byDepth.get(d)
+      if (ids) ids.push(node.id)
     }
 
     // Position each depth level
     for (const [depth, nodeIds] of byDepth.entries()) {
-      const count = nodeIds.length;
-      const totalWidth = (count - 1) * HORIZONTAL_SPACING;
+      const count = nodeIds.length
+      const totalWidth = (count - 1) * HORIZONTAL_SPACING
       nodeIds.forEach((id, i) => {
         positions.set(id, {
           x: -totalWidth / 2 + i * HORIZONTAL_SPACING,
           y: depth === 0 ? 0 : -depth * VERTICAL_SPACING,
           z: 0,
-        });
-      });
+        })
+      })
     }
 
     // Compute bounds
-    const allPositions = Array.from(positions.values());
-    const xs = allPositions.map((p) => p.x);
-    const ys = allPositions.map((p) => p.y);
+    const allPositions = Array.from(positions.values())
+    const xs = allPositions.map((p) => p.x)
+    const ys = allPositions.map((p) => p.y)
     const bounds: BoundingBox = {
       min: { x: Math.min(...xs), y: Math.min(...ys), z: 0 },
       max: { x: Math.max(...xs), y: Math.max(...ys), z: 0 },
-    };
+    }
 
-    return { positions, bounds };
+    return { positions, bounds }
   }
 
   canHandle(_graph: Graph): boolean {
-    return true;
+    return true
   }
 }

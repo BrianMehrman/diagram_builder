@@ -6,10 +6,10 @@
  */
 
 // Re-export focused modules so all existing importers remain unaffected.
-export * from './colorUtils';
-export * from './inheritanceUtils';
-export * from './heightUtils';
-export * from './pipeUtils';
-export * from './wireUtils';
-export * from './focusUtils';
-export * from './methodUtils';
+export * from './colorUtils'
+export * from './inheritanceUtils'
+export * from './heightUtils'
+export * from './pipeUtils'
+export * from './wireUtils'
+export * from './focusUtils'
+export * from './methodUtils'

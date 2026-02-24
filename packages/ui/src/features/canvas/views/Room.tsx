@@ -5,53 +5,49 @@
  * Color indicates type, with hover and selection states.
  */
 
-import { useState } from 'react';
-import { Text } from '@react-three/drei';
-import { useCanvasStore } from '../store';
-import type { GraphNode, Position3D } from '../../../shared/types';
-import { getRoomColor } from './buildingViewUtils';
+import { useState } from 'react'
+import { Text } from '@react-three/drei'
+import { useCanvasStore } from '../store'
+import type { GraphNode, Position3D } from '../../../shared/types'
+import { getRoomColor } from './buildingViewUtils'
 
 interface RoomProps {
-  node: GraphNode;
-  position: Position3D;
+  node: GraphNode
+  position: Position3D
 }
 
-const ROOM_SIZE = 1.5;
+const ROOM_SIZE = 1.5
 
 export function Room({ node, position }: RoomProps) {
-  const [hovered, setHovered] = useState(false);
-  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
-  const selectNode = useCanvasStore((s) => s.selectNode);
-  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
+  const [hovered, setHovered] = useState(false)
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
+  const selectNode = useCanvasStore((s) => s.selectNode)
+  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode)
 
-  const isSelected = selectedNodeId === node.id;
-  const color = getRoomColor(node.type);
+  const isSelected = selectedNodeId === node.id
+  const color = getRoomColor(node.type)
 
   const handleClick = (e: { stopPropagation: () => void }) => {
-    e.stopPropagation();
-    selectNode(node.id);
-  };
+    e.stopPropagation()
+    selectNode(node.id)
+  }
 
   const handlePointerOver = () => {
-    setHovered(true);
-    setHoveredNode(node.id);
-    document.body.style.cursor = 'pointer';
-  };
+    setHovered(true)
+    setHoveredNode(node.id)
+    document.body.style.cursor = 'pointer'
+  }
 
   const handlePointerOut = () => {
-    setHovered(false);
-    setHoveredNode(null);
-    document.body.style.cursor = 'auto';
-  };
+    setHovered(false)
+    setHoveredNode(null)
+    document.body.style.cursor = 'auto'
+  }
 
   return (
     <group position={[position.x, position.y, position.z]}>
       {/* Room box */}
-      <mesh
-        onClick={handleClick}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
-      >
+      <mesh onClick={handleClick} onPointerOver={handlePointerOver} onPointerOut={handlePointerOut}>
         <boxGeometry args={[ROOM_SIZE, ROOM_SIZE, ROOM_SIZE]} />
         <meshStandardMaterial
           color={hovered ? '#f59e0b' : color}
@@ -75,5 +71,5 @@ export function Room({ node, position }: RoomProps) {
         {node.label ?? ''}
       </Text>
     </group>
-  );
+  )
 }

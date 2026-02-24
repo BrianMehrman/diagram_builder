@@ -4,38 +4,52 @@
  * Tall industrial building with smokestacks for event bus / message broker nodes.
  */
 
-import { useState } from 'react';
-import { Text } from '@react-three/drei';
-import { useCanvasStore } from '../../store';
-import type { InfrastructureProps } from './types';
+import { useState } from 'react'
+import { Text } from '@react-three/drei'
+import { useCanvasStore } from '../../store'
+import type { InfrastructureProps } from './types'
 
-const BASE_COLOR = '#374151';
-const STACK_COLOR = '#78716c';
-const BASE_W = 3;
-const BASE_H = 4;
-const BASE_D = 2;
-const STACK_R = 0.3;
-const STACK_H = 3;
+const BASE_COLOR = '#374151'
+const STACK_COLOR = '#78716c'
+const BASE_W = 3
+const BASE_H = 4
+const BASE_D = 2
+const STACK_R = 0.3
+const STACK_H = 3
 
 export function PowerStation({ node, position }: InfrastructureProps) {
-  const [hovered, setHovered] = useState(false);
-  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
-  const selectNode = useCanvasStore((s) => s.selectNode);
-  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
-  const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
+  const [hovered, setHovered] = useState(false)
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
+  const selectNode = useCanvasStore((s) => s.selectNode)
+  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode)
+  const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode)
 
-  const isSelected = selectedNodeId === node.id;
-  const label = (node.label ?? node.id).split('/').pop() ?? node.id;
+  const isSelected = selectedNodeId === node.id
+  const label = (node.label ?? node.id).split('/').pop() ?? node.id
 
   return (
     <group position={[position.x, position.y, position.z]}>
       {/* Industrial base */}
       <mesh
         position={[0, BASE_H / 2, 0]}
-        onClick={(e) => { e.stopPropagation(); selectNode(node.id); }}
-        onDoubleClick={(e) => { e.stopPropagation(); requestFlyToNode(node.id); }}
-        onPointerOver={() => { setHovered(true); setHoveredNode(node.id); document.body.style.cursor = 'pointer'; }}
-        onPointerOut={() => { setHovered(false); setHoveredNode(null); document.body.style.cursor = 'auto'; }}
+        onClick={(e) => {
+          e.stopPropagation()
+          selectNode(node.id)
+        }}
+        onDoubleClick={(e) => {
+          e.stopPropagation()
+          requestFlyToNode(node.id)
+        }}
+        onPointerOver={() => {
+          setHovered(true)
+          setHoveredNode(node.id)
+          document.body.style.cursor = 'pointer'
+        }}
+        onPointerOut={() => {
+          setHovered(false)
+          setHoveredNode(null)
+          document.body.style.cursor = 'auto'
+        }}
       >
         <boxGeometry args={[BASE_W, BASE_H, BASE_D]} />
         <meshStandardMaterial
@@ -68,5 +82,5 @@ export function PowerStation({ node, position }: InfrastructureProps) {
         {label}
       </Text>
     </group>
-  );
+  )
 }

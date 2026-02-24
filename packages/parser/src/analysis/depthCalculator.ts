@@ -35,10 +35,7 @@ const ENTRY_POINT_PATTERNS = [
  * @param edges - All dependency edges
  * @returns Array of entry point node IDs
  */
-export function identifyEntryPoints(
-  nodes: DependencyNode[],
-  edges: DependencyEdge[]
-): string[] {
+export function identifyEntryPoints(nodes: DependencyNode[], edges: DependencyEdge[]): string[] {
   if (nodes.length === 0) return []
 
   // Build set of nodes that are imported by others
@@ -54,7 +51,7 @@ export function identifyEntryPoints(
   // 1. Detect by filename pattern
   for (const node of nodes) {
     const fileName = node.name || node.path.split('/').pop() || ''
-    if (ENTRY_POINT_PATTERNS.some(pattern => pattern.test(fileName))) {
+    if (ENTRY_POINT_PATTERNS.some((pattern) => pattern.test(fileName))) {
       entryPoints.add(node.id)
     }
   }
@@ -143,9 +140,9 @@ export function calculateAbstractionDepth(
   let maxDepth = 0
 
   while (head < queue.length) {
-    const item = queue[head++];
-    if (!item) break;
-    const { id, depth } = item;
+    const item = queue[head++]
+    if (!item) break
+    const { id, depth } = item
 
     const neighbors = adjacency.get(id) || []
     for (const neighbor of neighbors) {

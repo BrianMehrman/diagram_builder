@@ -1,18 +1,18 @@
-import type { LayoutEngine, LayoutConfig, LayoutResult, BoundingBox } from '../types';
-import type { Graph, GraphNode, Position3D } from '../../../../shared/types';
+import type { LayoutEngine, LayoutConfig, LayoutResult, BoundingBox } from '../types'
+import type { Graph, GraphNode, Position3D } from '../../../../shared/types'
 
 /**
  * Building layout configuration
  */
 export interface BuildingLayoutConfig extends LayoutConfig {
   /** Height of each floor (default 4) */
-  floorHeight?: number;
+  floorHeight?: number
   /** Size of each room (default 2) */
-  roomSize?: number;
+  roomSize?: number
   /** Spacing between rooms (default 1) */
-  roomSpacing?: number;
+  roomSpacing?: number
   /** Padding around the building walls (default 2) */
-  wallPadding?: number;
+  wallPadding?: number
 }
 
 /**
@@ -25,87 +25,84 @@ export interface BuildingLayoutConfig extends LayoutConfig {
  * - Deterministic via alphabetical sorting
  */
 export class BuildingLayoutEngine implements LayoutEngine {
-  readonly type = 'building';
+  readonly type = 'building'
 
   layout(graph: Graph, config: BuildingLayoutConfig = {}): LayoutResult {
-    const positions = new Map<string, Position3D>();
-    const {
-      floorHeight = 4,
-      roomSize = 2,
-      roomSpacing = 1,
-      wallPadding = 2,
-    } = config;
+    const positions = new Map<string, Position3D>()
+    const { floorHeight = 4, roomSize = 2, roomSpacing = 1, wallPadding = 2 } = config
 
     // Find the file node (building)
-    const fileNode = graph.nodes.find((n) => n.type === 'file' && !n.isExternal);
+    const fileNode = graph.nodes.find((n) => n.type === 'file' && !n.isExternal)
     if (!fileNode) {
       return {
         positions,
         bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
-      };
+      }
     }
 
     // Building origin from file node's position or default
-    const origin = fileNode.position ?? { x: 0, y: 0, z: 0 };
-    positions.set(fileNode.id, { ...origin });
+    const origin = fileNode.position ?? { x: 0, y: 0, z: 0 }
+    positions.set(fileNode.id, { ...origin })
 
     // Get direct children of the file
-    const children = graph.nodes.filter((n) => n.parentId === fileNode.id);
+    const children = graph.nodes.filter((n) => n.parentId === fileNode.id)
     const classes = children
       .filter((n) => n.type === 'class')
-      .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
+      .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''))
     const fileLevelItems = children
       .filter((n) => n.type !== 'class')
-      .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
+      .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''))
 
-    let currentFloor = 0;
-    let maxWidth = 0;
-    let maxDepthZ = 0;
+    let currentFloor = 0
+    let maxWidth = 0
+    let maxDepthZ = 0
 
     // Ground floor: file-level functions/variables
     if (fileLevelItems.length > 0) {
       const floorResult = this.layoutFloor(
-        fileLevelItems, origin, currentFloor * floorHeight, roomSize, roomSpacing
-      );
+        fileLevelItems,
+        origin,
+        currentFloor * floorHeight,
+        roomSize,
+        roomSpacing
+      )
       for (const [id, pos] of floorResult.positions) {
-        positions.set(id, pos);
+        positions.set(id, pos)
       }
-      maxWidth = Math.max(maxWidth, floorResult.width);
-      maxDepthZ = Math.max(maxDepthZ, floorResult.depth);
-      currentFloor++;
+      maxWidth = Math.max(maxWidth, floorResult.width)
+      maxDepthZ = Math.max(maxDepthZ, floorResult.depth)
+      currentFloor++
     }
 
     // Upper floors: one per class
     for (const classNode of classes) {
-      const floorY = currentFloor * floorHeight;
+      const floorY = currentFloor * floorHeight
 
       // Position class node at floor level
       positions.set(classNode.id, {
         x: origin.x,
         y: origin.y + floorY,
         z: origin.z,
-      });
+      })
 
       // Layout class children (methods) as rooms on this floor
       const classChildren = graph.nodes
         .filter((n) => n.parentId === classNode.id)
-        .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
+        .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''))
 
       if (classChildren.length > 0) {
-        const floorResult = this.layoutFloor(
-          classChildren, origin, floorY, roomSize, roomSpacing
-        );
+        const floorResult = this.layoutFloor(classChildren, origin, floorY, roomSize, roomSpacing)
         for (const [id, pos] of floorResult.positions) {
-          positions.set(id, pos);
+          positions.set(id, pos)
         }
-        maxWidth = Math.max(maxWidth, floorResult.width);
-        maxDepthZ = Math.max(maxDepthZ, floorResult.depth);
+        maxWidth = Math.max(maxWidth, floorResult.width)
+        maxDepthZ = Math.max(maxDepthZ, floorResult.depth)
       }
 
-      currentFloor++;
+      currentFloor++
     }
 
-    const totalHeight = currentFloor * floorHeight;
+    const totalHeight = currentFloor * floorHeight
 
     const bounds: BoundingBox = {
       min: {
@@ -118,7 +115,7 @@ export class BuildingLayoutEngine implements LayoutEngine {
         y: origin.y + totalHeight,
         z: origin.z + Math.max(maxDepthZ, roomSize) + wallPadding,
       },
-    };
+    }
 
     return {
       positions,
@@ -135,13 +132,13 @@ export class BuildingLayoutEngine implements LayoutEngine {
           y: (fileLevelItems.length > 0 ? i + 1 : i) * floorHeight,
         })),
       },
-    };
+    }
   }
 
   canHandle(graph: Graph): boolean {
     return graph.nodes.some(
       (n) => n.parentId !== undefined && (n.type === 'class' || n.type === 'function')
-    );
+    )
   }
 
   /**
@@ -154,25 +151,27 @@ export class BuildingLayoutEngine implements LayoutEngine {
     roomSize: number,
     roomSpacing: number
   ): { positions: Map<string, Position3D>; width: number; depth: number } {
-    const positions = new Map<string, Position3D>();
-    const gridSize = Math.max(1, Math.ceil(Math.sqrt(nodes.length)));
-    const spacing = roomSize + roomSpacing;
+    const positions = new Map<string, Position3D>()
+    const gridSize = Math.max(1, Math.ceil(Math.sqrt(nodes.length)))
+    const spacing = roomSize + roomSpacing
 
     for (let i = 0; i < nodes.length; i++) {
-      const col = i % gridSize;
-      const row = Math.floor(i / gridSize);
+      const col = i % gridSize
+      const row = Math.floor(i / gridSize)
 
-      positions.set(nodes[i]!.id, {
+      const n = nodes[i]
+      if (!n) continue
+      positions.set(n.id, {
         x: origin.x + col * spacing + roomSize / 2,
         y: origin.y + floorY + roomSize / 2,
         z: origin.z + row * spacing + roomSize / 2,
-      });
+      })
     }
 
     return {
       positions,
       width: gridSize * spacing,
       depth: Math.ceil(nodes.length / gridSize) * spacing,
-    };
+    }
   }
 }
