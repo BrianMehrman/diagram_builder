@@ -21,6 +21,21 @@ const isDevelopment = import.meta.env.MODE === 'development'
 const devAuthEnabled = import.meta.env.VITE_DEV_AUTH !== 'false'
 
 /**
+ * Decoded JWT payload shape
+ */
+interface JwtPayload {
+  userId?: string
+  sub?: string
+}
+
+/**
+ * Type guard to check if a parsed value is a JwtPayload
+ */
+function isJwtPayload(value: unknown): value is JwtPayload {
+  return typeof value === 'object' && value !== null
+}
+
+/**
  * Set JWT token (memory only)
  */
 export function setToken(token: string): void {
@@ -78,8 +93,9 @@ export function getCurrentUserId(): string | null {
 
   try {
     // Decode JWT token to get userId
-    const payload = JSON.parse(atob(jwtToken.split('.')[1] || ''))
-    return payload.userId || payload.sub || null
+    const parsed: unknown = JSON.parse(atob(jwtToken.split('.')[1] ?? ''))
+    if (!isJwtPayload(parsed)) return null
+    return parsed.userId ?? parsed.sub ?? null
   } catch {
     return null
   }

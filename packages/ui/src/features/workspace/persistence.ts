@@ -27,7 +27,7 @@ export function loadWorkspaces(): Workspace[] {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (data) {
-      return JSON.parse(data);
+      return JSON.parse(data) as Workspace[];
     }
   } catch (error) {
     console.error('Failed to load workspaces:', error);

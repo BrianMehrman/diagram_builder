@@ -215,10 +215,13 @@ export function calculateEntryPointPosition(
   if (entryNodes.length === 0) return [];
 
   if (entryNodes.length === 1) {
-    return [{
-      id: entryNodes[0]!.id,
-      position: { x: 0, y: 0, z: 0 },
-    }];
+    const singleEntry = entryNodes[0];
+    if (singleEntry) {
+      return [{
+        id: singleEntry.id,
+        position: { x: 0, y: 0, z: 0 },
+      }];
+    }
   }
 
   // Distribute multiple entry points in a small circle at half centerRadius
@@ -266,7 +269,7 @@ export function distributeDistrictsAcrossRings(
     for (const nodeId of district.nodeIds) {
       const depth = nodeDepths.get(nodeId) ?? 0;
       if (!depthGroups.has(depth)) depthGroups.set(depth, []);
-      depthGroups.get(depth)!.push(nodeId);
+      depthGroups.get(depth)?.push(nodeId);
     }
 
     // Create one ring assignment per depth group

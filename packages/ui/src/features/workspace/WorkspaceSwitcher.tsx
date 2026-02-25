@@ -31,7 +31,7 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
   const [editingId, setEditingId] = useState<string | undefined>();
 
   useEffect(() => {
-    fetchWorkspaces();
+    void fetchWorkspaces();
   }, []);
 
   const fetchWorkspaces = async () => {
@@ -49,7 +49,7 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
   };
 
   const handleSwitch = (workspaceId: string) => {
-    navigate(`/workspace/${workspaceId}`);
+    void navigate(`/workspace/${workspaceId}`);
   };
 
   const handleCreateNew = () => {
@@ -68,7 +68,7 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
         await workspacesApi.delete(workspaceId);
         setWorkspaceList((prev) => prev.filter((w) => w.id !== workspaceId));
         if (currentWorkspaceId === workspaceId) {
-          navigate('/');
+          void navigate("/");
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to delete workspace');
@@ -79,9 +79,9 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
   const handleConfigSave = (workspaceId: string) => {
     setShowConfig(false);
     setEditingId(undefined);
-    fetchWorkspaces();
+    void fetchWorkspaces();
     if (!currentWorkspaceId) {
-      navigate(`/workspace/${workspaceId}`);
+      void navigate(`/workspace/${workspaceId}`);
     }
   };
 
@@ -132,7 +132,7 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
           <div className="text-center text-red-500 text-sm py-8">
             <p>{error}</p>
             <button
-              onClick={fetchWorkspaces}
+              onClick={() => { void fetchWorkspaces() }}
               className="mt-2 text-primary-600 hover:text-primary-700 text-sm"
             >
               Retry
@@ -229,7 +229,7 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
                       </svg>
                     </button>
                     <button
-                      onClick={() => handleDelete(workspace.id)}
+                      onClick={() => { void handleDelete(workspace.id) }}
                       className="p-1.5 text-red-600 hover:bg-red-100 rounded transition-colors"
                       aria-label="Delete workspace"
                     >

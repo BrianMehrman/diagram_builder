@@ -223,7 +223,6 @@ describe('Breadcrumbs', () => {
   describe('flight state', () => {
     it('shows flight target during flight', () => {
       const file = mockNodes[0];
-      const method = mockNodes[2];
 
       // Set flight state to target the method
       useCanvasStore.getState().setFlightState(true, 'method-1');

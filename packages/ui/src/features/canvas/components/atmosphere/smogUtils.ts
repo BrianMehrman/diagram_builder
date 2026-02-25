@@ -58,7 +58,7 @@ export function computeSmogThreshold(districtAverages: number[]): number {
 
   // 75th percentile = top 25%
   const cutoffIndex = Math.max(0, Math.ceil(valid.length * 0.25) - 1);
-  return valid[cutoffIndex]!;
+  return valid[cutoffIndex] ?? 0;
 }
 
 /**

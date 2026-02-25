@@ -294,7 +294,7 @@ export function useGlobalKeyboardShortcuts(
         (event.ctrlKey || event.metaKey)
       ) {
         event.preventDefault();
-        handleShareViewpoint();
+        void handleShareViewpoint();
         return;
       }
 

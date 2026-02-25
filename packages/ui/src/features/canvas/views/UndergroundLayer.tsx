@@ -28,7 +28,7 @@ interface UndergroundLayerProps {
 function deriveDependencyType(edge: GraphEdge): DependencyType {
   const meta = edge.metadata;
   if (meta?.dependencyType && typeof meta.dependencyType === 'string') {
-    const dt = meta.dependencyType as string;
+    const dt = meta.dependencyType;
     if (dt === 'dev' || dt === 'peer' || dt === 'type') return dt;
     return 'production';
   }

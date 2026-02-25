@@ -4,7 +4,7 @@
  * Tests for the Zustand toast notification store
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useToastStore } from './toastStore';
 
 describe('useToastStore', () => {

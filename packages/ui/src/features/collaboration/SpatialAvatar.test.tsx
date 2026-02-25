@@ -3,8 +3,6 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { renderHook } from '@testing-library/react'
-import { useFrame, useThree } from '@react-three/fiber'
 import type { User } from './store'
 
 // Mock three.js canvas context

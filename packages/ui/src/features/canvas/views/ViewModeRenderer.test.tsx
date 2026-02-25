@@ -8,25 +8,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useCanvasStore } from '../store';
 import { selectViewProps } from './ViewModeRenderer';
-import type { Graph } from '../../../shared/types';
-
-const mockGraph: Graph = {
-  nodes: [
-    { id: 'f1', type: 'file', label: 'index.ts', metadata: {}, lod: 1 },
-    { id: 'c1', type: 'class', label: 'App', metadata: {}, lod: 2, parentId: 'f1' },
-    { id: 'm1', type: 'method', label: 'render', metadata: {}, lod: 3, parentId: 'c1' },
-  ],
-  edges: [
-    { id: 'e1', source: 'f1', target: 'c1', type: 'contains', metadata: {} },
-    { id: 'e2', source: 'c1', target: 'm1', type: 'contains', metadata: {} },
-  ],
-  metadata: {
-    repositoryId: 'repo-1',
-    name: 'test-repo',
-    totalNodes: 3,
-    totalEdges: 2,
-  },
-};
 
 describe('selectViewProps', () => {
   beforeEach(() => {

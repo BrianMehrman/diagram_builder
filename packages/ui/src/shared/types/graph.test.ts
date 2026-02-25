@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import type { GraphNode, GraphEdge, Graph, Position3D } from './graph';
+import type { GraphNode, GraphEdge, Graph } from './graph';
 
 describe('GraphNode type', () => {
   it('creates a node with all fields including new layout fields', () => {

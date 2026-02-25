@@ -40,7 +40,8 @@ function createStripedTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
-  const ctx = canvas.getContext('2d')!;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return new THREE.CanvasTexture(canvas);
 
   // Fill with base dark color
   ctx.fillStyle = DEPRECATED_COLOR;

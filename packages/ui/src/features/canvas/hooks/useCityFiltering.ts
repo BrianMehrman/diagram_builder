@@ -71,8 +71,8 @@ export function useCityFiltering(
       const filePath = (node.metadata?.path as string) ?? node.label ?? '';
       const lastSlash = filePath.lastIndexOf('/');
       const dir = lastSlash >= 0 ? filePath.substring(0, lastSlash) : 'root';
-      if (!groups.has(dir)) groups.set(dir, []);
-      groups.get(dir)!.push(node.id);
+      const existing = groups.get(dir);
+      if (existing) { existing.push(node.id); } else { groups.set(dir, [node.id]); }
     }
     return groups;
   }, [internalNodes]);
@@ -86,8 +86,8 @@ export function useCityFiltering(
       const filePath = (node.metadata?.path as string) ?? node.label ?? '';
       const lastSlash = filePath.lastIndexOf('/');
       const dir = lastSlash >= 0 ? filePath.substring(0, lastSlash) : 'root';
-      if (!groups.has(dir)) groups.set(dir, []);
-      groups.get(dir)!.push(node.id);
+      const existingFile = groups.get(dir);
+      if (existingFile) { existingFile.push(node.id); } else { groups.set(dir, [node.id]); }
     }
     return groups;
   }, [internalNodes]);

@@ -61,6 +61,14 @@ const browserGlobals = {
   MutationObserver: 'readonly',
   ResizeObserver: 'readonly',
   IntersectionObserver: 'readonly',
+  // Fetch API types
+  RequestInit: 'readonly',
+  RequestInfo: 'readonly',
+  Response: 'readonly',
+  Request: 'readonly',
+  BlobPart: 'readonly',
+  // React (for explicit React.* usage in React apps)
+  React: 'readonly',
 }
 
 /** Globals available only in Node.js environments */

@@ -67,8 +67,8 @@ export function BaseClassBuilding({
     if (methodCount > 0) {
       const visibilities: Array<string | undefined> =
         sortedMethods && sortedMethods.length > 0
-          ? sortedMethods.map((m) => m.visibility)
-          : new Array(floorCount).fill(undefined)
+          ? (sortedMethods.map((m) => m.visibility) as Array<string | undefined>)
+          : ([] as Array<string|undefined>).concat(Array.from({length:floorCount},()=>undefined))
       applyFloorBandColors(geo, floorCount, visibilities, height)
     }
 
@@ -135,7 +135,7 @@ export function BaseClassBuilding({
       {showRooms && (
         <group position={[0, 0, 0]}>
           {roomPlacements.map((placement) => {
-            const method = sortedMethods![placement.methodIndex]
+            const method = sortedMethods[placement.methodIndex]
             if (!method) return null
             return (
               <MethodRoom

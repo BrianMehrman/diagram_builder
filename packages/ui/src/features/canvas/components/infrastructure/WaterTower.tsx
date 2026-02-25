@@ -67,7 +67,7 @@ export function WaterTower({ node, position }: InfrastructureProps) {
         [-0.6, 0, 0.6],
         [0.6, 0, 0.6],
       ].map(([x, _y, z], i) => (
-        <mesh key={i} position={[x!, STILT_H / 2, z!]}>
+        <mesh key={i} position={[x ?? 0, STILT_H / 2, z ?? 0]}>
           <cylinderGeometry args={[STILT_R, STILT_R, STILT_H, 8]} />
           <meshStandardMaterial color={STILT_COLOR} roughness={0.9} metalness={0.2} />
         </mesh>

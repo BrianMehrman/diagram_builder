@@ -17,7 +17,7 @@ vi.mock('../layout/engines/clusterUtils', () => ({
   createClusterMetadata: (
     districtId: string,
     nodeIds: string[],
-    positions: Map<string, Position3D>,
+    _positions: Map<string, Position3D>,
   ) => ({
     districtId,
     nodeIds,

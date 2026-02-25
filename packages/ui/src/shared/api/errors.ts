@@ -63,8 +63,9 @@ export function formatValidationErrors(error: ApiClientError): Record<string, st
   const errors: Record<string, string> = {}
 
   if (error.problemDetails.errors) {
-    Object.entries(error.problemDetails.errors).forEach(([field, messages]) => {
-      errors[field] = Array.isArray(messages) ? messages[0] : String(messages)
+    const errorMap = error.problemDetails.errors as Record<string, unknown>
+    Object.entries(errorMap).forEach(([field, messages]) => {
+      errors[field] = Array.isArray(messages) ? String(messages[0]) : String(messages)
     })
   }
 

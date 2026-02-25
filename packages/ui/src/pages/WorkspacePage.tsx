@@ -132,7 +132,7 @@ export function WorkspacePage() {
   useEffect(() => {
     console.log('[WorkspacePage] Mount effect - workspace ID:', id)
     if (id) {
-      loadWorkspace(id)
+      void loadWorkspace(id)
     }
   }, [id])
 
@@ -144,7 +144,7 @@ export function WorkspacePage() {
     if (processingStatus === 'completed' && !loadedForCompletedRef.current) {
       console.log('[WorkspacePage] Status completed, loading graph data...')
       loadedForCompletedRef.current = true
-      loadGraphData(id)
+      void loadGraphData(id)
       return
     }
 
@@ -162,14 +162,13 @@ export function WorkspacePage() {
     console.log('[WorkspacePage] Starting poll interval for status:', processingStatus)
     const pollInterval = setInterval(() => {
       console.log('[WorkspacePage] Polling for codebase status...')
-      loadGraphData(id)
+      void loadGraphData(id)
     }, 2000)
 
     return () => {
       console.log('[WorkspacePage] Clearing poll interval')
       clearInterval(pollInterval)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, processingStatus]) // Intentionally excluding loadGraphData to prevent loops
 
   const loadWorkspace = async (workspaceId: string) => {
@@ -214,13 +213,13 @@ export function WorkspacePage() {
       if (codebaseId) {
         // Load specific codebase if ID provided
         completedCodebase = codebasesList.codebases?.find(
-          (cb: any) => cb.codebaseId === codebaseId && cb.status === 'completed' && cb.repositoryId
+          (cb) => cb.codebaseId === codebaseId && cb.status === 'completed' && cb.repositoryId
         )
         console.log('[WorkspacePage] Requested codebase found:', !!completedCodebase)
       } else {
         // Find the first completed codebase with a repository
         completedCodebase = codebasesList.codebases?.find(
-          (cb: any) => cb.status === 'completed' && cb.repositoryId
+          (cb) => cb.status === 'completed' && cb.repositoryId
         )
         console.log('[WorkspacePage] First completed codebase found:', !!completedCodebase)
       }
@@ -256,7 +255,7 @@ export function WorkspacePage() {
         console.log('[WorkspacePage] All state updates queued')
       } else {
         // Check for failed codebases
-        const failedCodebase = codebasesList.codebases?.find((cb: any) => cb.status === 'failed')
+        const failedCodebase = codebasesList.codebases?.find((cb) => cb.status === 'failed')
 
         if (failedCodebase) {
           setProcessingStatus('failed')
@@ -264,7 +263,7 @@ export function WorkspacePage() {
         } else {
           // Check if there's a processing codebase
           const processingCodebase = codebasesList.codebases?.find(
-            (cb: any) => cb.status === 'pending' || cb.status === 'processing'
+            (cb) => cb.status === 'pending' || cb.status === 'processing'
           )
 
           if (processingCodebase) {
@@ -387,7 +386,7 @@ export function WorkspacePage() {
         {importError && (
           <ErrorNotification
             message={importError}
-            onRetry={() => loadWorkspace(workspace?.id || '')}
+            onRetry={() => { void loadWorkspace(workspace?.id || '') }}
             onDismiss={() => setImportError(null)}
           />
         )}
@@ -404,9 +403,9 @@ export function WorkspacePage() {
         <LeftPanel
           workspaceId={workspace.id}
           {...(selectedCodebaseId ? { selectedCodebaseId } : {})}
-          onCodebaseSelected={handleCodebaseSelected}
+          onCodebaseSelected={(cbId) => { void handleCodebaseSelected(cbId) }}
           refreshTrigger={listRefreshTrigger}
-          onImportSuccess={() => loadWorkspace(workspace.id)}
+          onImportSuccess={() => { void loadWorkspace(workspace.id) }}
           onImportComplete={handleImportComplete}
         />
 

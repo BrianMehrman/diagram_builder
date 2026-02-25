@@ -8,14 +8,14 @@ import { useReducedMotion } from './useReducedMotion';
 
 describe('useReducedMotion', () => {
   let matchMediaMock: ReturnType<typeof vi.fn>;
-  let listeners: Map<string, Function>;
+  let listeners: Map<string, () => void>;
 
   beforeEach(() => {
     listeners = new Map();
     matchMediaMock = vi.fn((query: string) => ({
       matches: false,
       media: query,
-      addEventListener: vi.fn((event: string, handler: Function) => {
+      addEventListener: vi.fn((event: string, handler: () => void) => {
         listeners.set(event, handler);
       }),
       removeEventListener: vi.fn((event: string) => {

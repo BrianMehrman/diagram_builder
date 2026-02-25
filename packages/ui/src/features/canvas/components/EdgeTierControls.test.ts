@@ -7,7 +7,6 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useCanvasStore } from '../store';
-import type { EdgeTierKey } from '../store';
 
 describe('EdgeTierControls store integration', () => {
   beforeEach(() => {

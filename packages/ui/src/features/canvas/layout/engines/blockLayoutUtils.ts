@@ -124,7 +124,8 @@ export function buildFileBlockHierarchy(nodes: GraphNode[]): {
     }
 
     if (foundFileId) {
-      fileBlocks.get(foundFileId)!.push(node);
+      const fileBlock = fileBlocks.get(foundFileId);
+      if (fileBlock) fileBlock.push(node);
     } else if (!cycleBreaks.includes(node.id)) {
       orphans.push(node);
     } else {
@@ -188,8 +189,10 @@ export function positionBlocksInArc(
   if (blocks.length === 1) {
     const angle = arcStart + arcSpan / 2;
     const effectiveRadius = Math.max(radius, 0.1);
+    const firstBlock = blocks[0];
+    if (!firstBlock) return [];
     return [{
-      id: blocks[0]!.id,
+      id: firstBlock.id,
       position: {
         x: Math.cos(angle) * effectiveRadius,
         y: 0,

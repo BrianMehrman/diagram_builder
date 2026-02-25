@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { TreeLayoutEngine } from './treeLayout';
-import type { Graph } from '../../../../shared/types';
+import { describe, it, expect } from 'vitest'
+import { TreeLayoutEngine } from './treeLayout'
+import type { Graph } from '../../../../shared/types'
 
 const graph: Graph = {
   nodes: [
@@ -15,40 +15,40 @@ const graph: Graph = {
     totalNodes: 3,
     totalEdges: 0,
   },
-};
+}
 
 describe('TreeLayoutEngine', () => {
-  const engine = new TreeLayoutEngine();
+  const engine = new TreeLayoutEngine()
 
   it('has type "tree"', () => {
-    expect(engine.type).toBe('tree');
-  });
+    expect(engine.type).toBe('tree')
+  })
 
   it('canHandle any graph', () => {
-    expect(engine.canHandle(graph)).toBe(true);
-  });
+    expect(engine.canHandle(graph)).toBe(true)
+  })
 
   it('positions all nodes', () => {
-    const result = engine.layout(graph, {});
-    expect(result.positions.size).toBe(3);
-  });
+    const result = engine.layout(graph, {})
+    expect(result.positions.size).toBe(3)
+  })
 
   it('places root at y=0', () => {
-    const result = engine.layout(graph, {});
-    expect(result.positions.get('root')?.y).toBe(0);
-  });
+    const result = engine.layout(graph, {})
+    expect(result.positions.get('root')?.y).toBe(0)
+  })
 
   it('places children below root (negative y for downward tree)', () => {
-    const result = engine.layout(graph, {});
-    const child = result.positions.get('child1');
-    expect(child).toBeDefined();
-    expect(child!.y).toBeLessThan(0);
-  });
+    const result = engine.layout(graph, {})
+    const child = result.positions.get('child1')
+    expect(child).toBeDefined()
+    expect(child!.y).toBeLessThan(0)
+  })
 
   it('spreads siblings on the x axis', () => {
-    const result = engine.layout(graph, {});
-    const c1 = result.positions.get('child1')!;
-    const c2 = result.positions.get('child2')!;
-    expect(c1.x).not.toBe(c2.x);
-  });
-});
+    const result = engine.layout(graph, {})
+    const c1 = result.positions.get('child1')!
+    const c2 = result.positions.get('child2')!
+    expect(c1.x).not.toBe(c2.x)
+  })
+})

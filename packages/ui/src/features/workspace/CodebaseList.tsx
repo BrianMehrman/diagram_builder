@@ -73,7 +73,7 @@ export function CodebaseList({
   }
 
   useEffect(() => {
-    loadCodebases()
+    void loadCodebases()
   }, [workspaceId, refreshTrigger])
 
   // Poll for progress updates when any codebase is processing
@@ -84,7 +84,7 @@ export function CodebaseList({
     if (!hasProcessing) return
 
     const pollInterval = setInterval(() => {
-      loadCodebases()
+      void loadCodebases()
     }, 2000) // Poll every 2 seconds
 
     return () => clearInterval(pollInterval)
@@ -140,7 +140,7 @@ export function CodebaseList({
       <div className="text-center py-8">
         <p className="text-sm text-red-400">{error}</p>
         <button
-          onClick={loadCodebases}
+          onClick={() => { void loadCodebases() }}
           className="mt-2 text-xs text-blue-400 hover:text-blue-300"
         >
           Try again
@@ -170,8 +170,8 @@ export function CodebaseList({
           codebase={codebase}
           selected={codebase.codebaseId === selectedId}
           onSelect={() => handleSelect(codebase.codebaseId)}
-          onDelete={() => handleDelete(codebase.codebaseId)}
-          onRetry={() => handleRetry(codebase.codebaseId)}
+          onDelete={() => { void handleDelete(codebase.codebaseId) }}
+          onRetry={() => { void handleRetry(codebase.codebaseId) }}
         />
       ))}
     </div>

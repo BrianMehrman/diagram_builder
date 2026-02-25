@@ -80,7 +80,7 @@ export function Harbor({ node, position }: InfrastructureProps) {
         [1.5, -0.8],
         [1.5, 0.8],
       ].map(([x, z], i) => (
-        <mesh key={i} position={[x!, POST_H / 2, z!]}>
+        <mesh key={i} position={[x ?? 0, POST_H / 2, z ?? 0]}>
           <cylinderGeometry args={[POST_R, POST_R, POST_H, 8]} />
           <meshStandardMaterial color={POST_COLOR} roughness={0.9} metalness={0.1} />
         </mesh>

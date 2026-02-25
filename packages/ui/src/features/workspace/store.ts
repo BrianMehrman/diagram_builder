@@ -131,7 +131,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   removeRepository: (workspaceId: string, repositoryId: string) => {
     set((state) => {
-      const { [repositoryId]: removed, ...rest } = state.repositories;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [repositoryId]: _, ...rest } = state.repositories;
       return {
         repositories: rest,
         workspaces: state.workspaces.map((w) =>

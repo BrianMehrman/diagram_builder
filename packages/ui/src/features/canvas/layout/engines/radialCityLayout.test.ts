@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Graph, GraphNode, GraphEdge } from '../../../../shared/types';
+import type { Graph, GraphNode } from '../../../../shared/types';
 import { RadialCityLayoutEngine } from './radialCityLayout';
 import type { RadialCityLayoutConfig, InfrastructureZoneMetadata } from './radialCityLayout';
 import type { HierarchicalLayoutResult } from '../types';

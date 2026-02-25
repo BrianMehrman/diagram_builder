@@ -46,9 +46,9 @@ export function ViewModeRenderer({ graph }: ViewModeRendererProps) {
 
   switch (view) {
     case 'building':
-      return <BuildingView graph={graph} focusedNodeId={nodeId!} />;
+      return <BuildingView graph={graph} focusedNodeId={nodeId ?? ''} />;
     case 'cell':
-      return <CellView graph={graph} focusedNodeId={nodeId!} />;
+      return <CellView graph={graph} focusedNodeId={nodeId ?? ''} />;
     case 'city':
     default:
       return <CityView graph={graph} />;

@@ -123,7 +123,7 @@ vi.mock('../components/buildings', () => ({
     return <div data-testid={`enum-crate-${props.node.id}`} />;
   },
   RooftopGarden: () => <div data-testid="rooftop-garden" />,
-  buildNestedTypeMap: (nodes: GraphNode[]) => new Map<string, GraphNode[]>(),
+  buildNestedTypeMap: (_nodes: GraphNode[]) => new Map<string, GraphNode[]>(),
 }));
 
 vi.mock('../components/buildingGeometry', () => ({
@@ -203,7 +203,7 @@ vi.mock('../layout/engines/radialCityLayout', () => ({
 
 vi.mock('../layout/engines/clusterUtils', () => ({
   shouldCluster: (count: number, threshold: number) => count > threshold,
-  createClusterMetadata: (districtId: string, nodeIds: string[], positions: Map<string, { x: number; y: number; z: number }>) => ({
+  createClusterMetadata: (districtId: string, nodeIds: string[], _positions: Map<string, { x: number; y: number; z: number }>) => ({
     districtId,
     nodeIds,
     nodeCount: nodeIds.length,

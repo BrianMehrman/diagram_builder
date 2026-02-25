@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useExportStore, EXPORT_FORMATS, getFormatInfo } from './store';
+import type { ExportFormat } from './types';
 
 describe('useExportStore', () => {
   beforeEach(() => {
@@ -288,6 +289,6 @@ describe('getFormatInfo', () => {
   });
 
   it('throws error for invalid format', () => {
-    expect(() => getFormatInfo('invalid' as any)).toThrow('Unknown format: invalid');
+    expect(() => getFormatInfo('invalid' as unknown as ExportFormat)).toThrow('Unknown format: invalid');
   });
 });

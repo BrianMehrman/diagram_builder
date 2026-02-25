@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useCameraFlight } from './useCameraFlight';
 import { useCanvasStore } from '../canvas/store';
 
@@ -318,7 +318,6 @@ describe('useCameraFlight', () => {
   it('uses easing for smooth animation', () => {
     const { result } = renderHook(() => useCameraFlight());
 
-    const startPosition = useCanvasStore.getState().camera.position;
     const targetPosition = { x: 100, y: 50, z: 200 };
 
     act(() => {

@@ -202,9 +202,13 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
                 <div key={key} className="flex justify-between">
                   <span className="text-gray-400">{key}:</span>
                   <span className="font-medium">
-                    {typeof value === 'object'
+                    {value !== null && typeof value === 'object'
                       ? JSON.stringify(value)
-                      : String(value)}
+                      : typeof value === 'string'
+                        ? value
+                        : typeof value === 'number' || typeof value === 'boolean'
+                          ? String(value)
+                          : JSON.stringify(value)}
                   </span>
                 </div>
               ))}

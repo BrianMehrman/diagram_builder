@@ -51,7 +51,7 @@ function buildTree(nodes: GraphNode[]): TreeNode[] {
   // Extract a human-readable label: prefer metadata.label (IVM format), then top-level label, then id
   function getDisplayLabel(node: GraphNode): string {
     const raw = (node.metadata?.label as string) || node.label || node.id;
-    return raw.includes('/') ? raw.split('/').pop()! : raw;
+    return raw.includes('/') ? (raw.split('/').pop() ?? raw) : raw;
   }
 
   // Recursively convert to TreeNode

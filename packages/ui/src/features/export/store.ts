@@ -156,11 +156,12 @@ export const useExportStore = create<ExportStoreState>((set) => ({
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Export failed');
+        const errorData: unknown = await response.json();
+        const detail = errorData != null && typeof errorData === 'object' ? (errorData as { detail?: string }).detail : undefined;
+        throw new Error(detail ?? 'Export failed');
       }
 
-      const result: ExportResult = await response.json();
+      const result = (await response.json()) as unknown as ExportResult;
 
       set({
         status: 'success',

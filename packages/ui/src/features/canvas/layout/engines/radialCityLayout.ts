@@ -190,7 +190,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
     for (const assignment of ringAssignments) {
       const depth = assignment.ringDepth;
       if (!assignmentsByDepth.has(depth)) assignmentsByDepth.set(depth, []);
-      assignmentsByDepth.get(depth)!.push(assignment);
+      (assignmentsByDepth.get(depth) ?? []).push(assignment);
     }
 
     // Pre-compute actual radii per ring with footprint-aware expansion
@@ -199,7 +199,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
     let radiusOffset = 0;
 
     for (const depth of sortedDepths) {
-      const assignments = assignmentsByDepth.get(depth)!;
+      const assignments = assignmentsByDepth.get(depth) ?? [];
       const totalNodesOnRing = assignments.reduce((sum, a) => sum + a.nodeIds.length, 0);
 
       const baseRadius = calculateRingRadius(depth, {
@@ -220,7 +220,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
 
     // === Build file-block hierarchy for all internal non-file nodes ===
     const allInternalForHierarchy = [...fileNodes, ...nonFileNodes];
-    const { fileBlocks, orphans, cycleBreaks: _cycleBreaks } =
+    const { fileBlocks, orphans } =
       buildFileBlockHierarchy(allInternalForHierarchy);
 
     // === Phase A: Position file blocks on rings ===
@@ -234,12 +234,13 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       }));
 
       const arcs = assignDistrictArcs(districtDescriptors, depth, { arcPadding });
-      const radius = actualRadii.get(depth)!;
+      const radius = actualRadii.get(depth) ?? 0;
       const halfRing = effectiveRingSpacing / 2;
 
       for (let i = 0; i < arcs.length; i++) {
-        const arc = arcs[i]!;
-        const assignment = assignments[i]!;
+        const arc = arcs[i];
+        const assignment = assignments[i];
+        if (!arc || !assignment) continue;
 
         // Check if this district qualifies for compound merging (1-3 files)
         const isCompound = assignment.nodeIds.length <= 3 && assignment.nodeIds.length >= 1;
@@ -473,7 +474,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       for (const node of externalNodes) {
         const infraType = (node.metadata?.infrastructureType as string) ?? 'general';
         if (!zoneGroups.has(infraType)) zoneGroups.set(infraType, []);
-        zoneGroups.get(infraType)!.push(node);
+        zoneGroups.get(infraType)?.push(node);
       }
 
       // Build ordered zone list
@@ -582,7 +583,7 @@ function groupByDirectory(nodes: GraphNode[]): Map<string, GraphNode[]> {
     const dir = extractDirectory(filePath);
 
     if (!groups.has(dir)) groups.set(dir, []);
-    groups.get(dir)!.push(node);
+    groups.get(dir)?.push(node);
   }
 
   return new Map(

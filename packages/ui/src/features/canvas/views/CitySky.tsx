@@ -61,8 +61,9 @@ export function CitySky({ graph }: CitySkyProps) {
     <>
       {/* Dependency edges between buildings */}
       {edgesToRender.map((edge) => {
-        const srcPos = positions.get(edge.source)!;
-        const tgtPos = positions.get(edge.target)!;
+        const srcPos = positions.get(edge.source);
+        const tgtPos = positions.get(edge.target);
+        if (!srcPos || !tgtPos) return null;
 
         if (isV2) {
           const srcNode = nodeMap.get(edge.source);

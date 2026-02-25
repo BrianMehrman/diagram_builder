@@ -70,9 +70,10 @@ export function applyFloorBandColors(
 
     const vis = visibilities[floorIndex];
     const rgb = (vis !== undefined ? VISIBILITY_COLORS[vis] : undefined) ?? DEFAULT_VISIBILITY;
-    colors[i * 3] = rgb[0]!;
-    colors[i * 3 + 1] = rgb[1]!;
-    colors[i * 3 + 2] = rgb[2]!;
+    const [r, g, b] = rgb;
+    colors[i * 3] = r;
+    colors[i * 3 + 1] = g;
+    colors[i * 3 + 2] = b;
   }
 
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));

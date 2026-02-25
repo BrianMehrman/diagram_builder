@@ -50,7 +50,7 @@ export function getDirectoryColor(directory: string): string {
   if (existing) {
     return existing
   }
-  const color = COLOR_PALETTE[colorIndex % COLOR_PALETTE.length]!
+  const color = COLOR_PALETTE[colorIndex % COLOR_PALETTE.length] ?? '#3b82f6'
   directoryColorMap[directory] = color
   colorIndex++
   return color

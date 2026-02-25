@@ -48,8 +48,8 @@ function hashString(str: string): number {
  */
 export function getDistrictColor(districtName: string, index?: number): string {
   if (index !== undefined) {
-    return districtColorPalette[index % districtColorPalette.length] ?? districtColorPalette[0]!;
+    return districtColorPalette[index % districtColorPalette.length] ?? '#2d4a3e';
   }
   const hash = hashString(districtName);
-  return districtColorPalette[hash % districtColorPalette.length] ?? districtColorPalette[0]!;
+  return districtColorPalette[hash % districtColorPalette.length] ?? '#2d4a3e';
 }

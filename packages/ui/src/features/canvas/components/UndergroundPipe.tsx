@@ -61,8 +61,15 @@ export function UndergroundPipe({
   const arrowhead = useMemo(() => {
     const pts = calculatePipeRoute(sourcePosition, targetPosition, depth);
     // Last two points define the exit direction at the target surface
-    const lastPt = pts[pts.length - 1]!;
-    const prevPt = pts[pts.length - 2]!;
+    const lastPt = pts.at(-1);
+    const prevPt = pts.at(-2);
+
+    if (!lastPt || !prevPt) {
+      return new Mesh(
+        new ConeGeometry(ARROW_RADIUS, ARROW_HEIGHT, 6),
+        new MeshBasicMaterial({ color, transparent: true, opacity: PIPE_OPACITY }),
+      );
+    }
 
     const tangent = new Vector3(
       lastPt.x - prevPt.x,

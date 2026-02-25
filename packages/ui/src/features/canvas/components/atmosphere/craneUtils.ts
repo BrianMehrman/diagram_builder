@@ -42,7 +42,7 @@ export function computeCraneThreshold(nodes: GraphNode[]): number {
 
   // Top 10% index: at least 1 node qualifies
   const cutoffIndex = Math.max(0, Math.ceil(counts.length * 0.1) - 1);
-  return counts[cutoffIndex]!;
+  return counts[cutoffIndex] ?? 0;
 }
 
 /**

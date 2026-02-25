@@ -75,7 +75,8 @@ export function CityAtmosphere({ graph }: CityAtmosphereProps) {
     <group name="city-atmosphere">
       {/* Per-building indicators */}
       {buildingNodes.map((node) => {
-        const pos = positions.get(node.id)!;
+        const pos = positions.get(node.id);
+        if (!pos) return null;
         const config = getBuildingConfig(node);
         const height = config.geometry.height;
 

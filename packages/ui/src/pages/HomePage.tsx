@@ -17,7 +17,7 @@ export function HomePage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    loadWorkspaces()
+    void loadWorkspaces()
   }, [])
 
   const loadWorkspaces = async () => {
@@ -55,7 +55,7 @@ export function HomePage() {
       })
       setWorkspaceList([newWorkspace])
       // Automatically navigate to the new workspace
-      navigate(`/workspace/${newWorkspace.id}`)
+      void navigate(`/workspace/${newWorkspace.id}`)
     } catch (err) {
       console.error('Failed to create default workspace:', err)
       setError('Failed to create workspace. Please check that the API is running.')
@@ -101,7 +101,7 @@ export function HomePage() {
                 <div className="text-center py-12">
                   <p className="text-gray-500">No workspaces yet</p>
                   <button
-                    onClick={handleCreateWorkspace}
+                    onClick={() => { void handleCreateWorkspace() }}
                     disabled={creating}
                     className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >

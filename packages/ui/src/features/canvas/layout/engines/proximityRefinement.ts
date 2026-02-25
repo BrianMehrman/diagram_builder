@@ -57,8 +57,8 @@ export function refineDistrictProximity(
   for (const edge of edges) {
     if (edge.type === 'imports' || edge.type === 'depends_on') {
       if (blockIds.has(edge.source) && blockIds.has(edge.target)) {
-        adjacency.get(edge.source)!.add(edge.target);
-        adjacency.get(edge.target)!.add(edge.source);
+        adjacency.get(edge.source)?.add(edge.target);
+        adjacency.get(edge.target)?.add(edge.source);
       }
     }
   }
@@ -102,9 +102,13 @@ export function refineDistrictProximity(
 
     // Repulsive forces between all pairs
     for (let i = 0; i < refined.length; i++) {
+      const fi = forces[i];
+      const a = refined[i];
+      if (!a || !fi) continue;
       for (let j = i + 1; j < refined.length; j++) {
-        const a = refined[i]!;
-        const b = refined[j]!;
+        const fj = forces[j];
+        const b = refined[j];
+        if (!b || !fj) continue;
         const dx = a.position.x - b.position.x;
         const dz = a.position.z - b.position.z;
         const dist = Math.sqrt(dx * dx + dz * dz) + 0.01;
@@ -114,22 +118,26 @@ export function refineDistrictProximity(
           const force = repulsionStrength * (minDist - dist) / dist;
           const fx = dx * force;
           const fz = dz * force;
-          forces[i]!.fx += fx;
-          forces[i]!.fz += fz;
-          forces[j]!.fx -= fx;
-          forces[j]!.fz -= fz;
+          fi.fx += fx;
+          fi.fz += fz;
+          fj.fx -= fx;
+          fj.fz -= fz;
         }
       }
     }
 
     // Attractive forces along edges
     for (let i = 0; i < refined.length; i++) {
-      const a = refined[i]!;
+      const fi = forces[i];
+      const a = refined[i];
+      if (!a || !fi) continue;
       const neighbors = adjacency.get(a.fileId);
       if (!neighbors) continue;
 
       for (let j = i + 1; j < refined.length; j++) {
-        const b = refined[j]!;
+        const fj = forces[j];
+        const b = refined[j];
+        if (!b || !fj) continue;
         if (!neighbors.has(b.fileId)) continue;
 
         const dx = b.position.x - a.position.x;
@@ -137,18 +145,19 @@ export function refineDistrictProximity(
 
         const fx = dx * attractionStrength;
         const fz = dz * attractionStrength;
-        forces[i]!.fx += fx;
-        forces[i]!.fz += fz;
-        forces[j]!.fx -= fx;
-        forces[j]!.fz -= fz;
+        fi.fx += fx;
+        fi.fz += fz;
+        fj.fx -= fx;
+        fj.fz -= fz;
       }
     }
 
     // Apply forces with damping and clamp within boundary
     let totalMovement = 0;
     for (let i = 0; i < refined.length; i++) {
-      const block = refined[i]!;
-      const f = forces[i]!;
+      const block = refined[i];
+      const f = forces[i];
+      if (!block || !f) continue;
 
       block.position.x += f.fx * damping;
       block.position.z += f.fz * damping;

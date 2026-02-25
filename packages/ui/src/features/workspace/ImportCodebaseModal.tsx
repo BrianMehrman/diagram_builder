@@ -223,7 +223,7 @@ export function ImportCodebaseModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e) => { void handleSubmit(e) }}>
           {/* Type Selector */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Source Type</label>

@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { calculateRoomLayout, WALL_PADDING, ROOM_GAP } from './roomLayout';
+import { calculateRoomLayout, WALL_PADDING } from './roomLayout';
 import { METHOD_ROOM_HEIGHT } from '../../views/cityViewUtils';
 
 describe('calculateRoomLayout', () => {

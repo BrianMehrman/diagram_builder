@@ -193,10 +193,10 @@ export function useImportProgress({
     };
 
     // Initial poll
-    poll();
+    void poll();
 
     // Start interval polling
-    intervalId = setInterval(poll, pollInterval);
+    intervalId = setInterval(() => { void poll() }, pollInterval);
 
     return () => {
       mounted = false;
