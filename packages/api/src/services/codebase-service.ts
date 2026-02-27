@@ -74,9 +74,9 @@ export async function importCodebase(
   await cache.invalidate(workspaceCodebasesKey);
 
   // Trigger async parser import (fire and forget - updates status when complete)
-  triggerParserImport(codebaseId, input).catch((error) => {
+  void triggerParserImport(codebaseId, input).catch((error: unknown) => {
     // Log error but don't fail the request
-    console.error(`Parser import failed for codebase ${codebaseId}:`, error);
+    console.error(`Parser import failed for codebase ${codebaseId}:`, error instanceof Error ? error.message : String(error));
   });
 
   const codebase: Codebase = {
@@ -159,8 +159,7 @@ async function triggerParserImport(
     const skippedFiles: string[] = [];
     const totalFiles = repoContext.files.length;
 
-    for (let i = 0; i < repoContext.files.length; i++) {
-      const filePath = repoContext.files[i]!;
+    for (const [i, filePath] of repoContext.files.entries()) {
       try {
         const content = await readFile(filePath, 'utf-8');
         // Skip files with null bytes (likely binary)
@@ -283,8 +282,7 @@ async function triggerParserImport(
       filesProcessed: totalFiles,
     });
 
-    for (let i = 0; i < ivm.nodes.length; i++) {
-      const node = ivm.nodes[i]!;
+    for (const [i, node] of ivm.nodes.entries()) {
       const nodeType = node.type.charAt(0).toUpperCase() + node.type.slice(1); // Capitalize for Neo4j label
 
       await runQuery(
@@ -321,8 +319,8 @@ async function triggerParserImport(
           language: node.metadata.language || null,
           loc: node.metadata.loc || null,
           complexity: node.metadata.complexity || null,
-          visibility: (node.metadata.properties as Record<string, unknown>)?.visibility as string || null,
-          methodCount: (node.metadata.properties as Record<string, unknown>)?.methodCount as number || null,
+          visibility: (node.metadata.properties?.['visibility'] as string | undefined) ?? null,
+          methodCount: (node.metadata.properties?.['methodCount'] as number | undefined) ?? null,
           metadata: JSON.stringify(node.metadata || {}),
         }
       );
@@ -349,8 +347,7 @@ async function triggerParserImport(
       filesProcessed: totalFiles,
     });
 
-    for (let i = 0; i < ivm.edges.length; i++) {
-      const edge = ivm.edges[i]!;
+    for (const [i, edge] of ivm.edges.entries()) {
       const edgeType = edge.type.toUpperCase().replace(/-/g, '_'); // Format for Neo4j relationship
 
       await runQuery(

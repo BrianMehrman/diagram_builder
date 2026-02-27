@@ -20,6 +20,8 @@ import {
   assertGraphQuality,
 } from '../utils/graph-quality-assertions';
 
+type TestEdge = { id: string; source: string; target: string; type: string; metadata: Record<string, unknown> };
+
 describe('Graph Quality Assertions', () => {
   describe('assertMinimumGraphSize', () => {
     it('should pass when graph meets minimum size requirements', () => {
@@ -37,7 +39,7 @@ describe('Graph Quality Assertions', () => {
 
     it('should fail when graph has too few nodes', () => {
       const nodes = [{ id: '1', type: 'file', label: 'a.ts', metadata: {}, lod: 0 }];
-      const edges: any[] = [];
+      const edges: TestEdge[] = [];
 
       expect(() => assertMinimumGraphSize(nodes, edges, 5, 0)).toThrow();
     });
@@ -47,7 +49,7 @@ describe('Graph Quality Assertions', () => {
         { id: '1', type: 'file', label: 'a.ts', metadata: {}, lod: 0 },
         { id: '2', type: 'file', label: 'b.ts', metadata: {}, lod: 0 },
       ];
-      const edges: any[] = [];
+      const edges: TestEdge[] = [];
 
       expect(() => assertMinimumGraphSize(nodes, edges, 2, 3)).toThrow();
     });
@@ -78,7 +80,7 @@ describe('Graph Quality Assertions', () => {
 
     it('should fail for node missing id', () => {
       const nodes = [
-        { type: 'file', label: 'test', metadata: {}, lod: 0 } as any,
+        { type: 'file', label: 'test', metadata: {}, lod: 0 } as { id: string; type: string; label: string; metadata: Record<string, unknown>; lod: number },
       ];
 
       expect(() => assertNodeStructure(nodes)).toThrow(/missing 'id' field/);
@@ -86,7 +88,7 @@ describe('Graph Quality Assertions', () => {
 
     it('should fail for node missing type', () => {
       const nodes = [
-        { id: '1', label: 'test', metadata: {}, lod: 0 } as any,
+        { id: '1', label: 'test', metadata: {}, lod: 0 } as { id: string; type: string; label: string; metadata: Record<string, unknown>; lod: number },
       ];
 
       expect(() => assertNodeStructure(nodes)).toThrow(/missing 'type' field/);
@@ -148,7 +150,7 @@ describe('Graph Quality Assertions', () => {
 
     it('should fail for edge missing source', () => {
       const edges = [
-        { id: 'e1', target: 'node-2', type: 'imports', metadata: {} } as any,
+        { id: 'e1', target: 'node-2', type: 'imports', metadata: {} } as { id: string; source: string; target: string; type: string; metadata: Record<string, unknown> },
       ];
 
       expect(() => assertEdgeStructure(edges)).toThrow(/missing 'source' field/);
@@ -340,7 +342,7 @@ describe('Graph Quality Assertions', () => {
         { id: 'f1', type: 'file', label: 'a.ts', metadata: {}, lod: 0 },
         { id: 'f2', type: 'file', label: 'b.ts', metadata: {}, lod: 0 },
       ];
-      const edges: any[] = [];
+      const edges: TestEdge[] = [];
 
       expect(() => assertNoOrphanedNodes(nodes, edges)).not.toThrow();
     });
@@ -350,7 +352,7 @@ describe('Graph Quality Assertions', () => {
         { id: 'f1', type: 'file', label: 'a.ts', metadata: {}, lod: 0 },
         { id: 'c1', type: 'class', label: 'User', metadata: {}, lod: 1 },
       ];
-      const edges: any[] = [];
+      const edges: TestEdge[] = [];
 
       expect(() => assertNoOrphanedNodes(nodes, edges)).toThrow(/orphaned nodes/);
     });

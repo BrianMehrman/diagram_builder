@@ -24,11 +24,14 @@ export interface AuthenticatedSocket extends Socket {
 export function authenticateSocket(socket: Socket, next: (err?: Error) => void): void {
   try {
     // Try to get token from auth object (recommended)
-    let token = socket.handshake.auth?.token;
+    const authToken: unknown = (socket.handshake.auth?.token) as unknown;
+    const queryToken: unknown = (socket.handshake.query?.token) as unknown;
 
-    // Fallback to query parameter for backwards compatibility
-    if (!token) {
-      token = socket.handshake.query?.token as string;
+    let token: string | undefined;
+    if (typeof authToken === 'string') {
+      token = authToken;
+    } else if (typeof queryToken === 'string') {
+      token = queryToken;
     }
 
     if (!token) {

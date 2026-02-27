@@ -417,22 +417,17 @@ describe('Workspace Endpoints', () => {
   });
 
   describe('GET /api/workspaces', () => {
-    let workspace1Id: string;
-    let workspace2Id: string;
-
     beforeEach(async () => {
       // Create two workspaces for user 1
-      const res1 = await request(app)
+      await request(app)
         .post('/api/workspaces')
         .set('Authorization', `Bearer ${authToken}`)
         .send({ name: 'Workspace 1' });
-      workspace1Id = res1.body.id;
 
-      const res2 = await request(app)
+      await request(app)
         .post('/api/workspaces')
         .set('Authorization', `Bearer ${authToken}`)
         .send({ name: 'Workspace 2' });
-      workspace2Id = res2.body.id;
 
       // Create one workspace for user 2
       await request(app)
@@ -960,8 +955,6 @@ describe('Workspace Endpoints', () => {
 
   describe('GET /api/workspaces/:workspaceId/codebases', () => {
     let workspaceId: string;
-    let codebase1Id: string;
-    let codebase2Id: string;
 
     beforeEach(async () => {
       const workspaceResponse = await request(app)
@@ -971,17 +964,15 @@ describe('Workspace Endpoints', () => {
       workspaceId = workspaceResponse.body.id;
 
       // Create two codebases
-      const codebase1Response = await request(app)
+      await request(app)
         .post(`/api/workspaces/${workspaceId}/codebases`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({ source: '/path/1', type: 'local' });
-      codebase1Id = codebase1Response.body.codebaseId;
 
-      const codebase2Response = await request(app)
+      await request(app)
         .post(`/api/workspaces/${workspaceId}/codebases`)
         .set('Authorization', `Bearer ${authToken}`)
         .send({ source: 'https://github.com/user/repo.git', type: 'git' });
-      codebase2Id = codebase2Response.body.codebaseId;
     });
 
     it('should list all codebases in workspace', async () => {

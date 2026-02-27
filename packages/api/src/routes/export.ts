@@ -19,9 +19,21 @@ import {
   exportImage,
   type ExportRequest,
   type ImageExportRequest,
+  type GraphFilters,
 } from '../services/export-service';
 import { ValidationError, NotFoundError } from '../errors';
 import { asyncHandler } from '../utils/async-handler';
+
+interface ExportBody {
+  repoId: unknown;
+  lodLevel?: number;
+  filters?: GraphFilters;
+  options?: Record<string, unknown>;
+}
+
+interface ImageExportBody extends ExportBody {
+  format: unknown;
+}
 
 const exportRouter = Router();
 
@@ -30,17 +42,17 @@ const exportRouter = Router();
  * Export graph as PlantUML
  */
 exportRouter.post('/plantuml', authenticate, asyncHandler(async (req: Request, res: Response) => {
-  const { repoId, lodLevel, filters, options } = req.body;
+  const { repoId, lodLevel, filters, options } = req.body as ExportBody;
 
-  if (!repoId) {
+  if (!repoId || typeof repoId !== 'string') {
     throw new ValidationError('Invalid request', 'Repository ID is required');
   }
 
   const request: ExportRequest = {
     repoId,
-    lodLevel,
-    filters,
-    options,
+    ...(lodLevel !== undefined && { lodLevel }),
+    ...(filters !== undefined && { filters }),
+    ...(options !== undefined && { options }),
   };
 
   try {
@@ -69,17 +81,17 @@ exportRouter.post('/plantuml', authenticate, asyncHandler(async (req: Request, r
  * Export graph as Mermaid
  */
 exportRouter.post('/mermaid', authenticate, asyncHandler(async (req: Request, res: Response) => {
-  const { repoId, lodLevel, filters, options } = req.body;
+  const { repoId, lodLevel, filters, options } = req.body as ExportBody;
 
-  if (!repoId) {
+  if (!repoId || typeof repoId !== 'string') {
     throw new ValidationError('Invalid request', 'Repository ID is required');
   }
 
   const request: ExportRequest = {
     repoId,
-    lodLevel,
-    filters,
-    options,
+    ...(lodLevel !== undefined && { lodLevel }),
+    ...(filters !== undefined && { filters }),
+    ...(options !== undefined && { options }),
   };
 
   try {
@@ -108,17 +120,17 @@ exportRouter.post('/mermaid', authenticate, asyncHandler(async (req: Request, re
  * Export graph as Draw.io XML
  */
 exportRouter.post('/drawio', authenticate, asyncHandler(async (req: Request, res: Response) => {
-  const { repoId, lodLevel, filters, options } = req.body;
+  const { repoId, lodLevel, filters, options } = req.body as ExportBody;
 
-  if (!repoId) {
+  if (!repoId || typeof repoId !== 'string') {
     throw new ValidationError('Invalid request', 'Repository ID is required');
   }
 
   const request: ExportRequest = {
     repoId,
-    lodLevel,
-    filters,
-    options,
+    ...(lodLevel !== undefined && { lodLevel }),
+    ...(filters !== undefined && { filters }),
+    ...(options !== undefined && { options }),
   };
 
   try {
@@ -147,17 +159,17 @@ exportRouter.post('/drawio', authenticate, asyncHandler(async (req: Request, res
  * Export graph as GLTF 3D model
  */
 exportRouter.post('/gltf', authenticate, asyncHandler(async (req: Request, res: Response) => {
-  const { repoId, lodLevel, filters, options } = req.body;
+  const { repoId, lodLevel, filters, options } = req.body as ExportBody;
 
-  if (!repoId) {
+  if (!repoId || typeof repoId !== 'string') {
     throw new ValidationError('Invalid request', 'Repository ID is required');
   }
 
   const request: ExportRequest = {
     repoId,
-    lodLevel,
-    filters,
-    options,
+    ...(lodLevel !== undefined && { lodLevel }),
+    ...(filters !== undefined && { filters }),
+    ...(options !== undefined && { options }),
   };
 
   try {
@@ -186,9 +198,9 @@ exportRouter.post('/gltf', authenticate, asyncHandler(async (req: Request, res: 
  * Export graph as PNG or SVG image
  */
 exportRouter.post('/image', authenticate, asyncHandler(async (req: Request, res: Response) => {
-  const { repoId, lodLevel, filters, format, options } = req.body;
+  const { repoId, lodLevel, filters, format, options } = req.body as ImageExportBody;
 
-  if (!repoId) {
+  if (!repoId || typeof repoId !== 'string') {
     throw new ValidationError('Invalid request', 'Repository ID is required');
   }
 
@@ -201,10 +213,10 @@ exportRouter.post('/image', authenticate, asyncHandler(async (req: Request, res:
 
   const request: ImageExportRequest = {
     repoId,
-    lodLevel,
-    filters,
     format,
-    options,
+    ...(lodLevel !== undefined && { lodLevel }),
+    ...(filters !== undefined && { filters }),
+    ...(options !== undefined && { options }),
   };
 
   try {

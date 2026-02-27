@@ -180,8 +180,8 @@ describe('[Failure Modes] API Error Handling', () => {
     it('should handle malformed graph data from service', async () => {
       // Return invalid graph structure
       vi.mocked(graphService.getFullGraph).mockResolvedValue({
-        nodes: null as any,
-        edges: undefined as any,
+        nodes: null as unknown as [],
+        edges: undefined as unknown as [],
       });
 
       const response = await request(app)

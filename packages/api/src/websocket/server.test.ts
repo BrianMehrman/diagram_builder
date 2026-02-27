@@ -10,11 +10,12 @@
  * - Multi-user collaboration
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { createServer, Server as HTTPServer } from 'http';
 import express, { Express } from 'express';
 import { Socket as ClientSocket, io as ioClient } from 'socket.io-client';
 import msgpackParser from 'socket.io-msgpack-parser';
+import jwt from 'jsonwebtoken';
 import { createWebSocketServer } from './server';
 import { generateToken } from '../auth/jwt';
 import type { ServerToClientEvents, ClientToServerEvents } from './server';
@@ -32,7 +33,11 @@ describe('WebSocket Server', () => {
 
   // Helper to create client with MessagePack parser
   const createClient = (token?: string, useQuery = false) => {
-    const options: any = {
+    const options: {
+      parser: typeof msgpackParser;
+      auth?: { token: string };
+      query?: { token: string };
+    } = {
       parser: msgpackParser, // Use MessagePack for serialization
     };
 
@@ -164,7 +169,6 @@ describe('WebSocket Server', () => {
 
     it('should reject connection with expired JWT token', async () => {
       // Create a manually expired token
-      const jwt = require('jsonwebtoken');
       const expiredToken = jwt.sign(
         { userId: 'user-123' },
         TEST_SECRET,
@@ -218,79 +222,85 @@ describe('WebSocket Server', () => {
     });
 
     it('should notify existing users when new user joins', async () => {
-      return new Promise<void>(async (resolve, reject) => {
-        // First user joins
-        await new Promise<void>((res) => {
-          client1.on('session.joined', () => res());
-          client1.emit('session.join', { workspaceId: 'workspace-1' });
-        });
+      return new Promise<void>((resolve, reject) => {
+        void (async () => {
+          // First user joins
+          await new Promise<void>((res) => {
+            client1.on('session.joined', () => res());
+            client1.emit('session.join', { workspaceId: 'workspace-1' });
+          });
 
-        // Set up listener for new user notification
-        client1.on('session.userJoined', (data) => {
-          expect(data.userId).toBe('user-456');
-          resolve();
-        });
+          // Set up listener for new user notification
+          client1.on('session.userJoined', (data) => {
+            expect(data.userId).toBe('user-456');
+            resolve();
+          });
 
-        // Second user connects and joins
-        client2 = createClient(authToken2);
+          // Second user connects and joins
+          client2 = createClient(authToken2);
 
-        client2.on('connect', () => {
-          client2.emit('session.join', { workspaceId: 'workspace-1' });
-        });
+          client2.on('connect', () => {
+            client2.emit('session.join', { workspaceId: 'workspace-1' });
+          });
 
-        setTimeout(() => reject(new Error('User join notification timeout')), 3000);
+          setTimeout(() => reject(new Error('User join notification timeout')), 3000);
+        })().catch(reject);
       });
     });
 
     it('should handle session leave event', async () => {
-      return new Promise<void>(async (resolve, reject) => {
-        // Join session first
-        await new Promise<void>((res) => {
-          client1.on('session.joined', () => res());
-          client1.emit('session.join', { workspaceId: 'workspace-1' });
-        });
-
-        // Leave session
-        client1.emit('session.leave');
-
-        // Verify we can join again (indicates successful leave)
-        setTimeout(() => {
-          client1.on('session.joined', (data) => {
-            expect(data.sessionId).toBe('workspace-1');
-            resolve();
+      return new Promise<void>((resolve, reject) => {
+        void (async () => {
+          // Join session first
+          await new Promise<void>((res) => {
+            client1.on('session.joined', () => res());
+            client1.emit('session.join', { workspaceId: 'workspace-1' });
           });
-          client1.emit('session.join', { workspaceId: 'workspace-1' });
-        }, 500);
 
-        setTimeout(() => reject(new Error('Session leave test timeout')), 3000);
+          // Leave session
+          client1.emit('session.leave');
+
+          // Verify we can join again (indicates successful leave)
+          setTimeout(() => {
+            client1.on('session.joined', (data) => {
+              expect(data.sessionId).toBe('workspace-1');
+              resolve();
+            });
+            client1.emit('session.join', { workspaceId: 'workspace-1' });
+          }, 500);
+
+          setTimeout(() => reject(new Error('Session leave test timeout')), 3000);
+        })().catch(reject);
       });
     });
 
     it('should support separate sessions per workspace', async () => {
-      return new Promise<void>(async (resolve, reject) => {
-        // User 1 joins workspace 1
-        await new Promise<void>((res) => {
-          client1.on('session.joined', (data) => {
-            expect(data.sessionId).toBe('workspace-1');
-            res();
+      return new Promise<void>((resolve, reject) => {
+        void (async () => {
+          // User 1 joins workspace 1
+          await new Promise<void>((res) => {
+            client1.on('session.joined', (data) => {
+              expect(data.sessionId).toBe('workspace-1');
+              res();
+            });
+            client1.emit('session.join', { workspaceId: 'workspace-1' });
           });
-          client1.emit('session.join', { workspaceId: 'workspace-1' });
-        });
 
-        // User 2 connects and joins workspace 2
-        client2 = createClient(authToken2);
+          // User 2 connects and joins workspace 2
+          client2 = createClient(authToken2);
 
-        client2.on('connect', () => {
-          client2.on('session.joined', (data) => {
-            expect(data.sessionId).toBe('workspace-2');
-            expect(data.users).toHaveLength(1);
-            expect(data.users[0]?.userId).toBe('user-456');
-            resolve();
+          client2.on('connect', () => {
+            client2.on('session.joined', (data) => {
+              expect(data.sessionId).toBe('workspace-2');
+              expect(data.users).toHaveLength(1);
+              expect(data.users[0]?.userId).toBe('user-456');
+              resolve();
+            });
+            client2.emit('session.join', { workspaceId: 'workspace-2' });
           });
-          client2.emit('session.join', { workspaceId: 'workspace-2' });
-        });
 
-        setTimeout(() => reject(new Error('Separate sessions timeout')), 3000);
+          setTimeout(() => reject(new Error('Separate sessions timeout')), 3000);
+        })().catch(reject);
       });
     });
   });
@@ -311,31 +321,33 @@ describe('WebSocket Server', () => {
     });
 
     it('should notify other users when user disconnects', async () => {
-      return new Promise<void>(async (resolve, reject) => {
-        // Both users join same session
-        await Promise.all([
-          new Promise<void>((res) => {
-            client1.on('session.joined', () => res());
-            client1.emit('session.join', { workspaceId: 'workspace-1' });
-          }),
-          new Promise<void>((res) => {
-            client2.on('session.joined', () => res());
-            client2.emit('session.join', { workspaceId: 'workspace-1' });
-          }),
-        ]);
+      return new Promise<void>((resolve, reject) => {
+        void (async () => {
+          // Both users join same session
+          await Promise.all([
+            new Promise<void>((res) => {
+              client1.on('session.joined', () => res());
+              client1.emit('session.join', { workspaceId: 'workspace-1' });
+            }),
+            new Promise<void>((res) => {
+              client2.on('session.joined', () => res());
+              client2.emit('session.join', { workspaceId: 'workspace-1' });
+            }),
+          ]);
 
-        // Listen for user left event
-        client1.on('session.userLeft', (data) => {
-          expect(data.userId).toBe('user-456');
-          resolve();
-        });
+          // Listen for user left event
+          client1.on('session.userLeft', (data) => {
+            expect(data.userId).toBe('user-456');
+            resolve();
+          });
 
-        // Disconnect client 2
-        setTimeout(() => {
-          client2.disconnect();
-        }, 500);
+          // Disconnect client 2
+          setTimeout(() => {
+            client2.disconnect();
+          }, 500);
 
-        setTimeout(() => reject(new Error('Disconnect notification timeout')), 3000);
+          setTimeout(() => reject(new Error('Disconnect notification timeout')), 3000);
+        })().catch(reject);
       });
     });
   });
@@ -353,7 +365,8 @@ describe('WebSocket Server', () => {
     });
 
     it('should broadcast position updates to other users', async () => {
-      return new Promise<void>(async (resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
+        void (async () => {
         // Connect second user
         client2 = createClient(authToken2);
 
@@ -382,6 +395,7 @@ describe('WebSocket Server', () => {
 
         // Wait for batch window (50ms) + buffer
         setTimeout(() => reject(new Error('Position update timeout')), 2000);
+        })().catch(reject);
       });
     });
 
@@ -491,7 +505,7 @@ describe('WebSocket Server', () => {
         });
 
         // Send malformed data (missing workspaceId)
-        client1.emit('session.join', {} as any);
+        client1.emit('session.join', {} as { workspaceId: string });
 
         // If it times out, that's also acceptable (no crash)
         setTimeout(() => resolve(), 1000);
@@ -563,39 +577,41 @@ describe('WebSocket Server', () => {
     });
 
     it('should successfully serialize/deserialize complex position data', async () => {
-      return new Promise<void>(async (resolve, reject) => {
-        // Connect second user
-        client2 = createClient(authToken2);
+      return new Promise<void>((resolve, reject) => {
+        void (async () => {
+          // Connect second user
+          client2 = createClient(authToken2);
 
-        await new Promise<void>((res) => {
-          client2.on('connect', () => {
-            client2.on('session.joined', () => res());
-            client2.emit('session.join', { workspaceId: 'workspace-1' });
+          await new Promise<void>((res) => {
+            client2.on('connect', () => {
+              client2.on('session.joined', () => res());
+              client2.emit('session.join', { workspaceId: 'workspace-1' });
+            });
           });
-        });
 
-        // Listen for position updates with complex data
-        client2.on('positions.sync', (data) => {
-          expect(data.positions).toBeDefined();
-          expect(data.positions.length).toBeGreaterThan(0);
+          // Listen for position updates with complex data
+          client2.on('positions.sync', (data) => {
+            expect(data.positions).toBeDefined();
+            expect(data.positions.length).toBeGreaterThan(0);
 
-          const position = data.positions[0];
-          expect(position?.userId).toBe('user-123');
-          expect(position?.position).toEqual({ x: 123.456, y: -789.012, z: 345.678 });
-          expect(position?.target).toEqual({ x: 0, y: 0, z: 0 });
-          expect(position?.color).toBe('#FF5733');
-          expect(position?.timestamp).toBeDefined();
-          resolve();
-        });
+            const position = data.positions[0];
+            expect(position?.userId).toBe('user-123');
+            expect(position?.position).toEqual({ x: 123.456, y: -789.012, z: 345.678 });
+            expect(position?.target).toEqual({ x: 0, y: 0, z: 0 });
+            expect(position?.color).toBe('#FF5733');
+            expect(position?.timestamp).toBeDefined();
+            resolve();
+          });
 
-        // Send complex position update
-        client1.emit('position.update', {
-          position: { x: 123.456, y: -789.012, z: 345.678 },
-          target: { x: 0, y: 0, z: 0 },
-          color: '#FF5733',
-        });
+          // Send complex position update
+          client1.emit('position.update', {
+            position: { x: 123.456, y: -789.012, z: 345.678 },
+            target: { x: 0, y: 0, z: 0 },
+            color: '#FF5733',
+          });
 
-        setTimeout(() => reject(new Error('MessagePack serialization timeout')), 2000);
+          setTimeout(() => reject(new Error('MessagePack serialization timeout')), 2000);
+        })().catch(reject);
       });
     });
   });

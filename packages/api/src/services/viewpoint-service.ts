@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { runQuery } from '../database/query-utils';
 import { buildCacheKey } from '../cache/cache-keys';
 import * as cache from '../cache/cache-utils';
-import type { Viewpoint, CreateViewpointInput, UpdateViewpointInput } from '../types/viewpoint';
+import type { Viewpoint, CreateViewpointInput, UpdateViewpointInput, GraphFilters, Annotation } from '../types/viewpoint';
 
 /**
  * Create a new viewpoint
@@ -117,15 +117,16 @@ export async function getViewpoint(viewpointId: string): Promise<Viewpoint | nul
     return null;
   }
 
-  const result = results[0]!;
+  const result = results[0];
+  if (!result) return null;
   const viewpoint: Viewpoint = {
     id: result.id,
     repositoryId: result.repositoryId,
     name: result.name,
     ...(result.description && { description: result.description }),
-    camera: JSON.parse(result.camera),
-    ...(result.filters && { filters: JSON.parse(result.filters) }),
-    ...(result.annotations && { annotations: JSON.parse(result.annotations) }),
+    camera: JSON.parse(result.camera) as Viewpoint['camera'],
+    ...(result.filters && { filters: JSON.parse(result.filters) as GraphFilters }),
+    ...(result.annotations && { annotations: JSON.parse(result.annotations) as Annotation[] }),
     createdBy: result.createdBy,
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
@@ -337,15 +338,16 @@ export async function getViewpointByShareToken(shareToken: string): Promise<View
     return null;
   }
 
-  const result = results[0]!;
+  const result = results[0];
+  if (!result) return null;
   return {
     id: result.id,
     repositoryId: result.repositoryId,
     name: result.name,
     ...(result.description && { description: result.description }),
-    camera: JSON.parse(result.camera),
-    ...(result.filters && { filters: JSON.parse(result.filters) }),
-    ...(result.annotations && { annotations: JSON.parse(result.annotations) }),
+    camera: JSON.parse(result.camera) as Viewpoint['camera'],
+    ...(result.filters && { filters: JSON.parse(result.filters) as GraphFilters }),
+    ...(result.annotations && { annotations: JSON.parse(result.annotations) as Annotation[] }),
     createdBy: result.createdBy,
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
@@ -411,9 +413,9 @@ export async function listViewpoints(
     repositoryId: result.repositoryId,
     name: result.name,
     ...(result.description && { description: result.description }),
-    camera: JSON.parse(result.camera),
-    ...(result.filters && { filters: JSON.parse(result.filters) }),
-    ...(result.annotations && { annotations: JSON.parse(result.annotations) }),
+    camera: JSON.parse(result.camera) as Viewpoint['camera'],
+    ...(result.filters && { filters: JSON.parse(result.filters) as GraphFilters }),
+    ...(result.annotations && { annotations: JSON.parse(result.annotations) as Annotation[] }),
     createdBy: result.createdBy,
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,

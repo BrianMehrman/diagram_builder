@@ -18,11 +18,45 @@ const VALID_NODE_TYPES = ['file', 'class', 'function', 'method', 'variable'] as 
 const VALID_EDGE_TYPES = ['contains', 'imports', 'depends_on', 'calls', 'extends', 'implements'] as const;
 
 /**
+ * Represents a node returned from Neo4j graph queries
+ */
+interface Neo4jNode {
+  id: string;
+  type: string;
+  label: string;
+  lod: number;
+  position?: { x: number; y: number; z: number };
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Represents an edge returned from Neo4j graph queries
+ */
+interface Neo4jEdge {
+  id: string;
+  source: string;
+  target: string;
+  type: string;
+  lod?: number;
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Represents graph metadata from Neo4j query results
+ */
+interface GraphMetadata {
+  repositoryId: string;
+  totalNodes: number;
+  totalEdges: number;
+  [key: string]: unknown;
+}
+
+/**
  * Assert graph has minimum node and edge counts
  */
 export function assertMinimumGraphSize(
-  nodes: any[],
-  edges: any[],
+  nodes: Neo4jNode[],
+  edges: Neo4jEdge[],
   minNodes: number,
   minEdges: number
 ) {
@@ -33,7 +67,7 @@ export function assertMinimumGraphSize(
 /**
  * Assert all nodes have required fields
  */
-export function assertNodeStructure(nodes: any[]) {
+export function assertNodeStructure(nodes: Neo4jNode[]) {
   nodes.forEach((node, index) => {
     expect(node, `Node ${index} is null or undefined`).toBeTruthy();
     expect(node.id, `Node ${index} missing 'id' field`).toBeTruthy();
@@ -51,7 +85,7 @@ export function assertNodeStructure(nodes: any[]) {
 
     // Validate node type is valid
     expect(
-      VALID_NODE_TYPES.includes(node.type),
+      (VALID_NODE_TYPES as readonly string[]).includes(node.type),
       `Node ${index} has invalid type '${node.type}'. Valid types: ${VALID_NODE_TYPES.join(', ')}`
     ).toBe(true);
 
@@ -70,7 +104,7 @@ export function assertNodeStructure(nodes: any[]) {
 /**
  * Assert all edges have required fields
  */
-export function assertEdgeStructure(edges: any[]) {
+export function assertEdgeStructure(edges: Neo4jEdge[]) {
   edges.forEach((edge, index) => {
     expect(edge, `Edge ${index} is null or undefined`).toBeTruthy();
     expect(edge.id, `Edge ${index} missing 'id' field`).toBeTruthy();
@@ -87,7 +121,7 @@ export function assertEdgeStructure(edges: any[]) {
 
     // Validate edge type is valid
     expect(
-      VALID_EDGE_TYPES.includes(edge.type),
+      (VALID_EDGE_TYPES as readonly string[]).includes(edge.type),
       `Edge ${index} has invalid type '${edge.type}'. Valid types: ${VALID_EDGE_TYPES.join(', ')}`
     ).toBe(true);
   });
@@ -96,7 +130,7 @@ export function assertEdgeStructure(edges: any[]) {
 /**
  * Assert all edge references exist in nodes
  */
-export function assertEdgeReferences(nodes: any[], edges: any[]) {
+export function assertEdgeReferences(nodes: Neo4jNode[], edges: Neo4jEdge[]) {
   const nodeIds = new Set(nodes.map((n) => n.id));
 
   edges.forEach((edge, index) => {
@@ -114,7 +148,7 @@ export function assertEdgeReferences(nodes: any[], edges: any[]) {
 /**
  * Assert no self-referencing edges (node points to itself)
  */
-export function assertNoSelfReferences(edges: any[]) {
+export function assertNoSelfReferences(edges: Neo4jEdge[]) {
   edges.forEach((edge, index) => {
     expect(
       edge.source !== edge.target,
@@ -126,7 +160,7 @@ export function assertNoSelfReferences(edges: any[]) {
 /**
  * Assert all node IDs are unique
  */
-export function assertUniqueNodeIds(nodes: any[]) {
+export function assertUniqueNodeIds(nodes: Neo4jNode[]) {
   const ids = nodes.map((n) => n.id);
   const uniqueIds = new Set(ids);
 
@@ -139,7 +173,7 @@ export function assertUniqueNodeIds(nodes: any[]) {
 /**
  * Assert all edge IDs are unique
  */
-export function assertUniqueEdgeIds(edges: any[]) {
+export function assertUniqueEdgeIds(edges: Neo4jEdge[]) {
   const ids = edges.map((e) => e.id);
   const uniqueIds = new Set(ids);
 
@@ -152,7 +186,7 @@ export function assertUniqueEdgeIds(edges: any[]) {
 /**
  * Assert graph metadata is correct
  */
-export function assertGraphMetadata(metadata: any, expectedNodes: number, expectedEdges: number) {
+export function assertGraphMetadata(metadata: GraphMetadata, expectedNodes: number, expectedEdges: number) {
   expect(metadata, 'Metadata is null or undefined').toBeTruthy();
   expect(metadata, 'Metadata missing repositoryId').toHaveProperty('repositoryId');
   expect(metadata, 'Metadata missing totalNodes').toHaveProperty('totalNodes');
@@ -164,7 +198,7 @@ export function assertGraphMetadata(metadata: any, expectedNodes: number, expect
 /**
  * Assert LOD levels are valid and consistent
  */
-export function assertLODConsistency(nodes: any[]) {
+export function assertLODConsistency(nodes: Neo4jNode[]) {
   // Group nodes by type
   const fileNodes = nodes.filter((n) => n.type === 'file');
   const classNodes = nodes.filter((n) => n.type === 'class');
@@ -198,7 +232,7 @@ export function assertLODConsistency(nodes: any[]) {
  * Assert no orphaned nodes (nodes with no incoming or outgoing edges)
  * Excludes file nodes which can be at the root
  */
-export function assertNoOrphanedNodes(nodes: any[], edges: any[]) {
+export function assertNoOrphanedNodes(nodes: Neo4jNode[], edges: Neo4jEdge[]) {
   const connectedNodeIds = new Set<string>();
 
   edges.forEach((edge) => {
@@ -221,9 +255,9 @@ export function assertNoOrphanedNodes(nodes: any[], edges: any[]) {
  * Runs all assertions for complete quality check
  */
 export function assertGraphQuality(graph: {
-  nodes: any[];
-  edges: any[];
-  metadata?: any;
+  nodes: Neo4jNode[];
+  edges: Neo4jEdge[];
+  metadata?: GraphMetadata;
 }, options?: {
   minNodes?: number;
   minEdges?: number;
@@ -237,7 +271,7 @@ export function assertGraphQuality(graph: {
     checkMetadata = true,
     checkLOD = true,
     checkOrphans = true,
-  } = options || {};
+  } = options ?? {};
 
   // Basic size check
   assertMinimumGraphSize(graph.nodes, graph.edges, minNodes, minEdges);

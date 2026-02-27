@@ -94,7 +94,8 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
     return null;
   }
 
-  const repo = repoResults[0]!;
+  const repo = repoResults[0];
+  if (!repo) return null;
 
   // Query all nodes for this repository
   const nodesQuery = `
@@ -132,7 +133,7 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
       y: node.y ?? 0,
       z: node.z ?? 0,
     },
-    lod: (node.lod ?? 3) as LODLevel,
+    lod: node.lod ?? 3,
     ...(node.parentId && { parentId: node.parentId }),
     ...(node.visibility && { visibility: node.visibility }),
     ...(node.methodCount !== undefined && node.methodCount !== null && { methodCount: node.methodCount }),
@@ -161,7 +162,7 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
     source: edge.source,
     target: edge.target,
     type: edge.type,
-    lod: (edge.lod ?? 3) as LODLevel,
+    lod: edge.lod ?? 3,
     metadata: {
       ...(edge.label && { label: edge.label }),
       ...(edge.weight !== undefined && { weight: edge.weight }),
@@ -178,7 +179,7 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
   const bounds = calculateBoundingBox(nodes);
 
   // Extract unique languages
-  const languages = [...new Set(nodes.map(n => n.metadata.language).filter(Boolean))] as string[];
+  const languages = [...new Set(nodes.map(n => n.metadata.language).filter((l): l is string => l !== undefined))];
 
   // Build complete IVM graph
   const graph: IVMGraph = {
@@ -236,7 +237,8 @@ export async function getNodeDetails(repoId: string, nodeId: string): Promise<IV
     return null;
   }
 
-  const node = results[0]!;
+  const node = results[0];
+  if (!node) return null;
   const ivmNode: IVMNode = {
     id: node.id,
     type: node.type,
@@ -245,7 +247,7 @@ export async function getNodeDetails(repoId: string, nodeId: string): Promise<IV
       y: node.y ?? 0,
       z: node.z ?? 0,
     },
-    lod: (node.lod ?? 3) as LODLevel,
+    lod: node.lod ?? 3,
     ...(node.parentId && { parentId: node.parentId }),
     metadata: {
       label: node.label,
@@ -315,7 +317,7 @@ export async function getNodeDependencies(repoId: string, nodeId: string): Promi
       y: node.y ?? 0,
       z: node.z ?? 0,
     },
-    lod: (node.lod ?? 3) as LODLevel,
+    lod: node.lod ?? 3,
     ...(node.parentId && { parentId: node.parentId }),
     metadata: {
       label: node.label,
@@ -387,21 +389,23 @@ export async function executeCustomQuery(
  * Calculate statistics for the graph
  */
 function calculateGraphStats(nodes: IVMNode[], edges: IVMEdge[]): GraphStats {
-  const nodesByType: Record<NodeType, number> = {} as Record<NodeType, number>;
-  const edgesByType: Record<EdgeType, number> = {} as Record<EdgeType, number>;
+  const nodesByType = {} as Record<NodeType, number>;
+  const edgesByType = {} as Record<EdgeType, number>;
 
   nodes.forEach(node => {
-    nodesByType[node.type] = (nodesByType[node.type] || 0) + 1;
+    const count = nodesByType[node.type] ?? 0;
+    nodesByType[node.type] = count + 1;
   });
 
   edges.forEach(edge => {
-    edgesByType[edge.type] = (edgesByType[edge.type] || 0) + 1;
+    const count = edgesByType[edge.type] ?? 0;
+    edgesByType[edge.type] = count + 1;
   });
 
-  const totalLoc = nodes.reduce((sum, node) => sum + (node.metadata.loc || 0), 0);
+  const totalLoc = nodes.reduce((sum, node) => sum + (node.metadata.loc ?? 0), 0);
   const nodesWithComplexity = nodes.filter(n => n.metadata.complexity !== undefined);
   const avgComplexity = nodesWithComplexity.length > 0
-    ? nodesWithComplexity.reduce((sum, n) => sum + (n.metadata.complexity || 0), 0) / nodesWithComplexity.length
+    ? nodesWithComplexity.reduce((sum, n) => sum + (n.metadata.complexity ?? 0), 0) / nodesWithComplexity.length
     : undefined;
 
   return {

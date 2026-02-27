@@ -60,7 +60,7 @@ function shutdown(signal: string) {
   shutdownWebSocketServer();
 
   // Close WebSocket server
-  io.close(() => {
+  void io.close(() => {
     console.warn('WebSocket server closed.');
 
     // Then close HTTP server
@@ -73,7 +73,7 @@ function shutdown(signal: string) {
           await disconnectDatabase();
           await disconnectRedis();
         } catch (error) {
-          console.error('Error disconnecting from services:', error);
+          console.error('Error disconnecting from services:', error instanceof Error ? error.message : String(error));
         }
 
         console.warn('Exiting process.');

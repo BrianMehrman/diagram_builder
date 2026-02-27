@@ -102,17 +102,18 @@ export function createWebSocketServer(httpServer: HTTPServer): SocketIOServer<
   // Connection handler
   io.on('connection', (socket) => {
     const authSocket = socket as AuthenticatedSocket;
-    console.log(`[WebSocket] User connected: ${authSocket.userId} (${authSocket.id})`);
+    console.warn(`[WebSocket] User connected: ${authSocket.userId} (${authSocket.id})`);
 
     // Session join handler
-    authSocket.on('session.join', ({ workspaceId, repositoryId }) => {
+    authSocket.on('session.join', (data: { workspaceId: string; repositoryId?: string }) => {
+      const { workspaceId, repositoryId } = data;
       try {
         const sessionId = repositoryId
           ? `${workspaceId}:${repositoryId}`
           : workspaceId;
 
         // Join Socket.io room
-        authSocket.join(sessionId);
+        void authSocket.join(sessionId);
 
         // Register in session manager
         const session = sessionManager.joinSession(
@@ -138,7 +139,7 @@ export function createWebSocketServer(httpServer: HTTPServer): SocketIOServer<
           username: undefined, // Can be enhanced with user profile lookup
         });
 
-        console.log(
+        console.warn(
           `[WebSocket] User ${authSocket.userId} joined session ${sessionId} (${session.users.size} users)`
         );
       } catch (error) {
@@ -155,13 +156,13 @@ export function createWebSocketServer(httpServer: HTTPServer): SocketIOServer<
     });
 
     // Position update handler (with batching)
-    authSocket.on('position.update', (data) => {
+    authSocket.on('position.update', (data: { position: { x: number; y: number; z: number }; target: { x: number; y: number; z: number }; color?: string }) => {
       try {
         const position: UserPosition = {
           userId: authSocket.userId,
           position: data.position,
           target: data.target,
-          color: data.color,
+          ...(data.color !== undefined && { color: data.color }),
           timestamp: Date.now(),
         };
 
@@ -171,7 +172,7 @@ export function createWebSocketServer(httpServer: HTTPServer): SocketIOServer<
           // Add to batch for performance (will be sent within 50ms)
           positionBatcher.addUpdate(session.sessionId, position);
         }
-      } catch (error) {
+      } catch {
         authSocket.emit('error', {
           message: 'Failed to update position',
           code: 'POSITION_UPDATE_ERROR',
@@ -186,14 +187,15 @@ export function createWebSocketServer(httpServer: HTTPServer): SocketIOServer<
         const positions = sessionManager
           .getSessionUsers(session.sessionId)
           .filter((u) => u.position !== undefined)
-          .map((u) => u.position!);
+          .map((u) => u.position as UserPosition);
 
         authSocket.emit('positions.sync', { positions });
       }
     });
 
     // Viewpoint created - broadcast to session
-    authSocket.on('viewpoint.created', ({ viewpointId, name }) => {
+    authSocket.on('viewpoint.created', (data: { viewpointId: string; name: string }) => {
+      const { viewpointId, name } = data;
       const session = sessionManager.getUserSession(authSocket.userId);
       if (session) {
         authSocket.to(session.sessionId).emit('viewpoint.created', {
@@ -205,7 +207,8 @@ export function createWebSocketServer(httpServer: HTTPServer): SocketIOServer<
     });
 
     // Viewpoint updated - broadcast to session
-    authSocket.on('viewpoint.updated', ({ viewpointId }) => {
+    authSocket.on('viewpoint.updated', (data: { viewpointId: string }) => {
+      const { viewpointId } = data;
       const session = sessionManager.getUserSession(authSocket.userId);
       if (session) {
         authSocket.to(session.sessionId).emit('viewpoint.updated', {
@@ -216,7 +219,8 @@ export function createWebSocketServer(httpServer: HTTPServer): SocketIOServer<
     });
 
     // Viewpoint deleted - broadcast to session
-    authSocket.on('viewpoint.deleted', ({ viewpointId }) => {
+    authSocket.on('viewpoint.deleted', (data: { viewpointId: string }) => {
+      const { viewpointId } = data;
       const session = sessionManager.getUserSession(authSocket.userId);
       if (session) {
         authSocket.to(session.sessionId).emit('viewpoint.deleted', {
@@ -228,12 +232,12 @@ export function createWebSocketServer(httpServer: HTTPServer): SocketIOServer<
 
     // Disconnect handler
     authSocket.on('disconnect', (reason) => {
-      console.log(`[WebSocket] User disconnected: ${authSocket.userId} (${reason})`);
+      console.warn(`[WebSocket] User disconnected: ${authSocket.userId} (${reason})`);
       handleSessionLeave(authSocket);
     });
 
     // Error handler
-    authSocket.on('error', (error) => {
+    authSocket.on('error', (error: Error) => {
       console.error(`[WebSocket] Socket error for ${authSocket.userId}:`, error);
     });
   });
@@ -242,7 +246,7 @@ export function createWebSocketServer(httpServer: HTTPServer): SocketIOServer<
   setInterval(() => {
     const cleaned = sessionManager.cleanupStaleSessions();
     if (cleaned > 0) {
-      console.log(`[WebSocket] Cleaned up ${cleaned} stale sessions`);
+      console.warn(`[WebSocket] Cleaned up ${cleaned} stale sessions`);
     }
   }, 10 * 60 * 1000);
 
@@ -257,14 +261,14 @@ function handleSessionLeave(socket: AuthenticatedSocket): void {
 
   if (sessionId) {
     // Leave Socket.io room
-    socket.leave(sessionId);
+    void socket.leave(sessionId);
 
     // Notify other users
     socket.to(sessionId).emit('session.userLeft', {
       userId: socket.userId,
     });
 
-    console.log(`[WebSocket] User ${socket.userId} left session ${sessionId}`);
+    console.warn(`[WebSocket] User ${socket.userId} left session ${sessionId}`);
   }
 }
 
@@ -285,7 +289,7 @@ export function getWebSocketStats() {
  */
 export function shutdownWebSocketServer(): void {
   if (positionBatcher) {
-    console.log('[WebSocket] Flushing pending position updates...');
+    console.warn('[WebSocket] Flushing pending position updates...');
     positionBatcher.flushAll();
     positionBatcher.clear();
     positionBatcher = null;

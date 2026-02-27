@@ -240,7 +240,7 @@ export async function exportPlantUML(request: ExportRequest): Promise<ExportResu
   const duration = Date.now() - startTime;
 
   return {
-    content: result.content as string,
+    content: result.content,
     mimeType: result.mimeType,
     extension: result.extension,
     filename: `${graph.metadata?.name || 'diagram'}.${result.extension}`,
@@ -283,7 +283,7 @@ export async function exportMermaid(request: ExportRequest): Promise<ExportResul
   const duration = Date.now() - startTime;
 
   return {
-    content: result.content as string,
+    content: result.content,
     mimeType: result.mimeType,
     extension: result.extension,
     filename: `${graph.metadata?.name || 'diagram'}.${result.extension}`,
@@ -326,7 +326,7 @@ export async function exportDrawio(request: ExportRequest): Promise<ExportResult
   const duration = Date.now() - startTime;
 
   return {
-    content: result.content as string,
+    content: result.content,
     mimeType: result.mimeType,
     extension: result.extension,
     filename: `${graph.metadata?.name || 'diagram'}.${result.extension}`,
@@ -369,7 +369,7 @@ export async function exportGLTF(request: ExportRequest): Promise<ExportResult> 
   const duration = Date.now() - startTime;
 
   return {
-    content: result.content as string,
+    content: result.content,
     mimeType: result.mimeType,
     extension: result.extension,
     filename: `${graph.metadata?.name || 'diagram'}.${result.extension}`,
@@ -421,7 +421,7 @@ export async function exportImage(request: ImageExportRequest): Promise<ExportRe
     const duration = Date.now() - startTime;
 
     return {
-      content: result.content as string,
+      content: result.content,
       mimeType: result.mimeType,
       extension: result.extension,
       filename: `${graph.metadata?.name || 'diagram'}.${result.extension}`,
@@ -451,7 +451,7 @@ export async function exportImage(request: ImageExportRequest): Promise<ExportRe
     const duration = Date.now() - startTime;
 
     return {
-      content: result.content as Buffer,
+      content: result.content,
       mimeType: result.mimeType,
       extension: result.extension,
       filename: `${graph.metadata?.name || 'diagram'}.${result.extension}`,

@@ -136,7 +136,7 @@ describe('Query Utilities', () => {
       const mockTx = {
         run: vi.fn().mockResolvedValue({ records: [] }),
       };
-      mockExecuteWrite.mockImplementation(async (fn: any) => {
+      mockExecuteWrite.mockImplementation(async (fn: (tx: typeof mockTx) => Promise<void>) => {
         await fn(mockTx);
       });
 
@@ -155,7 +155,7 @@ describe('Query Utilities', () => {
       const mockTx = {
         run: vi.fn().mockResolvedValue({ records: [] }),
       };
-      mockExecuteWrite.mockImplementation(async (fn: any) => {
+      mockExecuteWrite.mockImplementation(async (fn: (tx: typeof mockTx) => Promise<void>) => {
         await fn(mockTx);
       });
 
@@ -174,7 +174,7 @@ describe('Query Utilities', () => {
       const mockTx = {
         run: vi.fn().mockResolvedValue({ records: [] }),
       };
-      mockExecuteWrite.mockImplementation(async (fn: any) => {
+      mockExecuteWrite.mockImplementation(async (fn: (tx: typeof mockTx) => Promise<void>) => {
         await fn(mockTx);
       });
 

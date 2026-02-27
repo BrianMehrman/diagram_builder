@@ -221,8 +221,8 @@ describe('[Integration] Graph API Endpoints', () => {
 
       expect(response.status).toBe(200);
 
-      const nodeIds = new Set(response.body.nodes.map((n: any) => n.id));
-      response.body.edges.forEach((edge: any) => {
+      const nodeIds = new Set((response.body.nodes as { id: string }[]).map((n) => n.id));
+      (response.body.edges as { source: string; target: string }[]).forEach((edge) => {
         expect(nodeIds.has(edge.source)).toBe(true);
         expect(nodeIds.has(edge.target)).toBe(true);
       });

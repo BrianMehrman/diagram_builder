@@ -438,10 +438,10 @@ async function seedExportHistory(): Promise<void> {
  */
 async function createOrUpdateWorkspace(workspace: Record<string, unknown>): Promise<void> {
   const checkQuery = 'MATCH (w:Workspace {id: $id}) RETURN w'
-  const existing = await runQuery(checkQuery, { id: workspace.id })
+  const existing = await runQuery(checkQuery, { id: workspace['id'] })
 
   if (existing && existing.length > 0) {
-    console.warn(`  ↻ Workspace ${workspace.id} already exists, skipping`)
+    console.warn(`  ↻ Workspace ${String(workspace['id'])} already exists, skipping`)
     return
   }
 
@@ -463,7 +463,7 @@ async function createOrUpdateWorkspace(workspace: Record<string, unknown>): Prom
   `
 
   await runQuery(createQuery, workspace)
-  console.warn(`  ✓ Created workspace: ${workspace.name}`)
+  console.warn(`  ✓ Created workspace: ${String(workspace['name'])}`)
 }
 
 /**
@@ -471,10 +471,10 @@ async function createOrUpdateWorkspace(workspace: Record<string, unknown>): Prom
  */
 async function createOrUpdateRepository(repo: Record<string, unknown>): Promise<void> {
   const checkQuery = 'MATCH (r:Repository {id: $id}) RETURN r'
-  const existing = await runQuery(checkQuery, { id: repo.id })
+  const existing = await runQuery(checkQuery, { id: repo['id'] })
 
   if (existing && existing.length > 0) {
-    console.warn(`  ↻ Repository ${repo.id} already exists, skipping`)
+    console.warn(`  ↻ Repository ${String(repo['id'])} already exists, skipping`)
     return
   }
 
@@ -496,7 +496,7 @@ async function createOrUpdateRepository(repo: Record<string, unknown>): Promise<
   `
 
   await runQuery(createQuery, repo)
-  console.warn(`  ✓ Created repository: ${repo.name}`)
+  console.warn(`  ✓ Created repository: ${String(repo['name'])}`)
 }
 
 /**
@@ -504,10 +504,10 @@ async function createOrUpdateRepository(repo: Record<string, unknown>): Promise<
  */
 async function createOrUpdateViewpoint(viewpoint: Record<string, unknown>): Promise<void> {
   const checkQuery = 'MATCH (v:Viewpoint {id: $id}) RETURN v'
-  const existing = await runQuery(checkQuery, { id: viewpoint.id })
+  const existing = await runQuery(checkQuery, { id: viewpoint['id'] })
 
   if (existing && existing.length > 0) {
-    console.warn(`  ↻ Viewpoint ${viewpoint.id} already exists, skipping`)
+    console.warn(`  ↻ Viewpoint ${String(viewpoint['id'])} already exists, skipping`)
     return
   }
 
@@ -530,7 +530,7 @@ async function createOrUpdateViewpoint(viewpoint: Record<string, unknown>): Prom
   `
 
   await runQuery(createQuery, viewpoint)
-  console.warn(`  ✓ Created viewpoint: ${viewpoint.name}`)
+  console.warn(`  ✓ Created viewpoint: ${String(viewpoint['name'])}`)
 }
 
 /**
@@ -538,10 +538,10 @@ async function createOrUpdateViewpoint(viewpoint: Record<string, unknown>): Prom
  */
 async function createOrUpdateExport(exportRecord: Record<string, unknown>): Promise<void> {
   const checkQuery = 'MATCH (e:Export {id: $id}) RETURN e'
-  const existing = await runQuery(checkQuery, { id: exportRecord.id })
+  const existing = await runQuery(checkQuery, { id: exportRecord['id'] })
 
   if (existing && existing.length > 0) {
-    console.warn(`  ↻ Export ${exportRecord.id} already exists, skipping`)
+    console.warn(`  ↻ Export ${String(exportRecord['id'])} already exists, skipping`)
     return
   }
 
@@ -560,5 +560,5 @@ async function createOrUpdateExport(exportRecord: Record<string, unknown>): Prom
   `
 
   await runQuery(createQuery, exportRecord)
-  console.warn(`  ✓ Created export: ${exportRecord.id}`)
+  console.warn(`  ✓ Created export: ${String(exportRecord['id'])}`)
 }

@@ -23,38 +23,6 @@ import type { Viewpoint } from '../types/viewpoint';
 const mockRepoId = 'repo-123';
 const mockViewpointId = 'viewpoint-456';
 const mockUserId = 'user-789';
-const mockShareToken = 'share-token-abc';
-
-const mockViewpoint: Viewpoint = {
-  id: mockViewpointId,
-  repositoryId: mockRepoId,
-  name: 'Test Viewpoint',
-  description: 'A test viewpoint',
-  camera: {
-    position: { x: 0, y: 0, z: 10 },
-    target: { x: 0, y: 0, z: 0 },
-    fov: 75,
-    zoom: 1,
-  },
-  filters: {
-    nodeTypes: ['file', 'class'],
-    maxLod: 4,
-  },
-  annotations: [
-    {
-      id: 'annotation-1',
-      type: 'note',
-      target: { nodeId: 'node-1' },
-      content: 'Important note',
-      color: '#ff0000',
-      createdAt: new Date().toISOString(),
-      createdBy: mockUserId,
-    },
-  ],
-  createdBy: mockUserId,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-};
 
 // Mock viewpoint store
 const mockViewpoints = new Map<string, Viewpoint>();

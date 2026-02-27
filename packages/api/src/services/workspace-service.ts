@@ -129,16 +129,17 @@ export async function getWorkspace(workspaceId: string): Promise<Workspace | nul
     return null;
   }
 
-  const result = results[0]!;
+  const result = results[0];
+  if (!result) return null;
   const workspace: Workspace = {
     id: result.id,
     name: result.name,
     ...(result.description && { description: result.description }),
     ownerId: result.ownerId,
-    repositories: JSON.parse(result.repositories),
-    members: JSON.parse(result.members),
-    settings: JSON.parse(result.settings),
-    sessionState: JSON.parse(result.sessionState),
+    repositories: JSON.parse(result.repositories) as string[],
+    members: JSON.parse(result.members) as Workspace['members'],
+    settings: JSON.parse(result.settings) as Workspace['settings'],
+    sessionState: JSON.parse(result.sessionState) as Workspace['sessionState'],
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
     ...(result.lastAccessedAt && { lastAccessedAt: result.lastAccessedAt }),
@@ -148,7 +149,7 @@ export async function getWorkspace(workspaceId: string): Promise<Workspace | nul
   await cache.set(cacheKey, workspace, 900);
 
   // Update last accessed timestamp
-  await updateLastAccessed(workspaceId);
+  updateLastAccessed(workspaceId);
 
   return workspace;
 }
@@ -156,7 +157,7 @@ export async function getWorkspace(workspaceId: string): Promise<Workspace | nul
 /**
  * Update last accessed timestamp (non-blocking)
  */
-async function updateLastAccessed(workspaceId: string): Promise<void> {
+function updateLastAccessed(workspaceId: string): void {
   const now = new Date().toISOString();
   const query = `
     MATCH (w:Workspace {id: $id})
@@ -164,7 +165,7 @@ async function updateLastAccessed(workspaceId: string): Promise<void> {
   `;
 
   // Fire and forget - don't await
-  runQuery(query, { id: workspaceId, lastAccessedAt: now }).catch(() => {
+  void runQuery(query, { id: workspaceId, lastAccessedAt: now }).catch(() => {
     // Ignore errors in background update
   });
 }
@@ -324,10 +325,10 @@ export async function listUserWorkspaces(userId: string): Promise<Workspace[]> {
     name: result.name,
     ...(result.description && { description: result.description }),
     ownerId: result.ownerId,
-    repositories: JSON.parse(result.repositories),
-    members: JSON.parse(result.members),
-    settings: JSON.parse(result.settings),
-    sessionState: JSON.parse(result.sessionState),
+    repositories: JSON.parse(result.repositories) as string[],
+    members: JSON.parse(result.members) as Workspace['members'],
+    settings: JSON.parse(result.settings) as Workspace['settings'],
+    sessionState: JSON.parse(result.sessionState) as Workspace['sessionState'],
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
     ...(result.lastAccessedAt && { lastAccessedAt: result.lastAccessedAt }),

@@ -158,7 +158,7 @@ describe('[Integration] Codebase Import Pipeline', () => {
       const codebaseId = importRes.body.codebaseId;
 
       // Step 2: Wait for processing to complete
-      let codebase: any;
+      let codebase: { status: string; repositoryId?: string; error?: string };
       let attempts = 0;
       const maxAttempts = 30; // 30 seconds timeout
 
