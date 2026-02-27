@@ -96,7 +96,12 @@ export function LoginPage() {
           )}
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={(e) => { void handleSubmit(e) }}>
+        <form
+          className="mt-8 space-y-6"
+          onSubmit={(e) => {
+            void handleSubmit(e)
+          }}
+        >
           {error && (
             <div className="rounded-md bg-red-50 p-4">
               <div className="text-sm text-red-800">{error}</div>
@@ -150,7 +155,9 @@ export function LoginPage() {
             {devMode && (
               <button
                 type="button"
-                onClick={() => { void navigate('/') }}
+                onClick={() => {
+                  void navigate('/')
+                }}
                 className="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
                 Skip Login (Development)

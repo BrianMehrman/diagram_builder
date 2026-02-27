@@ -4,8 +4,8 @@
  * Fuse.js-based fuzzy search for graph nodes
  */
 
-import Fuse, { type IFuseOptions } from 'fuse.js';
-import type { GraphNode } from '../../shared/types';
+import Fuse, { type IFuseOptions } from 'fuse.js'
+import type { GraphNode } from '../../shared/types'
 
 /**
  * Fuse.js configuration
@@ -29,12 +29,12 @@ const fuseOptions: IFuseOptions<GraphNode> = {
   includeScore: true, // For ranking results
   ignoreLocation: true, // Search entire string, not just beginning
   findAllMatches: true, // Find all matches
-};
+}
 
 /**
  * Search index - initialized once with graph nodes
  */
-let fuseIndex: Fuse<GraphNode> | null = null;
+let fuseIndex: Fuse<GraphNode> | null = null
 
 /**
  * Initialize the search index with graph nodes
@@ -45,7 +45,7 @@ let fuseIndex: Fuse<GraphNode> | null = null;
  * @param nodes - Array of graph nodes to index
  */
 export function initializeSearchIndex(nodes: GraphNode[]): void {
-  fuseIndex = new Fuse(nodes, fuseOptions);
+  fuseIndex = new Fuse(nodes, fuseOptions)
 }
 
 /**
@@ -57,19 +57,19 @@ export function initializeSearchIndex(nodes: GraphNode[]): void {
 export function searchNodes(query: string): GraphNode[] {
   // Return empty for empty/whitespace query
   if (!query.trim()) {
-    return [];
+    return []
   }
 
   // Return empty if index not initialized
   if (!fuseIndex) {
-    return [];
+    return []
   }
 
   // Perform fuzzy search, limit to 10 results
-  const results = fuseIndex.search(query, { limit: 10 });
+  const results = fuseIndex.search(query, { limit: 10 })
 
   // Return just the items (Fuse returns { item, score, matches })
-  return results.map((result) => result.item);
+  return results.map((result) => result.item)
 }
 
 /**
@@ -78,5 +78,5 @@ export function searchNodes(query: string): GraphNode[] {
  * Call this when switching codebases or cleaning up
  */
 export function clearSearchIndex(): void {
-  fuseIndex = null;
+  fuseIndex = null
 }

@@ -26,10 +26,10 @@ export type {
   GraphInput,
   GraphFilter,
   LODOptions,
-} from './types.js';
+} from './types.js'
 
 // Constants
-export { IVM_SCHEMA_VERSION, DEFAULT_LOD, LOD_DESCRIPTIONS } from './types.js';
+export { IVM_SCHEMA_VERSION, DEFAULT_LOD, LOD_DESCRIPTIONS } from './types.js'
 
 // Builder utilities
 export {
@@ -54,9 +54,9 @@ export {
   updateNode,
   IVMBuilder,
   createBuilder,
-} from './builder.js';
+} from './builder.js'
 
-export type { BuildOptions } from './builder.js';
+export type { BuildOptions } from './builder.js'
 
 // Validation
 export {
@@ -73,6 +73,6 @@ export {
   assertValidGraph,
   assertValidNode,
   assertValidEdge,
-} from './validator.js';
+} from './validator.js'
 
-export type { ValidationError, ValidationResult } from './validator.js';
+export type { ValidationError, ValidationResult } from './validator.js'

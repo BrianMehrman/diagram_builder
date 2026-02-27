@@ -21,7 +21,7 @@ export const LOD_THRESHOLDS = {
   neighborhood: 60,
   /** Distance below which LOD 2 (district) activates */
   district: 120,
-} as const;
+} as const
 
 /**
  * Hysteresis buffer as a fraction of the threshold distance.
@@ -29,7 +29,7 @@ export const LOD_THRESHOLDS = {
  * cross the threshold plus this buffer before the LOD drops.
  * Prevents flickering at boundaries.
  */
-export const HYSTERESIS_FACTOR = 0.08;
+export const HYSTERESIS_FACTOR = 0.08
 
 /**
  * Calculate the LOD level from camera distance to scene center.
@@ -38,10 +38,10 @@ export const HYSTERESIS_FACTOR = 0.08;
  * @returns LOD level 1-4
  */
 export function calculateLodFromDistance(distance: number): number {
-  if (distance <= LOD_THRESHOLDS.street) return 4;
-  if (distance <= LOD_THRESHOLDS.neighborhood) return 3;
-  if (distance <= LOD_THRESHOLDS.district) return 2;
-  return 1;
+  if (distance <= LOD_THRESHOLDS.street) return 4
+  if (distance <= LOD_THRESHOLDS.neighborhood) return 3
+  if (distance <= LOD_THRESHOLDS.district) return 2
+  return 1
 }
 
 /**
@@ -55,29 +55,26 @@ export function calculateLodFromDistance(distance: number): number {
  * @param currentLod - Current LOD level
  * @returns New LOD level (may be same as current)
  */
-export function calculateLodWithHysteresis(
-  distance: number,
-  currentLod: number,
-): number {
-  const rawLod = calculateLodFromDistance(distance);
+export function calculateLodWithHysteresis(distance: number, currentLod: number): number {
+  const rawLod = calculateLodFromDistance(distance)
 
   // Zooming in (higher LOD) — transition immediately
-  if (rawLod > currentLod) return rawLod;
+  if (rawLod > currentLod) return rawLod
 
   // Zooming out (lower LOD) — require hysteresis buffer
   if (rawLod < currentLod) {
     // Check if we've passed the threshold by enough margin
-    const thresholdForCurrentLod = getThresholdForLod(currentLod);
-    const buffer = thresholdForCurrentLod * HYSTERESIS_FACTOR;
+    const thresholdForCurrentLod = getThresholdForLod(currentLod)
+    const buffer = thresholdForCurrentLod * HYSTERESIS_FACTOR
 
     if (distance > thresholdForCurrentLod + buffer) {
-      return rawLod;
+      return rawLod
     }
     // Stay at current LOD (within hysteresis zone)
-    return currentLod;
+    return currentLod
   }
 
-  return currentLod;
+  return currentLod
 }
 
 /**
@@ -85,20 +82,20 @@ export function calculateLodWithHysteresis(
  */
 function getThresholdForLod(lod: number): number {
   switch (lod) {
-    case 4: return LOD_THRESHOLDS.street;
-    case 3: return LOD_THRESHOLDS.neighborhood;
-    case 2: return LOD_THRESHOLDS.district;
-    default: return Infinity;
+    case 4:
+      return LOD_THRESHOLDS.street
+    case 3:
+      return LOD_THRESHOLDS.neighborhood
+    case 2:
+      return LOD_THRESHOLDS.district
+    default:
+      return Infinity
   }
 }
 
 /**
  * Calculate euclidean distance from camera position to scene origin.
  */
-export function cameraDistanceToOrigin(
-  x: number,
-  y: number,
-  z: number,
-): number {
-  return Math.sqrt(x * x + y * y + z * z);
+export function cameraDistanceToOrigin(x: number, y: number, z: number): number {
+  return Math.sqrt(x * x + y * y + z * z)
 }

@@ -13,15 +13,15 @@
  */
 
 interface SpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
+  size?: 'sm' | 'md' | 'lg'
+  className?: string
 }
 
 const sizeClasses = {
   sm: 'w-5 h-5 border-2',
   md: 'w-10 h-10 border-4',
   lg: 'w-15 h-15 border-4',
-};
+}
 
 export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
   return (
@@ -30,7 +30,7 @@ export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
       aria-label="Loading"
       className={`${sizeClasses[size]} border-gray-300 border-t-blue-500 rounded-full animate-spin ${className}`}
     />
-  );
+  )
 }
 
 /**
@@ -40,7 +40,7 @@ export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
  * Prevents interaction while loading.
  */
 interface LoadingOverlayProps {
-  text?: string;
+  text?: string
 }
 
 export function LoadingOverlay({ text = 'Loading...' }: LoadingOverlayProps) {
@@ -52,5 +52,5 @@ export function LoadingOverlay({ text = 'Loading...' }: LoadingOverlayProps) {
       <Spinner size="lg" />
       <p className="mt-4 text-white text-lg">{text}</p>
     </div>
-  );
+  )
 }

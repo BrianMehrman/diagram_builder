@@ -5,22 +5,22 @@
  * Tokens expire after 24 hours and must be passed in Authorization: Bearer header
  */
 
-import jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken'
 
 /**
  * JWT payload structure
  * Contains user identifier and standard JWT claims
  */
 export interface JWTPayload {
-  userId: string;
-  iat: number;  // Issued at timestamp
-  exp: number;  // Expiration timestamp
+  userId: string
+  iat: number // Issued at timestamp
+  exp: number // Expiration timestamp
 }
 
 /**
  * Token expiration duration: 24 hours
  */
-export const TOKEN_EXPIRATION = '24h';
+export const TOKEN_EXPIRATION = '24h'
 
 /**
  * Generate a JWT token for the given user ID or payload
@@ -29,20 +29,22 @@ export const TOKEN_EXPIRATION = '24h';
  * @param secret - JWT secret key (defaults to environment variable)
  * @returns Signed JWT token string
  */
-export function generateToken(userIdOrPayload: string | Omit<JWTPayload, 'iat' | 'exp'> & Record<string, unknown>, secret?: string): string {
-  const jwtSecret = secret || process.env.JWT_SECRET;
+export function generateToken(
+  userIdOrPayload: string | (Omit<JWTPayload, 'iat' | 'exp'> & Record<string, unknown>),
+  secret?: string
+): string {
+  const jwtSecret = secret || process.env.JWT_SECRET
 
   if (!jwtSecret) {
-    throw new Error('JWT_SECRET is not configured');
+    throw new Error('JWT_SECRET is not configured')
   }
 
   // If it's a string, wrap it in an object
   // If it's already an object, use it directly
-  const payload = typeof userIdOrPayload === 'string'
-    ? { userId: userIdOrPayload }
-    : userIdOrPayload;
+  const payload =
+    typeof userIdOrPayload === 'string' ? { userId: userIdOrPayload } : userIdOrPayload
 
-  return jwt.sign(payload, jwtSecret, { expiresIn: TOKEN_EXPIRATION });
+  return jwt.sign(payload, jwtSecret, { expiresIn: TOKEN_EXPIRATION })
 }
 
 /**
@@ -54,11 +56,11 @@ export function generateToken(userIdOrPayload: string | Omit<JWTPayload, 'iat' |
  * @throws Error if token is invalid, expired, or malformed
  */
 export function verifyToken(token: string, secret?: string): JWTPayload {
-  const jwtSecret = secret || process.env.JWT_SECRET;
+  const jwtSecret = secret || process.env.JWT_SECRET
 
   if (!jwtSecret) {
-    throw new Error('JWT_SECRET is not configured');
+    throw new Error('JWT_SECRET is not configured')
   }
 
-  return jwt.verify(token, jwtSecret) as JWTPayload;
+  return jwt.verify(token, jwtSecret) as JWTPayload
 }

@@ -4,34 +4,31 @@
  * UI for creating new viewpoints from current camera state
  */
 
-import { useState } from 'react';
-import { useCanvasStore } from '../canvas/store';
-import { useViewpointStore } from './store';
+import { useState } from 'react'
+import { useCanvasStore } from '../canvas/store'
+import { useViewpointStore } from './store'
 
 interface ViewpointCreatorProps {
-  className?: string;
-  onViewpointCreated?: (viewpointId: string) => void;
+  className?: string
+  onViewpointCreated?: (viewpointId: string) => void
 }
 
 /**
  * ViewpointCreator component
  */
-export function ViewpointCreator({
-  className = '',
-  onViewpointCreated,
-}: ViewpointCreatorProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+export function ViewpointCreator({ className = '', onViewpointCreated }: ViewpointCreatorProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
 
-  const camera = useCanvasStore((state) => state.camera);
-  const lodLevel = useCanvasStore((state) => state.lodLevel);
-  const selectedNodeId = useCanvasStore((state) => state.selectedNodeId);
-  const createViewpoint = useViewpointStore((state) => state.createViewpoint);
+  const camera = useCanvasStore((state) => state.camera)
+  const lodLevel = useCanvasStore((state) => state.lodLevel)
+  const selectedNodeId = useCanvasStore((state) => state.selectedNodeId)
+  const createViewpoint = useViewpointStore((state) => state.createViewpoint)
 
   const handleCreate = () => {
     if (!name.trim()) {
-      return;
+      return
     }
 
     const data = {
@@ -42,25 +39,25 @@ export function ViewpointCreator({
         lodLevel,
       },
       ...(description.trim() && { description: description.trim() }),
-    };
+    }
 
-    const viewpoint = createViewpoint(data);
+    const viewpoint = createViewpoint(data)
 
     if (onViewpointCreated) {
-      onViewpointCreated(viewpoint.id);
+      onViewpointCreated(viewpoint.id)
     }
 
     // Reset form
-    setName('');
-    setDescription('');
-    setIsOpen(false);
-  };
+    setName('')
+    setDescription('')
+    setIsOpen(false)
+  }
 
   const handleCancel = () => {
-    setName('');
-    setDescription('');
-    setIsOpen(false);
-  };
+    setName('')
+    setDescription('')
+    setIsOpen(false)
+  }
 
   if (!isOpen) {
     return (
@@ -70,12 +67,7 @@ export function ViewpointCreator({
         title="Save current view as viewpoint"
       >
         <span className="flex items-center gap-2">
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -86,22 +78,17 @@ export function ViewpointCreator({
           Save Viewpoint
         </span>
       </button>
-    );
+    )
   }
 
   return (
     <div className={`bg-white rounded-lg shadow-lg p-4 ${className}`}>
-      <h3 className="text-lg font-bold text-gray-900 mb-4">
-        Create Viewpoint
-      </h3>
+      <h3 className="text-lg font-bold text-gray-900 mb-4">Create Viewpoint</h3>
 
       <div className="space-y-4">
         {/* Name input */}
         <div>
-          <label
-            htmlFor="viewpoint-name"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label htmlFor="viewpoint-name" className="block text-sm font-medium text-gray-700 mb-1">
             Name *
           </label>
           <input
@@ -135,9 +122,7 @@ export function ViewpointCreator({
 
         {/* Current state info */}
         <div className="bg-gray-50 rounded-md p-3 text-sm">
-          <div className="font-medium text-gray-700 mb-2">
-            Captured State:
-          </div>
+          <div className="font-medium text-gray-700 mb-2">Captured State:</div>
           <div className="space-y-1 text-gray-600">
             <div>
               Camera: ({camera.position.x.toFixed(1)}, {camera.position.y.toFixed(1)},{' '}
@@ -166,5 +151,5 @@ export function ViewpointCreator({
         </div>
       </div>
     </div>
-  );
+  )
 }

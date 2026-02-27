@@ -5,14 +5,14 @@
  * Attaches user information to socket instance
  */
 
-import { Socket } from 'socket.io';
-import { verifyToken } from '../auth/jwt';
+import { Socket } from 'socket.io'
+import { verifyToken } from '../auth/jwt'
 
 /**
  * Extended socket interface with user data
  */
 export interface AuthenticatedSocket extends Socket {
-  userId: string;
+  userId: string
 }
 
 /**
@@ -24,36 +24,36 @@ export interface AuthenticatedSocket extends Socket {
 export function authenticateSocket(socket: Socket, next: (err?: Error) => void): void {
   try {
     // Try to get token from auth object (recommended)
-    const authToken: unknown = (socket.handshake.auth?.token) as unknown;
-    const queryToken: unknown = (socket.handshake.query?.token) as unknown;
+    const authToken: unknown = socket.handshake.auth?.token as unknown
+    const queryToken: unknown = socket.handshake.query?.token as unknown
 
-    let token: string | undefined;
+    let token: string | undefined
     if (typeof authToken === 'string') {
-      token = authToken;
+      token = authToken
     } else if (typeof queryToken === 'string') {
-      token = queryToken;
+      token = queryToken
     }
 
     if (!token) {
-      return next(new Error('Authentication error: No token provided'));
+      return next(new Error('Authentication error: No token provided'))
     }
 
     // Verify the token
-    const payload = verifyToken(token);
+    const payload = verifyToken(token)
 
     // Attach user information to socket
-    (socket as AuthenticatedSocket).userId = payload.userId;
+    ;(socket as AuthenticatedSocket).userId = payload.userId
 
-    next();
+    next()
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes('expired')) {
-        return next(new Error('Authentication error: Token expired'));
+        return next(new Error('Authentication error: Token expired'))
       }
       if (error.message.includes('invalid')) {
-        return next(new Error('Authentication error: Invalid token'));
+        return next(new Error('Authentication error: Invalid token'))
       }
     }
-    return next(new Error('Authentication error: Failed to authenticate'));
+    return next(new Error('Authentication error: Failed to authenticate'))
   }
 }

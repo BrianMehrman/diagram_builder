@@ -120,14 +120,19 @@ describe('Import Resolver', () => {
       const imports: ImportStatement[] = [
         { source: './utils', defaultImport: undefined, namespaceImport: undefined, specifiers: [] },
         { source: 'react', defaultImport: 'React', namespaceImport: undefined, specifiers: [] },
-        { source: '../components/Button', defaultImport: undefined, namespaceImport: undefined, specifiers: [] },
+        {
+          source: '../components/Button',
+          defaultImport: undefined,
+          namespaceImport: undefined,
+          specifiers: [],
+        },
       ]
 
       const resolved = resolveImports(sourceFile, imports)
 
       expect(resolved).toHaveLength(3)
-      expect(resolved.filter(r => r.isExternal)).toHaveLength(1)
-      expect(resolved.filter(r => !r.isExternal)).toHaveLength(2)
+      expect(resolved.filter((r) => r.isExternal)).toHaveLength(1)
+      expect(resolved.filter((r) => !r.isExternal)).toHaveLength(2)
     })
 
     it('should handle empty imports array', () => {

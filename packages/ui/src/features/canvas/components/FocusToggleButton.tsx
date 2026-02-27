@@ -5,14 +5,14 @@
  * Renders "Show Map" when the overlay is hidden, "Close Map" when it is visible.
  */
 
-import { useCanvasStore } from '../store';
+import { useCanvasStore } from '../store'
 
 export function FocusToggleButton() {
-  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
-  const showRadialOverlay = useCanvasStore((s) => s.showRadialOverlay);
-  const toggleRadialOverlay = useCanvasStore((s) => s.toggleRadialOverlay);
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
+  const showRadialOverlay = useCanvasStore((s) => s.showRadialOverlay)
+  const toggleRadialOverlay = useCanvasStore((s) => s.toggleRadialOverlay)
 
-  if (!selectedNodeId) return null;
+  if (!selectedNodeId) return null
 
   return (
     <button
@@ -34,5 +34,5 @@ export function FocusToggleButton() {
     >
       {showRadialOverlay ? 'Close Map' : 'Show Map'}
     </button>
-  );
+  )
 }

@@ -6,7 +6,13 @@ export type DependencyNodeType = 'file' | 'class' | 'function' | 'method' | 'int
 /**
  * Types of edges in the dependency graph
  */
-export type DependencyEdgeType = 'imports' | 'extends' | 'implements' | 'calls' | 'exports' | 'contains'
+export type DependencyEdgeType =
+  | 'imports'
+  | 'extends'
+  | 'implements'
+  | 'calls'
+  | 'exports'
+  | 'contains'
 
 /**
  * Represents a node in the dependency graph
@@ -103,7 +109,7 @@ export class DependencyGraph {
    * @returns Array of outgoing edges
    */
   getOutgoingEdges(nodeId: string): DependencyEdge[] {
-    return this.edges.filter(edge => edge.source === nodeId)
+    return this.edges.filter((edge) => edge.source === nodeId)
   }
 
   /**
@@ -113,7 +119,7 @@ export class DependencyGraph {
    * @returns Array of incoming edges
    */
   getIncomingEdges(nodeId: string): DependencyEdge[] {
-    return this.edges.filter(edge => edge.target === nodeId)
+    return this.edges.filter((edge) => edge.target === nodeId)
   }
 
   /**
@@ -123,7 +129,7 @@ export class DependencyGraph {
    * @returns Array of dependency node IDs
    */
   getDependencies(nodeId: string): string[] {
-    return this.getOutgoingEdges(nodeId).map(edge => edge.target)
+    return this.getOutgoingEdges(nodeId).map((edge) => edge.target)
   }
 
   /**
@@ -133,7 +139,7 @@ export class DependencyGraph {
    * @returns Array of dependent node IDs
    */
   getDependents(nodeId: string): string[] {
-    return this.getIncomingEdges(nodeId).map(edge => edge.source)
+    return this.getIncomingEdges(nodeId).map((edge) => edge.source)
   }
 
   /**
@@ -143,7 +149,7 @@ export class DependencyGraph {
    */
   removeNode(nodeId: string): void {
     this.nodes.delete(nodeId)
-    this.edges = this.edges.filter(edge => edge.source !== nodeId && edge.target !== nodeId)
+    this.edges = this.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
   }
 
   /**

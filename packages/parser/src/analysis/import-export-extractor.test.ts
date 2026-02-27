@@ -12,8 +12,8 @@ describe('Import/Export Extractor', () => {
       expect(imports).toHaveLength(1)
       expect(imports[0].source).toBe('react')
       expect(imports[0].specifiers).toHaveLength(2)
-      expect(imports[0].specifiers.map(s => s.imported)).toContain('useState')
-      expect(imports[0].specifiers.map(s => s.imported)).toContain('useEffect')
+      expect(imports[0].specifiers.map((s) => s.imported)).toContain('useState')
+      expect(imports[0].specifiers.map((s) => s.imported)).toContain('useEffect')
     })
 
     it('should extract default import', () => {
@@ -68,7 +68,7 @@ import * as path from 'path';
       const imports = extractImports(tree)
 
       expect(imports).toHaveLength(3)
-      expect(imports.map(i => i.source)).toEqual(['react', 'fs', 'path'])
+      expect(imports.map((i) => i.source)).toEqual(['react', 'fs', 'path'])
     })
 
     it('should handle side-effect import', () => {
@@ -98,8 +98,8 @@ import * as path from 'path';
 
       expect(exports).toHaveLength(1)
       expect(exports[0].specifiers).toHaveLength(2)
-      expect(exports[0].specifiers.map(s => s.exported)).toContain('greet')
-      expect(exports[0].specifiers.map(s => s.exported)).toContain('farewell')
+      expect(exports[0].specifiers.map((s) => s.exported)).toContain('greet')
+      expect(exports[0].specifiers.map((s) => s.exported)).toContain('farewell')
     })
 
     it('should extract default export', () => {

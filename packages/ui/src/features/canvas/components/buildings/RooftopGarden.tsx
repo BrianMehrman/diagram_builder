@@ -8,32 +8,32 @@
  * how many additional nested types are hidden.
  */
 
-import { useMemo } from 'react';
-import { Text } from '@react-three/drei';
-import type { GraphNode } from '../../../../shared/types';
-import { collectNestingTiers, countOverflowChildren } from './nestedTypeUtils';
+import { useMemo } from 'react'
+import { Text } from '@react-three/drei'
+import type { GraphNode } from '../../../../shared/types'
+import { collectNestingTiers, countOverflowChildren } from './nestedTypeUtils'
 
 /** Scale factors for each tier relative to parent width */
-const TIER_SCALES = [0.6, 0.4, 0.25];
+const TIER_SCALES = [0.6, 0.4, 0.25]
 
 /** Height of each rooftop tier */
-const TIER_HEIGHT = 0.8;
+const TIER_HEIGHT = 0.8
 
 /** Visual gap between building top and first rooftop tier */
-export const ROOFTOP_GAP = 0.15;
+export const ROOFTOP_GAP = 0.15
 
 /** Color palette for tier levels */
-const TIER_COLORS = ['#60a5fa', '#a78bfa', '#f472b6'];
+const TIER_COLORS = ['#60a5fa', '#a78bfa', '#f472b6']
 
 interface RooftopGardenProps {
   /** The parent node whose children are shown */
-  parentNode: GraphNode;
+  parentNode: GraphNode
   /** Width of the parent building */
-  parentWidth: number;
+  parentWidth: number
   /** Height of the parent building (rooftop starts here) */
-  parentHeight: number;
+  parentHeight: number
   /** Nested type map from buildNestedTypeMap */
-  nestedMap: Map<string, GraphNode[]>;
+  nestedMap: Map<string, GraphNode[]>
 }
 
 export function RooftopGarden({
@@ -44,42 +44,38 @@ export function RooftopGarden({
 }: RooftopGardenProps) {
   const tiers = useMemo(
     () => collectNestingTiers(parentNode.id, nestedMap, 3),
-    [parentNode.id, nestedMap],
-  );
+    [parentNode.id, nestedMap]
+  )
 
   const overflowCount = useMemo(() => {
-    if (tiers.length < 3) return 0;
-    const lastTier = tiers[2];
-    if (!lastTier) return 0;
+    if (tiers.length < 3) return 0
+    const lastTier = tiers[2]
+    if (!lastTier) return 0
     return countOverflowChildren(
       lastTier.map((n) => n.id),
-      nestedMap,
-    );
-  }, [tiers, nestedMap]);
+      nestedMap
+    )
+  }, [tiers, nestedMap])
 
-  if (tiers.length === 0) return null;
+  if (tiers.length === 0) return null
 
-  let cumulativeY = parentHeight + ROOFTOP_GAP;
+  let cumulativeY = parentHeight + ROOFTOP_GAP
 
   return (
     <group>
       {tiers.map((_tierNodes, tierIndex) => {
-        const scale = TIER_SCALES[tierIndex] ?? 0.25;
-        const tierWidth = parentWidth * scale;
-        const color = TIER_COLORS[tierIndex] ?? '#f472b6';
-        const y = cumulativeY + TIER_HEIGHT / 2;
-        cumulativeY += TIER_HEIGHT;
+        const scale = TIER_SCALES[tierIndex] ?? 0.25
+        const tierWidth = parentWidth * scale
+        const color = TIER_COLORS[tierIndex] ?? '#f472b6'
+        const y = cumulativeY + TIER_HEIGHT / 2
+        cumulativeY += TIER_HEIGHT
 
         return (
           <mesh key={`tier-${tierIndex}`} position={[0, y, 0]}>
             <boxGeometry args={[tierWidth, TIER_HEIGHT, tierWidth]} />
-            <meshStandardMaterial
-              color={color}
-              roughness={0.6}
-              metalness={0.2}
-            />
+            <meshStandardMaterial color={color} roughness={0.6} metalness={0.2} />
           </mesh>
-        );
+        )
       })}
 
       {/* Overflow badge when >3 tiers exist */}
@@ -97,5 +93,5 @@ export function RooftopGarden({
         </Text>
       )}
     </group>
-  );
+  )
 }

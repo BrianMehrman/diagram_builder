@@ -5,7 +5,7 @@
  * Replaces environment.ts with type-safe schema validation
  */
 
-import { z } from 'zod';
+import { z } from 'zod'
 
 /**
  * Configuration schema with validation
@@ -58,44 +58,44 @@ const ApiConfigSchema = z.object({
     .default('true')
     .transform((val) => val.toLowerCase() === 'true')
     .pipe(z.boolean()),
-});
+})
 
-export type ApiConfig = z.infer<typeof ApiConfigSchema>;
+export type ApiConfig = z.infer<typeof ApiConfigSchema>
 
 /**
  * Load and validate API configuration from environment variables
  * Fails fast with clear error messages if validation fails
  */
 export function loadApiConfig(): ApiConfig {
-  const parsed = ApiConfigSchema.safeParse(process.env);
+  const parsed = ApiConfigSchema.safeParse(process.env)
 
   if (!parsed.success) {
-    console.error('❌ API configuration validation failed:');
-    console.error(parsed.error.format());
-    process.exit(1);
+    console.error('❌ API configuration validation failed:')
+    console.error(parsed.error.format())
+    process.exit(1)
   }
 
-  return parsed.data;
+  return parsed.data
 }
 
 /**
  * Singleton configuration instance
  */
-let configInstance: ApiConfig | null = null;
+let configInstance: ApiConfig | null = null
 
 /**
  * Get API configuration (singleton pattern)
  */
 export function getApiConfig(): ApiConfig {
   if (!configInstance) {
-    configInstance = loadApiConfig();
+    configInstance = loadApiConfig()
   }
-  return configInstance;
+  return configInstance
 }
 
 /**
  * Reset configuration (useful for testing)
  */
 export function resetApiConfig(): void {
-  configInstance = null;
+  configInstance = null
 }

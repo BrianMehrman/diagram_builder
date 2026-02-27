@@ -11,9 +11,9 @@
  * - LOD 5: Full detail (methods, variables, types)
  */
 
-import type { IVMGraph, IVMNode, IVMEdge, LODLevel } from '../ivm/types.js';
-import type { LODConfig, LODFilterResult } from './types.js';
-import { DEFAULT_LOD_CONFIG } from './types.js';
+import type { IVMGraph, IVMNode, IVMEdge, LODLevel } from '../ivm/types.js'
+import type { LODConfig, LODFilterResult } from './types.js'
+import { DEFAULT_LOD_CONFIG } from './types.js'
 
 // =============================================================================
 // LOD Level Utilities
@@ -23,26 +23,26 @@ import { DEFAULT_LOD_CONFIG } from './types.js';
  * Checks if a node is visible at a given LOD level
  */
 export function isNodeVisibleAtLOD(node: IVMNode, level: LODLevel): boolean {
-  return node.lod <= level;
+  return node.lod <= level
 }
 
 /**
  * Checks if an edge is visible at a given LOD level
  */
 export function isEdgeVisibleAtLOD(edge: IVMEdge, level: LODLevel): boolean {
-  return edge.lod <= level;
+  return edge.lod <= level
 }
 
 /**
  * Gets the recommended LOD level based on node count
  */
 export function getRecommendedLOD(nodeCount: number): LODLevel {
-  if (nodeCount < 50) return 5;
-  if (nodeCount < 200) return 4;
-  if (nodeCount < 500) return 3;
-  if (nodeCount < 1000) return 2;
-  if (nodeCount < 5000) return 1;
-  return 0;
+  if (nodeCount < 50) return 5
+  if (nodeCount < 200) return 4
+  if (nodeCount < 500) return 3
+  if (nodeCount < 1000) return 2
+  if (nodeCount < 5000) return 1
+  return 0
 }
 
 // =============================================================================
@@ -53,31 +53,31 @@ export function getRecommendedLOD(nodeCount: number): LODLevel {
  * Builds a map of node IDs to their ancestor IDs
  */
 export function buildAncestorMap(nodes: IVMNode[]): Map<string, string[]> {
-  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-  const ancestorMap = new Map<string, string[]>();
+  const nodeMap = new Map(nodes.map((n) => [n.id, n]))
+  const ancestorMap = new Map<string, string[]>()
 
   for (const node of nodes) {
-    const ancestors: string[] = [];
-    let current = node;
+    const ancestors: string[] = []
+    let current = node
 
     while (current.parentId) {
-      ancestors.push(current.parentId);
-      const parent = nodeMap.get(current.parentId);
-      if (!parent) break;
-      current = parent;
+      ancestors.push(current.parentId)
+      const parent = nodeMap.get(current.parentId)
+      if (!parent) break
+      current = parent
     }
 
-    ancestorMap.set(node.id, ancestors);
+    ancestorMap.set(node.id, ancestors)
   }
 
-  return ancestorMap;
+  return ancestorMap
 }
 
 /**
  * Gets all ancestors of a node
  */
 export function getAncestors(nodeId: string, ancestorMap: Map<string, string[]>): string[] {
-  return ancestorMap.get(nodeId) ?? [];
+  return ancestorMap.get(nodeId) ?? []
 }
 
 /**
@@ -88,8 +88,8 @@ export function findVisibleAncestor(
   ancestorMap: Map<string, string[]>,
   visibleNodeIds: Set<string>
 ): string | undefined {
-  const ancestors = ancestorMap.get(nodeId) ?? [];
-  return ancestors.find((id) => visibleNodeIds.has(id));
+  const ancestors = ancestorMap.get(nodeId) ?? []
+  return ancestors.find((id) => visibleNodeIds.has(id))
 }
 
 // =============================================================================
@@ -105,33 +105,33 @@ export function filterNodesByLOD(
   includeAncestors: boolean = true
 ): IVMNode[] {
   // Get directly visible nodes
-  const visibleNodes = nodes.filter((n) => isNodeVisibleAtLOD(n, level));
-  
+  const visibleNodes = nodes.filter((n) => isNodeVisibleAtLOD(n, level))
+
   if (!includeAncestors) {
-    return visibleNodes;
+    return visibleNodes
   }
 
   // Add ancestors of visible nodes
-  const visibleIds = new Set(visibleNodes.map((n) => n.id));
-  const ancestorMap = buildAncestorMap(nodes);
-  
-  const ancestorIds = new Set<string>();
+  const visibleIds = new Set(visibleNodes.map((n) => n.id))
+  const ancestorMap = buildAncestorMap(nodes)
+
+  const ancestorIds = new Set<string>()
   for (const node of visibleNodes) {
-    const ancestors = ancestorMap.get(node.id) ?? [];
+    const ancestors = ancestorMap.get(node.id) ?? []
     for (const ancestorId of ancestors) {
       if (!visibleIds.has(ancestorId)) {
-        ancestorIds.add(ancestorId);
+        ancestorIds.add(ancestorId)
       }
     }
   }
 
   // Add ancestor nodes
-  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+  const nodeMap = new Map(nodes.map((n) => [n.id, n]))
   const ancestorNodes = [...ancestorIds]
     .map((id) => nodeMap.get(id))
-    .filter((n): n is IVMNode => n !== undefined);
+    .filter((n): n is IVMNode => n !== undefined)
 
-  return [...visibleNodes, ...ancestorNodes];
+  return [...visibleNodes, ...ancestorNodes]
 }
 
 /**
@@ -144,61 +144,61 @@ export function filterEdgesByLOD(
   collapseToAncestors: boolean = true,
   ancestorMap?: Map<string, string[]>
 ): { edges: IVMEdge[]; collapsedEdges: Map<string, string> } {
-  const result: IVMEdge[] = [];
-  const collapsedEdges = new Map<string, string>();
-  const seenEdges = new Set<string>();
+  const result: IVMEdge[] = []
+  const collapsedEdges = new Map<string, string>()
+  const seenEdges = new Set<string>()
 
   for (const edge of edges) {
     // Skip edges above current LOD
     if (!isEdgeVisibleAtLOD(edge, level)) {
-      continue;
+      continue
     }
 
-    let source = edge.source;
-    let target = edge.target;
-    let isCollapsed = false;
+    let source = edge.source
+    let target = edge.target
+    let isCollapsed = false
 
     // Check if source is visible
     if (!visibleNodeIds.has(source)) {
       if (collapseToAncestors && ancestorMap) {
-        const visibleAncestor = findVisibleAncestor(source, ancestorMap, visibleNodeIds);
+        const visibleAncestor = findVisibleAncestor(source, ancestorMap, visibleNodeIds)
         if (visibleAncestor) {
-          source = visibleAncestor;
-          isCollapsed = true;
+          source = visibleAncestor
+          isCollapsed = true
         } else {
-          continue; // Skip edge if no visible ancestor
+          continue // Skip edge if no visible ancestor
         }
       } else {
-        continue;
+        continue
       }
     }
 
     // Check if target is visible
     if (!visibleNodeIds.has(target)) {
       if (collapseToAncestors && ancestorMap) {
-        const visibleAncestor = findVisibleAncestor(target, ancestorMap, visibleNodeIds);
+        const visibleAncestor = findVisibleAncestor(target, ancestorMap, visibleNodeIds)
         if (visibleAncestor) {
-          target = visibleAncestor;
-          isCollapsed = true;
+          target = visibleAncestor
+          isCollapsed = true
         } else {
-          continue; // Skip edge if no visible ancestor
+          continue // Skip edge if no visible ancestor
         }
       } else {
-        continue;
+        continue
       }
     }
 
     // Skip self-loops created by collapsing
     if (source === target) {
-      continue;
+      continue
     }
 
     // Deduplicate collapsed edges
-    const edgeKey = `${source}->${target}:${edge.type}`;
+    const edgeKey = `${source}->${target}:${edge.type}`
     if (seenEdges.has(edgeKey)) {
-      continue;
+      continue
     }
-    seenEdges.add(edgeKey);
+    seenEdges.add(edgeKey)
 
     // Create collapsed edge or use original
     if (isCollapsed) {
@@ -216,15 +216,15 @@ export function filterEdgesByLOD(
             originalTarget: edge.target,
           },
         },
-      };
-      result.push(collapsedEdge);
-      collapsedEdges.set(edge.id, collapsedEdge.id);
+      }
+      result.push(collapsedEdge)
+      collapsedEdges.set(edge.id, collapsedEdge.id)
     } else {
-      result.push(edge);
+      result.push(edge)
     }
   }
 
-  return { edges: result, collapsedEdges };
+  return { edges: result, collapsedEdges }
 }
 
 /**
@@ -234,8 +234,8 @@ export function filterGraphByLOD(
   graph: IVMGraph,
   config: Partial<LODConfig> = {}
 ): LODFilterResult {
-  const fullConfig: LODConfig = { ...DEFAULT_LOD_CONFIG, ...config };
-  const { currentLevel, includeAncestors, collapseEdges } = fullConfig;
+  const fullConfig: LODConfig = { ...DEFAULT_LOD_CONFIG, ...config }
+  const { currentLevel, includeAncestors, collapseEdges } = fullConfig
 
   // Check if LOD filtering is needed
   if (graph.nodes.length < fullConfig.minNodesForLOD) {
@@ -245,15 +245,15 @@ export function filterGraphByLOD(
       hiddenNodeCount: 0,
       hiddenEdgeCount: 0,
       collapsedEdges: new Map(),
-    };
+    }
   }
 
   // Build ancestor map
-  const ancestorMap = buildAncestorMap(graph.nodes);
+  const ancestorMap = buildAncestorMap(graph.nodes)
 
   // Filter nodes
-  const visibleNodes = filterNodesByLOD(graph.nodes, currentLevel, includeAncestors);
-  const visibleNodeIds = new Set(visibleNodes.map((n) => n.id));
+  const visibleNodes = filterNodesByLOD(graph.nodes, currentLevel, includeAncestors)
+  const visibleNodeIds = new Set(visibleNodes.map((n) => n.id))
 
   // Filter edges
   const { edges: visibleEdges, collapsedEdges } = filterEdgesByLOD(
@@ -262,7 +262,7 @@ export function filterGraphByLOD(
     visibleNodeIds,
     collapseEdges,
     ancestorMap
-  );
+  )
 
   return {
     visibleNodes,
@@ -270,17 +270,14 @@ export function filterGraphByLOD(
     hiddenNodeCount: graph.nodes.length - visibleNodes.length,
     hiddenEdgeCount: graph.edges.length - visibleEdges.length,
     collapsedEdges,
-  };
+  }
 }
 
 /**
  * Creates a new graph with only visible elements at the given LOD
  */
-export function createLODGraph(
-  graph: IVMGraph,
-  config: Partial<LODConfig> = {}
-): IVMGraph {
-  const filterResult = filterGraphByLOD(graph, config);
+export function createLODGraph(graph: IVMGraph, config: Partial<LODConfig> = {}): IVMGraph {
+  const filterResult = filterGraphByLOD(graph, config)
 
   return {
     nodes: filterResult.visibleNodes,
@@ -300,7 +297,7 @@ export function createLODGraph(
       },
     },
     bounds: graph.bounds, // Keep original bounds for context
-  };
+  }
 }
 
 // =============================================================================
@@ -315,9 +312,9 @@ export function getNewlyVisibleNodes(
   fromLevel: LODLevel,
   toLevel: LODLevel
 ): IVMNode[] {
-  if (toLevel <= fromLevel) return [];
+  if (toLevel <= fromLevel) return []
 
-  return graph.nodes.filter((n) => n.lod > fromLevel && n.lod <= toLevel);
+  return graph.nodes.filter((n) => n.lod > fromLevel && n.lod <= toLevel)
 }
 
 /**
@@ -328,36 +325,36 @@ export function getNewlyHiddenNodes(
   fromLevel: LODLevel,
   toLevel: LODLevel
 ): IVMNode[] {
-  if (toLevel >= fromLevel) return [];
+  if (toLevel >= fromLevel) return []
 
-  return graph.nodes.filter((n) => n.lod <= fromLevel && n.lod > toLevel);
+  return graph.nodes.filter((n) => n.lod <= fromLevel && n.lod > toLevel)
 }
 
 /**
  * Calculates node counts at each LOD level
  */
 export function getNodeCountsByLOD(graph: IVMGraph): Record<LODLevel, number> {
-  const counts: Record<LODLevel, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  const counts: Record<LODLevel, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
 
   for (const node of graph.nodes) {
-    counts[node.lod]++;
+    counts[node.lod]++
   }
 
-  return counts;
+  return counts
 }
 
 /**
  * Calculates cumulative node counts at each LOD level (visible nodes)
  */
 export function getCumulativeNodeCounts(graph: IVMGraph): Record<LODLevel, number> {
-  const counts = getNodeCountsByLOD(graph);
-  const cumulative: Record<LODLevel, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  const counts = getNodeCountsByLOD(graph)
+  const cumulative: Record<LODLevel, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
 
-  let total = 0;
+  let total = 0
   for (let level = 0; level <= 5; level++) {
-    total += counts[level as LODLevel];
-    cumulative[level as LODLevel] = total;
+    total += counts[level as LODLevel]
+    cumulative[level as LODLevel] = total
   }
 
-  return cumulative;
+  return cumulative
 }

@@ -22,8 +22,8 @@ class User {
       expect(classes).toHaveLength(1)
       expect(classes[0].name).toBe('User')
       expect(classes[0].methods).toHaveLength(2)
-      expect(classes[0].methods.map(m => m.name)).toContain('constructor')
-      expect(classes[0].methods.map(m => m.name)).toContain('greet')
+      expect(classes[0].methods.map((m) => m.name)).toContain('constructor')
+      expect(classes[0].methods.map((m) => m.name)).toContain('greet')
     })
 
     it('should extract TypeScript class with types', () => {
@@ -48,8 +48,8 @@ class User {
       expect(classes).toHaveLength(1)
       expect(classes[0].name).toBe('User')
       expect(classes[0].properties).toHaveLength(2)
-      expect(classes[0].properties.map(p => p.name)).toContain('name')
-      expect(classes[0].properties.map(p => p.name)).toContain('age')
+      expect(classes[0].properties.map((p) => p.name)).toContain('name')
+      expect(classes[0].properties.map((p) => p.name)).toContain('age')
     })
 
     it('should extract class inheritance', () => {
@@ -67,7 +67,7 @@ class Dog extends Animal {
 
       expect(classes).toHaveLength(2)
 
-      const dog = classes.find(c => c.name === 'Dog')
+      const dog = classes.find((c) => c.name === 'Dog')
       expect(dog).toBeDefined()
       expect(dog?.extends).toBe('Animal')
     })
@@ -87,7 +87,7 @@ class Bird implements Flyable {
       const { tree } = parseContent(code, 'typescript')
       const classes = extractClasses(tree)
 
-      const bird = classes.find(c => c.name === 'Bird')
+      const bird = classes.find((c) => c.name === 'Bird')
       expect(bird).toBeDefined()
       expect(bird?.implements).toContain('Flyable')
     })
@@ -114,13 +114,13 @@ class User {
       expect(classes).toHaveLength(1)
       const user = classes[0]
 
-      const publicProp = user.properties.find(p => p.name === 'name')
+      const publicProp = user.properties.find((p) => p.name === 'name')
       expect(publicProp?.visibility).toBe('public')
 
-      const privateProp = user.properties.find(p => p.name === 'password')
+      const privateProp = user.properties.find((p) => p.name === 'password')
       expect(privateProp?.visibility).toBe('private')
 
-      const protectedProp = user.properties.find(p => p.name === 'email')
+      const protectedProp = user.properties.find((p) => p.name === 'email')
       expect(protectedProp?.visibility).toBe('protected')
     })
 
@@ -134,7 +134,7 @@ class Guest {}
       const classes = extractClasses(tree)
 
       expect(classes).toHaveLength(3)
-      expect(classes.map(c => c.name)).toEqual(['User', 'Admin', 'Guest'])
+      expect(classes.map((c) => c.name)).toEqual(['User', 'Admin', 'Guest'])
     })
 
     it('should return empty array for no classes', () => {
@@ -161,7 +161,7 @@ class Calculator {
       const classes = extractClasses(tree)
 
       const calc = classes[0]
-      const addMethod = calc.methods.find(m => m.name === 'add')
+      const addMethod = calc.methods.find((m) => m.name === 'add')
 
       expect(addMethod).toBeDefined()
       expect(addMethod?.parameters).toHaveLength(2)

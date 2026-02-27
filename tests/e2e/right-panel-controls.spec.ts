@@ -166,7 +166,9 @@ test.describe('Right Panel Controls @P1', () => {
 
   // ── Panel close ──────────────────────────────────────────────────
   test('[P1] should close right panel via close button', async ({ page }) => {
-    const closeBtn = page.locator('[data-testid="right-panel"] button[aria-label="Close tools panel"]')
+    const closeBtn = page.locator(
+      '[data-testid="right-panel"] button[aria-label="Close tools panel"]'
+    )
     await closeBtn.click()
     await page.waitForTimeout(350) // Animation
 

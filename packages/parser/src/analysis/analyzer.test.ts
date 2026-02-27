@@ -65,7 +65,7 @@ export const helper = () => 42;
       const analysis = await analyzeFile(testFile)
 
       expect(analysis.functions.length).toBeGreaterThan(0)
-      const createUserFunc = analysis.functions.find(f => f.name === 'createUser')
+      const createUserFunc = analysis.functions.find((f) => f.name === 'createUser')
       expect(createUserFunc).toBeDefined()
     })
 
@@ -73,7 +73,7 @@ export const helper = () => 42;
       const analysis = await analyzeFile(testFile)
 
       expect(analysis.imports).toHaveLength(2)
-      const reactImport = analysis.imports.find(i => i.source === 'react')
+      const reactImport = analysis.imports.find((i) => i.source === 'react')
       expect(reactImport).toBeDefined()
       expect(reactImport?.specifiers).toHaveLength(1)
     })

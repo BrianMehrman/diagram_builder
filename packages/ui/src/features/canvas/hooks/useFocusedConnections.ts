@@ -4,23 +4,23 @@
  * Derives the 1-hop and 2-hop connection sets for the currently selected node.
  * Used to drive focus-mode opacity and edge highlighting in CityView.
  */
-import { useMemo } from 'react';
-import { useCanvasStore } from '../store';
-import type { Graph, GraphEdge } from '../../../shared/types';
+import { useMemo } from 'react'
+import { useCanvasStore } from '../store'
+import type { Graph, GraphEdge } from '../../../shared/types'
 
 export interface FocusedConnectionsResult {
   /** IDs of nodes directly connected to the selected node (1 hop). */
-  directNodeIds: Set<string>;
+  directNodeIds: Set<string>
   /** IDs of nodes connected via a direct node (2 hops, excluding selected + direct). */
-  secondHopNodeIds: Set<string>;
+  secondHopNodeIds: Set<string>
   /** Edges between the selected node and direct nodes. */
-  directEdges: GraphEdge[];
+  directEdges: GraphEdge[]
   /** Edges between direct nodes and second-hop nodes. */
-  secondHopEdges: GraphEdge[];
+  secondHopEdges: GraphEdge[]
 }
 
 export function useFocusedConnections(graph: Graph): FocusedConnectionsResult {
-  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
 
   return useMemo(() => {
     const empty: FocusedConnectionsResult = {
@@ -28,39 +28,47 @@ export function useFocusedConnections(graph: Graph): FocusedConnectionsResult {
       secondHopNodeIds: new Set(),
       directEdges: [],
       secondHopEdges: [],
-    };
+    }
 
-    if (!selectedNodeId) return empty;
+    if (!selectedNodeId) return empty
 
-    const directEdges: GraphEdge[] = [];
-    const directNodeIds = new Set<string>();
+    const directEdges: GraphEdge[] = []
+    const directNodeIds = new Set<string>()
 
     for (const graphEdge of graph.edges) {
       if (graphEdge.source === selectedNodeId) {
-        directNodeIds.add(graphEdge.target);
-        directEdges.push(graphEdge);
+        directNodeIds.add(graphEdge.target)
+        directEdges.push(graphEdge)
       } else if (graphEdge.target === selectedNodeId) {
-        directNodeIds.add(graphEdge.source);
-        directEdges.push(graphEdge);
+        directNodeIds.add(graphEdge.source)
+        directEdges.push(graphEdge)
       }
     }
 
-    const secondHopEdges: GraphEdge[] = [];
-    const secondHopNodeIds = new Set<string>();
+    const secondHopEdges: GraphEdge[] = []
+    const secondHopNodeIds = new Set<string>()
 
     for (const graphEdge of graph.edges) {
-      const srcDirect = directNodeIds.has(graphEdge.source);
-      const tgtDirect = directNodeIds.has(graphEdge.target);
+      const srcDirect = directNodeIds.has(graphEdge.source)
+      const tgtDirect = directNodeIds.has(graphEdge.target)
 
-      if (srcDirect && graphEdge.target !== selectedNodeId && !directNodeIds.has(graphEdge.target)) {
-        secondHopNodeIds.add(graphEdge.target);
-        secondHopEdges.push(graphEdge);
-      } else if (tgtDirect && graphEdge.source !== selectedNodeId && !directNodeIds.has(graphEdge.source)) {
-        secondHopNodeIds.add(graphEdge.source);
-        secondHopEdges.push(graphEdge);
+      if (
+        srcDirect &&
+        graphEdge.target !== selectedNodeId &&
+        !directNodeIds.has(graphEdge.target)
+      ) {
+        secondHopNodeIds.add(graphEdge.target)
+        secondHopEdges.push(graphEdge)
+      } else if (
+        tgtDirect &&
+        graphEdge.source !== selectedNodeId &&
+        !directNodeIds.has(graphEdge.source)
+      ) {
+        secondHopNodeIds.add(graphEdge.source)
+        secondHopEdges.push(graphEdge)
       }
     }
 
-    return { directNodeIds, secondHopNodeIds, directEdges, secondHopEdges };
-  }, [graph.edges, selectedNodeId]);
+    return { directNodeIds, secondHopNodeIds, directEdges, secondHopEdges }
+  }, [graph.edges, selectedNodeId])
 }

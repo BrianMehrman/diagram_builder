@@ -5,7 +5,7 @@
  * Deprecated buildings get a darker, striped "boarded-up" appearance.
  */
 
-import type { GraphNode } from '../../../../shared/types';
+import type { GraphNode } from '../../../../shared/types'
 
 /**
  * Check if a node is deprecated.
@@ -14,32 +14,32 @@ import type { GraphNode } from '../../../../shared/types';
  */
 export function isDeprecated(node: GraphNode): boolean {
   // Direct field on GraphNode
-  if (node.isDeprecated === true) return true;
+  if (node.isDeprecated === true) return true
 
   // Fallback: check metadata
-  const meta = node.metadata;
-  if (meta == null) return false;
+  const meta = node.metadata
+  if (meta == null) return false
 
-  if (meta.isDeprecated === true) return true;
+  if (meta.isDeprecated === true) return true
 
   // Nested under properties (parser output format)
-  const props = meta.properties;
+  const props = meta.properties
   if (props != null && typeof props === 'object' && !Array.isArray(props)) {
-    const nested = (props as Record<string, unknown>).isDeprecated;
-    if (nested === true) return nested;
+    const nested = (props as Record<string, unknown>).isDeprecated
+    if (nested === true) return nested
   }
 
-  return false;
+  return false
 }
 
 /** Deprecated building color — dark desaturated gray */
-export const DEPRECATED_COLOR = '#4B5563';
+export const DEPRECATED_COLOR = '#4B5563'
 
 /** Stripe color for hatched pattern — slightly lighter gray */
-export const DEPRECATED_STRIPE_COLOR = '#6B7280';
+export const DEPRECATED_STRIPE_COLOR = '#6B7280'
 
 /** Deprecated material roughness — weathered look */
-export const DEPRECATED_ROUGHNESS = 0.9;
+export const DEPRECATED_ROUGHNESS = 0.9
 
 /** Deprecated material metalness — dull, non-reflective */
-export const DEPRECATED_METALNESS = 0.1;
+export const DEPRECATED_METALNESS = 0.1

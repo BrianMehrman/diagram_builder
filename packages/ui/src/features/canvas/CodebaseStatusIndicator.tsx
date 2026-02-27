@@ -33,7 +33,14 @@ export function CodebaseStatusIndicator({ status, message }: CodebaseStatusIndic
       color: 'bg-blue-500',
       icon: (
         <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
           <path
             className="opacity-75"
             fill="currentColor"
@@ -65,7 +72,9 @@ export function CodebaseStatusIndicator({ status, message }: CodebaseStatusIndic
     <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
       <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-xl px-4 py-3 flex items-center gap-3 min-w-[320px]">
         {/* Status Icon */}
-        <div className={`flex-shrink-0 w-10 h-10 ${config.color} rounded-full flex items-center justify-center text-white`}>
+        <div
+          className={`flex-shrink-0 w-10 h-10 ${config.color} rounded-full flex items-center justify-center text-white`}
+        >
           {config.icon}
         </div>
 

@@ -4,22 +4,22 @@
  * Display and manage saved viewpoints
  */
 
-import { useViewpointStore } from './store';
-import { useCanvasStore } from '../canvas/store';
-import { useToastStore } from '../feedback/toastStore';
-import type { Viewpoint } from '../../shared/types';
+import { useViewpointStore } from './store'
+import { useCanvasStore } from '../canvas/store'
+import { useToastStore } from '../feedback/toastStore'
+import type { Viewpoint } from '../../shared/types'
 
 interface ViewpointListProps {
-  className?: string;
-  onViewpointApplied?: (viewpoint: Viewpoint) => void;
+  className?: string
+  onViewpointApplied?: (viewpoint: Viewpoint) => void
 }
 
 /**
  * Format ISO timestamp to readable date
  */
 function formatDate(isoString: string): string {
-  const date = new Date(isoString);
-  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  const date = new Date(isoString)
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
 }
 
 /**
@@ -32,33 +32,25 @@ function ViewpointListItem({
   onDelete,
   onShare,
 }: {
-  viewpoint: Viewpoint;
-  isActive: boolean;
-  onApply: () => void;
-  onDelete: () => void;
-  onShare: () => void;
+  viewpoint: Viewpoint
+  isActive: boolean
+  onApply: () => void
+  onDelete: () => void
+  onShare: () => void
 }) {
   return (
     <div
       className={`border rounded-lg p-3 ${
-        isActive
-          ? 'border-primary-500 bg-primary-50'
-          : 'border-gray-200 bg-white hover:bg-gray-50'
+        isActive ? 'border-primary-500 bg-primary-50' : 'border-gray-200 bg-white hover:bg-gray-50'
       } transition-colors`}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-gray-900 truncate">
-            {viewpoint.name}
-          </h4>
+          <h4 className="font-semibold text-gray-900 truncate">{viewpoint.name}</h4>
           {viewpoint.description && (
-            <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-              {viewpoint.description}
-            </p>
+            <p className="text-sm text-gray-600 mt-1 line-clamp-2">{viewpoint.description}</p>
           )}
-          <div className="text-xs text-gray-500 mt-2">
-            {formatDate(viewpoint.createdAt)}
-          </div>
+          <div className="text-xs text-gray-500 mt-2">{formatDate(viewpoint.createdAt)}</div>
         </div>
 
         <div className="flex items-center gap-1 ml-2">
@@ -67,12 +59,7 @@ function ViewpointListItem({
             className="p-1.5 text-primary-600 hover:bg-primary-100 rounded transition-colors"
             title="Apply viewpoint"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -92,12 +79,7 @@ function ViewpointListItem({
             className="p-1.5 text-gray-600 hover:bg-gray-100 rounded transition-colors"
             title="Share viewpoint"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -111,12 +93,7 @@ function ViewpointListItem({
             className="p-1.5 text-red-600 hover:bg-red-100 rounded transition-colors"
             title="Delete viewpoint"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -131,80 +108,77 @@ function ViewpointListItem({
       {/* Viewpoint details */}
       <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-600 space-y-1">
         <div>
-          Camera: ({viewpoint.cameraPosition.x.toFixed(1)},{' '}
-          {viewpoint.cameraPosition.y.toFixed(1)},{' '}
+          Camera: ({viewpoint.cameraPosition.x.toFixed(1)}, {viewpoint.cameraPosition.y.toFixed(1)},{' '}
           {viewpoint.cameraPosition.z.toFixed(1)})
         </div>
-        {viewpoint.filters?.lod !== undefined && (
-          <div>LOD: Level {viewpoint.filters.lod}</div>
-        )}
+        {viewpoint.filters?.lod !== undefined && <div>LOD: Level {viewpoint.filters.lod}</div>}
         {viewpoint.annotations && viewpoint.annotations.length > 0 && (
           <div>Annotations: {viewpoint.annotations.length}</div>
         )}
       </div>
     </div>
-  );
+  )
 }
 
 /**
  * ViewpointList component
  */
-export function ViewpointList({
-  className = '',
-  onViewpointApplied,
-}: ViewpointListProps) {
-  const viewpoints = useViewpointStore((state) => state.viewpoints);
-  const activeViewpointId = useViewpointStore((state) => state.activeViewpointId);
-  const setActiveViewpoint = useViewpointStore((state) => state.setActiveViewpoint);
-  const deleteViewpoint = useViewpointStore((state) => state.deleteViewpoint);
+export function ViewpointList({ className = '', onViewpointApplied }: ViewpointListProps) {
+  const viewpoints = useViewpointStore((state) => state.viewpoints)
+  const activeViewpointId = useViewpointStore((state) => state.activeViewpointId)
+  const setActiveViewpoint = useViewpointStore((state) => state.setActiveViewpoint)
+  const deleteViewpoint = useViewpointStore((state) => state.deleteViewpoint)
 
-  const setCameraPosition = useCanvasStore((state) => state.setCameraPosition);
-  const setCameraTarget = useCanvasStore((state) => state.setCameraTarget);
-  const setLodLevel = useCanvasStore((state) => state.setLodLevel);
-  const selectNode = useCanvasStore((state) => state.selectNode);
+  const setCameraPosition = useCanvasStore((state) => state.setCameraPosition)
+  const setCameraTarget = useCanvasStore((state) => state.setCameraTarget)
+  const setLodLevel = useCanvasStore((state) => state.setLodLevel)
+  const selectNode = useCanvasStore((state) => state.selectNode)
 
-  const showSuccess = useToastStore((state) => state.showSuccess);
-  const showError = useToastStore((state) => state.showError);
+  const showSuccess = useToastStore((state) => state.showSuccess)
+  const showError = useToastStore((state) => state.showError)
 
   const handleApply = (viewpoint: Viewpoint) => {
     // Apply camera state
-    setCameraPosition(viewpoint.cameraPosition);
-    setCameraTarget(viewpoint.cameraTarget);
+    setCameraPosition(viewpoint.cameraPosition)
+    setCameraTarget(viewpoint.cameraTarget)
 
     // Apply filters
     if (viewpoint.filters) {
       if (viewpoint.filters.lod !== undefined) {
-        setLodLevel(viewpoint.filters.lod);
+        setLodLevel(viewpoint.filters.lod)
       }
     }
 
     // Clear selection when applying viewpoint
-    selectNode(null);
+    selectNode(null)
 
-    setActiveViewpoint(viewpoint.id);
+    setActiveViewpoint(viewpoint.id)
 
     if (onViewpointApplied) {
-      onViewpointApplied(viewpoint);
+      onViewpointApplied(viewpoint)
     }
-  };
+  }
 
   const handleDelete = (viewpointId: string) => {
     if (confirm('Are you sure you want to delete this viewpoint?')) {
-      deleteViewpoint(viewpointId);
+      deleteViewpoint(viewpointId)
     }
-  };
+  }
 
   const handleShare = (viewpoint: Viewpoint) => {
     // Generate shareable URL with viewpoint data
-    const encoded = btoa(JSON.stringify(viewpoint));
-    const url = `${window.location.origin}${window.location.pathname}?viewpoint=${encoded}`;
+    const encoded = btoa(JSON.stringify(viewpoint))
+    const url = `${window.location.origin}${window.location.pathname}?viewpoint=${encoded}`
 
-    navigator.clipboard.writeText(url).then(() => {
-      showSuccess('Link Copied', 'Viewpoint link copied to clipboard!');
-    }).catch(() => {
-      showError('Copy Failed', 'Failed to copy link. Please try again.');
-    });
-  };
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        showSuccess('Link Copied', 'Viewpoint link copied to clipboard!')
+      })
+      .catch(() => {
+        showError('Copy Failed', 'Failed to copy link. Please try again.')
+      })
+  }
 
   if (viewpoints.length === 0) {
     return (
@@ -223,11 +197,9 @@ export function ViewpointList({
           />
         </svg>
         <p>No saved viewpoints yet</p>
-        <p className="text-xs mt-1">
-          Create a viewpoint to save your current view
-        </p>
+        <p className="text-xs mt-1">Create a viewpoint to save your current view</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -243,5 +215,5 @@ export function ViewpointList({
         />
       ))}
     </div>
-  );
+  )
 }

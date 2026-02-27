@@ -1,4 +1,4 @@
-import { test, expect } from '../support/fixtures';
+import { test, expect } from '../support/fixtures'
 
 /**
  * Example Test Suite
@@ -9,7 +9,7 @@ import { test, expect } from '../support/fixtures';
 test.describe('Example Tests - Delete When Ready', () => {
   test('should demonstrate basic page interaction', async ({ page }) => {
     // GIVEN: User is on the homepage
-    await page.goto('/');
+    await page.goto('/')
 
     // WHEN: User interacts with an element
     // Note: Replace with actual selectors from your UI
@@ -18,18 +18,18 @@ test.describe('Example Tests - Delete When Ready', () => {
 
     // THEN: Expected result occurs
     // Example: await expect(page.locator('[data-testid="upload-modal"]')).toBeVisible();
-  });
+  })
 
   test('should demonstrate Given-When-Then structure', async ({ page }) => {
     // GIVEN: Setup test preconditions
-    await page.goto('/');
+    await page.goto('/')
 
     // WHEN: Execute the behavior being tested
     // Single action per test (atomic)
 
     // THEN: Verify expected outcome
     // One assertion per test (when possible)
-  });
+  })
 
   test('should demonstrate network interception', async ({ page }) => {
     // CRITICAL: Intercept routes BEFORE navigation (network-first pattern)
@@ -39,15 +39,15 @@ test.describe('Example Tests - Delete When Ready', () => {
         contentType: 'application/json',
         body: JSON.stringify({ message: 'Mocked response' }),
       })
-    );
+    )
 
     // NOW navigate
-    await page.goto('/');
+    await page.goto('/')
 
     // Verify mocked response is used
     // Example: await expect(page.locator('[data-testid="message"]')).toHaveText('Mocked response');
-  });
-});
+  })
+})
 
 /**
  * Best Practices Reference

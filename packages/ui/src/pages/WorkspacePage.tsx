@@ -386,7 +386,9 @@ export function WorkspacePage() {
         {importError && (
           <ErrorNotification
             message={importError}
-            onRetry={() => { void loadWorkspace(workspace?.id || '') }}
+            onRetry={() => {
+              void loadWorkspace(workspace?.id || '')
+            }}
             onDismiss={() => setImportError(null)}
           />
         )}
@@ -403,9 +405,13 @@ export function WorkspacePage() {
         <LeftPanel
           workspaceId={workspace.id}
           {...(selectedCodebaseId ? { selectedCodebaseId } : {})}
-          onCodebaseSelected={(cbId) => { void handleCodebaseSelected(cbId) }}
+          onCodebaseSelected={(cbId) => {
+            void handleCodebaseSelected(cbId)
+          }}
           refreshTrigger={listRefreshTrigger}
-          onImportSuccess={() => { void loadWorkspace(workspace.id) }}
+          onImportSuccess={() => {
+            void loadWorkspace(workspace.id)
+          }}
           onImportComplete={handleImportComplete}
         />
 

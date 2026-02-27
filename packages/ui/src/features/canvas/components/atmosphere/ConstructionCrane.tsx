@@ -8,39 +8,37 @@
  * this component simply renders the geometry when conditions are met.
  */
 
-import { useMemo } from 'react';
-import * as THREE from 'three';
-import { useCanvasStore } from '../../store';
-import type { GraphNode, Position3D } from '../../../../shared/types';
+import { useMemo } from 'react'
+import * as THREE from 'three'
+import { useCanvasStore } from '../../store'
+import type { GraphNode, Position3D } from '../../../../shared/types'
 
 export interface ConstructionCraneProps {
-  node: GraphNode;
-  position: Position3D;
-  buildingHeight: number;
+  node: GraphNode
+  position: Position3D
+  buildingHeight: number
 }
 
 /** Construction yellow/orange */
-const CRANE_COLOR = '#F59E0B';
+const CRANE_COLOR = '#F59E0B'
 
 export function ConstructionCrane({ position, buildingHeight }: ConstructionCraneProps) {
-  const lodLevel = useCanvasStore((s) => s.lodLevel);
-  const cranesEnabled = useCanvasStore(
-    (s) => s.citySettings.atmosphereOverlays.cranes,
-  );
+  const lodLevel = useCanvasStore((s) => s.lodLevel)
+  const cranesEnabled = useCanvasStore((s) => s.citySettings.atmosphereOverlays.cranes)
 
   // Memoize the material so it's shared across instances
   const material = useMemo(
     () => new THREE.MeshStandardMaterial({ color: CRANE_COLOR, roughness: 0.6, metalness: 0.3 }),
-    [],
-  );
+    []
+  )
 
   // AC-5: visible at LOD 3+ only
   // AC-3: toggleable via atmosphereOverlays.cranes
-  if (lodLevel < 3 || !cranesEnabled) return null;
+  if (lodLevel < 3 || !cranesEnabled) return null
 
-  const poleHeight = buildingHeight * 0.6;
-  const armLength = buildingHeight * 0.5;
-  const hookLength = buildingHeight * 0.15;
+  const poleHeight = buildingHeight * 0.6
+  const armLength = buildingHeight * 0.5
+  const hookLength = buildingHeight * 0.15
 
   return (
     <group position={[position.x, buildingHeight, position.z]}>
@@ -59,5 +57,5 @@ export function ConstructionCrane({ position, buildingHeight }: ConstructionCran
         <boxGeometry args={[0.05, hookLength, 0.05]} />
       </mesh>
     </group>
-  );
+  )
 }

@@ -28,10 +28,7 @@ export interface CloneOptions {
  * @param options - Clone options
  * @returns Absolute path to cloned repository
  */
-export async function cloneRepository(
-  url: string,
-  options: CloneOptions = {}
-): Promise<string> {
+export async function cloneRepository(url: string, options: CloneOptions = {}): Promise<string> {
   const targetPath = options.targetDir || generateTempPath()
   const depth = options.depth ?? 1 // Default to shallow clone
 
@@ -78,11 +75,13 @@ export async function listRemoteBranches(url: string): Promise<string[]> {
 
     // Parse the output to extract branch names
     // Format: <hash>\trefs/heads/<branch-name>
-    const lines = result.split('\n').filter(line => line.trim())
-    const branches = lines.map(line => {
-      const match = line.match(/refs\/heads\/(.+)$/)
-      return match ? match[1] : null
-    }).filter((branch): branch is string => branch !== null)
+    const lines = result.split('\n').filter((line) => line.trim())
+    const branches = lines
+      .map((line) => {
+        const match = line.match(/refs\/heads\/(.+)$/)
+        return match ? match[1] : null
+      })
+      .filter((branch): branch is string => branch !== null)
 
     return branches
   } catch (error) {
@@ -131,11 +130,7 @@ export async function cloneAtCommit(
  * @param targetDir - Target directory
  * @returns Absolute path to cloned repository
  */
-export async function cloneAtTag(
-  url: string,
-  tag: string,
-  targetDir?: string
-): Promise<string> {
+export async function cloneAtTag(url: string, tag: string, targetDir?: string): Promise<string> {
   const options: CloneOptions = {
     branch: tag,
   }

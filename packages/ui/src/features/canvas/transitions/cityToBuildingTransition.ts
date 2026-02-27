@@ -5,18 +5,18 @@
  * transition fade values when navigating from city → building view.
  */
 
-import type { Position3D } from '../../../shared/types';
+import type { Position3D } from '../../../shared/types'
 
 interface BuildingEntryParams {
-  buildingPosition: Position3D;
-  buildingWidth: number;
-  buildingHeight: number;
-  buildingDepth: number;
+  buildingPosition: Position3D
+  buildingWidth: number
+  buildingHeight: number
+  buildingDepth: number
 }
 
 interface EntryTarget {
-  position: Position3D;
-  target: Position3D;
+  position: Position3D
+  target: Position3D
 }
 
 /**
@@ -26,24 +26,24 @@ interface EntryTarget {
  * at 30% of building height, looking at the center of the building.
  */
 export function calculateBuildingEntryTarget(params: BuildingEntryParams): EntryTarget {
-  const { buildingPosition, buildingWidth, buildingHeight, buildingDepth } = params;
+  const { buildingPosition, buildingWidth, buildingHeight, buildingDepth } = params
 
-  const centerX = buildingPosition.x + buildingWidth / 2;
-  const eyeY = buildingPosition.y + buildingHeight * 0.3;
+  const centerX = buildingPosition.x + buildingWidth / 2
+  const eyeY = buildingPosition.y + buildingHeight * 0.3
 
   const entryPosition: Position3D = {
     x: centerX,
     y: eyeY,
     z: buildingPosition.z + buildingDepth + 2, // just outside front face
-  };
+  }
 
   const lookTarget: Position3D = {
     x: centerX,
     y: eyeY,
     z: buildingPosition.z + buildingDepth / 2, // center of building
-  };
+  }
 
-  return { position: entryPosition, target: lookTarget };
+  return { position: entryPosition, target: lookTarget }
 }
 
 /**
@@ -51,7 +51,7 @@ export function calculateBuildingEntryTarget(params: BuildingEntryParams): Entry
  * Fades from 1 (fully visible) to 0 (hidden) as progress goes 0 → 1.
  */
 export function computeCityFadeOpacity(progress: number): number {
-  return Math.max(0, 1 - progress);
+  return Math.max(0, 1 - progress)
 }
 
 /**
@@ -59,5 +59,5 @@ export function computeCityFadeOpacity(progress: number): number {
  * Fades from 0 (hidden) to 1 (fully visible) as progress goes 0 → 1.
  */
 export function computeInteriorRevealOpacity(progress: number): number {
-  return Math.min(1, progress);
+  return Math.min(1, progress)
 }

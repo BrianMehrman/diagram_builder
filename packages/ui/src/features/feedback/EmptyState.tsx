@@ -13,7 +13,7 @@
  */
 
 interface EmptyStateProps {
-  onImportClick?: () => void;
+  onImportClick?: () => void
 }
 
 export function EmptyState({ onImportClick }: EmptyStateProps) {
@@ -43,9 +43,7 @@ export function EmptyState({ onImportClick }: EmptyStateProps) {
         </div>
 
         {/* Headline */}
-        <h1 className="text-3xl font-bold text-white mb-4">
-          Start exploring your codebase in 3D
-        </h1>
+        <h1 className="text-3xl font-bold text-white mb-4">Start exploring your codebase in 3D</h1>
 
         {/* Subheading */}
         <p className="text-gray-400 text-lg mb-8 leading-relaxed">
@@ -84,5 +82,5 @@ export function EmptyState({ onImportClick }: EmptyStateProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }

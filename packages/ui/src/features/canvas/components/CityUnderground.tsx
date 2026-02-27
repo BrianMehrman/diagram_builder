@@ -13,68 +13,67 @@
  * visual clutter from third-party library dependencies.
  */
 
-import { useMemo } from 'react';
-import { UndergroundPipe } from './UndergroundPipe';
-import { useCityLayout } from '../hooks/useCityLayout';
-import { useCityFiltering } from '../hooks/useCityFiltering';
-import { classifyEdgeRouting } from '../views/wireUtils';
-import { useCanvasStore } from '../store';
-import type { Graph } from '../../../shared/types';
+import { useMemo } from 'react'
+import { UndergroundPipe } from './UndergroundPipe'
+import { useCityLayout } from '../hooks/useCityLayout'
+import { useCityFiltering } from '../hooks/useCityFiltering'
+import { classifyEdgeRouting } from '../views/wireUtils'
+import { useCanvasStore } from '../store'
+import type { Graph } from '../../../shared/types'
 
 interface CityUndergroundProps {
-  graph: Graph;
+  graph: Graph
 }
 
 export function CityUnderground({ graph }: CityUndergroundProps) {
-  const undergroundVisible = useCanvasStore((s) => s.citySettings.undergroundVisible);
-  const externalPipesVisible = useCanvasStore((s) => s.citySettings.externalPipesVisible);
-  const edgeTierVisibility = useCanvasStore((s) => s.citySettings.edgeTierVisibility);
-  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
-  const isFocusMode = selectedNodeId !== null;
+  const undergroundVisible = useCanvasStore((s) => s.citySettings.undergroundVisible)
+  const externalPipesVisible = useCanvasStore((s) => s.citySettings.externalPipesVisible)
+  const edgeTierVisibility = useCanvasStore((s) => s.citySettings.edgeTierVisibility)
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
+  const isFocusMode = selectedNodeId !== null
 
-  const { positions } = useCityLayout(graph);
-  const { visibleEdges } = useCityFiltering(graph, positions);
+  const { positions } = useCityLayout(graph)
+  const { visibleEdges } = useCityFiltering(graph, positions)
 
   // Build a set of external node IDs for O(1) lookup
   const externalNodeIds = useMemo(() => {
-    const ids = new Set<string>();
+    const ids = new Set<string>()
     for (const node of graph.nodes) {
-      if (node.isExternal) ids.add(node.id);
+      if (node.isExternal) ids.add(node.id)
     }
-    return ids;
-  }, [graph.nodes]);
+    return ids
+  }, [graph.nodes])
 
   // Master gate — render nothing when underground layer is off and not in focus mode
-  if (!undergroundVisible && !isFocusMode) return null;
+  if (!undergroundVisible && !isFocusMode) return null
 
   // Filter to underground-routed edges, then apply external and inheritance visibility rules
   const pipesToRender = visibleEdges.filter((edge) => {
-    if (classifyEdgeRouting(edge.type) !== 'underground') return false;
+    if (classifyEdgeRouting(edge.type) !== 'underground') return false
 
     // In focus mode: only show pipes connected to the focused building
     if (isFocusMode && selectedNodeId) {
-      if (edge.source !== selectedNodeId && edge.target !== selectedNodeId) return false;
+      if (edge.source !== selectedNodeId && edge.target !== selectedNodeId) return false
     }
 
-    const isExternal =
-      externalNodeIds.has(edge.source) || externalNodeIds.has(edge.target);
+    const isExternal = externalNodeIds.has(edge.source) || externalNodeIds.has(edge.target)
     // In focus mode, show external pipes too (the user selected this node and wants to see all connections)
-    if (isExternal && !externalPipesVisible && !isFocusMode) return false;
+    if (isExternal && !externalPipesVisible && !isFocusMode) return false
 
     // Inheritance pipes (extends/implements/inherits) gated by the inheritance tier toggle
-    const t = edge.type.toLowerCase();
-    const isInheritance = t === 'extends' || t === 'implements' || t === 'inherits';
-    if (isInheritance && !edgeTierVisibility.inheritance) return false;
+    const t = edge.type.toLowerCase()
+    const isInheritance = t === 'extends' || t === 'implements' || t === 'inherits'
+    if (isInheritance && !edgeTierVisibility.inheritance) return false
 
-    return true;
-  });
+    return true
+  })
 
   return (
     <group name="city-underground">
       {pipesToRender.map((edge) => {
-        const srcPos = positions.get(edge.source);
-        const tgtPos = positions.get(edge.target);
-        if (!srcPos || !tgtPos) return null;
+        const srcPos = positions.get(edge.source)
+        const tgtPos = positions.get(edge.target)
+        if (!srcPos || !tgtPos) return null
 
         return (
           <UndergroundPipe
@@ -83,8 +82,8 @@ export function CityUnderground({ graph }: CityUndergroundProps) {
             targetPosition={tgtPos}
             edgeType={edge.type}
           />
-        );
+        )
       })}
     </group>
-  );
+  )
 }

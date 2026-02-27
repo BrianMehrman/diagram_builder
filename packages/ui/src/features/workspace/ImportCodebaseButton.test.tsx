@@ -47,12 +47,7 @@ describe('ImportCodebaseButton', () => {
 
   it('should accept onImportComplete callback prop', () => {
     const onImportComplete = vi.fn()
-    render(
-      <ImportCodebaseButton
-        {...defaultProps}
-        onImportComplete={onImportComplete}
-      />
-    )
+    render(<ImportCodebaseButton {...defaultProps} onImportComplete={onImportComplete} />)
 
     // Button should render with the callback prop
     const button = screen.getByTestId('import-codebase-button')

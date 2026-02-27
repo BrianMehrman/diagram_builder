@@ -6,13 +6,13 @@
  * Only rendered in city view mode.
  */
 
-import { useCanvasStore } from '../store';
-import type { AtmosphereOverlayKey } from '../store';
+import { useCanvasStore } from '../store'
+import type { AtmosphereOverlayKey } from '../store'
 
 interface OverlayOption {
-  key: AtmosphereOverlayKey;
-  label: string;
-  description: string;
+  key: AtmosphereOverlayKey
+  label: string
+  description: string
 }
 
 const OVERLAY_OPTIONS: OverlayOption[] = [
@@ -20,15 +20,15 @@ const OVERLAY_OPTIONS: OverlayOption[] = [
   { key: 'lighting', label: 'Lighting', description: 'Test coverage lighting (bright = tested)' },
   { key: 'smog', label: 'Smog', description: 'Complexity smog over high-complexity districts' },
   { key: 'deprecated', label: 'Deprecated', description: 'Striped overlay on deprecated code' },
-];
+]
 
 export function AtmosphereTogglePanel() {
-  const overlays = useCanvasStore((s) => s.citySettings.atmosphereOverlays);
-  const toggle = useCanvasStore((s) => s.toggleAtmosphereOverlay);
-  const viewMode = useCanvasStore((s) => s.viewMode);
+  const overlays = useCanvasStore((s) => s.citySettings.atmosphereOverlays)
+  const toggle = useCanvasStore((s) => s.toggleAtmosphereOverlay)
+  const viewMode = useCanvasStore((s) => s.viewMode)
 
   // Only show in city view
-  if (viewMode !== 'city') return null;
+  if (viewMode !== 'city') return null
 
   return (
     <div className="space-y-1.5" data-testid="atmosphere-toggle-panel">
@@ -51,5 +51,5 @@ export function AtmosphereTogglePanel() {
         </label>
       ))}
     </div>
-  );
+  )
 }

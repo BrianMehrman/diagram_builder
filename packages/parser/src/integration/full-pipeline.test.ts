@@ -59,7 +59,7 @@ describe('full-pipeline integration', () => {
       expect(repoContext.metadata.type).toBe('local')
 
       // Step 3: Read file contents
-      const fileInputs = repoContext.files.map(filePath => ({
+      const fileInputs = repoContext.files.map((filePath) => ({
         filePath,
         content: readFileSync(filePath, 'utf-8'),
       }))
@@ -75,19 +75,19 @@ describe('full-pipeline integration', () => {
       expect(nodes.length).toBeGreaterThan(0)
 
       // Should have file nodes
-      const fileNodes = nodes.filter(n => n.type === 'file')
+      const fileNodes = nodes.filter((n) => n.type === 'file')
       expect(fileNodes.length).toBe(3)
 
       // Should have function nodes
-      const functionNodes = nodes.filter(n => n.type === 'function')
+      const functionNodes = nodes.filter((n) => n.type === 'function')
       expect(functionNodes.length).toBeGreaterThanOrEqual(2) // main, greet
 
       // Should have class nodes
-      const classNodes = nodes.filter(n => n.type === 'class')
+      const classNodes = nodes.filter((n) => n.type === 'class')
       expect(classNodes.length).toBeGreaterThanOrEqual(1) // StringUtils
 
       // Should have import edges
-      const importEdges = edges.filter(e => e.type === 'imports')
+      const importEdges = edges.filter((e) => e.type === 'imports')
       expect(importEdges.length).toBeGreaterThanOrEqual(1) // index imports greet
 
       // Step 5: Convert to IVM
@@ -116,7 +116,7 @@ describe('full-pipeline integration', () => {
       }
 
       // Verify all edges reference existing nodes
-      const nodeIds = new Set(ivm.nodes.map(n => n.id))
+      const nodeIds = new Set(ivm.nodes.map((n) => n.id))
       for (const edge of ivm.edges) {
         expect(nodeIds.has(edge.source)).toBe(true)
         expect(nodeIds.has(edge.target)).toBe(true)
@@ -163,7 +163,7 @@ describe('full-pipeline integration', () => {
 
       expect(repoContext.files).toHaveLength(1)
 
-      const fileInputs = repoContext.files.map(filePath => ({
+      const fileInputs = repoContext.files.map((filePath) => ({
         filePath,
         content: readFileSync(filePath, 'utf-8'),
       }))
@@ -175,7 +175,7 @@ describe('full-pipeline integration', () => {
       expect(ivm.metadata.name).toBe('js-project')
 
       // Should detect JavaScript language
-      const fileNode = ivm.nodes.find(n => n.type === 'file')
+      const fileNode = ivm.nodes.find((n) => n.type === 'file')
       expect(fileNode).toBeDefined()
     } finally {
       rmSync(testDir, { recursive: true, force: true })
@@ -212,7 +212,7 @@ describe('full-pipeline integration', () => {
       )
 
       const repoContext = await loadRepository(testDir, { extensions: ['.ts'] })
-      const fileInputs = repoContext.files.map(filePath => ({
+      const fileInputs = repoContext.files.map((filePath) => ({
         filePath,
         content: readFileSync(filePath, 'utf-8'),
       }))
@@ -220,11 +220,11 @@ describe('full-pipeline integration', () => {
       const ivm = convertToIVM(depGraph, repoContext, { name: 'inheritance-test' })
 
       // Should have import edges (Dog imports Animal)
-      const importEdges = ivm.edges.filter(e => e.type === 'imports')
+      const importEdges = ivm.edges.filter((e) => e.type === 'imports')
       expect(importEdges.length).toBeGreaterThanOrEqual(1)
 
       // Should have class nodes
-      const classNodes = ivm.nodes.filter(n => n.type === 'class')
+      const classNodes = ivm.nodes.filter((n) => n.type === 'class')
       expect(classNodes.length).toBeGreaterThanOrEqual(1) // At least Dog or Animal
 
       // Verify the IVM structure is valid

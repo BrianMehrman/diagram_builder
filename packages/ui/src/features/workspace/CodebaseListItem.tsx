@@ -126,12 +126,8 @@ export function CodebaseListItem({
           {/* File and Node Counts */}
           {(codebase.fileCount !== null || codebase.nodeCount !== null) && (
             <div className="flex gap-3 mt-1 text-xs text-gray-500">
-              {codebase.fileCount !== null && (
-                <span>{codebase.fileCount} files</span>
-              )}
-              {codebase.nodeCount !== null && (
-                <span>{codebase.nodeCount} nodes</span>
-              )}
+              {codebase.fileCount !== null && <span>{codebase.fileCount} files</span>}
+              {codebase.nodeCount !== null && <span>{codebase.nodeCount} nodes</span>}
             </div>
           )}
 

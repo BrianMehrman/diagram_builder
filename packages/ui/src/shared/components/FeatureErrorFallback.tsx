@@ -6,9 +6,9 @@
  */
 
 interface FeatureErrorFallbackProps {
-  error: Error;
-  featureName: string;
-  resetError: () => void;
+  error: Error
+  featureName: string
+  resetError: () => void
 }
 
 /**
@@ -38,16 +38,12 @@ export function FeatureErrorFallback({
           </svg>
         </div>
         <div className="ml-3 flex-1">
-          <h3 className="text-lg font-semibold text-yellow-900">
-            {featureName} Error
-          </h3>
+          <h3 className="text-lg font-semibold text-yellow-900">{featureName} Error</h3>
           <p className="text-sm text-yellow-700 mt-1">
             This feature encountered an error and could not be displayed.
           </p>
           <div className="mt-3 bg-yellow-100 rounded p-3">
-            <p className="text-xs font-mono text-yellow-800 break-all">
-              {error.message}
-            </p>
+            <p className="text-xs font-mono text-yellow-800 break-all">{error.message}</p>
           </div>
           <div className="mt-4 flex gap-3">
             <button
@@ -66,5 +62,5 @@ export function FeatureErrorFallback({
         </div>
       </div>
     </div>
-  );
+  )
 }

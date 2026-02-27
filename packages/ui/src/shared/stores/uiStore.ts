@@ -4,31 +4,31 @@
  * Zustand store for global UI state (modals, panels, etc.)
  */
 
-import { create } from 'zustand';
+import { create } from 'zustand'
 
 /**
  * UI store state and actions
  */
 interface UIStore {
   // Help modal state
-  isHelpModalOpen: boolean;
-  openHelpModal: () => void;
-  closeHelpModal: () => void;
-  toggleHelpModal: () => void;
+  isHelpModalOpen: boolean
+  openHelpModal: () => void
+  closeHelpModal: () => void
+  toggleHelpModal: () => void
 
   // Side panel state
-  isLeftPanelOpen: boolean;
-  isRightPanelOpen: boolean;
-  openLeftPanel: () => void;
-  closeLeftPanel: () => void;
-  toggleLeftPanel: () => void;
-  openRightPanel: () => void;
-  closeRightPanel: () => void;
-  toggleRightPanel: () => void;
-  closeAllPanels: () => void;
+  isLeftPanelOpen: boolean
+  isRightPanelOpen: boolean
+  openLeftPanel: () => void
+  closeLeftPanel: () => void
+  toggleLeftPanel: () => void
+  openRightPanel: () => void
+  closeRightPanel: () => void
+  toggleRightPanel: () => void
+  closeAllPanels: () => void
 
   // Reset
-  reset: () => void;
+  reset: () => void
 }
 
 /**
@@ -56,4 +56,4 @@ export const useUIStore = create<UIStore>((set) => ({
 
   // Reset
   reset: () => set({ isHelpModalOpen: false, isLeftPanelOpen: false, isRightPanelOpen: false }),
-}));
+}))

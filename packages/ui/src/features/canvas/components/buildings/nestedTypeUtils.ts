@@ -6,7 +6,7 @@
  * containment analyzer.
  */
 
-import type { GraphNode } from '../../../../shared/types';
+import type { GraphNode } from '../../../../shared/types'
 
 /** Node types that represent nested type definitions */
 const NESTED_TYPE_KINDS = new Set<GraphNode['type']>([
@@ -14,7 +14,7 @@ const NESTED_TYPE_KINDS = new Set<GraphNode['type']>([
   'interface',
   'enum',
   'abstract_class',
-]);
+])
 
 /**
  * Build a lookup map of parentId → child nodes for nested types.
@@ -25,24 +25,22 @@ const NESTED_TYPE_KINDS = new Set<GraphNode['type']>([
  *
  * Returns an empty map if no parentId relationships exist in the graph.
  */
-export function buildNestedTypeMap(
-  nodes: GraphNode[],
-): Map<string, GraphNode[]> {
-  const map = new Map<string, GraphNode[]>();
+export function buildNestedTypeMap(nodes: GraphNode[]): Map<string, GraphNode[]> {
+  const map = new Map<string, GraphNode[]>()
 
   for (const node of nodes) {
-    if (!node.parentId) continue;
-    if (!NESTED_TYPE_KINDS.has(node.type)) continue;
+    if (!node.parentId) continue
+    if (!NESTED_TYPE_KINDS.has(node.type)) continue
 
-    const existing = map.get(node.parentId);
+    const existing = map.get(node.parentId)
     if (existing) {
-      existing.push(node);
+      existing.push(node)
     } else {
-      map.set(node.parentId, [node]);
+      map.set(node.parentId, [node])
     }
   }
 
-  return map;
+  return map
 }
 
 /**
@@ -59,29 +57,29 @@ export function buildNestedTypeMap(
 export function collectNestingTiers(
   nodeId: string,
   nestedMap: Map<string, GraphNode[]>,
-  maxTiers: number = 3,
+  maxTiers: number = 3
 ): GraphNode[][] {
-  const tiers: GraphNode[][] = [];
-  let currentParentIds = [nodeId];
+  const tiers: GraphNode[][] = []
+  let currentParentIds = [nodeId]
 
   for (let tier = 0; tier < maxTiers; tier++) {
-    const tierNodes: GraphNode[] = [];
-    const nextParentIds: string[] = [];
+    const tierNodes: GraphNode[] = []
+    const nextParentIds: string[] = []
 
     for (const parentId of currentParentIds) {
-      const children = nestedMap.get(parentId);
+      const children = nestedMap.get(parentId)
       if (children) {
-        tierNodes.push(...children);
-        nextParentIds.push(...children.map((n) => n.id));
+        tierNodes.push(...children)
+        nextParentIds.push(...children.map((n) => n.id))
       }
     }
 
-    if (tierNodes.length === 0) break;
-    tiers.push(tierNodes);
-    currentParentIds = nextParentIds;
+    if (tierNodes.length === 0) break
+    tiers.push(tierNodes)
+    currentParentIds = nextParentIds
   }
 
-  return tiers;
+  return tiers
 }
 
 /**
@@ -90,22 +88,22 @@ export function collectNestingTiers(
  */
 export function countOverflowChildren(
   lastTierNodeIds: string[],
-  nestedMap: Map<string, GraphNode[]>,
+  nestedMap: Map<string, GraphNode[]>
 ): number {
-  let count = 0;
-  let currentIds = lastTierNodeIds;
+  let count = 0
+  let currentIds = lastTierNodeIds
 
   while (currentIds.length > 0) {
-    const nextIds: string[] = [];
+    const nextIds: string[] = []
     for (const id of currentIds) {
-      const children = nestedMap.get(id);
+      const children = nestedMap.get(id)
       if (children) {
-        count += children.length;
-        nextIds.push(...children.map((n) => n.id));
+        count += children.length
+        nextIds.push(...children.map((n) => n.id))
       }
     }
-    currentIds = nextIds;
+    currentIds = nextIds
   }
 
-  return count;
+  return count
 }

@@ -7,10 +7,7 @@ import { calculateFovCorners } from './fovIndicator'
 
 describe('calculateFovCorners', () => {
   it('returns four corner positions', () => {
-    const corners = calculateFovCorners(
-      { x: 0, y: 10, z: 10 },
-      { x: 0, y: 0, z: 0 }
-    )
+    const corners = calculateFovCorners({ x: 0, y: 10, z: 10 }, { x: 0, y: 0, z: 0 })
 
     expect(corners).toHaveProperty('topLeft')
     expect(corners).toHaveProperty('topRight')
@@ -19,10 +16,7 @@ describe('calculateFovCorners', () => {
   })
 
   it('produces symmetric corners when camera is centered', () => {
-    const corners = calculateFovCorners(
-      { x: 0, y: 10, z: 10 },
-      { x: 0, y: 0, z: 0 }
-    )
+    const corners = calculateFovCorners({ x: 0, y: 10, z: 10 }, { x: 0, y: 0, z: 0 })
 
     // Left and right should be mirrored around center X
     const centerX = (corners.topLeft.x + corners.topRight.x) / 2
@@ -51,19 +45,9 @@ describe('calculateFovCorners', () => {
   })
 
   it('larger FOV degrees produces wider indicator', () => {
-    const small = calculateFovCorners(
-      { x: 0, y: 10, z: 10 },
-      { x: 0, y: 0, z: 0 },
-      30,
-      16 / 9
-    )
+    const small = calculateFovCorners({ x: 0, y: 10, z: 10 }, { x: 0, y: 0, z: 0 }, 30, 16 / 9)
 
-    const large = calculateFovCorners(
-      { x: 0, y: 10, z: 10 },
-      { x: 0, y: 0, z: 0 },
-      90,
-      16 / 9
-    )
+    const large = calculateFovCorners({ x: 0, y: 10, z: 10 }, { x: 0, y: 0, z: 0 }, 90, 16 / 9)
 
     const smallWidth = Math.abs(small.topRight.x - small.topLeft.x)
     const largeWidth = Math.abs(large.topRight.x - large.topLeft.x)
@@ -73,12 +57,7 @@ describe('calculateFovCorners', () => {
 
   it('handles camera directly above target', () => {
     // Camera looking straight down
-    const corners = calculateFovCorners(
-      { x: 5, y: 20, z: 5 },
-      { x: 5, y: 0, z: 5 },
-      50,
-      16 / 9
-    )
+    const corners = calculateFovCorners({ x: 5, y: 20, z: 5 }, { x: 5, y: 0, z: 5 }, 50, 16 / 9)
 
     // Should still produce valid corners (no NaN)
     expect(Number.isFinite(corners.topLeft.x)).toBe(true)
@@ -88,19 +67,17 @@ describe('calculateFovCorners', () => {
   })
 
   it('moves FOV center when camera target moves', () => {
-    const cornersA = calculateFovCorners(
-      { x: 0, y: 10, z: 10 },
-      { x: 0, y: 0, z: 0 }
-    )
+    const cornersA = calculateFovCorners({ x: 0, y: 10, z: 10 }, { x: 0, y: 0, z: 0 })
 
-    const cornersB = calculateFovCorners(
-      { x: 10, y: 10, z: 20 },
-      { x: 10, y: 0, z: 10 }
-    )
+    const cornersB = calculateFovCorners({ x: 10, y: 10, z: 20 }, { x: 10, y: 0, z: 10 })
 
     // Center of cornersB should be shifted by ~10 on X
-    const centerAx = (cornersA.topLeft.x + cornersA.topRight.x + cornersA.bottomLeft.x + cornersA.bottomRight.x) / 4
-    const centerBx = (cornersB.topLeft.x + cornersB.topRight.x + cornersB.bottomLeft.x + cornersB.bottomRight.x) / 4
+    const centerAx =
+      (cornersA.topLeft.x + cornersA.topRight.x + cornersA.bottomLeft.x + cornersA.bottomRight.x) /
+      4
+    const centerBx =
+      (cornersB.topLeft.x + cornersB.topRight.x + cornersB.bottomLeft.x + cornersB.bottomRight.x) /
+      4
 
     expect(centerBx - centerAx).toBeCloseTo(10, 0)
   })

@@ -9,11 +9,11 @@
  * Clicking the backdrop dismisses the overlay.
  */
 
-import { useMemo } from 'react';
-import type React from 'react';
-import { useCanvasStore } from '../store';
-import { useFocusedConnections } from '../hooks/useFocusedConnections';
-import type { Graph, GraphNode } from '../../../shared/types';
+import { useMemo } from 'react'
+import type React from 'react'
+import { useCanvasStore } from '../store'
+import { useFocusedConnections } from '../hooks/useFocusedConnections'
+import type { Graph, GraphNode } from '../../../shared/types'
 
 // Edge type → color (matches 3D scene colors)
 const EDGE_COLORS: Record<string, string> = {
@@ -22,101 +22,107 @@ const EDGE_COLORS: Record<string, string> = {
   depends_on: '#94a3b8',
   inherits: '#fbbf24',
   contains: '#94a3b8',
-};
-const DEFAULT_EDGE_COLOR = '#94a3b8';
-const DASHED_TYPES = new Set(['imports', 'depends_on', 'inherits', 'contains']);
-const DASH_PATTERN = '6,3';
+}
+const DEFAULT_EDGE_COLOR = '#94a3b8'
+const DASHED_TYPES = new Set(['imports', 'depends_on', 'inherits', 'contains'])
+const DASH_PATTERN = '6,3'
 
 // SVG layout constants
-const CX = 400;
-const CY = 300;
-const DIRECT_RADIUS = 180;
-const SECOND_RADIUS = 290;
-const CENTER_R = 30;
-const NODE_R = 20;
-const SECOND_NODE_R = 14;
+const CX = 400
+const CY = 300
+const DIRECT_RADIUS = 180
+const SECOND_RADIUS = 290
+const CENTER_R = 30
+const NODE_R = 20
+const SECOND_NODE_R = 14
 
 function shortLabel(node: GraphNode | undefined): string {
-  if (!node) return '?';
-  const label = node.label ?? node.id;
-  return label.split('/').pop() ?? label;
+  if (!node) return '?'
+  const label = node.label ?? node.id
+  return label.split('/').pop() ?? label
 }
 
-function arrowHead(x2: number, y2: number, dx: number, dy: number, color: string): React.JSX.Element | null {
-  const len = Math.sqrt(dx * dx + dy * dy);
-  if (len === 0) return null;
-  const nx = dx / len;
-  const ny = dy / len;
-  const px = -ny * 5;
-  const py = nx * 5;
+function arrowHead(
+  x2: number,
+  y2: number,
+  dx: number,
+  dy: number,
+  color: string
+): React.JSX.Element | null {
+  const len = Math.sqrt(dx * dx + dy * dy)
+  if (len === 0) return null
+  const nx = dx / len
+  const ny = dy / len
+  const px = -ny * 5
+  const py = nx * 5
   return (
     <polygon
       points={`${x2},${y2} ${x2 - nx * 10 + px},${y2 - ny * 10 + py} ${x2 - nx * 10 - px},${y2 - ny * 10 - py}`}
       fill={color}
     />
-  );
+  )
 }
 
 interface RadialOverlayProps {
-  graph: Graph;
+  graph: Graph
 }
 
 export function RadialOverlay({ graph }: RadialOverlayProps) {
-  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
-  const showRadialOverlay = useCanvasStore((s) => s.showRadialOverlay);
-  const selectNode = useCanvasStore((s) => s.selectNode);
-  const toggleRadialOverlay = useCanvasStore((s) => s.toggleRadialOverlay);
-  const { directEdges, secondHopEdges, directNodeIds } = useFocusedConnections(graph);
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
+  const showRadialOverlay = useCanvasStore((s) => s.showRadialOverlay)
+  const selectNode = useCanvasStore((s) => s.selectNode)
+  const toggleRadialOverlay = useCanvasStore((s) => s.toggleRadialOverlay)
+  const { directEdges, secondHopEdges, directNodeIds } = useFocusedConnections(graph)
 
   const nodeMap = useMemo(() => {
-    const m = new Map<string, GraphNode>();
-    for (const n of graph.nodes) m.set(n.id, n);
-    return m;
-  }, [graph.nodes]);
+    const m = new Map<string, GraphNode>()
+    for (const n of graph.nodes) m.set(n.id, n)
+    return m
+  }, [graph.nodes])
 
-  if (!showRadialOverlay || !selectedNodeId) return null;
+  if (!showRadialOverlay || !selectedNodeId) return null
 
-  const focusedNode = nodeMap.get(selectedNodeId);
-  const directIds = Array.from(directNodeIds);
+  const focusedNode = nodeMap.get(selectedNodeId)
+  const directIds = Array.from(directNodeIds)
 
   // Arrange direct nodes evenly around the center
   const directPositions = directIds.map((id, i) => {
-    const angle = (2 * Math.PI * i) / directIds.length - Math.PI / 2;
+    const angle = (2 * Math.PI * i) / directIds.length - Math.PI / 2
     return {
       id,
       x: CX + DIRECT_RADIUS * Math.cos(angle),
       y: CY + DIRECT_RADIUS * Math.sin(angle),
-    };
-  });
+    }
+  })
 
   const posMap = new Map<string, { x: number; y: number }>(
-    directPositions.map((p) => [p.id, { x: p.x, y: p.y }]),
-  );
-  posMap.set(selectedNodeId, { x: CX, y: CY });
+    directPositions.map((p) => [p.id, { x: p.x, y: p.y }])
+  )
+  posMap.set(selectedNodeId, { x: CX, y: CY })
 
   // Collect second-hop node IDs (not already direct or selected)
   const secondHopIds = Array.from(
     new Set(
       secondHopEdges
         .flatMap((e) => [e.source, e.target])
-        .filter((id) => !directNodeIds.has(id) && id !== selectedNodeId),
-    ),
-  );
+        .filter((id) => !directNodeIds.has(id) && id !== selectedNodeId)
+    )
+  )
 
   // Arrange second-hop nodes around the outer ring
   const secondHopPositions = secondHopIds.map((id, i) => {
-    const angle = (2 * Math.PI * i) / Math.max(secondHopIds.length, 1) - Math.PI / 2 + 0.2;
+    const angle = (2 * Math.PI * i) / Math.max(secondHopIds.length, 1) - Math.PI / 2 + 0.2
     return {
       id,
       x: CX + SECOND_RADIUS * Math.cos(angle),
       y: CY + SECOND_RADIUS * Math.sin(angle),
-    };
-  });
+    }
+  })
 
-  for (const p of secondHopPositions) posMap.set(p.id, { x: p.x, y: p.y });
+  for (const p of secondHopPositions) posMap.set(p.id, { x: p.x, y: p.y })
 
   function handleNodeClick(nodeId: string) {
-    selectNode(nodeId);
+    selectNode(nodeId)
     // Overlay stays open and re-renders centered on the new node
   }
 
@@ -132,18 +138,18 @@ export function RadialOverlay({ graph }: RadialOverlayProps) {
         justifyContent: 'center',
       }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) toggleRadialOverlay();
+        if (e.target === e.currentTarget) toggleRadialOverlay()
       }}
     >
       <svg width={800} height={600} style={{ overflow: 'visible' }}>
         {/* Second-hop edges */}
         {secondHopEdges.map((edge) => {
-          const src = posMap.get(edge.source);
-          const tgt = posMap.get(edge.target);
-          if (!src || !tgt) return null;
-          const color = EDGE_COLORS[edge.type] ?? DEFAULT_EDGE_COLOR;
-          const dx = tgt.x - src.x;
-          const dy = tgt.y - src.y;
+          const src = posMap.get(edge.source)
+          const tgt = posMap.get(edge.target)
+          if (!src || !tgt) return null
+          const color = EDGE_COLORS[edge.type] ?? DEFAULT_EDGE_COLOR
+          const dx = tgt.x - src.x
+          const dy = tgt.y - src.y
           return (
             <g key={edge.id} opacity={0.4}>
               <line
@@ -157,19 +163,19 @@ export function RadialOverlay({ graph }: RadialOverlayProps) {
               />
               {arrowHead(tgt.x, tgt.y, dx, dy, color)}
             </g>
-          );
+          )
         })}
 
         {/* Direct edges */}
         {directEdges.map((edge) => {
-          const src = posMap.get(edge.source);
-          const tgt = posMap.get(edge.target);
-          if (!src || !tgt) return null;
-          const color = EDGE_COLORS[edge.type] ?? DEFAULT_EDGE_COLOR;
-          const dx = tgt.x - src.x;
-          const dy = tgt.y - src.y;
-          const midX = (src.x + tgt.x) / 2;
-          const midY = (src.y + tgt.y) / 2;
+          const src = posMap.get(edge.source)
+          const tgt = posMap.get(edge.target)
+          if (!src || !tgt) return null
+          const color = EDGE_COLORS[edge.type] ?? DEFAULT_EDGE_COLOR
+          const dx = tgt.x - src.x
+          const dy = tgt.y - src.y
+          const midX = (src.x + tgt.x) / 2
+          const midY = (src.y + tgt.y) / 2
           return (
             <g key={edge.id}>
               <line
@@ -193,7 +199,7 @@ export function RadialOverlay({ graph }: RadialOverlayProps) {
                 {edge.type}
               </text>
             </g>
-          );
+          )
         })}
 
         {/* Second-hop nodes */}
@@ -204,7 +210,14 @@ export function RadialOverlay({ graph }: RadialOverlayProps) {
             style={{ cursor: 'pointer' }}
             opacity={0.6}
           >
-            <circle cx={x} cy={y} r={SECOND_NODE_R} fill="#1e293b" stroke="#64748b" strokeWidth={1.5} />
+            <circle
+              cx={x}
+              cy={y}
+              r={SECOND_NODE_R}
+              fill="#1e293b"
+              stroke="#64748b"
+              strokeWidth={1.5}
+            />
             <text x={x} y={y + SECOND_NODE_R + 12} textAnchor="middle" fontSize={9} fill="#94a3b8">
               {shortLabel(nodeMap.get(id))}
             </text>
@@ -228,5 +241,5 @@ export function RadialOverlay({ graph }: RadialOverlayProps) {
         </text>
       </svg>
     </div>
-  );
+  )
 }

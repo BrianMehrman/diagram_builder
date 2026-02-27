@@ -136,10 +136,7 @@ test.describe('Application Smoke Tests @P0 @smoke', () => {
     expect(errors).toHaveLength(0)
   })
 
-  test('[P0] should load workspace page with all components', async ({
-    page,
-    testWorkspace,
-  }) => {
+  test('[P0] should load workspace page with all components', async ({ page, testWorkspace }) => {
     const errors: string[] = []
     page.on('pageerror', (error) => {
       errors.push(error.message)
@@ -166,10 +163,7 @@ test.describe('Application Smoke Tests @P0 @smoke', () => {
     await expect(page.locator('[data-testid="import-codebase-button"]')).toBeVisible()
   })
 
-  test('[P0] should open and close import codebase modal', async ({
-    page,
-    testWorkspace,
-  }) => {
+  test('[P0] should open and close import codebase modal', async ({ page, testWorkspace }) => {
     const errors: string[] = []
     page.on('pageerror', (error) => {
       errors.push(error.message)
@@ -203,10 +197,7 @@ test.describe('Application Smoke Tests @P0 @smoke', () => {
     await expect(page.locator('[data-testid="import-codebase-modal"]')).not.toBeVisible()
   })
 
-  test('[P0] should open and close export dialog', async ({
-    page,
-    testWorkspace,
-  }) => {
+  test('[P0] should open and close export dialog', async ({ page, testWorkspace }) => {
     const errors: string[] = []
     page.on('pageerror', (error) => {
       errors.push(error.message)
@@ -270,10 +261,7 @@ test.describe('Application Smoke Tests @P0 @smoke', () => {
     expect(isOnValidPage).toBe(true)
   })
 
-  test('[P0] should verify all navigation components render', async ({
-    page,
-    testWorkspace,
-  }) => {
+  test('[P0] should verify all navigation components render', async ({ page, testWorkspace }) => {
     const errors: string[] = []
     page.on('pageerror', (error) => {
       errors.push(error.message)

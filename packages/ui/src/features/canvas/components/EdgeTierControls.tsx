@@ -6,29 +6,37 @@
  * Only rendered in city view mode.
  */
 
-import { useCanvasStore } from '../store';
-import type { EdgeTierKey } from '../store';
+import { useCanvasStore } from '../store'
+import type { EdgeTierKey } from '../store'
 
 interface EdgeTierOption {
-  key: EdgeTierKey;
-  label: string;
-  description: string;
+  key: EdgeTierKey
+  label: string
+  description: string
 }
 
 const EDGE_TIER_OPTIONS: EdgeTierOption[] = [
-  { key: 'crossDistrict', label: 'Cross-District', description: 'Show import edges between districts' },
-  { key: 'inheritance', label: 'Inheritance', description: 'Show inheritance and implementation edges' },
-];
+  {
+    key: 'crossDistrict',
+    label: 'Cross-District',
+    description: 'Show import edges between districts',
+  },
+  {
+    key: 'inheritance',
+    label: 'Inheritance',
+    description: 'Show inheritance and implementation edges',
+  },
+]
 
 export function EdgeTierControls() {
-  const edgeTiers = useCanvasStore((s) => s.citySettings.edgeTierVisibility);
-  const toggleTier = useCanvasStore((s) => s.toggleEdgeTierVisibility);
-  const transitMapMode = useCanvasStore((s) => s.citySettings.transitMapMode);
-  const toggleTransit = useCanvasStore((s) => s.toggleTransitMapMode);
-  const viewMode = useCanvasStore((s) => s.viewMode);
+  const edgeTiers = useCanvasStore((s) => s.citySettings.edgeTierVisibility)
+  const toggleTier = useCanvasStore((s) => s.toggleEdgeTierVisibility)
+  const transitMapMode = useCanvasStore((s) => s.citySettings.transitMapMode)
+  const toggleTransit = useCanvasStore((s) => s.toggleTransitMapMode)
+  const viewMode = useCanvasStore((s) => s.viewMode)
 
   // Only show in city view
-  if (viewMode !== 'city') return null;
+  if (viewMode !== 'city') return null
 
   return (
     <div className="space-y-2" data-testid="edge-tier-controls">
@@ -70,5 +78,5 @@ export function EdgeTierControls() {
         {transitMapMode ? 'Transit Map ON' : 'Transit Map'}
       </button>
     </div>
-  );
+  )
 }

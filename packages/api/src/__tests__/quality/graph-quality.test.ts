@@ -5,7 +5,7 @@
  * Story: 6-4-end-to-end-integration-testing (Task 6)
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest'
 import {
   assertMinimumGraphSize,
   assertNodeStructure,
@@ -18,9 +18,15 @@ import {
   assertLODConsistency,
   assertNoOrphanedNodes,
   assertGraphQuality,
-} from '../utils/graph-quality-assertions';
+} from '../utils/graph-quality-assertions'
 
-type TestEdge = { id: string; source: string; target: string; type: string; metadata: Record<string, unknown> };
+type TestEdge = {
+  id: string
+  source: string
+  target: string
+  type: string
+  metadata: Record<string, unknown>
+}
 
 describe('Graph Quality Assertions', () => {
   describe('assertMinimumGraphSize', () => {
@@ -28,32 +34,30 @@ describe('Graph Quality Assertions', () => {
       const nodes = [
         { id: '1', type: 'file', label: 'a.ts', metadata: {}, lod: 0 },
         { id: '2', type: 'file', label: 'b.ts', metadata: {}, lod: 0 },
-      ];
-      const edges = [
-        { id: 'e1', source: '1', target: '2', type: 'imports', metadata: {} },
-      ];
+      ]
+      const edges = [{ id: 'e1', source: '1', target: '2', type: 'imports', metadata: {} }]
 
-      expect(() => assertMinimumGraphSize(nodes, edges, 2, 1)).not.toThrow();
-      expect(() => assertMinimumGraphSize(nodes, edges, 1, 0)).not.toThrow();
-    });
+      expect(() => assertMinimumGraphSize(nodes, edges, 2, 1)).not.toThrow()
+      expect(() => assertMinimumGraphSize(nodes, edges, 1, 0)).not.toThrow()
+    })
 
     it('should fail when graph has too few nodes', () => {
-      const nodes = [{ id: '1', type: 'file', label: 'a.ts', metadata: {}, lod: 0 }];
-      const edges: TestEdge[] = [];
+      const nodes = [{ id: '1', type: 'file', label: 'a.ts', metadata: {}, lod: 0 }]
+      const edges: TestEdge[] = []
 
-      expect(() => assertMinimumGraphSize(nodes, edges, 5, 0)).toThrow();
-    });
+      expect(() => assertMinimumGraphSize(nodes, edges, 5, 0)).toThrow()
+    })
 
     it('should fail when graph has too few edges', () => {
       const nodes = [
         { id: '1', type: 'file', label: 'a.ts', metadata: {}, lod: 0 },
         { id: '2', type: 'file', label: 'b.ts', metadata: {}, lod: 0 },
-      ];
-      const edges: TestEdge[] = [];
+      ]
+      const edges: TestEdge[] = []
 
-      expect(() => assertMinimumGraphSize(nodes, edges, 2, 3)).toThrow();
-    });
-  });
+      expect(() => assertMinimumGraphSize(nodes, edges, 2, 3)).toThrow()
+    })
+  })
 
   describe('assertNodeStructure', () => {
     it('should pass for valid nodes', () => {
@@ -73,42 +77,50 @@ describe('Graph Quality Assertions', () => {
           metadata: { methods: 3 },
           lod: 1,
         },
-      ];
+      ]
 
-      expect(() => assertNodeStructure(nodes)).not.toThrow();
-    });
+      expect(() => assertNodeStructure(nodes)).not.toThrow()
+    })
 
     it('should fail for node missing id', () => {
       const nodes = [
-        { type: 'file', label: 'test', metadata: {}, lod: 0 } as { id: string; type: string; label: string; metadata: Record<string, unknown>; lod: number },
-      ];
+        { type: 'file', label: 'test', metadata: {}, lod: 0 } as {
+          id: string
+          type: string
+          label: string
+          metadata: Record<string, unknown>
+          lod: number
+        },
+      ]
 
-      expect(() => assertNodeStructure(nodes)).toThrow(/missing 'id' field/);
-    });
+      expect(() => assertNodeStructure(nodes)).toThrow(/missing 'id' field/)
+    })
 
     it('should fail for node missing type', () => {
       const nodes = [
-        { id: '1', label: 'test', metadata: {}, lod: 0 } as { id: string; type: string; label: string; metadata: Record<string, unknown>; lod: number },
-      ];
+        { id: '1', label: 'test', metadata: {}, lod: 0 } as {
+          id: string
+          type: string
+          label: string
+          metadata: Record<string, unknown>
+          lod: number
+        },
+      ]
 
-      expect(() => assertNodeStructure(nodes)).toThrow(/missing 'type' field/);
-    });
+      expect(() => assertNodeStructure(nodes)).toThrow(/missing 'type' field/)
+    })
 
     it('should fail for invalid node type', () => {
-      const nodes = [
-        { id: '1', type: 'invalid', label: 'test', metadata: {}, lod: 0 },
-      ];
+      const nodes = [{ id: '1', type: 'invalid', label: 'test', metadata: {}, lod: 0 }]
 
-      expect(() => assertNodeStructure(nodes)).toThrow(/invalid type/);
-    });
+      expect(() => assertNodeStructure(nodes)).toThrow(/invalid type/)
+    })
 
     it('should fail for invalid LOD value', () => {
-      const nodes = [
-        { id: '1', type: 'file', label: 'test', metadata: {}, lod: -1 },
-      ];
+      const nodes = [{ id: '1', type: 'file', label: 'test', metadata: {}, lod: -1 }]
 
-      expect(() => assertNodeStructure(nodes)).toThrow(/lod.*must be >= 0/);
-    });
+      expect(() => assertNodeStructure(nodes)).toThrow(/lod.*must be >= 0/)
+    })
 
     it('should fail for invalid position coordinates', () => {
       const nodes = [
@@ -120,11 +132,11 @@ describe('Graph Quality Assertions', () => {
           position: { x: NaN, y: 0, z: 0 },
           lod: 0,
         },
-      ];
+      ]
 
-      expect(() => assertNodeStructure(nodes)).toThrow(/position.x must be finite/);
-    });
-  });
+      expect(() => assertNodeStructure(nodes)).toThrow(/position.x must be finite/)
+    })
+  })
 
   describe('assertEdgeStructure', () => {
     it('should pass for valid edges', () => {
@@ -143,82 +155,74 @@ describe('Graph Quality Assertions', () => {
           type: 'contains',
           metadata: {},
         },
-      ];
+      ]
 
-      expect(() => assertEdgeStructure(edges)).not.toThrow();
-    });
+      expect(() => assertEdgeStructure(edges)).not.toThrow()
+    })
 
     it('should fail for edge missing source', () => {
       const edges = [
-        { id: 'e1', target: 'node-2', type: 'imports', metadata: {} } as { id: string; source: string; target: string; type: string; metadata: Record<string, unknown> },
-      ];
+        { id: 'e1', target: 'node-2', type: 'imports', metadata: {} } as {
+          id: string
+          source: string
+          target: string
+          type: string
+          metadata: Record<string, unknown>
+        },
+      ]
 
-      expect(() => assertEdgeStructure(edges)).toThrow(/missing 'source' field/);
-    });
+      expect(() => assertEdgeStructure(edges)).toThrow(/missing 'source' field/)
+    })
 
     it('should fail for invalid edge type', () => {
-      const edges = [
-        { id: 'e1', source: 'n1', target: 'n2', type: 'invalid', metadata: {} },
-      ];
+      const edges = [{ id: 'e1', source: 'n1', target: 'n2', type: 'invalid', metadata: {} }]
 
-      expect(() => assertEdgeStructure(edges)).toThrow(/invalid type/);
-    });
-  });
+      expect(() => assertEdgeStructure(edges)).toThrow(/invalid type/)
+    })
+  })
 
   describe('assertEdgeReferences', () => {
     it('should pass when all edges reference existing nodes', () => {
       const nodes = [
         { id: 'n1', type: 'file', label: 'a', metadata: {}, lod: 0 },
         { id: 'n2', type: 'file', label: 'b', metadata: {}, lod: 0 },
-      ];
-      const edges = [
-        { id: 'e1', source: 'n1', target: 'n2', type: 'imports', metadata: {} },
-      ];
+      ]
+      const edges = [{ id: 'e1', source: 'n1', target: 'n2', type: 'imports', metadata: {} }]
 
-      expect(() => assertEdgeReferences(nodes, edges)).not.toThrow();
-    });
+      expect(() => assertEdgeReferences(nodes, edges)).not.toThrow()
+    })
 
     it('should fail when edge references non-existent source', () => {
-      const nodes = [
-        { id: 'n1', type: 'file', label: 'a', metadata: {}, lod: 0 },
-      ];
-      const edges = [
-        { id: 'e1', source: 'missing', target: 'n1', type: 'imports', metadata: {} },
-      ];
+      const nodes = [{ id: 'n1', type: 'file', label: 'a', metadata: {}, lod: 0 }]
+      const edges = [{ id: 'e1', source: 'missing', target: 'n1', type: 'imports', metadata: {} }]
 
-      expect(() => assertEdgeReferences(nodes, edges)).toThrow(/source.*does not exist/);
-    });
+      expect(() => assertEdgeReferences(nodes, edges)).toThrow(/source.*does not exist/)
+    })
 
     it('should fail when edge references non-existent target', () => {
-      const nodes = [
-        { id: 'n1', type: 'file', label: 'a', metadata: {}, lod: 0 },
-      ];
-      const edges = [
-        { id: 'e1', source: 'n1', target: 'missing', type: 'imports', metadata: {} },
-      ];
+      const nodes = [{ id: 'n1', type: 'file', label: 'a', metadata: {}, lod: 0 }]
+      const edges = [{ id: 'e1', source: 'n1', target: 'missing', type: 'imports', metadata: {} }]
 
-      expect(() => assertEdgeReferences(nodes, edges)).toThrow(/target.*does not exist/);
-    });
-  });
+      expect(() => assertEdgeReferences(nodes, edges)).toThrow(/target.*does not exist/)
+    })
+  })
 
   describe('assertNoSelfReferences', () => {
     it('should pass when no edges are self-referencing', () => {
       const edges = [
         { id: 'e1', source: 'n1', target: 'n2', type: 'imports', metadata: {} },
         { id: 'e2', source: 'n2', target: 'n3', type: 'imports', metadata: {} },
-      ];
+      ]
 
-      expect(() => assertNoSelfReferences(edges)).not.toThrow();
-    });
+      expect(() => assertNoSelfReferences(edges)).not.toThrow()
+    })
 
     it('should fail when edge is self-referencing', () => {
-      const edges = [
-        { id: 'e1', source: 'n1', target: 'n1', type: 'imports', metadata: {} },
-      ];
+      const edges = [{ id: 'e1', source: 'n1', target: 'n1', type: 'imports', metadata: {} }]
 
-      expect(() => assertNoSelfReferences(edges)).toThrow(/self-referencing/);
-    });
-  });
+      expect(() => assertNoSelfReferences(edges)).toThrow(/self-referencing/)
+    })
+  })
 
   describe('assertUniqueNodeIds', () => {
     it('should pass when all node IDs are unique', () => {
@@ -226,40 +230,40 @@ describe('Graph Quality Assertions', () => {
         { id: 'n1', type: 'file', label: 'a', metadata: {}, lod: 0 },
         { id: 'n2', type: 'file', label: 'b', metadata: {}, lod: 0 },
         { id: 'n3', type: 'file', label: 'c', metadata: {}, lod: 0 },
-      ];
+      ]
 
-      expect(() => assertUniqueNodeIds(nodes)).not.toThrow();
-    });
+      expect(() => assertUniqueNodeIds(nodes)).not.toThrow()
+    })
 
     it('should fail when node IDs are duplicated', () => {
       const nodes = [
         { id: 'n1', type: 'file', label: 'a', metadata: {}, lod: 0 },
         { id: 'n1', type: 'file', label: 'b', metadata: {}, lod: 0 },
-      ];
+      ]
 
-      expect(() => assertUniqueNodeIds(nodes)).toThrow(/Duplicate node IDs/);
-    });
-  });
+      expect(() => assertUniqueNodeIds(nodes)).toThrow(/Duplicate node IDs/)
+    })
+  })
 
   describe('assertUniqueEdgeIds', () => {
     it('should pass when all edge IDs are unique', () => {
       const edges = [
         { id: 'e1', source: 'n1', target: 'n2', type: 'imports', metadata: {} },
         { id: 'e2', source: 'n2', target: 'n3', type: 'imports', metadata: {} },
-      ];
+      ]
 
-      expect(() => assertUniqueEdgeIds(edges)).not.toThrow();
-    });
+      expect(() => assertUniqueEdgeIds(edges)).not.toThrow()
+    })
 
     it('should fail when edge IDs are duplicated', () => {
       const edges = [
         { id: 'e1', source: 'n1', target: 'n2', type: 'imports', metadata: {} },
         { id: 'e1', source: 'n2', target: 'n3', type: 'imports', metadata: {} },
-      ];
+      ]
 
-      expect(() => assertUniqueEdgeIds(edges)).toThrow(/Duplicate edge IDs/);
-    });
-  });
+      expect(() => assertUniqueEdgeIds(edges)).toThrow(/Duplicate edge IDs/)
+    })
+  })
 
   describe('assertGraphMetadata', () => {
     it('should pass when metadata is correct', () => {
@@ -267,31 +271,31 @@ describe('Graph Quality Assertions', () => {
         repositoryId: 'repo-1',
         totalNodes: 5,
         totalEdges: 3,
-      };
+      }
 
-      expect(() => assertGraphMetadata(metadata, 5, 3)).not.toThrow();
-    });
+      expect(() => assertGraphMetadata(metadata, 5, 3)).not.toThrow()
+    })
 
     it('should fail when totalNodes does not match actual count', () => {
       const metadata = {
         repositoryId: 'repo-1',
         totalNodes: 10,
         totalEdges: 3,
-      };
+      }
 
-      expect(() => assertGraphMetadata(metadata, 5, 3)).toThrow(/totalNodes/);
-    });
+      expect(() => assertGraphMetadata(metadata, 5, 3)).toThrow(/totalNodes/)
+    })
 
     it('should fail when totalEdges does not match actual count', () => {
       const metadata = {
         repositoryId: 'repo-1',
         totalNodes: 5,
         totalEdges: 10,
-      };
+      }
 
-      expect(() => assertGraphMetadata(metadata, 5, 3)).toThrow(/totalEdges/);
-    });
-  });
+      expect(() => assertGraphMetadata(metadata, 5, 3)).toThrow(/totalEdges/)
+    })
+  })
 
   describe('assertLODConsistency', () => {
     it('should pass for nodes with correct LOD levels', () => {
@@ -301,27 +305,23 @@ describe('Graph Quality Assertions', () => {
         { id: 'fn1', type: 'function', label: 'parse', metadata: {}, lod: 2 },
         { id: 'm1', type: 'method', label: 'getName', metadata: {}, lod: 3 },
         { id: 'v1', type: 'variable', label: 'config', metadata: {}, lod: 4 },
-      ];
+      ]
 
-      expect(() => assertLODConsistency(nodes)).not.toThrow();
-    });
+      expect(() => assertLODConsistency(nodes)).not.toThrow()
+    })
 
     it('should fail when file node has wrong LOD', () => {
-      const nodes = [
-        { id: 'f1', type: 'file', label: 'a.ts', metadata: {}, lod: 1 },
-      ];
+      const nodes = [{ id: 'f1', type: 'file', label: 'a.ts', metadata: {}, lod: 1 }]
 
-      expect(() => assertLODConsistency(nodes)).toThrow(/File node.*should have LOD 0/);
-    });
+      expect(() => assertLODConsistency(nodes)).toThrow(/File node.*should have LOD 0/)
+    })
 
     it('should fail when class node has LOD > 1', () => {
-      const nodes = [
-        { id: 'c1', type: 'class', label: 'User', metadata: {}, lod: 3 },
-      ];
+      const nodes = [{ id: 'c1', type: 'class', label: 'User', metadata: {}, lod: 3 }]
 
-      expect(() => assertLODConsistency(nodes)).toThrow(/Class node.*should have LOD <= 1/);
-    });
-  });
+      expect(() => assertLODConsistency(nodes)).toThrow(/Class node.*should have LOD <= 1/)
+    })
+  })
 
   describe('assertNoOrphanedNodes', () => {
     it('should pass when all non-file nodes are connected', () => {
@@ -329,34 +329,32 @@ describe('Graph Quality Assertions', () => {
         { id: 'f1', type: 'file', label: 'a.ts', metadata: {}, lod: 0 },
         { id: 'c1', type: 'class', label: 'User', metadata: {}, lod: 1 },
         { id: 'f2', type: 'file', label: 'b.ts', metadata: {}, lod: 0 },
-      ];
-      const edges = [
-        { id: 'e1', source: 'f1', target: 'c1', type: 'contains', metadata: {} },
-      ];
+      ]
+      const edges = [{ id: 'e1', source: 'f1', target: 'c1', type: 'contains', metadata: {} }]
 
-      expect(() => assertNoOrphanedNodes(nodes, edges)).not.toThrow();
-    });
+      expect(() => assertNoOrphanedNodes(nodes, edges)).not.toThrow()
+    })
 
     it('should allow orphaned file nodes', () => {
       const nodes = [
         { id: 'f1', type: 'file', label: 'a.ts', metadata: {}, lod: 0 },
         { id: 'f2', type: 'file', label: 'b.ts', metadata: {}, lod: 0 },
-      ];
-      const edges: TestEdge[] = [];
+      ]
+      const edges: TestEdge[] = []
 
-      expect(() => assertNoOrphanedNodes(nodes, edges)).not.toThrow();
-    });
+      expect(() => assertNoOrphanedNodes(nodes, edges)).not.toThrow()
+    })
 
     it('should fail when non-file node is orphaned', () => {
       const nodes = [
         { id: 'f1', type: 'file', label: 'a.ts', metadata: {}, lod: 0 },
         { id: 'c1', type: 'class', label: 'User', metadata: {}, lod: 1 },
-      ];
-      const edges: TestEdge[] = [];
+      ]
+      const edges: TestEdge[] = []
 
-      expect(() => assertNoOrphanedNodes(nodes, edges)).toThrow(/orphaned nodes/);
-    });
-  });
+      expect(() => assertNoOrphanedNodes(nodes, edges)).toThrow(/orphaned nodes/)
+    })
+  })
 
   describe('assertGraphQuality (comprehensive)', () => {
     it('should pass for a valid graph', () => {
@@ -393,10 +391,10 @@ describe('Graph Quality Assertions', () => {
           totalNodes: 2,
           totalEdges: 1,
         },
-      };
+      }
 
-      expect(() => assertGraphQuality(graph)).not.toThrow();
-    });
+      expect(() => assertGraphQuality(graph)).not.toThrow()
+    })
 
     it('should fail for invalid graph with multiple issues', () => {
       const graph = {
@@ -430,9 +428,9 @@ describe('Graph Quality Assertions', () => {
           totalNodes: 2,
           totalEdges: 1,
         },
-      };
+      }
 
-      expect(() => assertGraphQuality(graph)).toThrow();
-    });
-  });
-});
+      expect(() => assertGraphQuality(graph)).toThrow()
+    })
+  })
+})

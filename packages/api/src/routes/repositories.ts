@@ -8,129 +8,144 @@
  * - POST /api/repositories/:id/refresh - Re-parse repository
  */
 
-import { Router, Request, Response } from 'express';
-import { authenticate } from '../middleware/auth';
-import { parseAndStoreRepository, getRepositoryMetadata, deleteRepository, refreshRepository, ParseRepositoryRequest } from '../services/repository-service';
-import { parseRepositorySchema } from '../validation/repository-schemas';
-import { ValidationError, NotFoundError } from '../errors';
-import { asyncHandler } from '../utils/async-handler';
+import { Router, Request, Response } from 'express'
+import { authenticate } from '../middleware/auth'
+import {
+  parseAndStoreRepository,
+  getRepositoryMetadata,
+  deleteRepository,
+  refreshRepository,
+  ParseRepositoryRequest,
+} from '../services/repository-service'
+import { parseRepositorySchema } from '../validation/repository-schemas'
+import { ValidationError, NotFoundError } from '../errors'
+import { asyncHandler } from '../utils/async-handler'
 
-const repositoriesRouter = Router();
+const repositoriesRouter = Router()
 
 /**
  * UUID validation regex (accepts all UUID versions)
  */
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /**
  * POST /api/repositories
  * Parse a new repository and store IVM in Neo4j
  */
-repositoriesRouter.post('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
-  // Validate request body
-  const validation = parseRepositorySchema.safeParse(req.body);
+repositoriesRouter.post(
+  '/',
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    // Validate request body
+    const validation = parseRepositorySchema.safeParse(req.body)
 
-  if (!validation.success) {
-    throw new ValidationError(
-      'Invalid repository parsing request',
-      validation.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join(', ')
-    );
-  }
+    if (!validation.success) {
+      throw new ValidationError(
+        'Invalid repository parsing request',
+        validation.error.issues
+          .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+          .join(', ')
+      )
+    }
 
-  const { url, path, branch, token } = validation.data;
+    const { url, path, branch, token } = validation.data
 
-  // Build request object with proper type
-  const request: ParseRepositoryRequest = {};
-  if (url) request.url = url;
-  if (path) request.path = path;
-  if (branch) request.branch = branch;
-  if (token) request.token = token;
+    // Build request object with proper type
+    const request: ParseRepositoryRequest = {}
+    if (url) request.url = url
+    if (path) request.path = path
+    if (branch) request.branch = branch
+    if (token) request.token = token
 
-  // Parse and store repository
-  const result = await parseAndStoreRepository(request);
+    // Parse and store repository
+    const result = await parseAndStoreRepository(request)
 
-  res.status(202).json({
-    id: result.id,
-    status: result.status,
-    message: 'Repository parsing initiated'
-  });
-}));
+    res.status(202).json({
+      id: result.id,
+      status: result.status,
+      message: 'Repository parsing initiated',
+    })
+  })
+)
 
 /**
  * GET /api/repositories/:id
  * Get repository metadata from Neo4j
  */
-repositoriesRouter.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
-  const id = req.params.id;
+repositoriesRouter.get(
+  '/:id',
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id
 
-  if (!id || !UUID_REGEX.test(id)) {
-    throw new ValidationError('Invalid request', 'Valid UUID repository ID is required');
-  }
+    if (!id || !UUID_REGEX.test(id)) {
+      throw new ValidationError('Invalid request', 'Valid UUID repository ID is required')
+    }
 
-  const metadata = await getRepositoryMetadata(id);
+    const metadata = await getRepositoryMetadata(id)
 
-  if (!metadata) {
-    throw new NotFoundError(
-      'Repository not found',
-      `Repository with ID ${id} does not exist`
-    );
-  }
+    if (!metadata) {
+      throw new NotFoundError('Repository not found', `Repository with ID ${id} does not exist`)
+    }
 
-  res.json(metadata);
-}));
+    res.json(metadata)
+  })
+)
 
 /**
  * DELETE /api/repositories/:id
  * Delete repository and all associated nodes from Neo4j
  */
-repositoriesRouter.delete('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
-  const id = req.params.id;
+repositoriesRouter.delete(
+  '/:id',
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id
 
-  if (!id || !UUID_REGEX.test(id)) {
-    throw new ValidationError('Invalid request', 'Valid UUID repository ID is required');
-  }
+    if (!id || !UUID_REGEX.test(id)) {
+      throw new ValidationError('Invalid request', 'Valid UUID repository ID is required')
+    }
 
-  const deleted = await deleteRepository(id);
+    const deleted = await deleteRepository(id)
 
-  if (!deleted) {
-    throw new NotFoundError(
-      'Repository not found',
-      `Repository with ID ${id} does not exist`
-    );
-  }
+    if (!deleted) {
+      throw new NotFoundError('Repository not found', `Repository with ID ${id} does not exist`)
+    }
 
-  res.status(204).send();
-}));
+    res.status(204).send()
+  })
+)
 
 /**
  * POST /api/repositories/:id/refresh
  * Re-parse repository and update Neo4j data
  */
-repositoriesRouter.post('/:id/refresh', authenticate, asyncHandler(async (req: Request, res: Response) => {
-  const id = req.params.id;
+repositoriesRouter.post(
+  '/:id/refresh',
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id
 
-  if (!id || !UUID_REGEX.test(id)) {
-    throw new ValidationError('Invalid request', 'Valid UUID repository ID is required');
-  }
-
-  try {
-    const result = await refreshRepository(id);
-
-    res.status(202).json({
-      id: result.id,
-      status: result.status,
-      message: 'Repository refresh initiated'
-    });
-  } catch (error) {
-    // Convert generic error to NotFoundError for consistency
-    if (error instanceof Error && error.message === 'Repository not found') {
-      throw new NotFoundError(
-        'Repository not found',
-        `Repository with ID ${id} does not exist`
-      );
+    if (!id || !UUID_REGEX.test(id)) {
+      throw new ValidationError('Invalid request', 'Valid UUID repository ID is required')
     }
-    throw error;
-  }
-}));
 
-export { repositoriesRouter };
+    try {
+      const result = await refreshRepository(id)
+
+      res.status(202).json({
+        id: result.id,
+        status: result.status,
+        message: 'Repository refresh initiated',
+      })
+    } catch (error) {
+      // Convert generic error to NotFoundError for consistency
+      if (error instanceof Error && error.message === 'Repository not found') {
+        throw new NotFoundError('Repository not found', `Repository with ID ${id} does not exist`)
+      }
+      throw error
+    }
+  })
+)
+
+export { repositoriesRouter }

@@ -14,7 +14,7 @@
  * - construction: deprecated — warning/barricade style
  */
 
-import type { GraphNode } from '../../../../shared/types';
+import type { GraphNode } from '../../../../shared/types'
 
 /**
  * All possible sign types in the city metaphor.
@@ -26,7 +26,7 @@ export type SignType =
   | 'highway'
   | 'labelTape'
   | 'marquee'
-  | 'construction';
+  | 'construction'
 
 /**
  * LOD visibility matrix — which sign types are visible at each LOD level.
@@ -41,7 +41,7 @@ const LOD_VISIBILITY: Record<number, Set<SignType>> = {
   2: new Set(['highway', 'hanging', 'neon', 'marquee']),
   3: new Set(['highway', 'hanging', 'neon', 'marquee', 'brass', 'labelTape']),
   4: new Set(['highway', 'hanging', 'neon', 'marquee', 'brass', 'labelTape', 'construction']),
-};
+}
 
 /**
  * Determine the sign type for a given node.
@@ -60,39 +60,39 @@ const LOD_VISIBILITY: Record<number, Set<SignType>> = {
  * @returns The sign type to render
  */
 export function getSignType(node: GraphNode): SignType {
-  const meta = node.metadata ?? {};
+  const meta = node.metadata ?? {}
 
   // Priority 1: deprecated
   if (meta.isDeprecated === true) {
-    return 'construction';
+    return 'construction'
   }
 
   // Priority 2: exported
   if (meta.isExported === true) {
-    return 'marquee';
+    return 'marquee'
   }
 
   // Priority 3-4: access level visibility
   if (meta.visibility === 'private') {
-    return 'brass';
+    return 'brass'
   }
   if (meta.visibility === 'public') {
-    return 'neon';
+    return 'neon'
   }
 
   // Priority 5-7: node type based
   if (node.type === 'class' || node.type === 'abstract_class') {
-    return 'hanging';
+    return 'hanging'
   }
   if (node.type === 'file') {
-    return 'highway';
+    return 'highway'
   }
   if (node.type === 'variable') {
-    return 'labelTape';
+    return 'labelTape'
   }
 
   // Fallback: highway for everything else (function, method, interface, enum)
-  return 'highway';
+  return 'highway'
 }
 
 /**
@@ -107,13 +107,13 @@ export function getSignType(node: GraphNode): SignType {
  */
 export function getSignVisibility(signType: SignType, lodLevel: number): boolean {
   // LOD 0 or below: no signs
-  if (lodLevel < 1) return false;
+  if (lodLevel < 1) return false
 
   // LOD 4+: all signs visible
-  if (lodLevel >= 4) return true;
+  if (lodLevel >= 4) return true
 
-  const visibleSet = LOD_VISIBILITY[lodLevel];
-  if (!visibleSet) return false;
+  const visibleSet = LOD_VISIBILITY[lodLevel]
+  if (!visibleSet) return false
 
-  return visibleSet.has(signType);
+  return visibleSet.has(signType)
 }

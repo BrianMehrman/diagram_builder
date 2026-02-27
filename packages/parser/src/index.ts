@@ -20,15 +20,28 @@ export type { FileAnalysis } from './analysis/analyzer'
 
 // Class extraction
 export { extractClasses } from './analysis/class-extractor'
-export type { ClassDefinition, MethodDefinition, PropertyDefinition, ParameterDefinition as ClassParameterDefinition } from './analysis/class-extractor'
+export type {
+  ClassDefinition,
+  MethodDefinition,
+  PropertyDefinition,
+  ParameterDefinition as ClassParameterDefinition,
+} from './analysis/class-extractor'
 
 // Function extraction
 export { extractFunctions } from './analysis/function-extractor'
-export type { FunctionDefinition, ParameterDefinition as FunctionParameterDefinition } from './analysis/function-extractor'
+export type {
+  FunctionDefinition,
+  ParameterDefinition as FunctionParameterDefinition,
+} from './analysis/function-extractor'
 
 // Import/Export extraction
 export { extractImports, extractExports } from './analysis/import-export-extractor'
-export type { ImportStatement, ImportSpecifier, ExportStatement, ExportSpecifier } from './analysis/import-export-extractor'
+export type {
+  ImportStatement,
+  ImportSpecifier,
+  ExportStatement,
+  ExportSpecifier,
+} from './analysis/import-export-extractor'
 
 // Metrics
 export { calculateMetrics } from './analysis/metrics-calculator'
@@ -39,8 +52,17 @@ export { calculateAbstractionDepth, identifyEntryPoints } from './analysis/depth
 export type { DepthResult } from './analysis/depthCalculator'
 
 // External Import Detection
-export { detectExternalImports, isExternalImport, extractPackageName, isNodeBuiltin } from './analysis/externalDetector'
-export type { ExternalImportInfo, ExternalDetectionResult, PackageJsonDeps } from './analysis/externalDetector'
+export {
+  detectExternalImports,
+  isExternalImport,
+  extractPackageName,
+  isNodeBuiltin,
+} from './analysis/externalDetector'
+export type {
+  ExternalImportInfo,
+  ExternalDetectionResult,
+  PackageJsonDeps,
+} from './analysis/externalDetector'
 
 // Containment Analysis
 export { buildContainmentHierarchy } from './analysis/containmentAnalyzer'
@@ -48,7 +70,12 @@ export type { ContainmentResult } from './analysis/containmentAnalyzer'
 
 // Dependency Graph
 export { DependencyGraph } from './graph/dependency-graph'
-export type { DependencyNode, DependencyEdge, DependencyNodeType, DependencyEdgeType } from './graph/dependency-graph'
+export type {
+  DependencyNode,
+  DependencyEdge,
+  DependencyNodeType,
+  DependencyEdgeType,
+} from './graph/dependency-graph'
 
 // Graph Builder
 export { buildDependencyGraph } from './graph/graph-builder'
@@ -75,7 +102,12 @@ export { scanDirectory } from './repository/directory-scanner'
 export type { ScanOptions } from './repository/directory-scanner'
 
 // Git Cloner
-export { cloneRepository, listRemoteBranches, cloneAtCommit, cloneAtTag } from './repository/git-cloner'
+export {
+  cloneRepository,
+  listRemoteBranches,
+  cloneAtCommit,
+  cloneAtTag,
+} from './repository/git-cloner'
 export type { CloneOptions } from './repository/git-cloner'
 
 // IVM Conversion

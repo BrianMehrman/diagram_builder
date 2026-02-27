@@ -65,7 +65,9 @@ export function ClassBuilding({
       const visibilities: Array<string | undefined> =
         sortedMethods && sortedMethods.length > 0
           ? (sortedMethods.map((m) => m.visibility) as Array<string | undefined>)
-          : ([] as Array<string|undefined>).concat(Array.from({length:floorCount},()=>undefined))
+          : ([] as Array<string | undefined>).concat(
+              Array.from({ length: floorCount }, () => undefined)
+            )
       applyFloorBandColors(geo, floorCount, visibilities, height)
     }
 

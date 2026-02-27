@@ -12,62 +12,62 @@
  * Updated in Story 11-11 to replace SkyEdge with OverheadWire for v2.
  */
 
-import { Html } from '@react-three/drei';
-import { CityEdge } from './CityEdge';
-import { OverheadWire } from '../components/OverheadWire';
-import { GroundShadow } from '../components/GroundShadow';
-import { useCityLayout } from '../hooks/useCityLayout';
-import { useCityFiltering } from '../hooks/useCityFiltering';
-import { useCanvasStore } from '../store';
-import { classifyEdgeRouting } from './wireUtils';
-import { getContainmentHeight, getBuildingHeight, KIOSK_HEIGHT } from './heightUtils';
-import type { Graph, GraphNode } from '../../../shared/types';
+import { Html } from '@react-three/drei'
+import { CityEdge } from './CityEdge'
+import { OverheadWire } from '../components/OverheadWire'
+import { GroundShadow } from '../components/GroundShadow'
+import { useCityLayout } from '../hooks/useCityLayout'
+import { useCityFiltering } from '../hooks/useCityFiltering'
+import { useCanvasStore } from '../store'
+import { classifyEdgeRouting } from './wireUtils'
+import { getContainmentHeight, getBuildingHeight, KIOSK_HEIGHT } from './heightUtils'
+import type { Graph, GraphNode } from '../../../shared/types'
 
 /** Compute rooftop Y for a node so OverheadWire arcs start/end at the correct height. */
 function getNodeRooftopY(node: GraphNode | undefined): number {
-  if (!node) return 0;
+  if (!node) return 0
   if (node.type === 'class' || node.type === 'abstract_class' || node.type === 'interface') {
-    return getContainmentHeight(node.methodCount ?? 0);
+    return getContainmentHeight(node.methodCount ?? 0)
   }
   if (node.type === 'function') {
-    return KIOSK_HEIGHT;
+    return KIOSK_HEIGHT
   }
-  return getBuildingHeight(node.depth);
+  return getBuildingHeight(node.depth)
 }
 
 interface CitySkyProps {
-  graph: Graph;
+  graph: Graph
 }
 
 export function CitySky({ graph }: CitySkyProps) {
-  const { positions } = useCityLayout(graph);
-  const { visibleEdges, nodeMap } = useCityFiltering(graph, positions);
-  const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion);
-  const edgeTierVisibility = useCanvasStore((s) => s.citySettings.edgeTierVisibility);
-  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
+  const { positions } = useCityLayout(graph)
+  const { visibleEdges, nodeMap } = useCityFiltering(graph, positions)
+  const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion)
+  const edgeTierVisibility = useCanvasStore((s) => s.citySettings.edgeTierVisibility)
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
 
-  const isV2 = cityVersion === 'v2';
+  const isV2 = cityVersion === 'v2'
 
   // In v2 mode: CitySky renders only overhead edges (method calls, composition),
   // gated by the crossDistrict tier toggle.
   // Structural edges (imports, inherits, depends_on) route underground via CityUnderground.
   const edgesToRender = isV2
     ? visibleEdges.filter(
-        (e) => classifyEdgeRouting(e.type) === 'overhead' && edgeTierVisibility.crossDistrict,
+        (e) => classifyEdgeRouting(e.type) === 'overhead' && edgeTierVisibility.crossDistrict
       )
-    : visibleEdges;
+    : visibleEdges
 
   return (
     <>
       {/* Dependency edges between buildings */}
       {edgesToRender.map((edge) => {
-        const srcPos = positions.get(edge.source);
-        const tgtPos = positions.get(edge.target);
-        if (!srcPos || !tgtPos) return null;
+        const srcPos = positions.get(edge.source)
+        const tgtPos = positions.get(edge.target)
+        if (!srcPos || !tgtPos) return null
 
         if (isV2) {
-          const srcNode = nodeMap.get(edge.source);
-          const tgtNode = nodeMap.get(edge.target);
+          const srcNode = nodeMap.get(edge.source)
+          const tgtNode = nodeMap.get(edge.target)
           return (
             <group key={edge.id}>
               <OverheadWire
@@ -77,39 +77,38 @@ export function CitySky({ graph }: CitySkyProps) {
                 targetHeight={getNodeRooftopY(tgtNode)}
                 edgeType={edge.type}
               />
-              <GroundShadow
-                edge={edge}
-                sourcePosition={srcPos}
-                targetPosition={tgtPos}
-              />
-              {(edge.source === selectedNodeId || edge.target === selectedNodeId) && selectedNodeId && (
-                <Html
-                  position={[
-                    (srcPos.x + tgtPos.x) / 2,
-                    Math.max(getNodeRooftopY(srcNode), getNodeRooftopY(tgtNode)) + 2,
-                    (srcPos.z + tgtPos.z) / 2,
-                  ]}
-                  center
-                  style={{ pointerEvents: 'none' }}
-                >
-                  <div style={{
-                    background: 'rgba(0,0,0,0.7)',
-                    color: '#fff',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    fontSize: '10px',
-                    whiteSpace: 'nowrap',
-                  }}>
-                    {edge.type}
-                  </div>
-                </Html>
-              )}
+              <GroundShadow edge={edge} sourcePosition={srcPos} targetPosition={tgtPos} />
+              {(edge.source === selectedNodeId || edge.target === selectedNodeId) &&
+                selectedNodeId && (
+                  <Html
+                    position={[
+                      (srcPos.x + tgtPos.x) / 2,
+                      Math.max(getNodeRooftopY(srcNode), getNodeRooftopY(tgtNode)) + 2,
+                      (srcPos.z + tgtPos.z) / 2,
+                    ]}
+                    center
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    <div
+                      style={{
+                        background: 'rgba(0,0,0,0.7)',
+                        color: '#fff',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontSize: '10px',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {edge.type}
+                    </div>
+                  </Html>
+                )}
             </group>
-          );
+          )
         }
 
-        const srcNode = nodeMap.get(edge.source);
-        const tgtNode = nodeMap.get(edge.target);
+        const srcNode = nodeMap.get(edge.source)
+        const tgtNode = nodeMap.get(edge.target)
         return (
           <CityEdge
             key={edge.id}
@@ -119,8 +118,8 @@ export function CitySky({ graph }: CitySkyProps) {
             sourceDepth={srcNode?.depth}
             targetDepth={tgtNode?.depth}
           />
-        );
+        )
       })}
     </>
-  );
+  )
 }

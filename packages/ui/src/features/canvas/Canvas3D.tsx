@@ -40,7 +40,10 @@ function CameraController({ graph }: { graph?: Graph | undefined }) {
     const positions =
       layoutPositions.size > 0
         ? Array.from(layoutPositions.values())
-        : (graph?.nodes?.filter((n) => n.position != null).map((n) => n.position).filter((p): p is NonNullable<typeof p> => p != null) ?? [])
+        : (graph?.nodes
+            ?.filter((n) => n.position != null)
+            .map((n) => n.position)
+            .filter((p): p is NonNullable<typeof p> => p != null) ?? [])
 
     if (positions.length === 0) return
 

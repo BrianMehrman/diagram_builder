@@ -43,34 +43,43 @@ export function ImportCodebaseModal({
   const showError = useToastStore((state) => state.showError)
 
   // Handle import completion
-  const handleImportComplete = useCallback((repositoryId: string) => {
-    showSuccess('Import Complete', `Successfully imported codebase with ${repositoryId ? 'graph data' : 'files'}`)
+  const handleImportComplete = useCallback(
+    (repositoryId: string) => {
+      showSuccess(
+        'Import Complete',
+        `Successfully imported codebase with ${repositoryId ? 'graph data' : 'files'}`
+      )
 
-    // Reset and close
-    setShowProgress(false)
-    setCodebaseId(null)
-    setSource('')
-    setBranch('main')
-    setToken('')
+      // Reset and close
+      setShowProgress(false)
+      setCodebaseId(null)
+      setSource('')
+      setBranch('main')
+      setToken('')
 
-    // Notify parent
-    if (onSuccess) {
-      onSuccess()
-    }
-    if (onImportComplete) {
-      onImportComplete(repositoryId)
-    }
+      // Notify parent
+      if (onSuccess) {
+        onSuccess()
+      }
+      if (onImportComplete) {
+        onImportComplete(repositoryId)
+      }
 
-    // Close modal
-    onClose()
-  }, [showSuccess, onSuccess, onImportComplete, onClose])
+      // Close modal
+      onClose()
+    },
+    [showSuccess, onSuccess, onImportComplete, onClose]
+  )
 
   // Handle import error
-  const handleImportError = useCallback((errorMessage: string) => {
-    showError('Import Failed', `${errorMessage}. Please check the source and try again.`)
-    setShowProgress(false)
-    setCodebaseId(null)
-  }, [showError])
+  const handleImportError = useCallback(
+    (errorMessage: string) => {
+      showError('Import Failed', `${errorMessage}. Please check the source and try again.`)
+      setShowProgress(false)
+      setCodebaseId(null)
+    },
+    [showError]
+  )
 
   // Use progress tracking hook
   const {
@@ -139,16 +148,12 @@ export function ImportCodebaseModal({
 
       // Show success toast
       showSuccess('Import Started', 'Codebase import has started. Tracking progress...')
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to import codebase'
       setError(errorMessage)
 
       // Show error toast with actionable message
-      showError(
-        'Import Failed',
-        `${errorMessage}. Please check your input and try again.`
-      )
+      showError('Import Failed', `${errorMessage}. Please check your input and try again.`)
     } finally {
       setIsLoading(false)
     }
@@ -223,7 +228,11 @@ export function ImportCodebaseModal({
           </button>
         </div>
 
-        <form onSubmit={(e) => { void handleSubmit(e) }}>
+        <form
+          onSubmit={(e) => {
+            void handleSubmit(e)
+          }}
+        >
           {/* Type Selector */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Source Type</label>

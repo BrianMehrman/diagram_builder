@@ -220,11 +220,7 @@ describe('depthCalculator', () => {
         makeNode('b', 'mid.ts', 'src/mid.ts'),
         makeNode('c', 'end.ts', 'src/end.ts'),
       ]
-      const edges = [
-        makeImportEdge('a', 'b'),
-        makeImportEdge('b', 'c'),
-        makeImportEdge('c', 'a'),
-      ]
+      const edges = [makeImportEdge('a', 'b'), makeImportEdge('b', 'c'), makeImportEdge('c', 'a')]
 
       const result = calculateAbstractionDepth(nodes, edges)
 

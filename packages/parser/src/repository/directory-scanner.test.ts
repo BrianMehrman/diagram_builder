@@ -28,9 +28,9 @@ describe('Directory Scanner', () => {
       const files = await scanDirectory(testDir)
 
       expect(files).toHaveLength(2)
-      expect(files.some(f => f.endsWith('index.js'))).toBe(true)
-      expect(files.some(f => f.endsWith('utils.js'))).toBe(true)
-      expect(files.some(f => f.endsWith('readme.md'))).toBe(false)
+      expect(files.some((f) => f.endsWith('index.js'))).toBe(true)
+      expect(files.some((f) => f.endsWith('utils.js'))).toBe(true)
+      expect(files.some((f) => f.endsWith('readme.md'))).toBe(false)
     })
 
     it('should scan directory and return TypeScript files', async () => {
@@ -41,9 +41,9 @@ describe('Directory Scanner', () => {
       const files = await scanDirectory(testDir)
 
       expect(files).toHaveLength(3)
-      expect(files.some(f => f.endsWith('index.ts'))).toBe(true)
-      expect(files.some(f => f.endsWith('types.d.ts'))).toBe(true)
-      expect(files.some(f => f.endsWith('component.tsx'))).toBe(true)
+      expect(files.some((f) => f.endsWith('index.ts'))).toBe(true)
+      expect(files.some((f) => f.endsWith('types.d.ts'))).toBe(true)
+      expect(files.some((f) => f.endsWith('component.tsx'))).toBe(true)
     })
 
     it('should recursively scan nested directories', async () => {
@@ -57,9 +57,9 @@ describe('Directory Scanner', () => {
       const files = await scanDirectory(testDir)
 
       expect(files).toHaveLength(3)
-      expect(files.some(f => f.includes('index.js'))).toBe(true)
-      expect(files.some(f => f.includes(path.join('src', 'app.js')))).toBe(true)
-      expect(files.some(f => f.includes(path.join('src', 'components', 'button.js')))).toBe(true)
+      expect(files.some((f) => f.includes('index.js'))).toBe(true)
+      expect(files.some((f) => f.includes(path.join('src', 'app.js')))).toBe(true)
+      expect(files.some((f) => f.includes(path.join('src', 'components', 'button.js')))).toBe(true)
     })
 
     it('should respect .gitignore patterns from file', async () => {
@@ -74,7 +74,7 @@ describe('Directory Scanner', () => {
 
       expect(files).toHaveLength(1)
       expect(files[0]).toContain('src')
-      expect(files.some(f => f.includes('node_modules'))).toBe(false)
+      expect(files.some((f) => f.includes('node_modules'))).toBe(false)
     })
 
     it('should respect custom ignore patterns', async () => {
@@ -88,7 +88,7 @@ describe('Directory Scanner', () => {
 
       expect(files).toHaveLength(1)
       expect(files[0]).toContain('src.js')
-      expect(files.some(f => f.includes('build'))).toBe(false)
+      expect(files.some((f) => f.includes('build'))).toBe(false)
     })
 
     it('should filter by specific file extensions', async () => {
@@ -102,10 +102,10 @@ describe('Directory Scanner', () => {
       })
 
       expect(files).toHaveLength(2)
-      expect(files.some(f => f.endsWith('.ts'))).toBe(true)
-      expect(files.some(f => f.endsWith('.tsx'))).toBe(true)
-      expect(files.some(f => f.endsWith('.js'))).toBe(false)
-      expect(files.some(f => f.endsWith('.css'))).toBe(false)
+      expect(files.some((f) => f.endsWith('.ts'))).toBe(true)
+      expect(files.some((f) => f.endsWith('.tsx'))).toBe(true)
+      expect(files.some((f) => f.endsWith('.js'))).toBe(false)
+      expect(files.some((f) => f.endsWith('.css'))).toBe(false)
     })
 
     it('should return absolute file paths', async () => {
@@ -147,10 +147,10 @@ describe('Directory Scanner', () => {
       })
 
       expect(files).toHaveLength(3)
-      expect(files.some(f => f.includes('root.js'))).toBe(true)
-      expect(files.some(f => f.includes('file1.js'))).toBe(true)
-      expect(files.some(f => f.includes('file2.js'))).toBe(true)
-      expect(files.some(f => f.includes('file3.js'))).toBe(false)
+      expect(files.some((f) => f.includes('root.js'))).toBe(true)
+      expect(files.some((f) => f.includes('file1.js'))).toBe(true)
+      expect(files.some((f) => f.includes('file2.js'))).toBe(true)
+      expect(files.some((f) => f.includes('file3.js'))).toBe(false)
     })
   })
 })

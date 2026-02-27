@@ -91,9 +91,7 @@ export function CodebaseList({
   }, [codebaseList])
 
   const handleDelete = async (codebaseId: string) => {
-    const confirmed = window.confirm(
-      'Delete this codebase? This action cannot be undone.'
-    )
+    const confirmed = window.confirm('Delete this codebase? This action cannot be undone.')
 
     if (!confirmed) return
 
@@ -140,7 +138,9 @@ export function CodebaseList({
       <div className="text-center py-8">
         <p className="text-sm text-red-400">{error}</p>
         <button
-          onClick={() => { void loadCodebases() }}
+          onClick={() => {
+            void loadCodebases()
+          }}
           className="mt-2 text-xs text-blue-400 hover:text-blue-300"
         >
           Try again
@@ -152,12 +152,8 @@ export function CodebaseList({
   if (codebaseList.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-sm text-gray-400">
-          No codebases imported yet
-        </p>
-        <p className="mt-1 text-xs text-gray-500">
-          Use the Import button to get started
-        </p>
+        <p className="text-sm text-gray-400">No codebases imported yet</p>
+        <p className="mt-1 text-xs text-gray-500">Use the Import button to get started</p>
       </div>
     )
   }
@@ -170,8 +166,12 @@ export function CodebaseList({
           codebase={codebase}
           selected={codebase.codebaseId === selectedId}
           onSelect={() => handleSelect(codebase.codebaseId)}
-          onDelete={() => { void handleDelete(codebase.codebaseId) }}
-          onRetry={() => { void handleRetry(codebase.codebaseId) }}
+          onDelete={() => {
+            void handleDelete(codebase.codebaseId)
+          }}
+          onRetry={() => {
+            void handleRetry(codebase.codebaseId)
+          }}
         />
       ))}
     </div>

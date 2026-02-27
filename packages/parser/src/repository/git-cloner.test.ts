@@ -137,7 +137,7 @@ describe('Git Cloner', () => {
       expect(Array.isArray(branches)).toBe(true)
       expect(branches.length).toBeGreaterThan(0)
       // Most repos have a main or master branch
-      const hasMainBranch = branches.some(b => b === 'main' || b === 'master')
+      const hasMainBranch = branches.some((b) => b === 'main' || b === 'master')
       expect(hasMainBranch).toBe(true)
     }, 30000)
 

@@ -6,42 +6,37 @@
  * the clustering threshold. Displays the node count as a badge.
  */
 
-import { useState } from 'react';
-import { Text } from '@react-three/drei';
-import type { Position3D } from '../../../shared/types';
-import { getDistrictColor } from './districtGroundUtils';
+import { useState } from 'react'
+import { Text } from '@react-three/drei'
+import type { Position3D } from '../../../shared/types'
+import { getDistrictColor } from './districtGroundUtils'
 
 interface ClusterBuildingProps {
-  position: Position3D;
-  nodeCount: number;
-  districtName: string;
-  size: { width: number; depth: number; height: number };
+  position: Position3D
+  nodeCount: number
+  districtName: string
+  size: { width: number; depth: number; height: number }
 }
 
-export function ClusterBuilding({
-  position,
-  nodeCount,
-  districtName,
-  size,
-}: ClusterBuildingProps) {
-  const [hovered, setHovered] = useState(false);
+export function ClusterBuilding({ position, nodeCount, districtName, size }: ClusterBuildingProps) {
+  const [hovered, setHovered] = useState(false)
 
   // Scale building based on cluster size, with minimums
-  const width = Math.max(size.width * 0.5, 3);
-  const depth = Math.max(size.depth * 0.5, 3);
-  const height = Math.max(Math.log2(nodeCount + 1) * 1.5, 2);
+  const width = Math.max(size.width * 0.5, 3)
+  const depth = Math.max(size.depth * 0.5, 3)
+  const height = Math.max(Math.log2(nodeCount + 1) * 1.5, 2)
 
-  const color = getDistrictColor(districtName);
+  const color = getDistrictColor(districtName)
 
   const handlePointerOver = () => {
-    setHovered(true);
-    document.body.style.cursor = 'pointer';
-  };
+    setHovered(true)
+    document.body.style.cursor = 'pointer'
+  }
 
   const handlePointerOut = () => {
-    setHovered(false);
-    document.body.style.cursor = 'auto';
-  };
+    setHovered(false)
+    document.body.style.cursor = 'auto'
+  }
 
   return (
     <group position={[position.x, position.y, position.z]}>
@@ -88,5 +83,5 @@ export function ClusterBuilding({
         {districtName}
       </Text>
     </group>
-  );
+  )
 }

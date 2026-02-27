@@ -10,9 +10,7 @@
  * Slow at start and end, fast in the middle.
  */
 export function easeInOutCubic(t: number): number {
-  return t < 0.5
-    ? 4 * t * t * t
-    : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
 }
 
 /**
@@ -20,7 +18,7 @@ export function easeInOutCubic(t: number): number {
  * Walls start at 0.08 opacity and dissolve to 0.
  */
 export function computeWallOpacity(progress: number): number {
-  return Math.max(0, 0.08 * (1 - progress));
+  return Math.max(0, 0.08 * (1 - progress))
 }
 
 /**
@@ -28,7 +26,7 @@ export function computeWallOpacity(progress: number): number {
  * Membrane fades in from 0 to 0.1.
  */
 export function computeMembraneOpacity(progress: number): number {
-  return 0.1 * progress;
+  return 0.1 * progress
 }
 
 /**
@@ -36,7 +34,7 @@ export function computeMembraneOpacity(progress: number): number {
  * Organelles fade in from 0 to their target opacity (0.85).
  */
 export function computeOrganelleOpacity(progress: number): number {
-  return 0.85 * progress;
+  return 0.85 * progress
 }
 
 /**
@@ -55,20 +53,20 @@ export function stepProgress(
   delta: number,
   duration: number
 ): number {
-  const speed = 1 / duration;
-  const step = speed * delta;
+  const speed = 1 / duration
+  const step = speed * delta
 
-  let next: number;
+  let next: number
   if (current < target) {
-    next = Math.min(current + step, target);
+    next = Math.min(current + step, target)
   } else {
-    next = Math.max(current - step, target);
+    next = Math.max(current - step, target)
   }
 
   // Snap when very close to avoid floating point drift
   if (Math.abs(next - target) < 0.01) {
-    return target;
+    return target
   }
 
-  return next;
+  return next
 }

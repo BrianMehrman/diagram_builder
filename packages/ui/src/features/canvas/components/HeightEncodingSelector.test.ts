@@ -5,53 +5,59 @@
  * The component reads/writes citySettings.heightEncoding from the canvas store.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { useCanvasStore } from '../store';
-import type { HeightEncoding } from '../store';
+import { describe, it, expect, beforeEach } from 'vitest'
+import { useCanvasStore } from '../store'
+import type { HeightEncoding } from '../store'
 
 describe('HeightEncodingSelector store integration', () => {
   beforeEach(() => {
-    useCanvasStore.getState().reset();
-  });
+    useCanvasStore.getState().reset()
+  })
 
   it('has default heightEncoding of methodCount', () => {
-    expect(useCanvasStore.getState().citySettings.heightEncoding).toBe('methodCount');
-  });
+    expect(useCanvasStore.getState().citySettings.heightEncoding).toBe('methodCount')
+  })
 
   it('updates heightEncoding via setHeightEncoding', () => {
-    useCanvasStore.getState().setHeightEncoding('loc');
-    expect(useCanvasStore.getState().citySettings.heightEncoding).toBe('loc');
-  });
+    useCanvasStore.getState().setHeightEncoding('loc')
+    expect(useCanvasStore.getState().citySettings.heightEncoding).toBe('loc')
+  })
 
   it('accepts all valid encoding values', () => {
-    const encodings: HeightEncoding[] = ['methodCount', 'dependencies', 'loc', 'complexity', 'churn'];
+    const encodings: HeightEncoding[] = [
+      'methodCount',
+      'dependencies',
+      'loc',
+      'complexity',
+      'churn',
+    ]
     for (const encoding of encodings) {
-      useCanvasStore.getState().setHeightEncoding(encoding);
-      expect(useCanvasStore.getState().citySettings.heightEncoding).toBe(encoding);
+      useCanvasStore.getState().setHeightEncoding(encoding)
+      expect(useCanvasStore.getState().citySettings.heightEncoding).toBe(encoding)
     }
-  });
+  })
 
   it('resets heightEncoding to methodCount on reset()', () => {
-    useCanvasStore.getState().setHeightEncoding('complexity');
-    useCanvasStore.getState().reset();
-    expect(useCanvasStore.getState().citySettings.heightEncoding).toBe('methodCount');
-  });
+    useCanvasStore.getState().setHeightEncoding('complexity')
+    useCanvasStore.getState().reset()
+    expect(useCanvasStore.getState().citySettings.heightEncoding).toBe('methodCount')
+  })
 
   it('only shows in city view mode', () => {
-    const { viewMode } = useCanvasStore.getState();
-    expect(viewMode).toBe('city');
-  });
+    const { viewMode } = useCanvasStore.getState()
+    expect(viewMode).toBe('city')
+  })
 
   it('does not show in building view mode', () => {
-    useCanvasStore.getState().setViewMode('building');
-    expect(useCanvasStore.getState().viewMode).toBe('building');
+    useCanvasStore.getState().setViewMode('building')
+    expect(useCanvasStore.getState().viewMode).toBe('building')
     // Component returns null when viewMode !== 'city'
-  });
+  })
 
   it('preserves heightEncoding when switching view modes', () => {
-    useCanvasStore.getState().setHeightEncoding('churn');
-    useCanvasStore.getState().setViewMode('building');
-    useCanvasStore.getState().setViewMode('city');
-    expect(useCanvasStore.getState().citySettings.heightEncoding).toBe('churn');
-  });
-});
+    useCanvasStore.getState().setHeightEncoding('churn')
+    useCanvasStore.getState().setViewMode('building')
+    useCanvasStore.getState().setViewMode('city')
+    expect(useCanvasStore.getState().citySettings.heightEncoding).toBe('churn')
+  })
+})

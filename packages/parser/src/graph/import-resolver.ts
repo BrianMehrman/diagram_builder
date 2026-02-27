@@ -26,11 +26,8 @@ export interface ResolvedImport {
  * @param imports - Array of import statements to resolve
  * @returns Array of resolved imports with path information
  */
-export function resolveImports(
-  sourceFile: string,
-  imports: ImportStatement[]
-): ResolvedImport[] {
-  return imports.map(importStmt => {
+export function resolveImports(sourceFile: string, imports: ImportStatement[]): ResolvedImport[] {
+  return imports.map((importStmt) => {
     const { source, defaultImport, namespaceImport, specifiers } = importStmt
 
     // Check if this is an external package
@@ -46,7 +43,7 @@ export function resolveImports(
       importedSymbols: {
         defaultImport,
         namespaceImport,
-        specifiers: specifiers.map(spec => ({
+        specifiers: specifiers.map((spec) => ({
           imported: spec.imported,
           local: spec.local,
         })),

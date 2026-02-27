@@ -6,19 +6,19 @@
  * higher values spread them out. Rendered inside the RightPanel.
  */
 
-import { useCanvasStore } from '../store';
+import { useCanvasStore } from '../store'
 
-const MIN_DENSITY = 0.2;
-const MAX_DENSITY = 5.0;
-const STEP = 0.1;
+const MIN_DENSITY = 0.2
+const MAX_DENSITY = 5.0
+const STEP = 0.1
 
 export function DensitySlider() {
-  const layoutDensity = useCanvasStore((s) => s.layoutDensity);
-  const setLayoutDensity = useCanvasStore((s) => s.setLayoutDensity);
-  const viewMode = useCanvasStore((s) => s.viewMode);
+  const layoutDensity = useCanvasStore((s) => s.layoutDensity)
+  const setLayoutDensity = useCanvasStore((s) => s.setLayoutDensity)
+  const viewMode = useCanvasStore((s) => s.viewMode)
 
   // Only show in city view
-  if (viewMode !== 'city') return null;
+  if (viewMode !== 'city') return null
 
   return (
     <div className="space-y-2">
@@ -39,5 +39,5 @@ export function DensitySlider() {
         aria-label="Layout density"
       />
     </div>
-  );
+  )
 }

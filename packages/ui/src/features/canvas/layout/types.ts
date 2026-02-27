@@ -1,15 +1,12 @@
-import type { Graph, Position3D } from '../../../shared/types';
-import type {
-  DistrictArcMetadata,
-  InfrastructureZoneMetadata,
-} from './engines/radialCityLayout';
+import type { Graph, Position3D } from '../../../shared/types'
+import type { DistrictArcMetadata, InfrastructureZoneMetadata } from './engines/radialCityLayout'
 
 /**
  * Axis-aligned bounding box in 3D space
  */
 export interface BoundingBox {
-  min: Position3D;
-  max: Position3D;
+  min: Position3D
+  max: Position3D
 }
 
 /**
@@ -17,11 +14,11 @@ export interface BoundingBox {
  */
 export interface LayoutResult {
   /** Computed position for each node by ID */
-  positions: Map<string, Position3D>;
+  positions: Map<string, Position3D>
   /** Bounding box enclosing all positioned nodes */
-  bounds: BoundingBox;
+  bounds: BoundingBox
   /** Optional engine-specific metadata */
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown>
 }
 
 /**
@@ -29,13 +26,13 @@ export interface LayoutResult {
  */
 export interface LayoutConfig {
   /** Spacing between nodes (default varies by engine) */
-  spacing?: number;
+  spacing?: number
   /** Global scale multiplier (default 1) */
-  scale?: number;
+  scale?: number
   /** Origin point for the layout (default {0,0,0}) */
-  origin?: Position3D;
+  origin?: Position3D
   /** Engine-specific configuration */
-  [key: string]: unknown;
+  [key: string]: unknown
 }
 
 /**
@@ -49,7 +46,7 @@ export interface LayoutConfig {
  */
 export interface LayoutEngine {
   /** Unique identifier for this engine (e.g., 'city', 'building', 'cell') */
-  readonly type: string;
+  readonly type: string
 
   /**
    * Compute 3D positions for all nodes in the graph.
@@ -58,7 +55,7 @@ export interface LayoutEngine {
    * @param config - Layout configuration
    * @returns Layout result with positions and bounds
    */
-  layout(graph: Graph, config: LayoutConfig): LayoutResult;
+  layout(graph: Graph, config: LayoutConfig): LayoutResult
 
   /**
    * Determine whether this engine can handle the given graph.
@@ -67,34 +64,34 @@ export interface LayoutEngine {
    * @param graph - The graph to evaluate
    * @returns True if this engine is suitable
    */
-  canHandle(graph: Graph): boolean;
+  canHandle(graph: Graph): boolean
 }
 
 /** Layout of a single file block within a district */
 export interface BlockLayout {
-  fileId: string;
-  position: Position3D;
-  footprint: { width: number; depth: number };
-  children: { nodeId: string; localPosition: Position3D }[];
-  isMerged: boolean;
+  fileId: string
+  position: Position3D
+  footprint: { width: number; depth: number }
+  children: { nodeId: string; localPosition: Position3D }[]
+  isMerged: boolean
 }
 
 /** Layout of a district containing file blocks */
 export interface DistrictLayout {
-  id: string;
-  arc: DistrictArcMetadata;
-  blocks: BlockLayout[];
-  isCompound: boolean;
+  id: string
+  arc: DistrictArcMetadata
+  blocks: BlockLayout[]
+  isCompound: boolean
 }
 
 /** Layout of an external infrastructure zone */
 export interface ExternalZoneLayout {
-  zoneMetadata: InfrastructureZoneMetadata;
-  nodes: { nodeId: string; position: Position3D }[];
+  zoneMetadata: InfrastructureZoneMetadata
+  nodes: { nodeId: string; position: Position3D }[]
 }
 
 /** Extended layout result with hierarchical structure */
 export interface HierarchicalLayoutResult extends LayoutResult {
-  districts: DistrictLayout[];
-  externalZones: ExternalZoneLayout[];
+  districts: DistrictLayout[]
+  externalZones: ExternalZoneLayout[]
 }

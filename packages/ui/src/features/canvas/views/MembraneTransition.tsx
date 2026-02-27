@@ -6,21 +6,18 @@
  * Progress is controlled externally by useViewTransition hook.
  */
 
-import { BackSide } from 'three';
-import type { Position3D } from '../../../shared/types';
-import {
-  computeWallOpacity,
-  computeMembraneOpacity,
-} from '../hooks/viewTransitionUtils';
+import { BackSide } from 'three'
+import type { Position3D } from '../../../shared/types'
+import { computeWallOpacity, computeMembraneOpacity } from '../hooks/viewTransitionUtils'
 
 interface MembraneTransitionProps {
-  center: Position3D;
-  buildingWidth: number;
-  buildingHeight: number;
-  buildingDepth: number;
-  membraneRadius: number;
+  center: Position3D
+  buildingWidth: number
+  buildingHeight: number
+  buildingDepth: number
+  membraneRadius: number
   /** Transition progress: 0 = building walls, 1 = cell membrane */
-  progress: number;
+  progress: number
 }
 
 export function MembraneTransition({
@@ -31,8 +28,8 @@ export function MembraneTransition({
   membraneRadius,
   progress,
 }: MembraneTransitionProps) {
-  const wallOpacity = computeWallOpacity(progress);
-  const membraneOpacity = computeMembraneOpacity(progress);
+  const wallOpacity = computeWallOpacity(progress)
+  const membraneOpacity = computeMembraneOpacity(progress)
 
   return (
     <group position={[center.x, center.y, center.z]}>
@@ -64,5 +61,5 @@ export function MembraneTransition({
         </mesh>
       )}
     </group>
-  );
+  )
 }

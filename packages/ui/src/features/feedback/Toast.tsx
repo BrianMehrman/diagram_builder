@@ -10,8 +10,8 @@
  * - Accessible: role="status"/"alert", aria-live
  */
 
-import * as ToastPrimitive from '@radix-ui/react-toast';
-import { useToastStore, type Toast as ToastType } from './toastStore';
+import * as ToastPrimitive from '@radix-ui/react-toast'
+import { useToastStore, type Toast as ToastType } from './toastStore'
 
 /**
  * Toast styling based on type
@@ -21,7 +21,7 @@ const toastStyles = {
   error: 'bg-red-600',
   info: 'bg-blue-600',
   warning: 'bg-yellow-600',
-};
+}
 
 /**
  * Toast icons based on type
@@ -31,7 +31,7 @@ const toastIcons = {
   error: '⚠',
   info: 'ℹ',
   warning: '⚠',
-};
+}
 
 /**
  * Default durations (error persists until dismissed)
@@ -41,19 +41,19 @@ const defaultDurations = {
   error: Infinity,
   info: 5000,
   warning: 7000,
-};
+}
 
 /**
  * Individual Toast component
  */
 interface ToastProps {
-  toast: ToastType;
-  onDismiss: () => void;
+  toast: ToastType
+  onDismiss: () => void
 }
 
 export function Toast({ toast, onDismiss }: ToastProps) {
-  const isError = toast.type === 'error';
-  const duration = toast.duration ?? defaultDurations[toast.type];
+  const isError = toast.type === 'error'
+  const duration = toast.duration ?? defaultDurations[toast.type]
 
   return (
     <ToastPrimitive.Root
@@ -61,7 +61,7 @@ export function Toast({ toast, onDismiss }: ToastProps) {
       aria-live={isError ? 'assertive' : 'polite'}
       duration={duration}
       onOpenChange={(open) => {
-        if (!open) onDismiss();
+        if (!open) onDismiss()
       }}
       className={`
         ${toastStyles[toast.type]}
@@ -96,7 +96,7 @@ export function Toast({ toast, onDismiss }: ToastProps) {
         </ToastPrimitive.Close>
       )}
     </ToastPrimitive.Root>
-  );
+  )
 }
 
 /**
@@ -106,12 +106,12 @@ export function Toast({ toast, onDismiss }: ToastProps) {
  * Renders toasts from the Zustand store.
  */
 interface ToastProviderProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export function ToastProvider({ children }: ToastProviderProps) {
-  const toasts = useToastStore((state) => state.toasts);
-  const hideToast = useToastStore((state) => state.hideToast);
+  const toasts = useToastStore((state) => state.toasts)
+  const hideToast = useToastStore((state) => state.hideToast)
 
   return (
     <ToastPrimitive.Provider swipeDirection="right">
@@ -128,5 +128,5 @@ export function ToastProvider({ children }: ToastProviderProps) {
         className="fixed top-4 right-4 z-50 flex flex-col gap-2 w-96 max-w-[calc(100vw-2rem)] outline-none"
       />
     </ToastPrimitive.Provider>
-  );
+  )
 }

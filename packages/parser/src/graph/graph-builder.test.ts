@@ -12,9 +12,7 @@ describe('Graph Builder', () => {
         }
       `
 
-      const graph = buildDependencyGraph([
-        { filePath: '/src/index.ts', content: sourceCode },
-      ])
+      const graph = buildDependencyGraph([{ filePath: '/src/index.ts', content: sourceCode }])
 
       expect(graph.getNodeCount()).toBeGreaterThan(0)
       expect(graph.getEdgeCount()).toBeGreaterThan(0)
@@ -25,12 +23,10 @@ describe('Graph Builder', () => {
         export class MyClass {}
       `
 
-      const graph = buildDependencyGraph([
-        { filePath: '/src/index.ts', content: sourceCode },
-      ])
+      const graph = buildDependencyGraph([{ filePath: '/src/index.ts', content: sourceCode }])
 
       const nodes = graph.getNodes()
-      const fileNode = nodes.find(n => n.type === 'file')
+      const fileNode = nodes.find((n) => n.type === 'file')
 
       expect(fileNode).toBeDefined()
       expect(fileNode?.name).toBe('index.ts')
@@ -44,12 +40,10 @@ describe('Graph Builder', () => {
         }
       `
 
-      const graph = buildDependencyGraph([
-        { filePath: '/src/index.ts', content: sourceCode },
-      ])
+      const graph = buildDependencyGraph([{ filePath: '/src/index.ts', content: sourceCode }])
 
       const nodes = graph.getNodes()
-      const classNode = nodes.find(n => n.type === 'class')
+      const classNode = nodes.find((n) => n.type === 'class')
 
       expect(classNode).toBeDefined()
       expect(classNode?.name).toBe('MyClass')
@@ -62,12 +56,10 @@ describe('Graph Builder', () => {
         }
       `
 
-      const graph = buildDependencyGraph([
-        { filePath: '/src/index.ts', content: sourceCode },
-      ])
+      const graph = buildDependencyGraph([{ filePath: '/src/index.ts', content: sourceCode }])
 
       const nodes = graph.getNodes()
-      const functionNode = nodes.find(n => n.type === 'function')
+      const functionNode = nodes.find((n) => n.type === 'function')
 
       expect(functionNode).toBeDefined()
       expect(functionNode?.name).toBe('myFunction')
@@ -94,7 +86,7 @@ describe('Graph Builder', () => {
       ])
 
       const edges = graph.getEdges()
-      const importEdge = edges.find(e => e.type === 'imports')
+      const importEdge = edges.find((e) => e.type === 'imports')
 
       expect(importEdge).toBeDefined()
       expect(importEdge?.source).toMatch(/index\.ts/)
@@ -107,12 +99,10 @@ describe('Graph Builder', () => {
         class Dog extends Animal {}
       `
 
-      const graph = buildDependencyGraph([
-        { filePath: '/src/index.ts', content: sourceCode },
-      ])
+      const graph = buildDependencyGraph([{ filePath: '/src/index.ts', content: sourceCode }])
 
       const edges = graph.getEdges()
-      const extendsEdge = edges.find(e => e.type === 'extends')
+      const extendsEdge = edges.find((e) => e.type === 'extends')
 
       expect(extendsEdge).toBeDefined()
       expect(extendsEdge?.source).toMatch(/Dog/)
@@ -125,12 +115,10 @@ describe('Graph Builder', () => {
         class ConsoleLogger extends BaseLogger {}
       `
 
-      const graph = buildDependencyGraph([
-        { filePath: '/src/index.ts', content: sourceCode },
-      ])
+      const graph = buildDependencyGraph([{ filePath: '/src/index.ts', content: sourceCode }])
 
       const edges = graph.getEdges()
-      const extendsEdge = edges.find(e => e.type === 'extends')
+      const extendsEdge = edges.find((e) => e.type === 'extends')
 
       expect(extendsEdge).toBeDefined()
       expect(extendsEdge?.source).toContain('ConsoleLogger')
@@ -148,12 +136,10 @@ describe('Graph Builder', () => {
         }
       `
 
-      const graph = buildDependencyGraph([
-        { filePath: '/src/index.ts', content: sourceCode },
-      ])
+      const graph = buildDependencyGraph([{ filePath: '/src/index.ts', content: sourceCode }])
 
       const edges = graph.getEdges()
-      const callEdge = edges.find(e => e.type === 'calls')
+      const callEdge = edges.find((e) => e.type === 'calls')
 
       expect(callEdge).toBeDefined()
     })
@@ -194,11 +180,9 @@ describe('Graph Builder', () => {
         export function helper() {}
       `
 
-      const graph = buildDependencyGraph([
-        { filePath: '/src/index.ts', content: sourceCode },
-      ])
+      const graph = buildDependencyGraph([{ filePath: '/src/index.ts', content: sourceCode }])
 
-      const fileNode = graph.getNodes().find(n => n.type === 'file')
+      const fileNode = graph.getNodes().find((n) => n.type === 'file')
       expect(fileNode?.metadata.metrics).toBeDefined()
       expect(fileNode?.metadata.metrics).toHaveProperty('loc')
       expect(fileNode?.metadata.metrics).toHaveProperty('classCount')
@@ -239,34 +223,34 @@ describe('Graph Builder', () => {
       const edges = graph.getEdges()
 
       // Class node should exist with methodCount
-      const classNode = nodes.find(n => n.type === 'class')
+      const classNode = nodes.find((n) => n.type === 'class')
       expect(classNode).toBeDefined()
       expect(classNode?.name).toBe('UserService')
       expect(classNode?.metadata.methodCount).toBe(3)
 
       // Method nodes should exist
-      const methodNodes = nodes.filter(n => n.type === 'method')
+      const methodNodes = nodes.filter((n) => n.type === 'method')
       expect(methodNodes.length).toBe(3)
 
       // Check constructor method
-      const ctorNode = methodNodes.find(n => n.name.includes('constructor'))
+      const ctorNode = methodNodes.find((n) => n.name.includes('constructor'))
       expect(ctorNode).toBeDefined()
       expect(ctorNode?.metadata.isConstructor).toBe(true)
 
       // Check getName method
-      const getNameNode = methodNodes.find(n => n.name.includes('getName'))
+      const getNameNode = methodNodes.find((n) => n.name.includes('getName'))
       expect(getNameNode).toBeDefined()
       expect(getNameNode?.metadata.visibility).toBe('public')
 
       // Check static method
-      const createNode = methodNodes.find(n => n.name.includes('create'))
+      const createNode = methodNodes.find((n) => n.name.includes('create'))
       expect(createNode).toBeDefined()
       expect(createNode?.metadata.isStatic).toBe(true)
 
       // Contains edges from class to methods
-      const containsEdges = edges.filter(e => e.type === 'contains')
+      const containsEdges = edges.filter((e) => e.type === 'contains')
       const classMethodEdges = containsEdges.filter(
-        e => e.source === classNode?.id && methodNodes.some(m => m.id === e.target)
+        (e) => e.source === classNode?.id && methodNodes.some((m) => m.id === e.target)
       )
       expect(classMethodEdges.length).toBe(3)
 

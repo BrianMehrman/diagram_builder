@@ -4,15 +4,15 @@
  * Validates repository and file sizes to prevent DoS attacks and out-of-memory errors
  */
 
-import fs from 'fs/promises';
-import { getParserConfig } from '../config.js';
-import { logger } from '../logger.js';
+import fs from 'fs/promises'
+import { getParserConfig } from '../config.js'
+import { logger } from '../logger.js'
 
 export interface SizeValidationError {
-  type: 'repo_size' | 'file_count' | 'file_size';
-  message: string;
-  actual: number;
-  limit: number;
+  type: 'repo_size' | 'file_count' | 'file_size'
+  message: string
+  actual: number
+  limit: number
 }
 
 /**
@@ -21,32 +21,32 @@ export interface SizeValidationError {
  * For local paths, this checks actual directory size
  */
 export function validateRepositorySize(sizeBytes: number): SizeValidationError | null {
-  const config = getParserConfig();
-  const limitBytes = config.MAX_REPO_SIZE_MB * 1024 * 1024;
+  const config = getParserConfig()
+  const limitBytes = config.MAX_REPO_SIZE_MB * 1024 * 1024
 
   if (sizeBytes > limitBytes) {
-    const actualMB = (sizeBytes / (1024 * 1024)).toFixed(2);
-    const limitMB = config.MAX_REPO_SIZE_MB;
+    const actualMB = (sizeBytes / (1024 * 1024)).toFixed(2)
+    const limitMB = config.MAX_REPO_SIZE_MB
 
     const error: SizeValidationError = {
       type: 'repo_size',
       message: `Repository too large: ${actualMB}MB exceeds limit of ${limitMB}MB`,
       actual: sizeBytes,
       limit: limitBytes,
-    };
+    }
 
-    logger.warn(error.message);
-    return error;
+    logger.warn(error.message)
+    return error
   }
 
-  return null;
+  return null
 }
 
 /**
  * Validate file count during parsing
  */
 export function validateFileCount(fileCount: number): SizeValidationError | null {
-  const config = getParserConfig();
+  const config = getParserConfig()
 
   if (fileCount > config.MAX_FILE_COUNT) {
     const error: SizeValidationError = {
@@ -54,13 +54,13 @@ export function validateFileCount(fileCount: number): SizeValidationError | null
       message: `Too many files: ${fileCount} exceeds limit of ${config.MAX_FILE_COUNT}`,
       actual: fileCount,
       limit: config.MAX_FILE_COUNT,
-    };
+    }
 
-    logger.warn(error.message);
-    return error;
+    logger.warn(error.message)
+    return error
   }
 
-  return null;
+  return null
 }
 
 /**
@@ -68,22 +68,24 @@ export function validateFileCount(fileCount: number): SizeValidationError | null
  * Returns true if file should be skipped (too large)
  */
 export async function shouldSkipLargeFile(filePath: string): Promise<boolean> {
-  const config = getParserConfig();
+  const config = getParserConfig()
 
   try {
-    const stats = await fs.stat(filePath);
-    const limitBytes = config.MAX_FILE_SIZE_MB * 1024 * 1024;
+    const stats = await fs.stat(filePath)
+    const limitBytes = config.MAX_FILE_SIZE_MB * 1024 * 1024
 
     if (stats.size > limitBytes) {
-      const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);
-      logger.warn(`Skipping large file: ${filePath} (${sizeMB}MB exceeds limit of ${config.MAX_FILE_SIZE_MB}MB)`);
-      return true;
+      const sizeMB = (stats.size / (1024 * 1024)).toFixed(2)
+      logger.warn(
+        `Skipping large file: ${filePath} (${sizeMB}MB exceeds limit of ${config.MAX_FILE_SIZE_MB}MB)`
+      )
+      return true
     }
 
-    return false;
+    return false
   } catch (error) {
-    logger.error(`Failed to check file size: ${filePath}`, error);
-    return false; // Don't skip if we can't check size
+    logger.error(`Failed to check file size: ${filePath}`, error)
+    return false // Don't skip if we can't check size
   }
 }
 
@@ -91,47 +93,50 @@ export async function shouldSkipLargeFile(filePath: string): Promise<boolean> {
  * Calculate directory size recursively
  */
 export async function calculateDirectorySize(dirPath: string): Promise<number> {
-  let totalSize = 0;
+  let totalSize = 0
 
   try {
-    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+    const entries = await fs.readdir(dirPath, { withFileTypes: true })
 
     for (const entry of entries) {
-      const fullPath = `${dirPath}/${entry.name}`;
+      const fullPath = `${dirPath}/${entry.name}`
 
       if (entry.isDirectory()) {
-        totalSize += await calculateDirectorySize(fullPath);
+        totalSize += await calculateDirectorySize(fullPath)
       } else if (entry.isFile()) {
-        const stats = await fs.stat(fullPath);
-        totalSize += stats.size;
+        const stats = await fs.stat(fullPath)
+        totalSize += stats.size
       }
     }
   } catch (error) {
-    logger.warn(`Failed to calculate directory size for ${dirPath}:`, error);
+    logger.warn(`Failed to calculate directory size for ${dirPath}:`, error)
   }
 
-  return totalSize;
+  return totalSize
 }
 
 /**
  * Validate repository before parsing
  * Checks all size constraints
  */
-export async function validateRepository(dirPath: string, files: string[]): Promise<SizeValidationError[]> {
-  const errors: SizeValidationError[] = [];
+export async function validateRepository(
+  dirPath: string,
+  files: string[]
+): Promise<SizeValidationError[]> {
+  const errors: SizeValidationError[] = []
 
   // Validate file count
-  const fileCountError = validateFileCount(files.length);
+  const fileCountError = validateFileCount(files.length)
   if (fileCountError) {
-    errors.push(fileCountError);
+    errors.push(fileCountError)
   }
 
   // Validate repository size
-  const dirSize = await calculateDirectorySize(dirPath);
-  const sizeError = validateRepositorySize(dirSize);
+  const dirSize = await calculateDirectorySize(dirPath)
+  const sizeError = validateRepositorySize(dirSize)
   if (sizeError) {
-    errors.push(sizeError);
+    errors.push(sizeError)
   }
 
-  return errors;
+  return errors
 }

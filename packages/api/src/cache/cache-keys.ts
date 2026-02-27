@@ -8,12 +8,12 @@
  * Application namespace for all cache keys
  * Prevents key collisions in shared Redis instances
  */
-export const CACHE_NAMESPACE = 'diagram-builder';
+export const CACHE_NAMESPACE = 'diagram-builder'
 
 /**
  * Valid resource types for cache keys
  */
-export type CacheResource = 'graph' | 'query' | 'viewpoint' | 'workspace' | 'codebase';
+export type CacheResource = 'graph' | 'query' | 'viewpoint' | 'workspace' | 'codebase'
 
 /**
  * Build a properly formatted cache key
@@ -33,10 +33,10 @@ export type CacheResource = 'graph' | 'query' | 'viewpoint' | 'workspace' | 'cod
  */
 export function buildCacheKey(resource: CacheResource, identifier: string): string {
   if (!identifier || identifier.trim() === '') {
-    throw new Error('Cache key identifier cannot be empty');
+    throw new Error('Cache key identifier cannot be empty')
   }
 
-  return `${CACHE_NAMESPACE}:${resource}:${identifier}`;
+  return `${CACHE_NAMESPACE}:${resource}:${identifier}`
 }
 
 /**
@@ -65,5 +65,5 @@ export function buildCachePattern(
   resource: CacheResource | '*',
   identifierPattern: string = '*'
 ): string {
-  return `${CACHE_NAMESPACE}:${resource}:${identifierPattern}`;
+  return `${CACHE_NAMESPACE}:${resource}:${identifierPattern}`
 }

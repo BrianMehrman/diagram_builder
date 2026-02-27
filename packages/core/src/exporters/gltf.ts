@@ -7,15 +7,10 @@
  * GLTF 2.0 Specification: https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html
  */
 
-import type { IVMGraph, IVMNode, IVMEdge, NodeType, EdgeType, Position3D } from '../ivm/types.js';
-import type {
-  Exporter,
-  BaseExportOptions,
-  ExportResult,
-  ColorScheme,
-} from './types.js';
-import { DEFAULT_COLOR_SCHEME, DEFAULT_EXPORT_STYLING } from './types.js';
-import { filterGraphByLOD } from '../layout/lod.js';
+import type { IVMGraph, IVMNode, IVMEdge, NodeType, EdgeType, Position3D } from '../ivm/types.js'
+import type { Exporter, BaseExportOptions, ExportResult, ColorScheme } from './types.js'
+import { DEFAULT_COLOR_SCHEME, DEFAULT_EXPORT_STYLING } from './types.js'
+import { filterGraphByLOD } from '../layout/lod.js'
 
 // =============================================================================
 // GLTF Types (subset of full spec)
@@ -25,38 +20,38 @@ import { filterGraphByLOD } from '../layout/lod.js';
  * GLTF Asset metadata
  */
 interface GLTFAsset {
-  version: string;
-  generator: string;
-  copyright?: string;
+  version: string
+  generator: string
+  copyright?: string
 }
 
 /**
  * GLTF Scene
  */
 interface GLTFScene {
-  name?: string;
-  nodes?: number[];
+  name?: string
+  nodes?: number[]
 }
 
 /**
  * GLTF Node (transform node in scene graph)
  */
 interface GLTFNode {
-  name?: string;
-  mesh?: number;
-  translation?: [number, number, number];
-  rotation?: [number, number, number, number];
-  scale?: [number, number, number];
-  children?: number[];
-  extras?: Record<string, unknown>;
+  name?: string
+  mesh?: number
+  translation?: [number, number, number]
+  rotation?: [number, number, number, number]
+  scale?: [number, number, number]
+  children?: number[]
+  extras?: Record<string, unknown>
 }
 
 /**
  * GLTF Mesh
  */
 interface GLTFMesh {
-  name?: string;
-  primitives: GLTFPrimitive[];
+  name?: string
+  primitives: GLTFPrimitive[]
 }
 
 /**
@@ -64,76 +59,76 @@ interface GLTFMesh {
  */
 interface GLTFPrimitive {
   attributes: {
-    POSITION: number;
-    NORMAL?: number;
-    COLOR_0?: number;
-  };
-  indices?: number;
-  material?: number;
-  mode?: number; // 4 = TRIANGLES (default)
+    POSITION: number
+    NORMAL?: number
+    COLOR_0?: number
+  }
+  indices?: number
+  material?: number
+  mode?: number // 4 = TRIANGLES (default)
 }
 
 /**
  * GLTF Accessor (typed view into buffer)
  */
 interface GLTFAccessor {
-  bufferView: number;
-  byteOffset?: number;
-  componentType: number;
-  count: number;
-  type: string;
-  max?: number[];
-  min?: number[];
+  bufferView: number
+  byteOffset?: number
+  componentType: number
+  count: number
+  type: string
+  max?: number[]
+  min?: number[]
 }
 
 /**
  * GLTF Buffer View
  */
 interface GLTFBufferView {
-  buffer: number;
-  byteOffset?: number;
-  byteLength: number;
-  byteStride?: number;
-  target?: number;
+  buffer: number
+  byteOffset?: number
+  byteLength: number
+  byteStride?: number
+  target?: number
 }
 
 /**
  * GLTF Buffer
  */
 interface GLTFBuffer {
-  uri?: string;
-  byteLength: number;
+  uri?: string
+  byteLength: number
 }
 
 /**
  * GLTF Material (PBR metallic-roughness)
  */
 interface GLTFMaterial {
-  name?: string;
+  name?: string
   pbrMetallicRoughness?: {
-    baseColorFactor?: [number, number, number, number];
-    metallicFactor?: number;
-    roughnessFactor?: number;
-  };
-  emissiveFactor?: [number, number, number];
-  alphaMode?: 'OPAQUE' | 'MASK' | 'BLEND';
-  alphaCutoff?: number;
-  doubleSided?: boolean;
+    baseColorFactor?: [number, number, number, number]
+    metallicFactor?: number
+    roughnessFactor?: number
+  }
+  emissiveFactor?: [number, number, number]
+  alphaMode?: 'OPAQUE' | 'MASK' | 'BLEND'
+  alphaCutoff?: number
+  doubleSided?: boolean
 }
 
 /**
  * Complete GLTF document
  */
 interface GLTFDocument {
-  asset: GLTFAsset;
-  scene?: number;
-  scenes?: GLTFScene[];
-  nodes?: GLTFNode[];
-  meshes?: GLTFMesh[];
-  accessors?: GLTFAccessor[];
-  bufferViews?: GLTFBufferView[];
-  buffers?: GLTFBuffer[];
-  materials?: GLTFMaterial[];
+  asset: GLTFAsset
+  scene?: number
+  scenes?: GLTFScene[]
+  nodes?: GLTFNode[]
+  meshes?: GLTFMesh[]
+  accessors?: GLTFAccessor[]
+  bufferViews?: GLTFBufferView[]
+  buffers?: GLTFBuffer[]
+  materials?: GLTFMaterial[]
 }
 
 // =============================================================================
@@ -143,35 +138,35 @@ interface GLTFDocument {
 /**
  * Node shape for 3D representation
  */
-export type GLTFNodeShape = 'sphere' | 'cube' | 'cylinder' | 'cone' | 'octahedron';
+export type GLTFNodeShape = 'sphere' | 'cube' | 'cylinder' | 'cone' | 'octahedron'
 
 /**
  * GLTF export options
  */
 export interface GLTFExportOptions extends BaseExportOptions {
   /** Scale factor for the entire scene */
-  sceneScale?: number;
+  sceneScale?: number
 
   /** Default node size */
-  nodeSize?: number;
+  nodeSize?: number
 
   /** Whether to include edges as line geometry */
-  includeEdges?: boolean;
+  includeEdges?: boolean
 
   /** Edge thickness (cylinder radius) */
-  edgeThickness?: number;
+  edgeThickness?: number
 
   /** Whether to embed buffer data as base64 URI */
-  embedBuffers?: boolean;
+  embedBuffers?: boolean
 
   /** Metallic factor for materials (0-1) */
-  metallicFactor?: number;
+  metallicFactor?: number
 
   /** Roughness factor for materials (0-1) */
-  roughnessFactor?: number;
+  roughnessFactor?: number
 
   /** Whether to use emissive colors for highlighted nodes */
-  useEmissive?: boolean;
+  useEmissive?: boolean
 }
 
 /**
@@ -191,7 +186,7 @@ export const DEFAULT_GLTF_OPTIONS: Required<GLTFExportOptions> = {
   metallicFactor: 0.1,
   roughnessFactor: 0.8,
   useEmissive: true,
-};
+}
 
 // =============================================================================
 // Shape Mapping
@@ -214,7 +209,7 @@ const NODE_TYPE_TO_SHAPE: Record<NodeType, GLTFNodeShape> = {
   variable: 'cylinder',
   type: 'octahedron',
   enum: 'octahedron',
-};
+}
 
 // =============================================================================
 // Geometry Generation
@@ -227,67 +222,135 @@ function generateSphereGeometry(
   radius: number,
   segments: number = 16
 ): { positions: number[]; normals: number[]; indices: number[] } {
-  const positions: number[] = [];
-  const normals: number[] = [];
-  const indices: number[] = [];
+  const positions: number[] = []
+  const normals: number[] = []
+  const indices: number[] = []
 
   // Generate vertices
   for (let lat = 0; lat <= segments; lat++) {
-    const theta = (lat * Math.PI) / segments;
-    const sinTheta = Math.sin(theta);
-    const cosTheta = Math.cos(theta);
+    const theta = (lat * Math.PI) / segments
+    const sinTheta = Math.sin(theta)
+    const cosTheta = Math.cos(theta)
 
     for (let lon = 0; lon <= segments; lon++) {
-      const phi = (lon * 2 * Math.PI) / segments;
-      const sinPhi = Math.sin(phi);
-      const cosPhi = Math.cos(phi);
+      const phi = (lon * 2 * Math.PI) / segments
+      const sinPhi = Math.sin(phi)
+      const cosPhi = Math.cos(phi)
 
-      const x = cosPhi * sinTheta;
-      const y = cosTheta;
-      const z = sinPhi * sinTheta;
+      const x = cosPhi * sinTheta
+      const y = cosTheta
+      const z = sinPhi * sinTheta
 
-      positions.push(radius * x, radius * y, radius * z);
-      normals.push(x, y, z);
+      positions.push(radius * x, radius * y, radius * z)
+      normals.push(x, y, z)
     }
   }
 
   // Generate indices
   for (let lat = 0; lat < segments; lat++) {
     for (let lon = 0; lon < segments; lon++) {
-      const first = lat * (segments + 1) + lon;
-      const second = first + segments + 1;
+      const first = lat * (segments + 1) + lon
+      const second = first + segments + 1
 
-      indices.push(first, second, first + 1);
-      indices.push(second, second + 1, first + 1);
+      indices.push(first, second, first + 1)
+      indices.push(second, second + 1, first + 1)
     }
   }
 
-  return { positions, normals, indices };
+  return { positions, normals, indices }
 }
 
 /**
  * Generates cube geometry data
  */
-function generateCubeGeometry(
-  size: number
-): { positions: number[]; normals: number[]; indices: number[] } {
-  const s = size / 2;
-  
+function generateCubeGeometry(size: number): {
+  positions: number[]
+  normals: number[]
+  indices: number[]
+} {
+  const s = size / 2
+
   // Positions for each face (6 faces * 4 vertices)
   const positions = [
     // Front face
-    -s, -s, s, s, -s, s, s, s, s, -s, s, s,
+    -s,
+    -s,
+    s,
+    s,
+    -s,
+    s,
+    s,
+    s,
+    s,
+    -s,
+    s,
+    s,
     // Back face
-    -s, -s, -s, -s, s, -s, s, s, -s, s, -s, -s,
+    -s,
+    -s,
+    -s,
+    -s,
+    s,
+    -s,
+    s,
+    s,
+    -s,
+    s,
+    -s,
+    -s,
     // Top face
-    -s, s, -s, -s, s, s, s, s, s, s, s, -s,
+    -s,
+    s,
+    -s,
+    -s,
+    s,
+    s,
+    s,
+    s,
+    s,
+    s,
+    s,
+    -s,
     // Bottom face
-    -s, -s, -s, s, -s, -s, s, -s, s, -s, -s, s,
+    -s,
+    -s,
+    -s,
+    s,
+    -s,
+    -s,
+    s,
+    -s,
+    s,
+    -s,
+    -s,
+    s,
     // Right face
-    s, -s, -s, s, s, -s, s, s, s, s, -s, s,
+    s,
+    -s,
+    -s,
+    s,
+    s,
+    -s,
+    s,
+    s,
+    s,
+    s,
+    -s,
+    s,
     // Left face
-    -s, -s, -s, -s, -s, s, -s, s, s, -s, s, -s,
-  ];
+    -s,
+    -s,
+    -s,
+    -s,
+    -s,
+    s,
+    -s,
+    s,
+    s,
+    -s,
+    s,
+    -s,
+  ]
 
   const normals = [
     // Front
@@ -302,18 +365,15 @@ function generateCubeGeometry(
     1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
     // Left
     -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
-  ];
+  ]
 
-  const indices: number[] = [];
+  const indices: number[] = []
   for (let i = 0; i < 6; i++) {
-    const offset = i * 4;
-    indices.push(
-      offset, offset + 1, offset + 2,
-      offset, offset + 2, offset + 3
-    );
+    const offset = i * 4
+    indices.push(offset, offset + 1, offset + 2, offset, offset + 2, offset + 3)
   }
 
-  return { positions, normals, indices };
+  return { positions, normals, indices }
 }
 
 /**
@@ -324,72 +384,72 @@ function generateCylinderGeometry(
   height: number,
   segments: number = 16
 ): { positions: number[]; normals: number[]; indices: number[] } {
-  const positions: number[] = [];
-  const normals: number[] = [];
-  const indices: number[] = [];
-  const halfHeight = height / 2;
+  const positions: number[] = []
+  const normals: number[] = []
+  const indices: number[] = []
+  const halfHeight = height / 2
 
   // Side vertices
   for (let i = 0; i <= segments; i++) {
-    const angle = (i * 2 * Math.PI) / segments;
-    const x = Math.cos(angle);
-    const z = Math.sin(angle);
+    const angle = (i * 2 * Math.PI) / segments
+    const x = Math.cos(angle)
+    const z = Math.sin(angle)
 
     // Bottom vertex
-    positions.push(radius * x, -halfHeight, radius * z);
-    normals.push(x, 0, z);
+    positions.push(radius * x, -halfHeight, radius * z)
+    normals.push(x, 0, z)
 
     // Top vertex
-    positions.push(radius * x, halfHeight, radius * z);
-    normals.push(x, 0, z);
+    positions.push(radius * x, halfHeight, radius * z)
+    normals.push(x, 0, z)
   }
 
   // Side indices
   for (let i = 0; i < segments; i++) {
-    const bottom1 = i * 2;
-    const top1 = bottom1 + 1;
-    const bottom2 = bottom1 + 2;
-    const top2 = bottom1 + 3;
+    const bottom1 = i * 2
+    const top1 = bottom1 + 1
+    const bottom2 = bottom1 + 2
+    const top2 = bottom1 + 3
 
-    indices.push(bottom1, bottom2, top1);
-    indices.push(top1, bottom2, top2);
+    indices.push(bottom1, bottom2, top1)
+    indices.push(top1, bottom2, top2)
   }
 
   // Top cap center
-  const topCenterIdx = positions.length / 3;
-  positions.push(0, halfHeight, 0);
-  normals.push(0, 1, 0);
+  const topCenterIdx = positions.length / 3
+  positions.push(0, halfHeight, 0)
+  normals.push(0, 1, 0)
 
   // Top cap vertices
   for (let i = 0; i <= segments; i++) {
-    const angle = (i * 2 * Math.PI) / segments;
-    positions.push(radius * Math.cos(angle), halfHeight, radius * Math.sin(angle));
-    normals.push(0, 1, 0);
+    const angle = (i * 2 * Math.PI) / segments
+    positions.push(radius * Math.cos(angle), halfHeight, radius * Math.sin(angle))
+    normals.push(0, 1, 0)
   }
 
   // Top cap indices
   for (let i = 0; i < segments; i++) {
-    indices.push(topCenterIdx, topCenterIdx + i + 1, topCenterIdx + i + 2);
+    indices.push(topCenterIdx, topCenterIdx + i + 1, topCenterIdx + i + 2)
   }
 
   // Bottom cap center
-  const bottomCenterIdx = positions.length / 3;
-  positions.push(0, -halfHeight, 0);
-  normals.push(0, -1, 0);
+  const bottomCenterIdx = positions.length / 3
+  positions.push(0, -halfHeight, 0)
+  normals.push(0, -1, 0)
 
   // Bottom cap vertices
   for (let i = 0; i <= segments; i++) {
-    const angle = (i * 2 * Math.PI) / segments;
-    positions.push(radius * Math.cos(angle), -halfHeight, radius * Math.sin(angle));
-    normals.push(0, -1, 0);
+    const angle = (i * 2 * Math.PI) / segments
+    positions.push(radius * Math.cos(angle), -halfHeight, radius * Math.sin(angle))
+    normals.push(0, -1, 0)
   }
 
   // Bottom cap indices (reversed winding)
   for (let i = 0; i < segments; i++) {
-    indices.push(bottomCenterIdx, bottomCenterIdx + i + 2, bottomCenterIdx + i + 1);
+    indices.push(bottomCenterIdx, bottomCenterIdx + i + 2, bottomCenterIdx + i + 1)
   }
 
-  return { positions, normals, indices };
+  return { positions, normals, indices }
 }
 
 /**
@@ -400,108 +460,120 @@ function generateConeGeometry(
   height: number,
   segments: number = 16
 ): { positions: number[]; normals: number[]; indices: number[] } {
-  const positions: number[] = [];
-  const normals: number[] = [];
-  const indices: number[] = [];
-  const halfHeight = height / 2;
+  const positions: number[] = []
+  const normals: number[] = []
+  const indices: number[] = []
+  const halfHeight = height / 2
 
   // Apex
-  const apexIdx = 0;
-  positions.push(0, halfHeight, 0);
-  normals.push(0, 1, 0);
+  const apexIdx = 0
+  positions.push(0, halfHeight, 0)
+  normals.push(0, 1, 0)
 
   // Base vertices
   for (let i = 0; i <= segments; i++) {
-    const angle = (i * 2 * Math.PI) / segments;
-    const x = Math.cos(angle);
-    const z = Math.sin(angle);
+    const angle = (i * 2 * Math.PI) / segments
+    const x = Math.cos(angle)
+    const z = Math.sin(angle)
 
-    positions.push(radius * x, -halfHeight, radius * z);
+    positions.push(radius * x, -halfHeight, radius * z)
     // Approximate normal for cone side
-    const nx = x;
-    const ny = radius / height;
-    const nz = z;
-    const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
-    normals.push(nx / len, ny / len, nz / len);
+    const nx = x
+    const ny = radius / height
+    const nz = z
+    const len = Math.sqrt(nx * nx + ny * ny + nz * nz)
+    normals.push(nx / len, ny / len, nz / len)
   }
 
   // Side indices
   for (let i = 0; i < segments; i++) {
-    indices.push(apexIdx, i + 1, i + 2);
+    indices.push(apexIdx, i + 1, i + 2)
   }
 
   // Base cap center
-  const baseCenterIdx = positions.length / 3;
-  positions.push(0, -halfHeight, 0);
-  normals.push(0, -1, 0);
+  const baseCenterIdx = positions.length / 3
+  positions.push(0, -halfHeight, 0)
+  normals.push(0, -1, 0)
 
   // Base cap vertices
   for (let i = 0; i <= segments; i++) {
-    const angle = (i * 2 * Math.PI) / segments;
-    positions.push(radius * Math.cos(angle), -halfHeight, radius * Math.sin(angle));
-    normals.push(0, -1, 0);
+    const angle = (i * 2 * Math.PI) / segments
+    positions.push(radius * Math.cos(angle), -halfHeight, radius * Math.sin(angle))
+    normals.push(0, -1, 0)
   }
 
   // Base cap indices
   for (let i = 0; i < segments; i++) {
-    indices.push(baseCenterIdx, baseCenterIdx + i + 2, baseCenterIdx + i + 1);
+    indices.push(baseCenterIdx, baseCenterIdx + i + 2, baseCenterIdx + i + 1)
   }
 
-  return { positions, normals, indices };
+  return { positions, normals, indices }
 }
 
 /**
  * Generates octahedron geometry data
  */
-function generateOctahedronGeometry(
-  size: number
-): { positions: number[]; normals: number[]; indices: number[] } {
-  const s = size;
+function generateOctahedronGeometry(size: number): {
+  positions: number[]
+  normals: number[]
+  indices: number[]
+} {
+  const s = size
 
   // 6 vertices
   const vertices: [number, number, number][] = [
-    [0, s, 0],   // top
-    [s, 0, 0],   // right
-    [0, 0, s],   // front
-    [-s, 0, 0],  // left
-    [0, 0, -s],  // back
-    [0, -s, 0],  // bottom
-  ];
+    [0, s, 0], // top
+    [s, 0, 0], // right
+    [0, 0, s], // front
+    [-s, 0, 0], // left
+    [0, 0, -s], // back
+    [0, -s, 0], // bottom
+  ]
 
   // 8 faces (indices into vertices)
   const faces: [number, number, number][] = [
-    [0, 2, 1], [0, 3, 2], [0, 4, 3], [0, 1, 4], // top 4
-    [5, 1, 2], [5, 2, 3], [5, 3, 4], [5, 4, 1], // bottom 4
-  ];
+    [0, 2, 1],
+    [0, 3, 2],
+    [0, 4, 3],
+    [0, 1, 4], // top 4
+    [5, 1, 2],
+    [5, 2, 3],
+    [5, 3, 4],
+    [5, 4, 1], // bottom 4
+  ]
 
-  const positions: number[] = [];
-  const normals: number[] = [];
-  const indices: number[] = [];
+  const positions: number[] = []
+  const normals: number[] = []
+  const indices: number[] = []
 
   faces.forEach((face, faceIdx) => {
-    const v0 = vertices[face[0]] ?? [0, 0, 0];
-    const v1 = vertices[face[1]] ?? [0, 0, 0];
-    const v2 = vertices[face[2]] ?? [0, 0, 0];
+    const v0 = vertices[face[0]] ?? [0, 0, 0]
+    const v1 = vertices[face[1]] ?? [0, 0, 0]
+    const v2 = vertices[face[2]] ?? [0, 0, 0]
 
     // Calculate face normal
-    const ax = v1[0] - v0[0], ay = v1[1] - v0[1], az = v1[2] - v0[2];
-    const bx = v2[0] - v0[0], by = v2[1] - v0[1], bz = v2[2] - v0[2];
-    const nx = ay * bz - az * by;
-    const ny = az * bx - ax * bz;
-    const nz = ax * by - ay * bx;
-    const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+    const ax = v1[0] - v0[0],
+      ay = v1[1] - v0[1],
+      az = v1[2] - v0[2]
+    const bx = v2[0] - v0[0],
+      by = v2[1] - v0[1],
+      bz = v2[2] - v0[2]
+    const nx = ay * bz - az * by
+    const ny = az * bx - ax * bz
+    const nz = ax * by - ay * bx
+    const len = Math.sqrt(nx * nx + ny * ny + nz * nz)
 
-    const baseIdx = faceIdx * 3;
+    const baseIdx = faceIdx * 3
     face.forEach((vertIdx) => {
-      const v = vertices[vertIdx] ?? [0, 0, 0];
-      positions.push(v[0], v[1], v[2]);
-      normals.push(nx / len, ny / len, nz / len);
-    });
+      const v = vertices[vertIdx] ?? [0, 0, 0]
+      positions.push(v[0], v[1], v[2])
+      normals.push(nx / len, ny / len, nz / len)
+    })
 
-    indices.push(baseIdx, baseIdx + 1, baseIdx + 2);
-  });
+    indices.push(baseIdx, baseIdx + 1, baseIdx + 2)
+  })
 
-  return { positions, normals, indices };
+  return { positions, normals, indices }
 }
 
 /**
@@ -513,17 +585,17 @@ function getShapeGeometry(
 ): { positions: number[]; normals: number[]; indices: number[] } {
   switch (shape) {
     case 'sphere':
-      return generateSphereGeometry(size / 2, 12);
+      return generateSphereGeometry(size / 2, 12)
     case 'cube':
-      return generateCubeGeometry(size);
+      return generateCubeGeometry(size)
     case 'cylinder':
-      return generateCylinderGeometry(size / 2, size, 12);
+      return generateCylinderGeometry(size / 2, size, 12)
     case 'cone':
-      return generateConeGeometry(size / 2, size, 12);
+      return generateConeGeometry(size / 2, size, 12)
     case 'octahedron':
-      return generateOctahedronGeometry(size / 2);
+      return generateOctahedronGeometry(size / 2)
     default:
-      return generateSphereGeometry(size / 2, 12);
+      return generateSphereGeometry(size / 2, 12)
   }
 }
 
@@ -535,37 +607,37 @@ function getShapeGeometry(
  * Converts hex color to RGBA array (0-1 range)
  */
 function hexToRGBA(hex: string, alpha: number = 1.0): [number, number, number, number] {
-  const cleanHex = hex.replace('#', '');
-  const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
-  const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
-  const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
-  return [r, g, b, alpha];
+  const cleanHex = hex.replace('#', '')
+  const r = parseInt(cleanHex.substring(0, 2), 16) / 255
+  const g = parseInt(cleanHex.substring(2, 4), 16) / 255
+  const b = parseInt(cleanHex.substring(4, 6), 16) / 255
+  return [r, g, b, alpha]
 }
 
 /**
  * Gets the color for a node type
  */
 function getNodeColor(type: NodeType, colors: ColorScheme): string {
-  return colors.nodeColors[type] ?? '#FFFFFF';
+  return colors.nodeColors[type] ?? '#FFFFFF'
 }
 
 /**
  * Gets the color for an edge type
  */
 function getEdgeColor(type: EdgeType, colors: ColorScheme): string {
-  return colors.edgeColors[type] ?? '#666666';
+  return colors.edgeColors[type] ?? '#666666'
 }
 
 /**
  * Encodes a Float32Array as base64 data URI
  */
 function encodeBufferAsDataURI(data: ArrayBuffer): string {
-  const bytes = new Uint8Array(data);
-  let binary = '';
+  const bytes = new Uint8Array(data)
+  let binary = ''
   for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i] ?? 0);
+    binary += String.fromCharCode(bytes[i] ?? 0)
   }
-  return `data:application/octet-stream;base64,${btoa(binary)}`;
+  return `data:application/octet-stream;base64,${btoa(binary)}`
 }
 
 /**
@@ -575,61 +647,73 @@ function createEdgeCylinder(
   from: Position3D,
   to: Position3D,
   radius: number
-): { positions: number[]; normals: number[]; indices: number[]; translation: [number, number, number]; rotation: [number, number, number, number] } {
+): {
+  positions: number[]
+  normals: number[]
+  indices: number[]
+  translation: [number, number, number]
+  rotation: [number, number, number, number]
+} {
   // Calculate direction and length
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const dz = to.z - from.z;
-  const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  const dx = to.x - from.x
+  const dy = to.y - from.y
+  const dz = to.z - from.z
+  const length = Math.sqrt(dx * dx + dy * dy + dz * dz)
 
   if (length < 0.001) {
-    return { positions: [], normals: [], indices: [], translation: [0, 0, 0], rotation: [0, 0, 0, 1] };
+    return {
+      positions: [],
+      normals: [],
+      indices: [],
+      translation: [0, 0, 0],
+      rotation: [0, 0, 0, 1],
+    }
   }
 
   // Generate cylinder geometry (along Y axis)
-  const geometry = generateCylinderGeometry(radius, length, 8);
+  const geometry = generateCylinderGeometry(radius, length, 8)
 
   // Calculate midpoint for translation
-  const midX = (from.x + to.x) / 2;
-  const midY = (from.y + to.y) / 2;
-  const midZ = (from.z + to.z) / 2;
+  const midX = (from.x + to.x) / 2
+  const midY = (from.y + to.y) / 2
+  const midZ = (from.z + to.z) / 2
 
   // Calculate rotation quaternion to align Y-axis with direction
-  const dirX = dx / length;
-  const dirY = dy / length;
-  const dirZ = dz / length;
+  const dirX = dx / length
+  const dirY = dy / length
+  const dirZ = dz / length
 
   // Default up vector is Y (0, 1, 0)
   // We need to rotate from Y to direction vector
-  const axisX = -dirZ;
-  const axisY = 0;
-  const axisZ = dirX;
-  const axisLen = Math.sqrt(axisX * axisX + axisZ * axisZ);
+  const axisX = -dirZ
+  const axisY = 0
+  const axisZ = dirX
+  const axisLen = Math.sqrt(axisX * axisX + axisZ * axisZ)
 
-  let rotation: [number, number, number, number];
+  let rotation: [number, number, number, number]
   if (axisLen < 0.001) {
     // Direction is parallel to Y
     if (dirY > 0) {
-      rotation = [0, 0, 0, 1]; // No rotation
+      rotation = [0, 0, 0, 1] // No rotation
     } else {
-      rotation = [1, 0, 0, 0]; // 180 degree rotation around X
+      rotation = [1, 0, 0, 0] // 180 degree rotation around X
     }
   } else {
-    const angle = Math.acos(dirY);
-    const s = Math.sin(angle / 2);
+    const angle = Math.acos(dirY)
+    const s = Math.sin(angle / 2)
     rotation = [
       (axisX / axisLen) * s,
       (axisY / axisLen) * s,
       (axisZ / axisLen) * s,
       Math.cos(angle / 2),
-    ];
+    ]
   }
 
   return {
     ...geometry,
     translation: [midX, midY, midZ],
     rotation,
-  };
+  }
 }
 
 // =============================================================================
@@ -646,12 +730,21 @@ function buildGLTFDocument(
   colors: ColorScheme,
   graphName: string
 ): GLTFDocument {
-  const { sceneScale, nodeSize, includeEdges, edgeThickness, embedBuffers, metallicFactor, roughnessFactor, useEmissive } = options;
+  const {
+    sceneScale,
+    nodeSize,
+    includeEdges,
+    edgeThickness,
+    embedBuffers,
+    metallicFactor,
+    roughnessFactor,
+    useEmissive,
+  } = options
 
-  const sceneNodes: number[] = [];
-  const gltfNodes: GLTFNode[] = [];
-  const gltfMeshes: GLTFMesh[] = [];
-  const gltfMaterials: GLTFMaterial[] = [];
+  const sceneNodes: number[] = []
+  const gltfNodes: GLTFNode[] = []
+  const gltfMeshes: GLTFMesh[] = []
+  const gltfMaterials: GLTFMaterial[] = []
 
   const gltf: GLTFDocument = {
     asset: {
@@ -666,24 +759,24 @@ function buildGLTFDocument(
     bufferViews: [],
     buffers: [],
     materials: gltfMaterials,
-  };
+  }
 
   // Collect all buffer data
-  const allPositions: number[] = [];
-  const allNormals: number[] = [];
-  const allIndices: number[] = [];
+  const allPositions: number[] = []
+  const allNormals: number[] = []
+  const allIndices: number[] = []
 
   // Material cache (by color)
-  const materialCache = new Map<string, number>();
+  const materialCache = new Map<string, number>()
 
   function getOrCreateMaterial(color: string, highlighted: boolean = false): number {
-    const key = `${color}-${highlighted}`;
-    const cached = materialCache.get(key);
+    const key = `${color}-${highlighted}`
+    const cached = materialCache.get(key)
     if (cached !== undefined) {
-      return cached;
+      return cached
     }
 
-    const rgba = hexToRGBA(color);
+    const rgba = hexToRGBA(color)
     const material: GLTFMaterial = {
       name: `material-${gltfMaterials.length}`,
       pbrMetallicRoughness: {
@@ -692,58 +785,60 @@ function buildGLTFDocument(
         roughnessFactor,
       },
       doubleSided: true,
-    };
-
-    if (useEmissive && highlighted) {
-      material.emissiveFactor = [rgba[0] * 0.3, rgba[1] * 0.3, rgba[2] * 0.3];
     }
 
-    const idx = gltfMaterials.length;
-    gltfMaterials.push(material);
-    materialCache.set(key, idx);
-    return idx;
+    if (useEmissive && highlighted) {
+      material.emissiveFactor = [rgba[0] * 0.3, rgba[1] * 0.3, rgba[2] * 0.3]
+    }
+
+    const idx = gltfMaterials.length
+    gltfMaterials.push(material)
+    materialCache.set(key, idx)
+    return idx
   }
 
   // Process each node
-  const nodeIdToGLTFIdx = new Map<string, number>();
+  const nodeIdToGLTFIdx = new Map<string, number>()
 
   for (const node of nodes) {
-    const shape = NODE_TYPE_TO_SHAPE[node.type];
-    const size = (node.style?.size ?? 1) * nodeSize * sceneScale;
-    const color = node.style?.color ?? getNodeColor(node.type, colors);
-    const highlighted = node.style?.highlighted ?? false;
+    const shape = NODE_TYPE_TO_SHAPE[node.type]
+    const size = (node.style?.size ?? 1) * nodeSize * sceneScale
+    const color = node.style?.color ?? getNodeColor(node.type, colors)
+    const highlighted = node.style?.highlighted ?? false
 
     // Generate geometry
-    const geometry = getShapeGeometry(shape, size);
-    
+    const geometry = getShapeGeometry(shape, size)
+
     // Record buffer offsets
-    const posStart = allPositions.length / 3;
+    const posStart = allPositions.length / 3
 
     // Add geometry data
-    allPositions.push(...geometry.positions);
-    allNormals.push(...geometry.normals);
+    allPositions.push(...geometry.positions)
+    allNormals.push(...geometry.normals)
 
     // Offset indices
-    const offsetIndices = geometry.indices.map(i => i + posStart);
-    allIndices.push(...offsetIndices);
+    const offsetIndices = geometry.indices.map((i) => i + posStart)
+    allIndices.push(...offsetIndices)
 
     // Create mesh
-    const meshIdx = gltfMeshes.length;
+    const meshIdx = gltfMeshes.length
     gltfMeshes.push({
       name: `mesh-${node.id}`,
-      primitives: [{
-        attributes: {
-          POSITION: -1, // Will be set later
-          NORMAL: -1,
+      primitives: [
+        {
+          attributes: {
+            POSITION: -1, // Will be set later
+            NORMAL: -1,
+          },
+          indices: -1,
+          material: getOrCreateMaterial(color, highlighted),
         },
-        indices: -1,
-        material: getOrCreateMaterial(color, highlighted),
-      }],
-    });
+      ],
+    })
 
     // Create GLTF node
-    const gltfNodeIdx = gltfNodes.length;
-    nodeIdToGLTFIdx.set(node.id, gltfNodeIdx);
+    const gltfNodeIdx = gltfNodes.length
+    nodeIdToGLTFIdx.set(node.id, gltfNodeIdx)
 
     gltfNodes.push({
       name: node.metadata.label,
@@ -758,22 +853,22 @@ function buildGLTFDocument(
         ivmType: node.type,
         lod: node.lod,
       },
-    });
+    })
 
-    sceneNodes.push(gltfNodeIdx);
+    sceneNodes.push(gltfNodeIdx)
   }
 
   // Process edges if enabled
   if (includeEdges) {
-    const nodeMap = new Map(nodes.map(n => [n.id, n]));
-    
-    for (const edge of edges) {
-      const sourceNode = nodeMap.get(edge.source);
-      const targetNode = nodeMap.get(edge.target);
-      
-      if (!sourceNode || !targetNode) continue;
+    const nodeMap = new Map(nodes.map((n) => [n.id, n]))
 
-      const edgeColor = getEdgeColor(edge.type, colors);
+    for (const edge of edges) {
+      const sourceNode = nodeMap.get(edge.source)
+      const targetNode = nodeMap.get(edge.target)
+
+      if (!sourceNode || !targetNode) continue
+
+      const edgeColor = getEdgeColor(edge.type, colors)
       const edgeGeometry = createEdgeCylinder(
         {
           x: sourceNode.position.x * sceneScale,
@@ -786,36 +881,38 @@ function buildGLTFDocument(
           z: targetNode.position.z * sceneScale,
         },
         edgeThickness * sceneScale
-      );
+      )
 
-      if (edgeGeometry.positions.length === 0) continue;
+      if (edgeGeometry.positions.length === 0) continue
 
       // Record buffer offsets
-      const posStart = allPositions.length / 3;
-      
+      const posStart = allPositions.length / 3
+
       // Add geometry data
-      allPositions.push(...edgeGeometry.positions);
-      allNormals.push(...edgeGeometry.normals);
-      
-      const offsetIndices = edgeGeometry.indices.map(i => i + posStart);
-      allIndices.push(...offsetIndices);
+      allPositions.push(...edgeGeometry.positions)
+      allNormals.push(...edgeGeometry.normals)
+
+      const offsetIndices = edgeGeometry.indices.map((i) => i + posStart)
+      allIndices.push(...offsetIndices)
 
       // Create mesh for edge
-      const meshIdx = gltfMeshes.length;
+      const meshIdx = gltfMeshes.length
       gltfMeshes.push({
         name: `edge-${edge.id}`,
-        primitives: [{
-          attributes: {
-            POSITION: -1,
-            NORMAL: -1,
+        primitives: [
+          {
+            attributes: {
+              POSITION: -1,
+              NORMAL: -1,
+            },
+            indices: -1,
+            material: getOrCreateMaterial(edgeColor),
           },
-          indices: -1,
-          material: getOrCreateMaterial(edgeColor),
-        }],
-      });
+        ],
+      })
 
       // Create GLTF node for edge
-      const gltfNodeIdx = gltfNodes.length;
+      const gltfNodeIdx = gltfNodes.length
       gltfNodes.push({
         name: `edge-${edge.source}-${edge.target}`,
         mesh: meshIdx,
@@ -827,56 +924,62 @@ function buildGLTFDocument(
           source: edge.source,
           target: edge.target,
         },
-      });
+      })
 
-      sceneNodes.push(gltfNodeIdx);
+      sceneNodes.push(gltfNodeIdx)
     }
   }
 
   // Create combined buffer
-  const positionData = new Float32Array(allPositions);
-  const normalData = new Float32Array(allNormals);
-  const indexData = new Uint16Array(allIndices);
+  const positionData = new Float32Array(allPositions)
+  const normalData = new Float32Array(allNormals)
+  const indexData = new Uint16Array(allIndices)
 
-  const positionBytes = positionData.byteLength;
-  const normalBytes = normalData.byteLength;
-  const indexBytes = indexData.byteLength;
-  const totalBytes = positionBytes + normalBytes + indexBytes;
+  const positionBytes = positionData.byteLength
+  const normalBytes = normalData.byteLength
+  const indexBytes = indexData.byteLength
+  const totalBytes = positionBytes + normalBytes + indexBytes
 
   // Create combined buffer
-  const combinedBuffer = new ArrayBuffer(totalBytes);
-  const combinedView = new Uint8Array(combinedBuffer);
-  
-  combinedView.set(new Uint8Array(positionData.buffer), 0);
-  combinedView.set(new Uint8Array(normalData.buffer), positionBytes);
-  combinedView.set(new Uint8Array(indexData.buffer), positionBytes + normalBytes);
+  const combinedBuffer = new ArrayBuffer(totalBytes)
+  const combinedView = new Uint8Array(combinedBuffer)
+
+  combinedView.set(new Uint8Array(positionData.buffer), 0)
+  combinedView.set(new Uint8Array(normalData.buffer), positionBytes)
+  combinedView.set(new Uint8Array(indexData.buffer), positionBytes + normalBytes)
 
   // Buffer
-  gltf.buffers = [{
-    byteLength: totalBytes,
-    ...(embedBuffers ? { uri: encodeBufferAsDataURI(combinedBuffer) } : {}),
-  }];
+  gltf.buffers = [
+    {
+      byteLength: totalBytes,
+      ...(embedBuffers ? { uri: encodeBufferAsDataURI(combinedBuffer) } : {}),
+    },
+  ]
 
   // Buffer views
   gltf.bufferViews = [
     { buffer: 0, byteOffset: 0, byteLength: positionBytes, target: 34962 }, // ARRAY_BUFFER
     { buffer: 0, byteOffset: positionBytes, byteLength: normalBytes, target: 34962 },
     { buffer: 0, byteOffset: positionBytes + normalBytes, byteLength: indexBytes, target: 34963 }, // ELEMENT_ARRAY_BUFFER
-  ];
+  ]
 
   // Calculate bounds for position accessor
-  let minX = Infinity, minY = Infinity, minZ = Infinity;
-  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+  let minX = Infinity,
+    minY = Infinity,
+    minZ = Infinity
+  let maxX = -Infinity,
+    maxY = -Infinity,
+    maxZ = -Infinity
   for (let i = 0; i < allPositions.length; i += 3) {
-    const px = allPositions[i] ?? 0;
-    const py = allPositions[i + 1] ?? 0;
-    const pz = allPositions[i + 2] ?? 0;
-    minX = Math.min(minX, px);
-    minY = Math.min(minY, py);
-    minZ = Math.min(minZ, pz);
-    maxX = Math.max(maxX, px);
-    maxY = Math.max(maxY, py);
-    maxZ = Math.max(maxZ, pz);
+    const px = allPositions[i] ?? 0
+    const py = allPositions[i + 1] ?? 0
+    const pz = allPositions[i + 2] ?? 0
+    minX = Math.min(minX, px)
+    minY = Math.min(minY, py)
+    minZ = Math.min(minZ, pz)
+    maxX = Math.max(maxX, px)
+    maxY = Math.max(maxY, py)
+    maxZ = Math.max(maxZ, pz)
   }
 
   // Accessors
@@ -901,18 +1004,18 @@ function buildGLTFDocument(
       count: allIndices.length,
       type: 'SCALAR',
     },
-  ];
+  ]
 
   // Update mesh primitives with accessor indices
   for (const mesh of gltfMeshes) {
     for (const primitive of mesh.primitives) {
-      primitive.attributes.POSITION = 0;
-      primitive.attributes.NORMAL = 1;
-      primitive.indices = 2;
+      primitive.attributes.POSITION = 0
+      primitive.attributes.NORMAL = 1
+      primitive.indices = 2
     }
   }
 
-  return gltf;
+  return gltf
 }
 
 // =============================================================================
@@ -923,23 +1026,23 @@ function buildGLTFDocument(
  * GLTF 3D model exporter
  */
 export class GLTFExporter implements Exporter<GLTFExportOptions> {
-  readonly id = 'gltf';
-  readonly name = 'GLTF';
-  readonly extension = 'gltf';
-  readonly mimeType = 'model/gltf+json';
+  readonly id = 'gltf'
+  readonly name = 'GLTF'
+  readonly extension = 'gltf'
+  readonly mimeType = 'model/gltf+json'
 
   /**
    * Exports an IVM graph to GLTF format
    */
   export(graph: IVMGraph, options?: GLTFExportOptions): ExportResult {
-    const startTime = Date.now();
-    const opts = { ...DEFAULT_GLTF_OPTIONS, ...options };
-    const styling = { ...DEFAULT_EXPORT_STYLING, ...opts.styling };
-    const colors = { ...DEFAULT_COLOR_SCHEME, ...styling.colors };
+    const startTime = Date.now()
+    const opts = { ...DEFAULT_GLTF_OPTIONS, ...options }
+    const styling = { ...DEFAULT_EXPORT_STYLING, ...opts.styling }
+    const colors = { ...DEFAULT_COLOR_SCHEME, ...styling.colors }
 
     // Apply LOD filtering if needed
-    let nodes = graph.nodes;
-    let edges = graph.edges;
+    let nodes = graph.nodes
+    let edges = graph.edges
 
     if (opts.lodLevel !== undefined && opts.lodLevel < 5) {
       const filtered = filterGraphByLOD(graph, {
@@ -947,16 +1050,14 @@ export class GLTFExporter implements Exporter<GLTFExportOptions> {
         includeAncestors: true,
         collapseEdges: true,
         minNodesForLOD: 0,
-      });
-      nodes = filtered.visibleNodes;
-      edges = filtered.visibleEdges;
+      })
+      nodes = filtered.visibleNodes
+      edges = filtered.visibleEdges
     }
 
     // Filter edges to only include those where both source and target exist
-    const nodeIds = new Set(nodes.map((n) => n.id));
-    const validEdges = edges.filter(
-      (edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target)
-    );
+    const nodeIds = new Set(nodes.map((n) => n.id))
+    const validEdges = edges.filter((edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target))
 
     // Build GLTF document
     const gltf = buildGLTFDocument(
@@ -965,11 +1066,11 @@ export class GLTFExporter implements Exporter<GLTFExportOptions> {
       opts,
       colors,
       opts.title || graph.metadata.name
-    );
+    )
 
     // Serialize to JSON
-    const content = JSON.stringify(gltf, null, 2);
-    const duration = Date.now() - startTime;
+    const content = JSON.stringify(gltf, null, 2)
+    const duration = Date.now() - startTime
 
     return {
       content,
@@ -981,42 +1082,48 @@ export class GLTFExporter implements Exporter<GLTFExportOptions> {
         duration,
         size: Buffer.byteLength(content, 'utf-8'),
       },
-    };
+    }
   }
 
   /**
    * Validates export options
    */
   validateOptions(options?: GLTFExportOptions): string[] {
-    const errors: string[] = [];
+    const errors: string[] = []
 
     if (options) {
       if (options.lodLevel !== undefined && (options.lodLevel < 0 || options.lodLevel > 5)) {
-        errors.push('lodLevel must be between 0 and 5');
+        errors.push('lodLevel must be between 0 and 5')
       }
 
       if (options.sceneScale !== undefined && options.sceneScale <= 0) {
-        errors.push('sceneScale must be greater than 0');
+        errors.push('sceneScale must be greater than 0')
       }
 
       if (options.nodeSize !== undefined && options.nodeSize <= 0) {
-        errors.push('nodeSize must be greater than 0');
+        errors.push('nodeSize must be greater than 0')
       }
 
       if (options.edgeThickness !== undefined && options.edgeThickness <= 0) {
-        errors.push('edgeThickness must be greater than 0');
+        errors.push('edgeThickness must be greater than 0')
       }
 
-      if (options.metallicFactor !== undefined && (options.metallicFactor < 0 || options.metallicFactor > 1)) {
-        errors.push('metallicFactor must be between 0 and 1');
+      if (
+        options.metallicFactor !== undefined &&
+        (options.metallicFactor < 0 || options.metallicFactor > 1)
+      ) {
+        errors.push('metallicFactor must be between 0 and 1')
       }
 
-      if (options.roughnessFactor !== undefined && (options.roughnessFactor < 0 || options.roughnessFactor > 1)) {
-        errors.push('roughnessFactor must be between 0 and 1');
+      if (
+        options.roughnessFactor !== undefined &&
+        (options.roughnessFactor < 0 || options.roughnessFactor > 1)
+      ) {
+        errors.push('roughnessFactor must be between 0 and 1')
       }
     }
 
-    return errors;
+    return errors
   }
 }
 
@@ -1028,13 +1135,13 @@ export class GLTFExporter implements Exporter<GLTFExportOptions> {
  * Creates a new GLTFExporter instance
  */
 export function createGLTFExporter(): GLTFExporter {
-  return new GLTFExporter();
+  return new GLTFExporter()
 }
 
 /**
  * Convenience function to export a graph to GLTF format
  */
 export function exportToGLTF(graph: IVMGraph, options?: GLTFExportOptions): ExportResult {
-  const exporter = new GLTFExporter();
-  return exporter.export(graph, options);
+  const exporter = new GLTFExporter()
+  return exporter.export(graph, options)
 }

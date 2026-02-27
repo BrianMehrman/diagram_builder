@@ -5,13 +5,13 @@
  * or nucleus boundary. Uses BackSide rendering so it's visible from inside.
  */
 
-import { BackSide } from 'three';
-import type { Position3D } from '../../../shared/types';
+import { BackSide } from 'three'
+import type { Position3D } from '../../../shared/types'
 
 interface MembraneProps {
-  center: Position3D;
-  radius: number;
-  isNucleus?: boolean;
+  center: Position3D
+  radius: number
+  isNucleus?: boolean
 }
 
 export function Membrane({ center, radius, isNucleus = false }: MembraneProps) {
@@ -26,5 +26,5 @@ export function Membrane({ center, radius, isNucleus = false }: MembraneProps) {
         depthWrite={false}
       />
     </mesh>
-  );
+  )
 }

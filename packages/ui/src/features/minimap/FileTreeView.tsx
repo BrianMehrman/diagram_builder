@@ -4,20 +4,20 @@
  * 2D hierarchical tree view of files and classes
  */
 
-import { useState } from 'react';
-import type { GraphNode } from '../../shared/types';
+import { useState } from 'react'
+import type { GraphNode } from '../../shared/types'
 
 interface FileTreeViewProps {
-  nodes: GraphNode[];
-  onNodeClick?: (nodeId: string) => void;
-  selectedNodeId?: string | null;
+  nodes: GraphNode[]
+  onNodeClick?: (nodeId: string) => void
+  selectedNodeId?: string | null
 }
 
 interface TreeNode {
-  id: string;
-  label: string;
-  type: GraphNode['type'];
-  children: TreeNode[];
+  id: string
+  label: string
+  type: GraphNode['type']
+  children: TreeNode[]
 }
 
 /**
@@ -27,9 +27,9 @@ interface TreeNode {
  */
 function buildTree(nodes: GraphNode[]): TreeNode[] {
   // Build a map of parentId -> children
-  const childrenMap = new Map<string, GraphNode[]>();
-  const rootNodes: GraphNode[] = [];
-  const nodeIds = new Set(nodes.map((n) => n.id));
+  const childrenMap = new Map<string, GraphNode[]>()
+  const rootNodes: GraphNode[] = []
+  const nodeIds = new Set(nodes.map((n) => n.id))
 
   for (const node of nodes) {
     // Determine parent: prefer parentId, fall back to metadata.file or metadata.class
@@ -37,42 +37,42 @@ function buildTree(nodes: GraphNode[]): TreeNode[] {
       node.parentId ??
       (node.metadata.file as string | undefined) ??
       (node.metadata.class as string | undefined) ??
-      null;
+      null
 
     if (parentId && nodeIds.has(parentId)) {
-      const siblings = childrenMap.get(parentId) ?? [];
-      siblings.push(node);
-      childrenMap.set(parentId, siblings);
+      const siblings = childrenMap.get(parentId) ?? []
+      siblings.push(node)
+      childrenMap.set(parentId, siblings)
     } else {
-      rootNodes.push(node);
+      rootNodes.push(node)
     }
   }
 
   // Extract a human-readable label: prefer metadata.label (IVM format), then top-level label, then id
   function getDisplayLabel(node: GraphNode): string {
-    const raw = (node.metadata?.label as string) || node.label || node.id;
-    return raw.includes('/') ? (raw.split('/').pop() ?? raw) : raw;
+    const raw = (node.metadata?.label as string) || node.label || node.id
+    return raw.includes('/') ? (raw.split('/').pop() ?? raw) : raw
   }
 
   // Recursively convert to TreeNode
   function toTreeNode(node: GraphNode): TreeNode {
-    const children = childrenMap.get(node.id) ?? [];
+    const children = childrenMap.get(node.id) ?? []
     return {
       id: node.id,
       label: getDisplayLabel(node),
       type: node.type,
       children: children.map(toTreeNode),
-    };
+    }
   }
 
   // Sort roots: files first, then by label
   rootNodes.sort((a, b) => {
-    if (a.type === 'file' && b.type !== 'file') return -1;
-    if (a.type !== 'file' && b.type === 'file') return 1;
-    return (a.label ?? '').localeCompare(b.label ?? '');
-  });
+    if (a.type === 'file' && b.type !== 'file') return -1
+    if (a.type !== 'file' && b.type === 'file') return 1
+    return (a.label ?? '').localeCompare(b.label ?? '')
+  })
 
-  return rootNodes.map(toTreeNode);
+  return rootNodes.map(toTreeNode)
 }
 
 /**
@@ -84,40 +84,40 @@ function TreeNodeComponent({
   onNodeClick,
   selectedNodeId,
 }: {
-  node: TreeNode;
-  level?: number;
-  onNodeClick?: (nodeId: string) => void;
-  selectedNodeId?: string | null;
+  node: TreeNode
+  level?: number
+  onNodeClick?: (nodeId: string) => void
+  selectedNodeId?: string | null
 }) {
-  const [expanded, setExpanded] = useState(true);
-  const hasChildren = node.children.length > 0;
-  const isSelected = selectedNodeId === node.id;
+  const [expanded, setExpanded] = useState(true)
+  const hasChildren = node.children.length > 0
+  const isSelected = selectedNodeId === node.id
 
   const handleClick = () => {
     if (onNodeClick) {
-      onNodeClick(node.id);
+      onNodeClick(node.id)
     }
     if (hasChildren) {
-      setExpanded(!expanded);
+      setExpanded(!expanded)
     }
-  };
+  }
 
   const getIcon = (type: GraphNode['type']) => {
     switch (type) {
       case 'file':
-        return '📄';
+        return '📄'
       case 'class':
-        return '🏛️';
+        return '🏛️'
       case 'function':
-        return '⚡';
+        return '⚡'
       case 'method':
-        return '🔧';
+        return '🔧'
       case 'variable':
-        return '📦';
+        return '📦'
       default:
-        return '•';
+        return '•'
     }
-  };
+  }
 
   return (
     <div>
@@ -128,11 +128,7 @@ function TreeNodeComponent({
         }`}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
       >
-        {hasChildren && (
-          <span className="text-gray-400 text-xs">
-            {expanded ? '▼' : '▶'}
-          </span>
-        )}
+        {hasChildren && <span className="text-gray-400 text-xs">{expanded ? '▼' : '▶'}</span>}
         {!hasChildren && <span className="w-3" />}
         <span className="text-sm">{getIcon(node.type)}</span>
         <span className="text-sm font-medium truncate">{node.label}</span>
@@ -149,25 +145,19 @@ function TreeNodeComponent({
           />
         ))}
     </div>
-  );
+  )
 }
 
 /**
  * FileTreeView component
  */
-export function FileTreeView({
-  nodes,
-  onNodeClick,
-  selectedNodeId,
-}: FileTreeViewProps) {
-  const tree = buildTree(nodes);
+export function FileTreeView({ nodes, onNodeClick, selectedNodeId }: FileTreeViewProps) {
+  const tree = buildTree(nodes)
 
   return (
     <div className="h-full overflow-y-auto">
       {tree.length === 0 ? (
-        <div className="text-center text-gray-500 text-sm py-4">
-          No files to display
-        </div>
+        <div className="text-center text-gray-500 text-sm py-4">No files to display</div>
       ) : (
         <div className="py-2">
           {tree.map((node) => (
@@ -181,5 +171,5 @@ export function FileTreeView({
         </div>
       )}
     </div>
-  );
+  )
 }

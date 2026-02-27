@@ -5,5 +5,5 @@
  * Import from this file to access all factories in tests.
  */
 
-export * from './graph-factory';
-export * from './viewpoint-factory';
+export * from './graph-factory'
+export * from './viewpoint-factory'

@@ -2,18 +2,18 @@
  * Shared types for sign components.
  */
 
-import type { Position3D } from '../../../../shared/types';
+import type { Position3D } from '../../../../shared/types'
 
 /**
  * Standard props accepted by all sign components.
  */
 export interface SignProps {
   /** Label text to display */
-  text: string;
+  text: string
   /** World-space position */
-  position: Position3D;
+  position: Position3D
   /** Whether the sign is currently visible (LOD-controlled) */
-  visible: boolean;
+  visible: boolean
   /** Optional override color */
-  color?: string;
+  color?: string
 }

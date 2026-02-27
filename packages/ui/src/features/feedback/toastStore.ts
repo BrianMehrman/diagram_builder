@@ -5,46 +5,46 @@
  * Provides centralized toast state and actions following project conventions.
  */
 
-import { create } from 'zustand';
+import { create } from 'zustand'
 
 /**
  * Toast type definition
  */
 export interface Toast {
-  id: string;
-  type: 'success' | 'error' | 'info' | 'warning';
-  title: string;
-  message?: string;
-  duration?: number;
+  id: string
+  type: 'success' | 'error' | 'info' | 'warning'
+  title: string
+  message?: string
+  duration?: number
 }
 
 /**
  * Toast input (without ID, which is auto-generated)
  */
-type ToastInput = Omit<Toast, 'id'>;
+type ToastInput = Omit<Toast, 'id'>
 
 /**
  * Toast store state and actions
  */
 interface ToastStore {
   // State
-  toasts: Toast[];
+  toasts: Toast[]
 
   // Actions (verb-first naming per project-context.md)
-  showToast: (toast: ToastInput) => string;
-  hideToast: (id: string) => void;
-  clearAllToasts: () => void;
+  showToast: (toast: ToastInput) => string
+  hideToast: (id: string) => void
+  clearAllToasts: () => void
 
   // Helper actions
-  showSuccess: (title: string, message?: string) => string;
-  showError: (title: string, message?: string) => string;
+  showSuccess: (title: string, message?: string) => string
+  showError: (title: string, message?: string) => string
 }
 
 /**
  * Generate unique ID for toast
  */
 function generateId(): string {
-  return `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
 /**
@@ -56,11 +56,11 @@ export const useToastStore = create<ToastStore>((set) => ({
 
   // Actions
   showToast: (toast) => {
-    const id = generateId();
+    const id = generateId()
     set((state) => ({
       toasts: [...state.toasts, { ...toast, id }],
-    }));
-    return id;
+    }))
+    return id
   },
 
   hideToast: (id) =>
@@ -72,22 +72,22 @@ export const useToastStore = create<ToastStore>((set) => ({
 
   // Helper actions
   showSuccess: (title, message) => {
-    const id = generateId();
-    const toast: Toast = { id, type: 'success', title };
-    if (message !== undefined) toast.message = message;
+    const id = generateId()
+    const toast: Toast = { id, type: 'success', title }
+    if (message !== undefined) toast.message = message
     set((state) => ({
       toasts: [...state.toasts, toast],
-    }));
-    return id;
+    }))
+    return id
   },
 
   showError: (title, message) => {
-    const id = generateId();
-    const toast: Toast = { id, type: 'error', title };
-    if (message !== undefined) toast.message = message;
+    const id = generateId()
+    const toast: Toast = { id, type: 'error', title }
+    if (message !== undefined) toast.message = message
     set((state) => ({
       toasts: [...state.toasts, toast],
-    }));
-    return id;
+    }))
+    return id
   },
-}));
+}))

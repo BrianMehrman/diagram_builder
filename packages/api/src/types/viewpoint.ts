@@ -14,20 +14,20 @@
 export interface CameraState {
   /** Camera position */
   position: {
-    x: number;
-    y: number;
-    z: number;
-  };
+    x: number
+    y: number
+    z: number
+  }
   /** Camera target (look-at point) */
   target: {
-    x: number;
-    y: number;
-    z: number;
-  };
+    x: number
+    y: number
+    z: number
+  }
   /** Field of view in degrees */
-  fov?: number;
+  fov?: number
   /** Zoom level */
-  zoom?: number;
+  zoom?: number
 }
 
 /**
@@ -35,19 +35,19 @@ export interface CameraState {
  */
 export interface GraphFilters {
   /** Visible node types */
-  nodeTypes?: string[];
+  nodeTypes?: string[]
   /** Visible edge types */
-  edgeTypes?: string[];
+  edgeTypes?: string[]
   /** Maximum LOD level to display */
-  maxLod?: number;
+  maxLod?: number
   /** Path pattern filter (glob or regex) */
-  pathPattern?: string;
+  pathPattern?: string
   /** Language filter */
-  languages?: string[];
+  languages?: string[]
   /** Visible node IDs */
-  visibleNodes?: string[];
+  visibleNodes?: string[]
   /** Hidden node IDs */
-  hiddenNodes?: string[];
+  hiddenNodes?: string[]
 }
 
 /**
@@ -55,28 +55,28 @@ export interface GraphFilters {
  */
 export interface Annotation {
   /** Unique annotation ID */
-  id: string;
+  id: string
   /** Annotation type */
-  type: 'note' | 'highlight' | 'arrow' | 'label';
+  type: 'note' | 'highlight' | 'arrow' | 'label'
   /** Target node or position */
   target: {
     /** Target node ID (if annotating a node) */
-    nodeId?: string;
+    nodeId?: string
     /** 3D position (if free-floating) */
     position?: {
-      x: number;
-      y: number;
-      z: number;
-    };
-  };
+      x: number
+      y: number
+      z: number
+    }
+  }
   /** Annotation content */
-  content: string;
+  content: string
   /** Color in hex format */
-  color?: string;
+  color?: string
   /** Created timestamp */
-  createdAt: string;
+  createdAt: string
   /** Creator user ID */
-  createdBy?: string;
+  createdBy?: string
 }
 
 /**
@@ -84,29 +84,29 @@ export interface Annotation {
  */
 export interface Viewpoint {
   /** Unique viewpoint ID */
-  id: string;
+  id: string
   /** Repository ID this viewpoint belongs to */
-  repositoryId: string;
+  repositoryId: string
   /** Viewpoint name */
-  name: string;
+  name: string
   /** Optional description */
-  description?: string;
+  description?: string
   /** Camera state */
-  camera: CameraState;
+  camera: CameraState
   /** Active filters */
-  filters?: GraphFilters;
+  filters?: GraphFilters
   /** Annotations */
-  annotations?: Annotation[];
+  annotations?: Annotation[]
   /** Creator user ID */
-  createdBy: string;
+  createdBy: string
   /** Creation timestamp */
-  createdAt: string;
+  createdAt: string
   /** Last update timestamp */
-  updatedAt: string;
+  updatedAt: string
   /** Share token for URL-based sharing */
-  shareToken?: string;
+  shareToken?: string
   /** Whether this viewpoint is publicly shared */
-  isPublic?: boolean;
+  isPublic?: boolean
 }
 
 /**
@@ -114,17 +114,17 @@ export interface Viewpoint {
  */
 export interface CreateViewpointInput {
   /** Repository ID */
-  repositoryId: string;
+  repositoryId: string
   /** Viewpoint name */
-  name: string;
+  name: string
   /** Optional description */
-  description?: string;
+  description?: string
   /** Camera state */
-  camera: CameraState;
+  camera: CameraState
   /** Active filters */
-  filters?: GraphFilters;
+  filters?: GraphFilters
   /** Annotations */
-  annotations?: Annotation[];
+  annotations?: Annotation[]
 }
 
 /**
@@ -132,15 +132,15 @@ export interface CreateViewpointInput {
  */
 export interface UpdateViewpointInput {
   /** Viewpoint name */
-  name?: string;
+  name?: string
   /** Optional description */
-  description?: string;
+  description?: string
   /** Camera state */
-  camera?: CameraState;
+  camera?: CameraState
   /** Active filters */
-  filters?: GraphFilters;
+  filters?: GraphFilters
   /** Annotations */
-  annotations?: Annotation[];
+  annotations?: Annotation[]
   /** Whether this viewpoint is publicly shared */
-  isPublic?: boolean;
+  isPublic?: boolean
 }

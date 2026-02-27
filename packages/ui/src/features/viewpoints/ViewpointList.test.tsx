@@ -2,27 +2,27 @@
  * ViewpointList Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { act } from 'react';
-import { ViewpointList } from './ViewpointList';
-import { useViewpointStore } from './store';
-import { useCanvasStore } from '../canvas/store';
-import { useToastStore } from '../feedback/toastStore';
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { act } from 'react'
+import { ViewpointList } from './ViewpointList'
+import { useViewpointStore } from './store'
+import { useCanvasStore } from '../canvas/store'
+import { useToastStore } from '../feedback/toastStore'
 
 describe('ViewpointList', () => {
   beforeEach(() => {
-    useViewpointStore.getState().reset();
-    useCanvasStore.getState().reset();
-    useToastStore.getState().clearAllToasts();
-  });
+    useViewpointStore.getState().reset()
+    useCanvasStore.getState().reset()
+    useToastStore.getState().clearAllToasts()
+  })
 
   it('shows empty state when no viewpoints', () => {
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
-    expect(screen.getByText(/no saved viewpoints/i)).toBeDefined();
-  });
+    expect(screen.getByText(/no saved viewpoints/i)).toBeDefined()
+  })
 
   it('displays viewpoints', () => {
     act(() => {
@@ -30,19 +30,19 @@ describe('ViewpointList', () => {
         name: 'Viewpoint 1',
         cameraPosition: { x: 1, y: 2, z: 3 },
         cameraTarget: { x: 0, y: 0, z: 0 },
-      });
+      })
       useViewpointStore.getState().createViewpoint({
         name: 'Viewpoint 2',
         cameraPosition: { x: 4, y: 5, z: 6 },
         cameraTarget: { x: 0, y: 0, z: 0 },
-      });
-    });
+      })
+    })
 
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
-    expect(screen.getByText('Viewpoint 1')).toBeDefined();
-    expect(screen.getByText('Viewpoint 2')).toBeDefined();
-  });
+    expect(screen.getByText('Viewpoint 1')).toBeDefined()
+    expect(screen.getByText('Viewpoint 2')).toBeDefined()
+  })
 
   it('displays viewpoint description', () => {
     act(() => {
@@ -51,13 +51,13 @@ describe('ViewpointList', () => {
         description: 'Test description',
         cameraPosition: { x: 1, y: 2, z: 3 },
         cameraTarget: { x: 0, y: 0, z: 0 },
-      });
-    });
+      })
+    })
 
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
-    expect(screen.getByText('Test description')).toBeDefined();
-  });
+    expect(screen.getByText('Test description')).toBeDefined()
+  })
 
   it('displays camera position', () => {
     act(() => {
@@ -65,14 +65,14 @@ describe('ViewpointList', () => {
         name: 'Test Viewpoint',
         cameraPosition: { x: 1, y: 2, z: 3 },
         cameraTarget: { x: 0, y: 0, z: 0 },
-      });
-    });
+      })
+    })
 
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
-    expect(screen.getByText(/camera:/i)).toBeDefined();
-    expect(screen.getByText(/1\.0, 2\.0, 3\.0/)).toBeDefined();
-  });
+    expect(screen.getByText(/camera:/i)).toBeDefined()
+    expect(screen.getByText(/1\.0, 2\.0, 3\.0/)).toBeDefined()
+  })
 
   it('displays LOD level', () => {
     act(() => {
@@ -81,16 +81,16 @@ describe('ViewpointList', () => {
         cameraPosition: { x: 1, y: 2, z: 3 },
         cameraTarget: { x: 0, y: 0, z: 0 },
         filters: { lodLevel: 2 },
-      });
-    });
+      })
+    })
 
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
-    expect(screen.getByText(/lod: level 2/i)).toBeDefined();
-  });
+    expect(screen.getByText(/lod: level 2/i)).toBeDefined()
+  })
 
   it('applies viewpoint on apply button click', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup()
 
     act(() => {
       useViewpointStore.getState().createViewpoint({
@@ -98,174 +98,170 @@ describe('ViewpointList', () => {
         cameraPosition: { x: 10, y: 20, z: 30 },
         cameraTarget: { x: 5, y: 5, z: 5 },
         filters: { lodLevel: 3 },
-      });
-    });
+      })
+    })
 
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
-    const applyButton = screen.getAllByTitle('Apply viewpoint')[0];
-    await user.click(applyButton);
+    const applyButton = screen.getAllByTitle('Apply viewpoint')[0]
+    await user.click(applyButton)
 
-    const camera = useCanvasStore.getState().camera;
-    expect(camera.position).toEqual({ x: 10, y: 20, z: 30 });
-    expect(camera.target).toEqual({ x: 5, y: 5, z: 5 });
-    expect(useCanvasStore.getState().lodLevel).toBe(3);
-  });
+    const camera = useCanvasStore.getState().camera
+    expect(camera.position).toEqual({ x: 10, y: 20, z: 30 })
+    expect(camera.target).toEqual({ x: 5, y: 5, z: 5 })
+    expect(useCanvasStore.getState().lodLevel).toBe(3)
+  })
 
   it('sets active viewpoint on apply', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup()
 
     const vp = useViewpointStore.getState().createViewpoint({
       name: 'Test Viewpoint',
       cameraPosition: { x: 1, y: 2, z: 3 },
       cameraTarget: { x: 0, y: 0, z: 0 },
-    });
+    })
 
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
-    const applyButton = screen.getAllByTitle('Apply viewpoint')[0];
-    await user.click(applyButton);
+    const applyButton = screen.getAllByTitle('Apply viewpoint')[0]
+    await user.click(applyButton)
 
-    expect(useViewpointStore.getState().activeViewpointId).toBe(vp.id);
-  });
+    expect(useViewpointStore.getState().activeViewpointId).toBe(vp.id)
+  })
 
   it('calls onViewpointApplied callback', async () => {
-    const user = userEvent.setup();
-    const onViewpointApplied = vi.fn();
+    const user = userEvent.setup()
+    const onViewpointApplied = vi.fn()
 
     const vp = useViewpointStore.getState().createViewpoint({
       name: 'Test Viewpoint',
       cameraPosition: { x: 1, y: 2, z: 3 },
       cameraTarget: { x: 0, y: 0, z: 0 },
-    });
+    })
 
-    render(<ViewpointList onViewpointApplied={onViewpointApplied} />);
+    render(<ViewpointList onViewpointApplied={onViewpointApplied} />)
 
-    const applyButton = screen.getAllByTitle('Apply viewpoint')[0];
-    await user.click(applyButton);
+    const applyButton = screen.getAllByTitle('Apply viewpoint')[0]
+    await user.click(applyButton)
 
-    expect(onViewpointApplied).toHaveBeenCalledWith(
-      expect.objectContaining({ id: vp.id })
-    );
-  });
+    expect(onViewpointApplied).toHaveBeenCalledWith(expect.objectContaining({ id: vp.id }))
+  })
 
   it('highlights active viewpoint', () => {
     const vp = useViewpointStore.getState().createViewpoint({
       name: 'Test Viewpoint',
       cameraPosition: { x: 1, y: 2, z: 3 },
       cameraTarget: { x: 0, y: 0, z: 0 },
-    });
+    })
 
     act(() => {
-      useViewpointStore.getState().setActiveViewpoint(vp.id);
-    });
+      useViewpointStore.getState().setActiveViewpoint(vp.id)
+    })
 
-    const { container } = render(<ViewpointList />);
+    const { container } = render(<ViewpointList />)
 
-    const activeElement = container.querySelector('.border-primary-500');
-    expect(activeElement).toBeDefined();
-  });
+    const activeElement = container.querySelector('.border-primary-500')
+    expect(activeElement).toBeDefined()
+  })
 
   it('deletes viewpoint on delete button click', async () => {
-    const user = userEvent.setup();
-    global.confirm = vi.fn(() => true);
+    const user = userEvent.setup()
+    global.confirm = vi.fn(() => true)
 
     act(() => {
       useViewpointStore.getState().createViewpoint({
         name: 'Test Viewpoint',
         cameraPosition: { x: 1, y: 2, z: 3 },
         cameraTarget: { x: 0, y: 0, z: 0 },
-      });
-    });
+      })
+    })
 
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
-    const deleteButton = screen.getAllByTitle('Delete viewpoint')[0];
-    await user.click(deleteButton);
+    const deleteButton = screen.getAllByTitle('Delete viewpoint')[0]
+    await user.click(deleteButton)
 
-    expect(useViewpointStore.getState().viewpoints).toHaveLength(0);
-  });
+    expect(useViewpointStore.getState().viewpoints).toHaveLength(0)
+  })
 
   it('shows confirmation before deleting', async () => {
-    const user = userEvent.setup();
-    const confirmSpy = vi.fn(() => false);
-    global.confirm = confirmSpy;
+    const user = userEvent.setup()
+    const confirmSpy = vi.fn(() => false)
+    global.confirm = confirmSpy
 
     act(() => {
       useViewpointStore.getState().createViewpoint({
         name: 'Test Viewpoint',
         cameraPosition: { x: 1, y: 2, z: 3 },
         cameraTarget: { x: 0, y: 0, z: 0 },
-      });
-    });
+      })
+    })
 
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
-    const deleteButton = screen.getAllByTitle('Delete viewpoint')[0];
-    await user.click(deleteButton);
+    const deleteButton = screen.getAllByTitle('Delete viewpoint')[0]
+    await user.click(deleteButton)
 
-    expect(confirmSpy).toHaveBeenCalled();
-    expect(useViewpointStore.getState().viewpoints).toHaveLength(1);
-  });
+    expect(confirmSpy).toHaveBeenCalled()
+    expect(useViewpointStore.getState().viewpoints).toHaveLength(1)
+  })
 
   it('copies share URL to clipboard', async () => {
-    const user = userEvent.setup();
-    const writeTextMock = vi.fn(() => Promise.resolve());
+    const user = userEvent.setup()
+    const writeTextMock = vi.fn(() => Promise.resolve())
 
     Object.defineProperty(global.navigator, 'clipboard', {
       value: { writeText: writeTextMock },
       writable: true,
       configurable: true,
-    });
+    })
 
     act(() => {
       useViewpointStore.getState().createViewpoint({
         name: 'Test Viewpoint',
         cameraPosition: { x: 1, y: 2, z: 3 },
         cameraTarget: { x: 0, y: 0, z: 0 },
-      });
-    });
+      })
+    })
 
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
-    const shareButton = screen.getAllByTitle('Share viewpoint')[0];
-    await user.click(shareButton);
+    const shareButton = screen.getAllByTitle('Share viewpoint')[0]
+    await user.click(shareButton)
 
-    expect(writeTextMock).toHaveBeenCalledWith(
-      expect.stringContaining('viewpoint=')
-    );
-  });
+    expect(writeTextMock).toHaveBeenCalledWith(expect.stringContaining('viewpoint='))
+  })
 
   it('shows success message after copying URL', async () => {
-    const user = userEvent.setup();
-    const writeTextMock = vi.fn(() => Promise.resolve());
+    const user = userEvent.setup()
+    const writeTextMock = vi.fn(() => Promise.resolve())
 
     Object.defineProperty(global.navigator, 'clipboard', {
       value: { writeText: writeTextMock },
       writable: true,
       configurable: true,
-    });
+    })
 
     act(() => {
       useViewpointStore.getState().createViewpoint({
         name: 'Test Viewpoint',
         cameraPosition: { x: 1, y: 2, z: 3 },
         cameraTarget: { x: 0, y: 0, z: 0 },
-      });
-    });
+      })
+    })
 
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
-    const shareButton = screen.getAllByTitle('Share viewpoint')[0];
-    await user.click(shareButton);
+    const shareButton = screen.getAllByTitle('Share viewpoint')[0]
+    await user.click(shareButton)
 
     // Verify toast notification is shown instead of inline message
     await vi.waitFor(() => {
-      const toasts = useToastStore.getState().toasts;
-      expect(toasts.length).toBeGreaterThan(0);
-      expect(toasts[0].type).toBe('success');
-    });
-  });
+      const toasts = useToastStore.getState().toasts
+      expect(toasts.length).toBeGreaterThan(0)
+      expect(toasts[0].type).toBe('success')
+    })
+  })
 
   it('displays creation date', () => {
     act(() => {
@@ -273,76 +269,76 @@ describe('ViewpointList', () => {
         name: 'Test Viewpoint',
         cameraPosition: { x: 1, y: 2, z: 3 },
         cameraTarget: { x: 0, y: 0, z: 0 },
-      });
-    });
+      })
+    })
 
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
     // Should display a formatted date string
-    const dateRegex = /\d{1,2}\/\d{1,2}\/\d{4}/;
-    expect(screen.getByText(dateRegex)).toBeDefined();
-  });
+    const dateRegex = /\d{1,2}\/\d{1,2}\/\d{4}/
+    expect(screen.getByText(dateRegex)).toBeDefined()
+  })
 
   it('shows toast notification when copying viewpoint URL', async () => {
-    const user = userEvent.setup();
-    const writeTextMock = vi.fn(() => Promise.resolve());
+    const user = userEvent.setup()
+    const writeTextMock = vi.fn(() => Promise.resolve())
 
     Object.defineProperty(global.navigator, 'clipboard', {
       value: { writeText: writeTextMock },
       writable: true,
       configurable: true,
-    });
+    })
 
     act(() => {
       useViewpointStore.getState().createViewpoint({
         name: 'Test Viewpoint',
         cameraPosition: { x: 1, y: 2, z: 3 },
         cameraTarget: { x: 0, y: 0, z: 0 },
-      });
-    });
+      })
+    })
 
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
-    const shareButton = screen.getAllByTitle('Share viewpoint')[0];
-    await user.click(shareButton);
+    const shareButton = screen.getAllByTitle('Share viewpoint')[0]
+    await user.click(shareButton)
 
     await vi.waitFor(() => {
-      const toasts = useToastStore.getState().toasts;
-      expect(toasts.length).toBeGreaterThan(0);
-      expect(toasts[0].type).toBe('success');
-      expect(toasts[0].title).toContain('Copied');
-      expect(toasts[0].message).toContain('clipboard');
-    });
-  });
+      const toasts = useToastStore.getState().toasts
+      expect(toasts.length).toBeGreaterThan(0)
+      expect(toasts[0].type).toBe('success')
+      expect(toasts[0].title).toContain('Copied')
+      expect(toasts[0].message).toContain('clipboard')
+    })
+  })
 
   it('shows error toast when clipboard copy fails', async () => {
-    const user = userEvent.setup();
-    const writeTextMock = vi.fn(() => Promise.reject(new Error('Clipboard access denied')));
+    const user = userEvent.setup()
+    const writeTextMock = vi.fn(() => Promise.reject(new Error('Clipboard access denied')))
 
     Object.defineProperty(global.navigator, 'clipboard', {
       value: { writeText: writeTextMock },
       writable: true,
       configurable: true,
-    });
+    })
 
     act(() => {
       useViewpointStore.getState().createViewpoint({
         name: 'Test Viewpoint',
         cameraPosition: { x: 1, y: 2, z: 3 },
         cameraTarget: { x: 0, y: 0, z: 0 },
-      });
-    });
+      })
+    })
 
-    render(<ViewpointList />);
+    render(<ViewpointList />)
 
-    const shareButton = screen.getAllByTitle('Share viewpoint')[0];
-    await user.click(shareButton);
+    const shareButton = screen.getAllByTitle('Share viewpoint')[0]
+    await user.click(shareButton)
 
     await vi.waitFor(() => {
-      const toasts = useToastStore.getState().toasts;
-      expect(toasts.length).toBeGreaterThan(0);
-      expect(toasts[0].type).toBe('error');
-      expect(toasts[0].title).toContain('Failed');
-    });
-  });
-});
+      const toasts = useToastStore.getState().toasts
+      expect(toasts.length).toBeGreaterThan(0)
+      expect(toasts[0].type).toBe('error')
+      expect(toasts[0].title).toContain('Failed')
+    })
+  })
+})

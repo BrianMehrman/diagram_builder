@@ -270,7 +270,9 @@ export function ExportDialog({
             {!hasResult ? (
               <>
                 <button
-                  onClick={() => { void handleExport() }}
+                  onClick={() => {
+                    void handleExport()
+                  }}
                   disabled={isExporting}
                   data-testid="export-submit-button"
                   className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold rounded-md transition-colors"

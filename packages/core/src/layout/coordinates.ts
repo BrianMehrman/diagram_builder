@@ -5,8 +5,8 @@
  * and spatial operations in 3D space.
  */
 
-import type { Position3D, BoundingBox } from '../ivm/types.js';
-import type { SphericalCoords, CylindricalCoords } from './types.js';
+import type { Position3D, BoundingBox } from '../ivm/types.js'
+import type { SphericalCoords, CylindricalCoords } from './types.js'
 
 // =============================================================================
 // Basic Vector Operations
@@ -16,14 +16,14 @@ import type { SphericalCoords, CylindricalCoords } from './types.js';
  * Creates a zero position
  */
 export function zero(): Position3D {
-  return { x: 0, y: 0, z: 0 };
+  return { x: 0, y: 0, z: 0 }
 }
 
 /**
  * Creates a position from components
  */
 export function vec3(x: number, y: number, z: number): Position3D {
-  return { x, y, z };
+  return { x, y, z }
 }
 
 /**
@@ -34,7 +34,7 @@ export function add(a: Position3D, b: Position3D): Position3D {
     x: a.x + b.x,
     y: a.y + b.y,
     z: a.z + b.z,
-  };
+  }
 }
 
 /**
@@ -45,7 +45,7 @@ export function subtract(a: Position3D, b: Position3D): Position3D {
     x: a.x - b.x,
     y: a.y - b.y,
     z: a.z - b.z,
-  };
+  }
 }
 
 /**
@@ -56,7 +56,7 @@ export function scale(p: Position3D, scalar: number): Position3D {
     x: p.x * scalar,
     y: p.y * scalar,
     z: p.z * scalar,
-  };
+  }
 }
 
 /**
@@ -64,27 +64,27 @@ export function scale(p: Position3D, scalar: number): Position3D {
  */
 export function divide(p: Position3D, scalar: number): Position3D {
   if (scalar === 0) {
-    throw new Error('Cannot divide by zero');
+    throw new Error('Cannot divide by zero')
   }
   return {
     x: p.x / scalar,
     y: p.y / scalar,
     z: p.z / scalar,
-  };
+  }
 }
 
 /**
  * Negates a position
  */
 export function negate(p: Position3D): Position3D {
-  return { x: -p.x, y: -p.y, z: -p.z };
+  return { x: -p.x, y: -p.y, z: -p.z }
 }
 
 /**
  * Calculates the dot product of two positions
  */
 export function dot(a: Position3D, b: Position3D): number {
-  return a.x * b.x + a.y * b.y + a.z * b.z;
+  return a.x * b.x + a.y * b.y + a.z * b.z
 }
 
 /**
@@ -95,46 +95,46 @@ export function cross(a: Position3D, b: Position3D): Position3D {
     x: a.y * b.z - a.z * b.y,
     y: a.z * b.x - a.x * b.z,
     z: a.x * b.y - a.y * b.x,
-  };
+  }
 }
 
 /**
  * Calculates the magnitude (length) of a position vector
  */
 export function magnitude(p: Position3D): number {
-  return Math.sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+  return Math.sqrt(p.x * p.x + p.y * p.y + p.z * p.z)
 }
 
 /**
  * Calculates the squared magnitude (avoids sqrt for comparisons)
  */
 export function magnitudeSquared(p: Position3D): number {
-  return p.x * p.x + p.y * p.y + p.z * p.z;
+  return p.x * p.x + p.y * p.y + p.z * p.z
 }
 
 /**
  * Normalizes a position to unit length
  */
 export function normalize(p: Position3D): Position3D {
-  const mag = magnitude(p);
+  const mag = magnitude(p)
   if (mag === 0) {
-    return { x: 0, y: 0, z: 0 };
+    return { x: 0, y: 0, z: 0 }
   }
-  return divide(p, mag);
+  return divide(p, mag)
 }
 
 /**
  * Calculates the distance between two positions
  */
 export function distance(a: Position3D, b: Position3D): number {
-  return magnitude(subtract(b, a));
+  return magnitude(subtract(b, a))
 }
 
 /**
  * Calculates the squared distance between two positions
  */
 export function distanceSquared(a: Position3D, b: Position3D): number {
-  return magnitudeSquared(subtract(b, a));
+  return magnitudeSquared(subtract(b, a))
 }
 
 /**
@@ -145,7 +145,7 @@ export function lerp(a: Position3D, b: Position3D, t: number): Position3D {
     x: a.x + (b.x - a.x) * t,
     y: a.y + (b.y - a.y) * t,
     z: a.z + (b.z - a.z) * t,
-  };
+  }
 }
 
 /**
@@ -156,7 +156,7 @@ export function clamp(p: Position3D, bounds: BoundingBox): Position3D {
     x: Math.max(bounds.min.x, Math.min(bounds.max.x, p.x)),
     y: Math.max(bounds.min.y, Math.min(bounds.max.y, p.y)),
     z: Math.max(bounds.min.z, Math.min(bounds.max.z, p.z)),
-  };
+  }
 }
 
 /**
@@ -170,7 +170,7 @@ export function isInsideBounds(p: Position3D, bounds: BoundingBox): boolean {
     p.y <= bounds.max.y &&
     p.z >= bounds.min.z &&
     p.z <= bounds.max.z
-  );
+  )
 }
 
 // =============================================================================
@@ -181,27 +181,27 @@ export function isInsideBounds(p: Position3D, bounds: BoundingBox): boolean {
  * Converts Cartesian coordinates to spherical
  */
 export function cartesianToSpherical(p: Position3D): SphericalCoords {
-  const r = magnitude(p);
+  const r = magnitude(p)
   if (r === 0) {
-    return { r: 0, theta: 0, phi: 0 };
+    return { r: 0, theta: 0, phi: 0 }
   }
   return {
     r,
     theta: Math.acos(p.z / r), // polar angle from z-axis
     phi: Math.atan2(p.y, p.x), // azimuthal angle from x-axis
-  };
+  }
 }
 
 /**
  * Converts spherical coordinates to Cartesian
  */
 export function sphericalToCartesian(s: SphericalCoords): Position3D {
-  const sinTheta = Math.sin(s.theta);
+  const sinTheta = Math.sin(s.theta)
   return {
     x: s.r * sinTheta * Math.cos(s.phi),
     y: s.r * sinTheta * Math.sin(s.phi),
     z: s.r * Math.cos(s.theta),
-  };
+  }
 }
 
 /**
@@ -212,7 +212,7 @@ export function cartesianToCylindrical(p: Position3D): CylindricalCoords {
     r: Math.sqrt(p.x * p.x + p.y * p.y),
     theta: Math.atan2(p.y, p.x),
     z: p.z,
-  };
+  }
 }
 
 /**
@@ -223,7 +223,7 @@ export function cylindricalToCartesian(c: CylindricalCoords): Position3D {
     x: c.r * Math.cos(c.theta),
     y: c.r * Math.sin(c.theta),
     z: c.z,
-  };
+  }
 }
 
 // =============================================================================
@@ -237,7 +237,7 @@ export function emptyBounds(): BoundingBox {
   return {
     min: { x: Infinity, y: Infinity, z: Infinity },
     max: { x: -Infinity, y: -Infinity, z: -Infinity },
-  };
+  }
 }
 
 /**
@@ -247,7 +247,7 @@ export function boundsFromPoint(p: Position3D): BoundingBox {
   return {
     min: { ...p },
     max: { ...p },
-  };
+  }
 }
 
 /**
@@ -265,7 +265,7 @@ export function expandBounds(bounds: BoundingBox, p: Position3D): BoundingBox {
       y: Math.max(bounds.max.y, p.y),
       z: Math.max(bounds.max.z, p.z),
     },
-  };
+  }
 }
 
 /**
@@ -283,7 +283,7 @@ export function mergeBounds(a: BoundingBox, b: BoundingBox): BoundingBox {
       y: Math.max(a.max.y, b.max.y),
       z: Math.max(a.max.z, b.max.z),
     },
-  };
+  }
 }
 
 /**
@@ -294,7 +294,7 @@ export function boundsCenter(bounds: BoundingBox): Position3D {
     x: (bounds.min.x + bounds.max.x) / 2,
     y: (bounds.min.y + bounds.max.y) / 2,
     z: (bounds.min.z + bounds.max.z) / 2,
-  };
+  }
 }
 
 /**
@@ -305,14 +305,14 @@ export function boundsSize(bounds: BoundingBox): Position3D {
     x: bounds.max.x - bounds.min.x,
     y: bounds.max.y - bounds.min.y,
     z: bounds.max.z - bounds.min.z,
-  };
+  }
 }
 
 /**
  * Calculates the diagonal length of a bounding box
  */
 export function boundsDiagonal(bounds: BoundingBox): number {
-  return distance(bounds.min, bounds.max);
+  return distance(bounds.min, bounds.max)
 }
 
 /**
@@ -326,7 +326,7 @@ export function boundsIntersect(a: BoundingBox, b: BoundingBox): boolean {
     a.max.y >= b.min.y &&
     a.min.z <= b.max.z &&
     a.max.z >= b.min.z
-  );
+  )
 }
 
 /**
@@ -344,7 +344,7 @@ export function padBounds(bounds: BoundingBox, padding: number): BoundingBox {
       y: bounds.max.y + padding,
       z: bounds.max.z + padding,
     },
-  };
+  }
 }
 
 // =============================================================================
@@ -355,28 +355,28 @@ export function padBounds(bounds: BoundingBox, padding: number): BoundingBox {
  * Converts degrees to radians
  */
 export function degToRad(degrees: number): number {
-  return degrees * (Math.PI / 180);
+  return degrees * (Math.PI / 180)
 }
 
 /**
  * Converts radians to degrees
  */
 export function radToDeg(radians: number): number {
-  return radians * (180 / Math.PI);
+  return radians * (180 / Math.PI)
 }
 
 /**
  * Calculates the angle between two vectors
  */
 export function angleBetween(a: Position3D, b: Position3D): number {
-  const magA = magnitude(a);
-  const magB = magnitude(b);
+  const magA = magnitude(a)
+  const magB = magnitude(b)
   if (magA === 0 || magB === 0) {
-    return 0;
+    return 0
   }
-  const cosAngle = dot(a, b) / (magA * magB);
+  const cosAngle = dot(a, b) / (magA * magB)
   // Clamp to handle floating point errors
-  return Math.acos(Math.max(-1, Math.min(1, cosAngle)));
+  return Math.acos(Math.max(-1, Math.min(1, cosAngle)))
 }
 
 // =============================================================================
@@ -391,7 +391,7 @@ export function randomInBounds(bounds: BoundingBox): Position3D {
     x: bounds.min.x + Math.random() * (bounds.max.x - bounds.min.x),
     y: bounds.min.y + Math.random() * (bounds.max.y - bounds.min.y),
     z: bounds.min.z + Math.random() * (bounds.max.z - bounds.min.z),
-  };
+  }
 }
 
 /**
@@ -399,16 +399,16 @@ export function randomInBounds(bounds: BoundingBox): Position3D {
  */
 export function randomInSphere(center: Position3D, radius: number): Position3D {
   // Use rejection sampling for uniform distribution
-  let p: Position3D;
+  let p: Position3D
   do {
     p = {
       x: (Math.random() * 2 - 1) * radius,
       y: (Math.random() * 2 - 1) * radius,
       z: (Math.random() * 2 - 1) * radius,
-    };
-  } while (magnitudeSquared(p) > radius * radius);
+    }
+  } while (magnitudeSquared(p) > radius * radius)
 
-  return add(center, p);
+  return add(center, p)
 }
 
 /**
@@ -416,9 +416,9 @@ export function randomInSphere(center: Position3D, radius: number): Position3D {
  */
 export function randomOnSphere(center: Position3D, radius: number): Position3D {
   // Use spherical coordinates for uniform distribution
-  const theta = Math.acos(2 * Math.random() - 1);
-  const phi = Math.random() * 2 * Math.PI;
+  const theta = Math.acos(2 * Math.random() - 1)
+  const phi = Math.random() * 2 * Math.PI
 
-  const point = sphericalToCartesian({ r: radius, theta, phi });
-  return add(center, point);
+  const point = sphericalToCartesian({ r: radius, theta, phi })
+  return add(center, point)
 }

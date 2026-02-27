@@ -65,9 +65,9 @@ describe('Call Extractor', () => {
       const calls = extractFunctionCalls(parseResult.tree)
 
       expect(calls.length).toBeGreaterThanOrEqual(3)
-      expect(calls.some(c => c.callee === 'foo')).toBe(true)
-      expect(calls.some(c => c.callee === 'bar')).toBe(true)
-      expect(calls.some(c => c.callee === 'baz')).toBe(true)
+      expect(calls.some((c) => c.callee === 'foo')).toBe(true)
+      expect(calls.some((c) => c.callee === 'bar')).toBe(true)
+      expect(calls.some((c) => c.callee === 'baz')).toBe(true)
     })
 
     it('should extract constructor calls with new keyword', () => {
@@ -104,9 +104,9 @@ describe('Call Extractor', () => {
       const calls = extractFunctionCalls(parseResult.tree)
 
       expect(calls.length).toBeGreaterThanOrEqual(3)
-      expect(calls.some(c => c.callee === 'outer')).toBe(true)
-      expect(calls.some(c => c.callee === 'inner')).toBe(true)
-      expect(calls.some(c => c.callee === 'deepest')).toBe(true)
+      expect(calls.some((c) => c.callee === 'outer')).toBe(true)
+      expect(calls.some((c) => c.callee === 'inner')).toBe(true)
+      expect(calls.some((c) => c.callee === 'deepest')).toBe(true)
     })
 
     it('should extract calls to imported functions', () => {
@@ -122,8 +122,8 @@ describe('Call Extractor', () => {
       const calls = extractFunctionCalls(parseResult.tree)
 
       expect(calls.length).toBeGreaterThanOrEqual(2)
-      expect(calls.some(c => c.callee === 'helper')).toBe(true)
-      expect(calls.some(c => c.callee === 'defaultExport')).toBe(true)
+      expect(calls.some((c) => c.callee === 'helper')).toBe(true)
+      expect(calls.some((c) => c.callee === 'defaultExport')).toBe(true)
     })
 
     it('should handle async/await calls', () => {
@@ -163,9 +163,9 @@ describe('Call Extractor', () => {
 
       // Should extract: new Calculator(), calc.add(), this.validate()
       expect(calls.length).toBeGreaterThanOrEqual(3)
-      expect(calls.some(c => c.callee === 'Calculator' && c.isConstructor)).toBe(true)
-      expect(calls.some(c => c.callee === 'add')).toBe(true)
-      expect(calls.some(c => c.callee === 'validate')).toBe(true)
+      expect(calls.some((c) => c.callee === 'Calculator' && c.isConstructor)).toBe(true)
+      expect(calls.some((c) => c.callee === 'add')).toBe(true)
+      expect(calls.some((c) => c.callee === 'validate')).toBe(true)
     })
 
     it('should handle empty code', () => {

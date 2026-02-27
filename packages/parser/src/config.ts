@@ -4,9 +4,9 @@
  * Centralized configuration for parser package using Zod for validation
  */
 
-import { z } from 'zod';
-import os from 'os';
-import path from 'path';
+import { z } from 'zod'
+import os from 'os'
+import path from 'path'
 
 /**
  * Configuration schema with validation
@@ -32,44 +32,44 @@ const ParserConfigSchema = z.object({
 
   // Logging
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
-});
+})
 
-export type ParserConfig = z.infer<typeof ParserConfigSchema>;
+export type ParserConfig = z.infer<typeof ParserConfigSchema>
 
 /**
  * Load and validate parser configuration from environment variables
  * Fails fast with clear error messages if validation fails
  */
 export function loadParserConfig(): ParserConfig {
-  const parsed = ParserConfigSchema.safeParse(process.env);
+  const parsed = ParserConfigSchema.safeParse(process.env)
 
   if (!parsed.success) {
-    console.error('❌ Parser configuration validation failed:');
-    console.error(parsed.error.format());
-    process.exit(1);
+    console.error('❌ Parser configuration validation failed:')
+    console.error(parsed.error.format())
+    process.exit(1)
   }
 
-  return parsed.data;
+  return parsed.data
 }
 
 /**
  * Singleton configuration instance
  */
-let configInstance: ParserConfig | null = null;
+let configInstance: ParserConfig | null = null
 
 /**
  * Get parser configuration (singleton pattern)
  */
 export function getParserConfig(): ParserConfig {
   if (!configInstance) {
-    configInstance = loadParserConfig();
+    configInstance = loadParserConfig()
   }
-  return configInstance;
+  return configInstance
 }
 
 /**
  * Reset configuration (useful for testing)
  */
 export function resetParserConfig(): void {
-  configInstance = null;
+  configInstance = null
 }

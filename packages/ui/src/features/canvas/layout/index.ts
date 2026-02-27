@@ -8,13 +8,13 @@ export type {
   DistrictLayout,
   HierarchicalLayoutResult,
   ExternalZoneLayout,
-} from './types';
+} from './types'
 
 // Hierarchical helpers
-export { flattenHierarchicalLayout } from './hierarchicalUtils';
+export { flattenHierarchicalLayout } from './hierarchicalUtils'
 
 // Registry
-export { LayoutRegistry, layoutRegistry } from './registry';
+export { LayoutRegistry, layoutRegistry } from './registry'
 
 // BoundingBox helpers
 export {
@@ -23,17 +23,17 @@ export {
   boundsContains,
   mergeBounds,
   boundsFromPositions,
-} from './bounds';
+} from './bounds'
 
 // Engines
-export { CityLayoutEngine } from './engines/cityLayout';
-export type { CityLayoutConfig } from './engines/cityLayout';
-export { BuildingLayoutEngine } from './engines/buildingLayout';
-export type { BuildingLayoutConfig } from './engines/buildingLayout';
-export { CellLayoutEngine } from './engines/cellLayout';
-export type { CellLayoutConfig } from './engines/cellLayout';
-export { RadialCityLayoutEngine } from './engines/radialCityLayout';
-export type { RadialCityLayoutConfig } from './engines/radialCityLayout';
+export { CityLayoutEngine } from './engines/cityLayout'
+export type { CityLayoutConfig } from './engines/cityLayout'
+export { BuildingLayoutEngine } from './engines/buildingLayout'
+export type { BuildingLayoutConfig } from './engines/buildingLayout'
+export { CellLayoutEngine } from './engines/cellLayout'
+export type { CellLayoutConfig } from './engines/cellLayout'
+export { RadialCityLayoutEngine } from './engines/radialCityLayout'
+export type { RadialCityLayoutConfig } from './engines/radialCityLayout'
 
 // Block layout utilities
 export {
@@ -41,7 +41,7 @@ export {
   placeChildrenInGrid,
   buildFileBlockHierarchy,
   positionBlocksInArc,
-} from './engines/blockLayoutUtils';
+} from './engines/blockLayoutUtils'
 
 // Proximity refinement utilities
-export { refineDistrictProximity, hashSeed, createSeededRng } from './engines/proximityRefinement';
+export { refineDistrictProximity, hashSeed, createSeededRng } from './engines/proximityRefinement'

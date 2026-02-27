@@ -4,7 +4,7 @@
  * Handles Redis connection, health checks, and lifecycle management
  */
 
-import { getRedisClient, closeRedisClient } from './redis-config';
+import { getRedisClient, closeRedisClient } from './redis-config'
 
 /**
  * Connect to Redis cache
@@ -13,21 +13,23 @@ import { getRedisClient, closeRedisClient } from './redis-config';
  * @throws Error if connection fails
  */
 export async function connectRedis(): Promise<void> {
-  console.warn('Connecting to Redis cache...');
+  console.warn('Connecting to Redis cache...')
 
   try {
-    const redis = getRedisClient();
+    const redis = getRedisClient()
 
     // Verify connection with ping
-    const pong = await redis.ping();
+    const pong = await redis.ping()
     if (pong !== 'PONG') {
-      throw new Error('Redis ping response invalid');
+      throw new Error('Redis ping response invalid')
     }
 
-    console.warn('✓ Redis cache connected successfully');
+    console.warn('✓ Redis cache connected successfully')
   } catch (error) {
-    console.error('Failed to connect to Redis cache:', error);
-    throw new Error(`Redis connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('Failed to connect to Redis cache:', error)
+    throw new Error(
+      `Redis connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
   }
 }
 
@@ -39,12 +41,12 @@ export async function connectRedis(): Promise<void> {
  */
 export async function checkRedisHealth(): Promise<boolean> {
   try {
-    const redis = getRedisClient();
-    const pong = await redis.ping();
-    return pong === 'PONG';
+    const redis = getRedisClient()
+    const pong = await redis.ping()
+    return pong === 'PONG'
   } catch (error) {
-    console.error('Redis health check failed:', error);
-    return false;
+    console.error('Redis health check failed:', error)
+    return false
   }
 }
 
@@ -53,7 +55,7 @@ export async function checkRedisHealth(): Promise<boolean> {
  * Should be called on application shutdown
  */
 export async function disconnectRedis(): Promise<void> {
-  console.warn('Disconnecting from Redis cache...');
-  await closeRedisClient();
-  console.warn('✓ Redis cache disconnected');
+  console.warn('Disconnecting from Redis cache...')
+  await closeRedisClient()
+  console.warn('✓ Redis cache disconnected')
 }

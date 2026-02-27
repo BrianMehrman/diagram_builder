@@ -5,17 +5,17 @@
  * representing an import/dependency relationship.
  */
 
-import { useMemo } from 'react';
-import { Line } from '@react-three/drei';
-import type { GraphEdge, Position3D } from '../../../shared/types';
-import { getBuildingHeight } from './heightUtils';
+import { useMemo } from 'react'
+import { Line } from '@react-three/drei'
+import type { GraphEdge, Position3D } from '../../../shared/types'
+import { getBuildingHeight } from './heightUtils'
 
 interface CityEdgeProps {
-  edge: GraphEdge;
-  sourcePosition: Position3D;
-  targetPosition: Position3D;
-  sourceDepth: number | undefined;
-  targetDepth: number | undefined;
+  edge: GraphEdge
+  sourcePosition: Position3D
+  targetPosition: Position3D
+  sourceDepth: number | undefined
+  targetDepth: number | undefined
 }
 
 /** Edge colors by type */
@@ -25,7 +25,7 @@ const EDGE_COLORS: Record<string, string> = {
   calls: '#34d399',
   inherits: '#f97316',
   contains: '#6b7280',
-};
+}
 
 export function CityEdge({
   edge,
@@ -34,11 +34,11 @@ export function CityEdge({
   sourceDepth,
   targetDepth,
 }: CityEdgeProps) {
-  const color = EDGE_COLORS[edge.type] ?? '#60a5fa';
+  const color = EDGE_COLORS[edge.type] ?? '#60a5fa'
 
   // Connect from top of source building to top of target building
-  const sourceHeight = getBuildingHeight(sourceDepth);
-  const targetHeight = getBuildingHeight(targetDepth);
+  const sourceHeight = getBuildingHeight(sourceDepth)
+  const targetHeight = getBuildingHeight(targetDepth)
 
   const points = useMemo(
     () => [
@@ -46,15 +46,7 @@ export function CityEdge({
       [targetPosition.x, targetHeight, targetPosition.z] as [number, number, number],
     ],
     [sourcePosition, targetPosition, sourceHeight, targetHeight]
-  );
+  )
 
-  return (
-    <Line
-      points={points}
-      color={color}
-      lineWidth={1}
-      transparent
-      opacity={0.4}
-    />
-  );
+  return <Line points={points} color={color} lineWidth={1} transparent opacity={0.4} />
 }

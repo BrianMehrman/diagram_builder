@@ -21,14 +21,14 @@ export type {
   LODFilterResult,
   SphericalCoords,
   CylindricalCoords,
-} from './types.js';
+} from './types.js'
 
 // Default configurations
 export {
   DEFAULT_FORCE_DIRECTED_CONFIG,
   DEFAULT_HIERARCHICAL_CONFIG,
   DEFAULT_LOD_CONFIG,
-} from './types.js';
+} from './types.js'
 
 // Force-directed layout
 export {
@@ -37,7 +37,7 @@ export {
   forceDirectedLayout,
   applyLayoutToGraph,
   layoutGraph,
-} from './forceDirected.js';
+} from './forceDirected.js'
 
 // Coordinate utilities
 export {
@@ -82,7 +82,7 @@ export {
   randomInBounds,
   randomInSphere,
   randomOnSphere,
-} from './coordinates.js';
+} from './coordinates.js'
 
 // LOD system
 export {
@@ -100,4 +100,4 @@ export {
   getNewlyHiddenNodes,
   getNodeCountsByLOD,
   getCumulativeNodeCounts,
-} from './lod.js';
+} from './lod.js'

@@ -5,9 +5,9 @@
  * and sharing functionality.
  */
 
-export { ViewpointCreator } from './ViewpointCreator';
-export { ViewpointList } from './ViewpointList';
-export { ViewpointPanel } from './ViewpointPanel';
-export { useViewpointStore } from './store';
-export type { CreateViewpointData } from './store';
-export type { Viewpoint } from '../../shared/types';
+export { ViewpointCreator } from './ViewpointCreator'
+export { ViewpointList } from './ViewpointList'
+export { ViewpointPanel } from './ViewpointPanel'
+export { useViewpointStore } from './store'
+export type { CreateViewpointData } from './store'
+export type { Viewpoint } from '../../shared/types'

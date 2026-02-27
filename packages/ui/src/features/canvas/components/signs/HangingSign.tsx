@@ -5,18 +5,18 @@
  * Medium visibility, like a swinging shop sign.
  */
 
-import { Text } from '@react-three/drei';
-import type { SignProps } from './types';
+import { Text } from '@react-three/drei'
+import type { SignProps } from './types'
 
-const DEFAULT_COLOR = '#ffffff';
-const BRACKET_COLOR = '#6b7280';
-const PANEL_COLOR = '#1e293b';
+const DEFAULT_COLOR = '#ffffff'
+const BRACKET_COLOR = '#6b7280'
+const PANEL_COLOR = '#1e293b'
 
 export function HangingSign({ text, position, visible, color }: SignProps) {
-  if (!visible) return null;
+  if (!visible) return null
 
-  const textColor = color ?? DEFAULT_COLOR;
-  const panelWidth = Math.min(text.length * 0.2 + 0.4, 4);
+  const textColor = color ?? DEFAULT_COLOR
+  const panelWidth = Math.min(text.length * 0.2 + 0.4, 4)
 
   return (
     <group position={[position.x, position.y, position.z]}>
@@ -42,5 +42,5 @@ export function HangingSign({ text, position, visible, color }: SignProps) {
         {text}
       </Text>
     </group>
-  );
+  )
 }

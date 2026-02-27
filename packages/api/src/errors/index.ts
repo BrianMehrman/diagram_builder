@@ -8,9 +8,9 @@ export abstract class HttpError extends Error {
     public readonly type?: string,
     public readonly detail?: string
   ) {
-    super(message);
-    this.name = this.constructor.name;
-    Error.captureStackTrace(this, this.constructor);
+    super(message)
+    this.name = this.constructor.name
+    Error.captureStackTrace(this, this.constructor)
   }
 }
 
@@ -19,7 +19,7 @@ export abstract class HttpError extends Error {
  */
 export class ValidationError extends HttpError {
   constructor(message: string, detail?: string) {
-    super(400, message, 'https://diagram-builder.io/errors/validation-error', detail);
+    super(400, message, 'https://diagram-builder.io/errors/validation-error', detail)
   }
 }
 
@@ -28,7 +28,7 @@ export class ValidationError extends HttpError {
  */
 export class UnauthorizedError extends HttpError {
   constructor(message: string, detail?: string) {
-    super(401, message, 'https://diagram-builder.io/errors/unauthorized', detail);
+    super(401, message, 'https://diagram-builder.io/errors/unauthorized', detail)
   }
 }
 
@@ -37,7 +37,7 @@ export class UnauthorizedError extends HttpError {
  */
 export class ForbiddenError extends HttpError {
   constructor(message: string, detail?: string) {
-    super(403, message, 'https://diagram-builder.io/errors/forbidden', detail);
+    super(403, message, 'https://diagram-builder.io/errors/forbidden', detail)
   }
 }
 
@@ -46,7 +46,7 @@ export class ForbiddenError extends HttpError {
  */
 export class NotFoundError extends HttpError {
   constructor(message: string, detail?: string) {
-    super(404, message, 'https://diagram-builder.io/errors/not-found', detail);
+    super(404, message, 'https://diagram-builder.io/errors/not-found', detail)
   }
 }
 
@@ -55,7 +55,7 @@ export class NotFoundError extends HttpError {
  */
 export class ConflictError extends HttpError {
   constructor(message: string, detail?: string) {
-    super(409, message, 'https://diagram-builder.io/errors/conflict', detail);
+    super(409, message, 'https://diagram-builder.io/errors/conflict', detail)
   }
 }
 
@@ -64,6 +64,6 @@ export class ConflictError extends HttpError {
  */
 export class InternalServerError extends HttpError {
   constructor(message: string, detail?: string) {
-    super(500, message, 'https://diagram-builder.io/errors/internal-server-error', detail);
+    super(500, message, 'https://diagram-builder.io/errors/internal-server-error', detail)
   }
 }
