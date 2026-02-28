@@ -23,14 +23,14 @@ export function useFocusedConnections(graph: Graph): FocusedConnectionsResult {
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
 
   return useMemo(() => {
-    const empty: FocusedConnectionsResult = {
-      directNodeIds: new Set(),
-      secondHopNodeIds: new Set(),
-      directEdges: [],
-      secondHopEdges: [],
+    if (!selectedNodeId) {
+      return {
+        directNodeIds: new Set<string>(),
+        secondHopNodeIds: new Set<string>(),
+        directEdges: [] as GraphEdge[],
+        secondHopEdges: [] as GraphEdge[],
+      }
     }
-
-    if (!selectedNodeId) return empty
 
     const directEdges: GraphEdge[] = []
     const directNodeIds = new Set<string>()

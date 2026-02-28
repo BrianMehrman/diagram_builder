@@ -5,6 +5,8 @@
  * a call or data flow relationship.
  */
 
+import { useMemo } from 'react'
+import * as THREE from 'three'
 import type { Position3D } from '../../../shared/types'
 
 interface OrganelleConnectionProps {
@@ -13,24 +15,21 @@ interface OrganelleConnectionProps {
 }
 
 export function OrganelleConnection({ sourcePos, targetPos }: OrganelleConnectionProps) {
-  if (!sourcePos || !targetPos) return null
+  const line = useMemo(() => {
+    if (!sourcePos || !targetPos) return null
+    const points = new Float32Array([
+      sourcePos.x,
+      sourcePos.y,
+      sourcePos.z,
+      targetPos.x,
+      targetPos.y,
+      targetPos.z,
+    ])
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(points, 3))
+    return new THREE.Line(geo, new THREE.LineBasicMaterial({ color: '#475569', transparent: true, opacity: 0.3 }))
+  }, [sourcePos, targetPos])
 
-  // Create a simple line between two points using bufferGeometry
-  const points = new Float32Array([
-    sourcePos.x,
-    sourcePos.y,
-    sourcePos.z,
-    targetPos.x,
-    targetPos.y,
-    targetPos.z,
-  ])
-
-  return (
-    <line>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[points, 3]} />
-      </bufferGeometry>
-      <lineBasicMaterial color="#475569" transparent opacity={0.3} />
-    </line>
-  )
+  if (!line) return null
+  return <primitive object={line} />
 }
