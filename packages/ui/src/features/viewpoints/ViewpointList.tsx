@@ -111,7 +111,7 @@ function ViewpointListItem({
           Camera: ({viewpoint.cameraPosition.x.toFixed(1)}, {viewpoint.cameraPosition.y.toFixed(1)},{' '}
           {viewpoint.cameraPosition.z.toFixed(1)})
         </div>
-        {viewpoint.filters?.lod !== undefined && <div>LOD: Level {viewpoint.filters.lod}</div>}
+        {viewpoint.filters?.lodLevel !== undefined && <div>LOD: Level {viewpoint.filters.lodLevel}</div>}
         {viewpoint.annotations && viewpoint.annotations.length > 0 && (
           <div>Annotations: {viewpoint.annotations.length}</div>
         )}
@@ -144,8 +144,8 @@ export function ViewpointList({ className = '', onViewpointApplied }: ViewpointL
 
     // Apply filters
     if (viewpoint.filters) {
-      if (viewpoint.filters.lod !== undefined) {
-        setLodLevel(viewpoint.filters.lod)
+      if (viewpoint.filters.lodLevel !== undefined) {
+        setLodLevel(viewpoint.filters.lodLevel)
       }
     }
 

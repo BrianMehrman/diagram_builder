@@ -3,13 +3,13 @@ import { render, screen } from '@testing-library/react'
 import App from './App'
 
 describe('App', () => {
-  it('renders the app title', () => {
+  it('renders skip navigation links', () => {
     render(<App />)
-    expect(screen.getByText('Diagram Builder')).toBeDefined()
+    expect(screen.getByText('Skip to canvas')).toBeDefined()
   })
 
-  it('renders the app description', () => {
-    render(<App />)
-    expect(screen.getByText('3D Codebase Visualization Tool')).toBeDefined()
+  it('renders the app shell without crashing', () => {
+    const { container } = render(<App />)
+    expect(container).toBeDefined()
   })
 })

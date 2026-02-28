@@ -2,14 +2,28 @@
  * ExportDialog Component Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ExportDialog } from './ExportDialog'
 import { useExportStore } from './store'
 
 describe('ExportDialog', () => {
+  // Use fake timers for the entire suite so that delayed mocks (e.g. 100ms
+  // setTimeout in fetch stubs) from one test cannot bleed into the next.
+  // shouldAdvanceTime keeps wall-clock behaviour so waitFor() still works.
+  beforeAll(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+  })
+
+  afterAll(() => {
+    vi.useRealTimers()
+  })
+
   beforeEach(() => {
+    // Cancel any pending fake timers left over from the previous test so their
+    // store updates cannot fire mid-test and overwrite the current result.
+    vi.clearAllTimers()
     useExportStore.getState().reset()
     vi.clearAllMocks()
 
@@ -95,7 +109,7 @@ describe('ExportDialog', () => {
 
     render(<ExportDialog repositoryId="repo-123" onClose={onClose} />)
 
-    const closeButton = screen.getByTitle('Close')
+    const closeButton = screen.getByTestId('close-export-dialog')
     await user.click(closeButton)
 
     expect(onClose).toHaveBeenCalled()
@@ -322,7 +336,7 @@ describe('ExportDialog', () => {
 
     global.fetch = mockFetch
 
-    render(<ExportDialog repositoryId="repo-123" />)
+    const { container } = render(<ExportDialog repositoryId="repo-123" />)
 
     await user.click(screen.getByText('Export'))
 
@@ -333,7 +347,12 @@ describe('ExportDialog', () => {
     await user.click(screen.getByText('Show Preview'))
 
     expect(screen.getByText('Hide Preview')).toBeDefined()
-    expect(screen.getByText(/@startuml/)).toBeDefined()
+    // Query <pre> directly to avoid text-normalization edge cases with getByText
+    await waitFor(() => {
+      const pre = container.querySelector('pre')
+      expect(pre).not.toBeNull()
+      expect(pre?.textContent).toContain('@startuml')
+    })
   })
 
   it('allows export another after success', async () => {

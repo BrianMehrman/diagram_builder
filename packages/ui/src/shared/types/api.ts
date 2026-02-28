@@ -96,6 +96,8 @@ export interface Codebase {
   error?: string
   repositoryId?: string
   importedAt: string
+  fileCount?: number | null
+  nodeCount?: number | null
   /** Import progress (when processing) */
   progress?: ImportProgress
 }

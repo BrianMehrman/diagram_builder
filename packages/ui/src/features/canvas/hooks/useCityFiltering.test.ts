@@ -308,6 +308,7 @@ describe('useCityFiltering', () => {
 
   describe('visibleEdges', () => {
     it('includes imports edges with both endpoints positioned', () => {
+      useCanvasStore.getState().setCityVersion('v1')
       const nodes = [createNode('a'), createNode('b')]
       const graph: Graph = {
         nodes,
@@ -352,6 +353,7 @@ describe('useCityFiltering', () => {
     })
 
     it('includes depends_on and calls edges', () => {
+      useCanvasStore.getState().setCityVersion('v1')
       const nodes = [createNode('a'), createNode('b'), createNode('c')]
       const graph: Graph = {
         nodes,
@@ -419,7 +421,7 @@ describe('useCityFiltering', () => {
     })
 
     it('shows all edges in v1 mode regardless of district', () => {
-      // v1 is the default
+      useCanvasStore.getState().setCityVersion('v1')
       const nodes = [
         createNode('a', 'file', 'src/features'),
         createNode('b', 'file', 'src/features'),

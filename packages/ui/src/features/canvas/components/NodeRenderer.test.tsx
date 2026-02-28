@@ -11,6 +11,7 @@ import type { GraphNode } from '../../../shared/types'
 // Mock Canvas for tests
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  useFrame: vi.fn(),
 }))
 
 const mockNode: GraphNode = {

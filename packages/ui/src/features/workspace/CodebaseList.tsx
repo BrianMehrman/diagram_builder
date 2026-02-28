@@ -42,6 +42,8 @@ function transformCodebase(apiCodebase: ApiCodebase): Codebase {
     createdAt: new Date(apiCodebase.importedAt),
     errorMessage: apiCodebase.error ?? null,
     progress: apiCodebase.progress ?? null,
+    fileCount: apiCodebase.fileCount ?? null,
+    nodeCount: apiCodebase.nodeCount ?? null,
   }
 }
 
