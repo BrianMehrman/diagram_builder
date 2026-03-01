@@ -61,6 +61,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build workspace dependencies
+        run: npm run build -w @diagram-builder/core -w @diagram-builder/parser
+
       - name: Build all packages
         run: npm run build
 
