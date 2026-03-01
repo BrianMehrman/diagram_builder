@@ -111,7 +111,9 @@ function ViewpointListItem({
           Camera: ({viewpoint.cameraPosition.x.toFixed(1)}, {viewpoint.cameraPosition.y.toFixed(1)},{' '}
           {viewpoint.cameraPosition.z.toFixed(1)})
         </div>
-        {viewpoint.filters?.lodLevel !== undefined && <div>LOD: Level {viewpoint.filters.lodLevel}</div>}
+        {viewpoint.filters?.lodLevel !== undefined && (
+          <div>LOD: Level {viewpoint.filters.lodLevel}</div>
+        )}
         {viewpoint.annotations && viewpoint.annotations.length > 0 && (
           <div>Annotations: {viewpoint.annotations.length}</div>
         )}

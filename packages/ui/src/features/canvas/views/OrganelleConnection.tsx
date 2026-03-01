@@ -27,7 +27,10 @@ export function OrganelleConnection({ sourcePos, targetPos }: OrganelleConnectio
     ])
     const geo = new THREE.BufferGeometry()
     geo.setAttribute('position', new THREE.Float32BufferAttribute(points, 3))
-    return new THREE.Line(geo, new THREE.LineBasicMaterial({ color: '#475569', transparent: true, opacity: 0.3 }))
+    return new THREE.Line(
+      geo,
+      new THREE.LineBasicMaterial({ color: '#475569', transparent: true, opacity: 0.3 })
+    )
   }, [sourcePos, targetPos])
 
   if (!line) return null
