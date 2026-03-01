@@ -152,7 +152,11 @@ vi.mock('../../database/query-utils', () => ({
       return []
     }
 
-    if (query.includes('DETACH DELETE') && !query.includes('Codebase') && !query.includes('Repository')) {
+    if (
+      query.includes('DETACH DELETE') &&
+      !query.includes('Codebase') &&
+      !query.includes('Repository')
+    ) {
       const id = params.id as string
       mockWorkspaces.delete(id)
       return []
