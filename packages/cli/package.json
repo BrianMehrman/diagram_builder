@@ -9,7 +9,7 @@
     "dev": "tsx src/index.ts",
     "dev:watch": "tsx watch src/index.ts",
     "build": "tsc && chmod +x dist/index.js",
-    "test": "vitest",
+    "test": "vitest --passWithNoTests",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts"
   },
