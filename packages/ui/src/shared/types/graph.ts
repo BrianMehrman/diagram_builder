@@ -89,7 +89,7 @@ export interface Viewpoint {
   cameraPosition: Position3D
   cameraTarget: Position3D
   filters?: {
-    lod?: number // Changed from lodLevel to match IVM format
+    lodLevel?: number
     nodeTypes?: string[]
     edgeTypes?: string[]
   }
