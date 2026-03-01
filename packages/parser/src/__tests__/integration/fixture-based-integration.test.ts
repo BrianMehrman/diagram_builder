@@ -301,7 +301,7 @@ describe('Parser Integration Tests - Real Fixtures', () => {
       const ivm = convertToIVM(depGraph, context, { name: 'test' })
 
       // Every node must have a valid type
-      const validTypes = ['file', 'class', 'function', 'variable', 'interface', 'type']
+      const validTypes = ['file', 'class', 'function', 'variable', 'interface', 'type', 'method']
       ivm.nodes.forEach((node: IVMNode) => {
         expect(validTypes).toContain(node.type)
       })
