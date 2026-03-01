@@ -2,9 +2,80 @@
  * Tests for Redis cache utilities
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { get, set, invalidate, invalidatePattern, DEFAULT_CACHE_TTL } from './cache-utils'
 import { getRedisClient } from './redis-config'
+
+// In-memory Redis mock — no real Redis required in CI
+vi.mock('./redis-config', () => {
+  const store = new Map<string, { value: string; ttl: number | null }>()
+
+  const client = {
+    async flushdb(): Promise<string> {
+      store.clear()
+      return 'OK'
+    },
+    async set(key: string, value: string): Promise<string> {
+      store.set(key, { value, ttl: null })
+      return 'OK'
+    },
+    async setex(key: string, ttl: number, value: string): Promise<string> {
+      store.set(key, { value, ttl })
+      return 'OK'
+    },
+    async get(key: string): Promise<string | null> {
+      return store.get(key)?.value ?? null
+    },
+    async del(key: string): Promise<number> {
+      const existed = store.has(key)
+      store.delete(key)
+      return existed ? 1 : 0
+    },
+    async exists(key: string): Promise<number> {
+      return store.has(key) ? 1 : 0
+    },
+    async ttl(key: string): Promise<number> {
+      const entry = store.get(key)
+      if (!entry) return -2
+      if (entry.ttl === null) return -1
+      return entry.ttl
+    },
+    async scan(
+      _cursor: string,
+      _kw1: string,
+      pattern: string,
+      _kw2: string,
+      _count: number
+    ): Promise<[string, string[]]> {
+      const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')
+      const regex = new RegExp(`^${escaped}$`)
+      const matched = Array.from(store.keys()).filter((k) => regex.test(k))
+      return ['0', matched]
+    },
+    pipeline() {
+      const delKeys: string[] = []
+      const pipe = {
+        del(key: string) {
+          delKeys.push(key)
+          return pipe
+        },
+        async exec(): Promise<Array<[null, number]>> {
+          for (const key of delKeys) {
+            store.delete(key)
+          }
+          return delKeys.map((): [null, number] => [null, 1])
+        },
+      }
+      return pipe
+    },
+  }
+
+  return {
+    getRedisClient: () => client,
+    closeRedisClient: async () => {},
+    default: client,
+  }
+})
 
 describe('Cache Utilities', () => {
   const redis = getRedisClient()
