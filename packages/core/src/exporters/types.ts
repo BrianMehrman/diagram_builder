@@ -4,7 +4,7 @@
  * Common types and interfaces for all export pipelines.
  */
 
-import type { IVMGraph, LODLevel, NodeType, EdgeType } from '../ivm/types.js';
+import type { IVMGraph, LODLevel, NodeType, EdgeType } from '../ivm/types.js'
 
 // =============================================================================
 // Export Configuration Types
@@ -15,19 +15,19 @@ import type { IVMGraph, LODLevel, NodeType, EdgeType } from '../ivm/types.js';
  */
 export interface BaseExportOptions {
   /** Title for the diagram */
-  title?: string;
+  title?: string
 
   /** LOD level to export (filters nodes/edges) */
-  lodLevel?: LODLevel;
+  lodLevel?: LODLevel
 
   /** Whether to include a legend */
-  includeLegend?: boolean;
+  includeLegend?: boolean
 
   /** Whether to include metadata comments */
-  includeMetadata?: boolean;
+  includeMetadata?: boolean
 
   /** Custom styling overrides */
-  styling?: ExportStyling;
+  styling?: ExportStyling
 }
 
 /**
@@ -35,19 +35,19 @@ export interface BaseExportOptions {
  */
 export interface ColorScheme {
   /** Colors by node type */
-  nodeColors: Partial<Record<NodeType, string>>;
+  nodeColors: Partial<Record<NodeType, string>>
 
   /** Colors by edge type */
-  edgeColors: Partial<Record<EdgeType, string>>;
+  edgeColors: Partial<Record<EdgeType, string>>
 
   /** Background color */
-  background?: string;
+  background?: string
 
   /** Text color */
-  text?: string;
+  text?: string
 
   /** Border color */
-  border?: string;
+  border?: string
 }
 
 /**
@@ -55,22 +55,22 @@ export interface ColorScheme {
  */
 export interface ExportStyling {
   /** Color scheme */
-  colors?: ColorScheme;
+  colors?: ColorScheme
 
   /** Font family */
-  fontFamily?: string;
+  fontFamily?: string
 
   /** Font size in points */
-  fontSize?: number;
+  fontSize?: number
 
   /** Whether to use shadows */
-  shadows?: boolean;
+  shadows?: boolean
 
   /** Whether to use rounded corners */
-  rounded?: boolean;
+  rounded?: boolean
 
   /** Line thickness */
-  lineWidth?: number;
+  lineWidth?: number
 }
 
 /**
@@ -78,16 +78,16 @@ export interface ExportStyling {
  */
 export interface ExportResult {
   /** The exported content (string for text formats, Buffer for binary) */
-  content: string | Buffer;
+  content: string | Buffer
 
   /** MIME type of the exported content */
-  mimeType: string;
+  mimeType: string
 
   /** Suggested file extension */
-  extension: string;
+  extension: string
 
   /** Export statistics */
-  stats: ExportStats;
+  stats: ExportStats
 }
 
 /**
@@ -95,16 +95,16 @@ export interface ExportResult {
  */
 export interface ExportStats {
   /** Number of nodes exported */
-  nodeCount: number;
+  nodeCount: number
 
   /** Number of edges exported */
-  edgeCount: number;
+  edgeCount: number
 
   /** Time taken to export in milliseconds */
-  duration: number;
+  duration: number
 
   /** Size of output in bytes */
-  size: number;
+  size: number
 }
 
 // =============================================================================
@@ -116,26 +116,26 @@ export interface ExportStats {
  */
 export interface Exporter<TOptions extends BaseExportOptions = BaseExportOptions> {
   /** Unique identifier for the exporter */
-  readonly id: string;
+  readonly id: string
 
   /** Human-readable name */
-  readonly name: string;
+  readonly name: string
 
   /** Supported file extension */
-  readonly extension: string;
+  readonly extension: string
 
   /** MIME type */
-  readonly mimeType: string;
+  readonly mimeType: string
 
   /**
    * Exports an IVM graph to the target format
    */
-  export(graph: IVMGraph, options?: TOptions): ExportResult;
+  export(graph: IVMGraph, options?: TOptions): ExportResult
 
   /**
    * Validates export options
    */
-  validateOptions(options?: TOptions): string[];
+  validateOptions(options?: TOptions): string[]
 }
 
 // =============================================================================
@@ -177,7 +177,7 @@ export const DEFAULT_COLOR_SCHEME: ColorScheme = {
   background: '#FFFFFF',
   text: '#333333',
   border: '#CCCCCC',
-};
+}
 
 /**
  * Dark color scheme
@@ -214,7 +214,7 @@ export const DARK_COLOR_SCHEME: ColorScheme = {
   background: '#1E1E1E',
   text: '#EEEEEE',
   border: '#444444',
-};
+}
 
 /**
  * Default export styling
@@ -226,4 +226,4 @@ export const DEFAULT_EXPORT_STYLING: ExportStyling = {
   shadows: true,
   rounded: true,
   lineWidth: 1,
-};
+}

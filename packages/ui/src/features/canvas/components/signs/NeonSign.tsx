@@ -5,15 +5,15 @@
  * Large, visible from far, with neon glow effect.
  */
 
-import { Text } from '@react-three/drei';
-import type { SignProps } from './types';
+import { Text } from '@react-three/drei'
+import type { SignProps } from './types'
 
-const DEFAULT_COLOR = '#00ff88';
+const DEFAULT_COLOR = '#00ff88'
 
 export function NeonSign({ text, position, visible, color }: SignProps) {
-  if (!visible) return null;
+  if (!visible) return null
 
-  const signColor = color ?? DEFAULT_COLOR;
+  const signColor = color ?? DEFAULT_COLOR
 
   return (
     <group position={[position.x, position.y, position.z]}>
@@ -36,5 +36,5 @@ export function NeonSign({ text, position, visible, color }: SignProps) {
         />
       </Text>
     </group>
-  );
+  )
 }

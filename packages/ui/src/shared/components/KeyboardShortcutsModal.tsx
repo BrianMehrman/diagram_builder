@@ -5,23 +5,23 @@
  * Opens with ? key, closes with ESC or clicking outside.
  */
 
-import * as Dialog from '@radix-ui/react-dialog';
-import { useUIStore } from '../stores/uiStore';
+import * as Dialog from '@radix-ui/react-dialog'
+import { useUIStore } from '../stores/uiStore'
 
 /**
  * Shortcut definition
  */
 interface Shortcut {
-  keys: string[];
-  description: string;
+  keys: string[]
+  description: string
 }
 
 /**
  * Shortcut category
  */
 interface ShortcutCategory {
-  name: string;
-  shortcuts: Shortcut[];
+  name: string
+  shortcuts: Shortcut[]
 }
 
 /**
@@ -57,23 +57,19 @@ const shortcutCategories: ShortcutCategory[] = [
   },
   {
     name: 'Sharing',
-    shortcuts: [
-      { keys: ['⌘', '⇧', 'S'], description: 'Copy viewpoint link' },
-    ],
+    shortcuts: [{ keys: ['⌘', '⇧', 'S'], description: 'Copy viewpoint link' }],
   },
   {
     name: 'Help',
-    shortcuts: [
-      { keys: ['?'], description: 'Open this help modal' },
-    ],
+    shortcuts: [{ keys: ['?'], description: 'Open this help modal' }],
   },
-];
+]
 
 /**
  * Keyboard key badge component
  */
 interface KeyBadgeProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 function KeyBadge({ children }: KeyBadgeProps) {
@@ -89,14 +85,14 @@ function KeyBadge({ children }: KeyBadgeProps) {
     >
       {children}
     </kbd>
-  );
+  )
 }
 
 /**
  * Shortcut row component
  */
 interface ShortcutRowProps {
-  shortcut: Shortcut;
+  shortcut: Shortcut
 }
 
 function ShortcutRow({ shortcut }: ShortcutRowProps) {
@@ -109,14 +105,14 @@ function ShortcutRow({ shortcut }: ShortcutRowProps) {
         ))}
       </div>
     </div>
-  );
+  )
 }
 
 /**
  * Shortcut category component
  */
 interface ShortcutCategoryProps {
-  category: ShortcutCategory;
+  category: ShortcutCategory
 }
 
 function ShortcutCategorySection({ category }: ShortcutCategoryProps) {
@@ -131,15 +127,15 @@ function ShortcutCategorySection({ category }: ShortcutCategoryProps) {
         ))}
       </div>
     </div>
-  );
+  )
 }
 
 /**
  * Keyboard Shortcuts Modal
  */
 export function KeyboardShortcutsModal() {
-  const isOpen = useUIStore((state) => state.isHelpModalOpen);
-  const closeModal = useUIStore((state) => state.closeHelpModal);
+  const isOpen = useUIStore((state) => state.isHelpModalOpen)
+  const closeModal = useUIStore((state) => state.closeHelpModal)
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && closeModal()}>
@@ -185,9 +181,7 @@ export function KeyboardShortcutsModal() {
 
           {/* Footer */}
           <div className="px-6 py-3 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
-            <span className="text-xs text-gray-500">
-              On Windows/Linux, use Ctrl instead of ⌘
-            </span>
+            <span className="text-xs text-gray-500">On Windows/Linux, use Ctrl instead of ⌘</span>
             <Dialog.Close asChild>
               <button
                 className="
@@ -227,5 +221,5 @@ export function KeyboardShortcutsModal() {
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
-  );
+  )
 }

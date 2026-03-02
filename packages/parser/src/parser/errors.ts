@@ -63,7 +63,10 @@ export class UnsupportedLanguageError extends ParserError {
   public readonly language: string
   public readonly supportedLanguages: string[]
 
-  constructor(language: string, supportedLanguages: string[] = ['javascript', 'typescript', 'tsx']) {
+  constructor(
+    language: string,
+    supportedLanguages: string[] = ['javascript', 'typescript', 'tsx']
+  ) {
     super(
       `Unsupported language: ${language}. Supported languages: ${supportedLanguages.join(', ')}`
     )

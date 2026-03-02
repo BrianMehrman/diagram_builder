@@ -6,25 +6,25 @@
  * Pure math is delegated to viewTransitionUtils for testability.
  */
 
-import { useState, useRef, useCallback } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { stepProgress } from './viewTransitionUtils';
+import { useState, useRef, useCallback } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { stepProgress } from './viewTransitionUtils'
 
 export interface ViewTransitionState {
   /** Transition progress: 0 = source view, 1 = target view */
-  progress: number;
+  progress: number
   /** Whether a transition is currently animating */
-  isTransitioning: boolean;
+  isTransitioning: boolean
   /** Direction of the current transition */
-  direction: 'forward' | 'backward';
+  direction: 'forward' | 'backward'
 }
 
 interface UseViewTransitionReturn {
-  progress: number;
-  isTransitioning: boolean;
-  direction: 'forward' | 'backward';
-  startForward: () => void;
-  startBackward: () => void;
+  progress: number
+  isTransitioning: boolean
+  direction: 'forward' | 'backward'
+  startForward: () => void
+  startBackward: () => void
 }
 
 /**
@@ -38,43 +38,43 @@ export function useViewTransition(duration = 0.5): UseViewTransitionReturn {
     progress: 0,
     isTransitioning: false,
     direction: 'forward',
-  });
+  })
 
-  const targetRef = useRef(0);
+  const targetRef = useRef(0)
 
   const startForward = useCallback(() => {
-    targetRef.current = 1;
+    targetRef.current = 1
     setState((prev) => ({
       ...prev,
       isTransitioning: true,
       direction: 'forward',
-    }));
-  }, []);
+    }))
+  }, [])
 
   const startBackward = useCallback(() => {
-    targetRef.current = 0;
+    targetRef.current = 0
     setState((prev) => ({
       ...prev,
       isTransitioning: true,
       direction: 'backward',
-    }));
-  }, []);
+    }))
+  }, [])
 
   useFrame((_, delta) => {
-    if (!state.isTransitioning) return;
+    if (!state.isTransitioning) return
 
     setState((prev) => {
-      const target = targetRef.current;
-      const newProgress = stepProgress(prev.progress, target, delta, duration);
-      const done = newProgress === target;
+      const target = targetRef.current
+      const newProgress = stepProgress(prev.progress, target, delta, duration)
+      const done = newProgress === target
 
       return {
         progress: newProgress,
         isTransitioning: !done,
         direction: prev.direction,
-      };
-    });
-  });
+      }
+    })
+  })
 
   return {
     progress: state.progress,
@@ -82,5 +82,5 @@ export function useViewTransition(duration = 0.5): UseViewTransitionReturn {
     direction: state.direction,
     startForward,
     startBackward,
-  };
+  }
 }

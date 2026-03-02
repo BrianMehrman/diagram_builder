@@ -13,49 +13,49 @@
 /**
  * Codebase import status
  */
-export type CodebaseStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type CodebaseStatus = 'pending' | 'processing' | 'completed' | 'failed'
 
 /**
  * Import progress stage
  */
-export type ImportStage = 'cloning' | 'parsing' | 'graph-building' | 'storing';
+export type ImportStage = 'cloning' | 'parsing' | 'graph-building' | 'storing'
 
 /**
  * Import progress information
  */
 export interface ImportProgress {
   /** Progress percentage (0-100) */
-  percentage: number;
+  percentage: number
   /** Current stage of import */
-  stage: ImportStage;
+  stage: ImportStage
   /** Human-readable stage message */
-  message: string;
+  message: string
   /** Number of files processed (optional) */
-  filesProcessed?: number;
+  filesProcessed?: number
   /** Total files to process (optional) */
-  totalFiles?: number;
+  totalFiles?: number
 }
 
 /**
  * Codebase source type
  */
-export type CodebaseType = 'local' | 'git';
+export type CodebaseType = 'local' | 'git'
 
 /**
  * Credential type for private repository access
  */
-export type CredentialType = 'oauth' | 'ssh';
+export type CredentialType = 'oauth' | 'ssh'
 
 /**
  * Authentication credentials for private repositories
  */
 export interface CodebaseCredentials {
   /** Credential type */
-  type: CredentialType;
+  type: CredentialType
   /** OAuth token (for oauth type) */
-  token?: string;
+  token?: string
   /** SSH key path (for ssh type) */
-  sshKeyPath?: string;
+  sshKeyPath?: string
 }
 
 /**
@@ -63,27 +63,27 @@ export interface CodebaseCredentials {
  */
 export interface Codebase {
   /** Unique codebase ID */
-  id: string;
+  id: string
   /** Workspace ID this codebase belongs to */
-  workspaceId: string;
+  workspaceId: string
   /** Source path or URL */
-  source: string;
+  source: string
   /** Source type */
-  type: CodebaseType;
+  type: CodebaseType
   /** Git branch (for git type) */
-  branch?: string;
+  branch?: string
   /** Import status */
-  status: CodebaseStatus;
+  status: CodebaseStatus
   /** Error message (if failed) */
-  error?: string;
+  error?: string
   /** Neo4j Repository node ID (when parsing completed) */
-  repositoryId?: string;
+  repositoryId?: string
   /** Import timestamp */
-  importedAt: string;
+  importedAt: string
   /** Last update timestamp */
-  updatedAt: string;
+  updatedAt: string
   /** Import progress (when processing) */
-  progress?: ImportProgress;
+  progress?: ImportProgress
 }
 
 /**
@@ -91,13 +91,13 @@ export interface Codebase {
  */
 export interface CreateCodebaseInput {
   /** Source path or Git URL */
-  source: string;
+  source: string
   /** Source type */
-  type: CodebaseType;
+  type: CodebaseType
   /** Git branch (optional, defaults to main) */
-  branch?: string;
+  branch?: string
   /** Authentication credentials for private repositories (optional) */
-  credentials?: CodebaseCredentials;
+  credentials?: CodebaseCredentials
 }
 
 /**
@@ -105,13 +105,13 @@ export interface CreateCodebaseInput {
  */
 export interface CodebaseImportOptions {
   /** Source path or Git URL */
-  source: string;
+  source: string
   /** Source type */
-  type: CodebaseType;
+  type: CodebaseType
   /** Git branch (optional) */
-  branch?: string;
+  branch?: string
   /** Authentication credentials (optional) */
-  credentials?: CodebaseCredentials;
+  credentials?: CodebaseCredentials
 }
 
 /**
@@ -119,11 +119,11 @@ export interface CodebaseImportOptions {
  */
 export interface UpdateCodebaseStatusInput {
   /** New status */
-  status: CodebaseStatus;
+  status: CodebaseStatus
   /** Error message (if failed) */
-  error?: string;
+  error?: string
   /** Repository ID (if completed) */
-  repositoryId?: string;
+  repositoryId?: string
 }
 
 /**
@@ -131,13 +131,13 @@ export interface UpdateCodebaseStatusInput {
  */
 export interface UpdateCodebaseProgressInput {
   /** Progress percentage (0-100) */
-  percentage: number;
+  percentage: number
   /** Current import stage */
-  stage: ImportStage;
+  stage: ImportStage
   /** Human-readable message */
-  message: string;
+  message: string
   /** Files processed so far */
-  filesProcessed?: number;
+  filesProcessed?: number
   /** Total files to process */
-  totalFiles?: number;
+  totalFiles?: number
 }

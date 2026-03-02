@@ -6,32 +6,32 @@
  * Uses BuildingLayoutEngine for positioning.
  */
 
-import { useMemo } from 'react';
-import { BuildingWalls } from './BuildingWalls';
-import { Floor } from './Floor';
-import { Room } from './Room';
-import { BuildingLayoutEngine } from '../layout/engines/buildingLayout';
-import { extractBuildingSubgraph } from './buildingViewUtils';
-import type { Graph } from '../../../shared/types';
+import { useMemo } from 'react'
+import { BuildingWalls } from './BuildingWalls'
+import { Floor } from './Floor'
+import { Room } from './Room'
+import { BuildingLayoutEngine } from '../layout/engines/buildingLayout'
+import { extractBuildingSubgraph } from './buildingViewUtils'
+import type { Graph } from '../../../shared/types'
 
 interface BuildingViewProps {
-  graph: Graph;
-  focusedNodeId: string;
+  graph: Graph
+  focusedNodeId: string
 }
 
 interface FloorMeta {
-  classId: string;
-  floorIndex: number;
-  y: number;
+  classId: string
+  floorIndex: number
+  y: number
 }
 
 interface BuildingMeta {
-  floorCount: number;
-  floorHeight: number;
-  buildingWidth: number;
-  buildingDepth: number;
-  totalHeight: number;
-  floors: FloorMeta[];
+  floorCount: number
+  floorHeight: number
+  buildingWidth: number
+  buildingDepth: number
+  totalHeight: number
+  floors: FloorMeta[]
 }
 
 export function BuildingView({ graph, focusedNodeId }: BuildingViewProps) {
@@ -39,12 +39,12 @@ export function BuildingView({ graph, focusedNodeId }: BuildingViewProps) {
   const subgraph = useMemo(
     () => extractBuildingSubgraph(graph, focusedNodeId),
     [graph, focusedNodeId]
-  );
+  )
 
   // Compute building layout
   const layout = useMemo(() => {
-    if (!subgraph) return null;
-    const engine = new BuildingLayoutEngine();
+    if (!subgraph) return null
+    const engine = new BuildingLayoutEngine()
     return engine.layout(
       {
         nodes: subgraph.nodes,
@@ -52,18 +52,16 @@ export function BuildingView({ graph, focusedNodeId }: BuildingViewProps) {
         metadata: graph.metadata,
       },
       {}
-    );
-  }, [subgraph, graph.metadata]);
+    )
+  }, [subgraph, graph.metadata])
 
-  if (!subgraph || !layout) return null;
+  if (!subgraph || !layout) return null
 
-  const metadata = layout.metadata as BuildingMeta | undefined;
-  if (!metadata) return null;
+  const metadata = layout.metadata as BuildingMeta | undefined
+  if (!metadata) return null
 
   // Rooms = non-file, non-class nodes
-  const rooms = subgraph.nodes.filter(
-    (n) => n.type !== 'file' && n.type !== 'class'
-  );
+  const rooms = subgraph.nodes.filter((n) => n.type !== 'file' && n.type !== 'class')
 
   return (
     <group name="building-view">
@@ -77,8 +75,8 @@ export function BuildingView({ graph, focusedNodeId }: BuildingViewProps) {
 
       {/* Floors (one per class) */}
       {metadata.floors.map((floor) => {
-        const classNode = subgraph.nodes.find((n) => n.id === floor.classId);
-        if (!classNode) return null;
+        const classNode = subgraph.nodes.find((n) => n.id === floor.classId)
+        if (!classNode) return null
 
         return (
           <Floor
@@ -89,16 +87,16 @@ export function BuildingView({ graph, focusedNodeId }: BuildingViewProps) {
             depth={metadata.buildingDepth}
             origin={layout.bounds.min}
           />
-        );
+        )
       })}
 
       {/* Rooms (methods, functions, variables) */}
       {rooms.map((node) => {
-        const pos = layout.positions.get(node.id);
-        if (!pos) return null;
+        const pos = layout.positions.get(node.id)
+        if (!pos) return null
 
-        return <Room key={node.id} node={node} position={pos} />;
+        return <Room key={node.id} node={node} position={pos} />
       })}
     </group>
-  );
+  )
 }

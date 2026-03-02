@@ -5,65 +5,74 @@
  * Implements caching for performance optimization
  */
 
-import { runQuery } from '../database/query-utils';
-import { buildCacheKey } from '../cache/cache-keys';
-import * as cache from '../cache/cache-utils';
-import type { IVMGraph, IVMNode, IVMEdge, GraphStats, NodeType, EdgeType, LODLevel, BoundingBox } from '@diagram-builder/core';
+import { runQuery } from '../database/query-utils'
+import { buildCacheKey } from '../cache/cache-keys'
+import * as cache from '../cache/cache-utils'
+import type {
+  IVMGraph,
+  IVMNode,
+  IVMEdge,
+  GraphStats,
+  NodeType,
+  EdgeType,
+  LODLevel,
+  BoundingBox,
+} from '@diagram-builder/core'
 
 /**
  * Simplified node structure from Neo4j
  */
 interface Neo4jNode {
-  id: string;
-  type: NodeType;
-  label: string;
-  path: string;
-  x?: number;
-  y?: number;
-  z?: number;
-  lod?: LODLevel;
-  parentId?: string;
-  language?: string;
-  loc?: number;
-  complexity?: number;
-  dependencyCount?: number;
-  dependentCount?: number;
-  startLine?: number;
-  endLine?: number;
-  startColumn?: number;
-  endColumn?: number;
-  visibility?: string;
-  methodCount?: number;
-  properties?: Record<string, unknown>;
+  id: string
+  type: NodeType
+  label: string
+  path: string
+  x?: number
+  y?: number
+  z?: number
+  lod?: LODLevel
+  parentId?: string
+  language?: string
+  loc?: number
+  complexity?: number
+  dependencyCount?: number
+  dependentCount?: number
+  startLine?: number
+  endLine?: number
+  startColumn?: number
+  endColumn?: number
+  visibility?: string
+  methodCount?: number
+  properties?: Record<string, unknown>
 }
 
 /**
  * Simplified edge structure from Neo4j
  */
 interface Neo4jEdge {
-  id: string;
-  source: string;
-  target: string;
-  type: EdgeType;
-  lod?: LODLevel;
-  label?: string;
-  weight?: number;
-  circular?: boolean;
-  reference?: string;
-  properties?: Record<string, unknown>;
+  id: string
+  source: string
+  target: string
+  type: EdgeType
+  lod?: LODLevel
+  label?: string
+  weight?: number
+  circular?: boolean
+  reference?: string
+  properties?: Record<string, unknown>
 }
 
 /**
  * Repository metadata from Neo4j
  */
 interface Neo4jRepository {
-  id: string;
-  name: string;
-  rootPath: string;
-  repositoryUrl?: string;
-  branch?: string;
-  commit?: string;
-  parsedAt?: string;
+  id: string
+  name: string
+  rootPath: string
+  repositoryUrl?: string
+  branch?: string
+  commit?: string
+  parsedAt?: string
 }
 
 /**
@@ -75,10 +84,10 @@ interface Neo4jRepository {
  */
 export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
   // Check cache first
-  const cacheKey = buildCacheKey('graph', repoId);
-  const cached = await cache.get<IVMGraph>(cacheKey);
+  const cacheKey = buildCacheKey('graph', repoId)
+  const cached = await cache.get<IVMGraph>(cacheKey)
   if (cached) {
-    return cached;
+    return cached
   }
 
   // Query repository metadata
@@ -87,14 +96,15 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
     RETURN r.id as id, r.name as name, r.rootPath as rootPath,
            r.repositoryUrl as repositoryUrl, r.branch as branch,
            r.commit as commit, r.parsedAt as parsedAt
-  `;
-  const repoResults = await runQuery<Neo4jRepository>(repoQuery, { repoId });
+  `
+  const repoResults = await runQuery<Neo4jRepository>(repoQuery, { repoId })
 
   if (!repoResults || repoResults.length === 0) {
-    return null;
+    return null
   }
 
-  const repo = repoResults[0]!;
+  const repo = repoResults[0]
+  if (!repo) return null
 
   // Query all nodes for this repository
   const nodesQuery = `
@@ -107,8 +117,8 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
            n.startColumn as startColumn, n.endColumn as endColumn,
            n.visibility as visibility, n.methodCount as methodCount,
            n.properties as properties
-  `;
-  const nodeResults = await runQuery<Neo4jNode>(nodesQuery, { repoId });
+  `
+  const nodeResults = await runQuery<Neo4jNode>(nodesQuery, { repoId })
 
   // Query all edges for this repository
   const edgesQuery = `
@@ -119,12 +129,12 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
            toLower(type(e)) as type, e.lod as lod, e.label as label,
            e.weight as weight, e.circular as circular, e.reference as reference,
            e.properties as properties
-  `;
-  const edgeResults = await runQuery<Neo4jEdge>(edgesQuery, { repoId });
+  `
+  const edgeResults = await runQuery<Neo4jEdge>(edgesQuery, { repoId })
 
   // Transform Neo4j results to graph format
   // Uses IVMNode as base but adds top-level fields for UI consumption
-  const nodes = nodeResults.map(node => ({
+  const nodes = nodeResults.map((node) => ({
     id: node.id,
     type: node.type,
     position: {
@@ -132,10 +142,11 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
       y: node.y ?? 0,
       z: node.z ?? 0,
     },
-    lod: (node.lod ?? 3) as LODLevel,
+    lod: node.lod ?? 3,
     ...(node.parentId && { parentId: node.parentId }),
     ...(node.visibility && { visibility: node.visibility }),
-    ...(node.methodCount !== undefined && node.methodCount !== null && { methodCount: node.methodCount }),
+    ...(node.methodCount !== undefined &&
+      node.methodCount !== null && { methodCount: node.methodCount }),
     metadata: {
       label: node.label,
       path: node.path,
@@ -144,24 +155,25 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
       ...(node.complexity !== undefined && { complexity: node.complexity }),
       ...(node.dependencyCount !== undefined && { dependencyCount: node.dependencyCount }),
       ...(node.dependentCount !== undefined && { dependentCount: node.dependentCount }),
-      ...(node.startLine !== undefined && node.endLine !== undefined && {
-        location: {
-          startLine: node.startLine,
-          endLine: node.endLine,
-          ...(node.startColumn !== undefined && { startColumn: node.startColumn }),
-          ...(node.endColumn !== undefined && { endColumn: node.endColumn }),
-        }
-      }),
+      ...(node.startLine !== undefined &&
+        node.endLine !== undefined && {
+          location: {
+            startLine: node.startLine,
+            endLine: node.endLine,
+            ...(node.startColumn !== undefined && { startColumn: node.startColumn }),
+            ...(node.endColumn !== undefined && { endColumn: node.endColumn }),
+          },
+        }),
       ...(node.properties && { properties: node.properties }),
     },
-  }));
+  }))
 
-  const edges: IVMEdge[] = edgeResults.map(edge => ({
+  const edges: IVMEdge[] = edgeResults.map((edge) => ({
     id: edge.id,
     source: edge.source,
     target: edge.target,
     type: edge.type,
-    lod: (edge.lod ?? 3) as LODLevel,
+    lod: edge.lod ?? 3,
     metadata: {
       ...(edge.label && { label: edge.label }),
       ...(edge.weight !== undefined && { weight: edge.weight }),
@@ -169,16 +181,18 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
       ...(edge.reference && { reference: edge.reference }),
       ...(edge.properties && { properties: edge.properties }),
     },
-  }));
+  }))
 
   // Calculate statistics
-  const stats = calculateGraphStats(nodes, edges);
+  const stats = calculateGraphStats(nodes, edges)
 
   // Calculate bounding box
-  const bounds = calculateBoundingBox(nodes);
+  const bounds = calculateBoundingBox(nodes)
 
   // Extract unique languages
-  const languages = [...new Set(nodes.map(n => n.metadata.language).filter(Boolean))] as string[];
+  const languages = [
+    ...new Set(nodes.map((n) => n.metadata.language).filter((l): l is string => l !== undefined)),
+  ]
 
   // Build complete IVM graph
   const graph: IVMGraph = {
@@ -196,12 +210,12 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
       languages,
     },
     bounds,
-  };
+  }
 
   // Cache the result
-  await cache.set(cacheKey, graph);
+  await cache.set(cacheKey, graph)
 
-  return graph;
+  return graph
 }
 
 /**
@@ -213,10 +227,10 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
  */
 export async function getNodeDetails(repoId: string, nodeId: string): Promise<IVMNode | null> {
   // Check cache first
-  const cacheKey = buildCacheKey('graph', `${repoId}:node:${nodeId}`);
-  const cached = await cache.get<IVMNode>(cacheKey);
+  const cacheKey = buildCacheKey('graph', `${repoId}:node:${nodeId}`)
+  const cached = await cache.get<IVMNode>(cacheKey)
   if (cached) {
-    return cached;
+    return cached
   }
 
   // Query node with repository validation
@@ -229,14 +243,15 @@ export async function getNodeDetails(repoId: string, nodeId: string): Promise<IV
            n.startLine as startLine, n.endLine as endLine,
            n.startColumn as startColumn, n.endColumn as endColumn,
            n.properties as properties
-  `;
-  const results = await runQuery<Neo4jNode>(query, { repoId, nodeId });
+  `
+  const results = await runQuery<Neo4jNode>(query, { repoId, nodeId })
 
   if (!results || results.length === 0) {
-    return null;
+    return null
   }
 
-  const node = results[0]!;
+  const node = results[0]
+  if (!node) return null
   const ivmNode: IVMNode = {
     id: node.id,
     type: node.type,
@@ -245,7 +260,7 @@ export async function getNodeDetails(repoId: string, nodeId: string): Promise<IV
       y: node.y ?? 0,
       z: node.z ?? 0,
     },
-    lod: (node.lod ?? 3) as LODLevel,
+    lod: node.lod ?? 3,
     ...(node.parentId && { parentId: node.parentId }),
     metadata: {
       label: node.label,
@@ -255,22 +270,23 @@ export async function getNodeDetails(repoId: string, nodeId: string): Promise<IV
       ...(node.complexity !== undefined && { complexity: node.complexity }),
       ...(node.dependencyCount !== undefined && { dependencyCount: node.dependencyCount }),
       ...(node.dependentCount !== undefined && { dependentCount: node.dependentCount }),
-      ...(node.startLine !== undefined && node.endLine !== undefined && {
-        location: {
-          startLine: node.startLine,
-          endLine: node.endLine,
-          ...(node.startColumn !== undefined && { startColumn: node.startColumn }),
-          ...(node.endColumn !== undefined && { endColumn: node.endColumn }),
-        }
-      }),
+      ...(node.startLine !== undefined &&
+        node.endLine !== undefined && {
+          location: {
+            startLine: node.startLine,
+            endLine: node.endLine,
+            ...(node.startColumn !== undefined && { startColumn: node.startColumn }),
+            ...(node.endColumn !== undefined && { endColumn: node.endColumn }),
+          },
+        }),
       ...(node.properties && { properties: node.properties }),
     },
-  };
+  }
 
   // Cache the result
-  await cache.set(cacheKey, ivmNode);
+  await cache.set(cacheKey, ivmNode)
 
-  return ivmNode;
+  return ivmNode
 }
 
 /**
@@ -283,10 +299,10 @@ export async function getNodeDetails(repoId: string, nodeId: string): Promise<IV
  */
 export async function getNodeDependencies(repoId: string, nodeId: string): Promise<IVMNode[]> {
   // Check cache first
-  const cacheKey = buildCacheKey('graph', `${repoId}:deps:${nodeId}`);
-  const cached = await cache.get<IVMNode[]>(cacheKey);
+  const cacheKey = buildCacheKey('graph', `${repoId}:deps:${nodeId}`)
+  const cached = await cache.get<IVMNode[]>(cacheKey)
   if (cached) {
-    return cached;
+    return cached
   }
 
   // Query dependencies with repository validation
@@ -304,10 +320,10 @@ export async function getNodeDependencies(repoId: string, nodeId: string): Promi
            target.startLine as startLine, target.endLine as endLine,
            target.startColumn as startColumn, target.endColumn as endColumn,
            target.properties as properties
-  `;
-  const results = await runQuery<Neo4jNode>(query, { repoId, nodeId });
+  `
+  const results = await runQuery<Neo4jNode>(query, { repoId, nodeId })
 
-  const dependencies: IVMNode[] = results.map(node => ({
+  const dependencies: IVMNode[] = results.map((node) => ({
     id: node.id,
     type: node.type,
     position: {
@@ -315,7 +331,7 @@ export async function getNodeDependencies(repoId: string, nodeId: string): Promi
       y: node.y ?? 0,
       z: node.z ?? 0,
     },
-    lod: (node.lod ?? 3) as LODLevel,
+    lod: node.lod ?? 3,
     ...(node.parentId && { parentId: node.parentId }),
     metadata: {
       label: node.label,
@@ -325,22 +341,23 @@ export async function getNodeDependencies(repoId: string, nodeId: string): Promi
       ...(node.complexity !== undefined && { complexity: node.complexity }),
       ...(node.dependencyCount !== undefined && { dependencyCount: node.dependencyCount }),
       ...(node.dependentCount !== undefined && { dependentCount: node.dependentCount }),
-      ...(node.startLine !== undefined && node.endLine !== undefined && {
-        location: {
-          startLine: node.startLine,
-          endLine: node.endLine,
-          ...(node.startColumn !== undefined && { startColumn: node.startColumn }),
-          ...(node.endColumn !== undefined && { endColumn: node.endColumn }),
-        }
-      }),
+      ...(node.startLine !== undefined &&
+        node.endLine !== undefined && {
+          location: {
+            startLine: node.startLine,
+            endLine: node.endLine,
+            ...(node.startColumn !== undefined && { startColumn: node.startColumn }),
+            ...(node.endColumn !== undefined && { endColumn: node.endColumn }),
+          },
+        }),
       ...(node.properties && { properties: node.properties }),
     },
-  }));
+  }))
 
   // Cache the result
-  await cache.set(cacheKey, dependencies);
+  await cache.set(cacheKey, dependencies)
 
-  return dependencies;
+  return dependencies
 }
 
 /**
@@ -358,51 +375,55 @@ export async function executeCustomQuery(
   params: Record<string, unknown> = {}
 ): Promise<Record<string, unknown>[]> {
   // Create cache key based on query and params
-  const queryHash = createQueryHash(cypherQuery, params);
-  const cacheKey = buildCacheKey('query', `${repoId}:${queryHash}`);
+  const queryHash = createQueryHash(cypherQuery, params)
+  const cacheKey = buildCacheKey('query', `${repoId}:${queryHash}`)
 
-  const cached = await cache.get<Record<string, unknown>[]>(cacheKey);
+  const cached = await cache.get<Record<string, unknown>[]>(cacheKey)
   if (cached) {
-    return cached;
+    return cached
   }
 
   // Inject repoId into params for security
-  const queryParams = { ...params, repoId };
+  const queryParams = { ...params, repoId }
 
   // Validate that query references the repository (basic security check)
   if (!cypherQuery.includes('$repoId') && !cypherQuery.includes('{repoId}')) {
-    throw new Error('Query must be scoped to repository using $repoId parameter');
+    throw new Error('Query must be scoped to repository using $repoId parameter')
   }
 
   // Execute query
-  const results = await runQuery<Record<string, unknown>>(cypherQuery, queryParams);
+  const results = await runQuery<Record<string, unknown>>(cypherQuery, queryParams)
 
   // Cache the result
-  await cache.set(cacheKey, results);
+  await cache.set(cacheKey, results)
 
-  return results;
+  return results
 }
 
 /**
  * Calculate statistics for the graph
  */
 function calculateGraphStats(nodes: IVMNode[], edges: IVMEdge[]): GraphStats {
-  const nodesByType: Record<NodeType, number> = {} as Record<NodeType, number>;
-  const edgesByType: Record<EdgeType, number> = {} as Record<EdgeType, number>;
+  const nodesByType = {} as Record<NodeType, number>
+  const edgesByType = {} as Record<EdgeType, number>
 
-  nodes.forEach(node => {
-    nodesByType[node.type] = (nodesByType[node.type] || 0) + 1;
-  });
+  nodes.forEach((node) => {
+    const count = nodesByType[node.type] ?? 0
+    nodesByType[node.type] = count + 1
+  })
 
-  edges.forEach(edge => {
-    edgesByType[edge.type] = (edgesByType[edge.type] || 0) + 1;
-  });
+  edges.forEach((edge) => {
+    const count = edgesByType[edge.type] ?? 0
+    edgesByType[edge.type] = count + 1
+  })
 
-  const totalLoc = nodes.reduce((sum, node) => sum + (node.metadata.loc || 0), 0);
-  const nodesWithComplexity = nodes.filter(n => n.metadata.complexity !== undefined);
-  const avgComplexity = nodesWithComplexity.length > 0
-    ? nodesWithComplexity.reduce((sum, n) => sum + (n.metadata.complexity || 0), 0) / nodesWithComplexity.length
-    : undefined;
+  const totalLoc = nodes.reduce((sum, node) => sum + (node.metadata.loc ?? 0), 0)
+  const nodesWithComplexity = nodes.filter((n) => n.metadata.complexity !== undefined)
+  const avgComplexity =
+    nodesWithComplexity.length > 0
+      ? nodesWithComplexity.reduce((sum, n) => sum + (n.metadata.complexity ?? 0), 0) /
+        nodesWithComplexity.length
+      : undefined
 
   return {
     totalNodes: nodes.length,
@@ -411,7 +432,7 @@ function calculateGraphStats(nodes: IVMNode[], edges: IVMEdge[]): GraphStats {
     edgesByType,
     ...(totalLoc > 0 && { totalLoc }),
     ...(avgComplexity !== undefined && { avgComplexity }),
-  };
+  }
 }
 
 /**
@@ -422,38 +443,38 @@ function calculateBoundingBox(nodes: IVMNode[]): BoundingBox {
     return {
       min: { x: 0, y: 0, z: 0 },
       max: { x: 0, y: 0, z: 0 },
-    };
+    }
   }
 
-  const positions = nodes.map(n => n.position);
+  const positions = nodes.map((n) => n.position)
 
   return {
     min: {
-      x: Math.min(...positions.map(p => p.x)),
-      y: Math.min(...positions.map(p => p.y)),
-      z: Math.min(...positions.map(p => p.z)),
+      x: Math.min(...positions.map((p) => p.x)),
+      y: Math.min(...positions.map((p) => p.y)),
+      z: Math.min(...positions.map((p) => p.z)),
     },
     max: {
-      x: Math.max(...positions.map(p => p.x)),
-      y: Math.max(...positions.map(p => p.y)),
-      z: Math.max(...positions.map(p => p.z)),
+      x: Math.max(...positions.map((p) => p.x)),
+      y: Math.max(...positions.map((p) => p.y)),
+      z: Math.max(...positions.map((p) => p.z)),
     },
-  };
+  }
 }
 
 /**
  * Create a hash from query and params for caching
  */
 function createQueryHash(query: string, params: Record<string, unknown>): string {
-  const content = JSON.stringify({ query, params });
+  const content = JSON.stringify({ query, params })
 
   // Simple hash function (for production, use crypto.createHash)
-  let hash = 0;
+  let hash = 0
   for (let i = 0; i < content.length; i++) {
-    const char = content.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
+    const char = content.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash = hash & hash // Convert to 32-bit integer
   }
 
-  return hash.toString(36);
+  return hash.toString(36)
 }

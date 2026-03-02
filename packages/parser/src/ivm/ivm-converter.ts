@@ -49,7 +49,7 @@ export function convertToIVM(
   const edgeInputs = convertEdges(depGraph.getEdges())
 
   // Step 2.5: Derive parentId from 'contains' edges
-  const containsEdges = depGraph.getEdges().filter(e => e.type === 'contains')
+  const containsEdges = depGraph.getEdges().filter((e) => e.type === 'contains')
   const parentIdMap = new Map<string, string>()
   for (const edge of containsEdges) {
     parentIdMap.set(edge.target, edge.source)
@@ -85,7 +85,7 @@ export function convertToIVM(
   // Step 6: Validate IVM graph
   const validation = validateIVM(ivm)
   if (!validation.valid) {
-    const errorMessages = validation.errors.map(e => `  - ${e.message}`).join('\n')
+    const errorMessages = validation.errors.map((e) => `  - ${e.message}`).join('\n')
     throw new Error(
       `IVM validation failed with ${validation.errors.length} error(s):\n${errorMessages}`
     )

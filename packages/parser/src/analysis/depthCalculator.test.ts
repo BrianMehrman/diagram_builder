@@ -1,10 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { DependencyNode, DependencyEdge } from '../graph/dependency-graph'
-import {
-  calculateAbstractionDepth,
-  identifyEntryPoints,
-  type DepthResult,
-} from './depthCalculator'
+import { calculateAbstractionDepth, identifyEntryPoints } from './depthCalculator'
 
 // Helper to create a node
 function makeNode(
@@ -224,11 +220,7 @@ describe('depthCalculator', () => {
         makeNode('b', 'mid.ts', 'src/mid.ts'),
         makeNode('c', 'end.ts', 'src/end.ts'),
       ]
-      const edges = [
-        makeImportEdge('a', 'b'),
-        makeImportEdge('b', 'c'),
-        makeImportEdge('c', 'a'),
-      ]
+      const edges = [makeImportEdge('a', 'b'), makeImportEdge('b', 'c'), makeImportEdge('c', 'a')]
 
       const result = calculateAbstractionDepth(nodes, edges)
 

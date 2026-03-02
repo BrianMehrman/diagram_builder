@@ -21,7 +21,9 @@ const mockShowError = vi.fn()
 const mockCancelProgress = vi.fn()
 
 vi.mock('../feedback', () => ({
-  useToastStore: (selector: (state: { showSuccess: () => void; showError: () => void }) => unknown) =>
+  useToastStore: (
+    selector: (state: { showSuccess: () => void; showError: () => void }) => unknown
+  ) =>
     selector({
       showSuccess: mockShowSuccess,
       showError: mockShowError,
@@ -36,7 +38,17 @@ vi.mock('../feedback', () => ({
     repositoryId: null,
     cancel: mockCancelProgress,
   }),
-  ImportProgress: ({ open, progress, status, onCancel }: { open: boolean; progress: number; status: string; onCancel: () => void }) =>
+  ImportProgress: ({
+    open,
+    progress,
+    status,
+    onCancel,
+  }: {
+    open: boolean
+    progress: number
+    status: string
+    onCancel: () => void
+  }) =>
     open ? (
       <div data-testid="import-progress-modal">
         <div data-testid="progress-value">{progress}</div>

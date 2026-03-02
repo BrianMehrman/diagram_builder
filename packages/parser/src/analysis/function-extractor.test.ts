@@ -90,8 +90,8 @@ function outer() {
 
       expect(functions).toHaveLength(2)
 
-      const outer = functions.find(f => f.name === 'outer')
-      const inner = functions.find(f => f.name === 'inner')
+      const outer = functions.find((f) => f.name === 'outer')
+      const inner = functions.find((f) => f.name === 'inner')
 
       expect(outer?.isTopLevel).toBe(true)
       expect(inner?.isTopLevel).toBe(false)
@@ -120,7 +120,7 @@ const third = () => {};
       const functions = extractFunctions(tree)
 
       expect(functions).toHaveLength(3)
-      expect(functions.map(f => f.name)).toEqual(['first', 'second', 'third'])
+      expect(functions.map((f) => f.name)).toEqual(['first', 'second', 'third'])
     })
 
     it('should return empty array when no functions', () => {

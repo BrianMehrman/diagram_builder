@@ -5,17 +5,17 @@
  * Bright emissive border with lit-up appearance.
  */
 
-import { Text } from '@react-three/drei';
-import type { SignProps } from './types';
+import { Text } from '@react-three/drei'
+import type { SignProps } from './types'
 
-const DEFAULT_COLOR = '#fbbf24';
-const BORDER_COLOR = '#f59e0b';
+const DEFAULT_COLOR = '#fbbf24'
+const BORDER_COLOR = '#f59e0b'
 
 export function MarqueeSign({ text, position, visible, color }: SignProps) {
-  if (!visible) return null;
+  if (!visible) return null
 
-  const textColor = color ?? DEFAULT_COLOR;
-  const panelWidth = Math.min(text.length * 0.22 + 0.5, 4.5);
+  const textColor = color ?? DEFAULT_COLOR
+  const panelWidth = Math.min(text.length * 0.22 + 0.5, 4.5)
 
   return (
     <group position={[position.x, position.y, position.z]}>
@@ -36,13 +36,7 @@ export function MarqueeSign({ text, position, visible, color }: SignProps) {
         <meshStandardMaterial color="#0f172a" roughness={0.9} />
       </mesh>
       {/* Illuminated text */}
-      <Text
-        fontSize={0.3}
-        color={textColor}
-        anchorX="center"
-        anchorY="middle"
-        frustumCulled
-      >
+      <Text fontSize={0.3} color={textColor} anchorX="center" anchorY="middle" frustumCulled>
         {text}
         <meshStandardMaterial
           attach="material"
@@ -53,5 +47,5 @@ export function MarqueeSign({ text, position, visible, color }: SignProps) {
         />
       </Text>
     </group>
-  );
+  )
 }

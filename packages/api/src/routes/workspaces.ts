@@ -38,8 +38,10 @@ import type {
   UpdateWorkspaceInput,
   AddMemberInput,
   UpdateMemberInput,
+  WorkspaceSettings,
+  WorkspaceSessionState,
 } from '../types/workspace'
-import type { CreateCodebaseInput } from '../types/codebase'
+import type { CreateCodebaseInput, CodebaseType, CodebaseCredentials } from '../types/codebase'
 import { logger } from '../logger'
 
 const workspacesRouter = Router()
@@ -48,11 +50,44 @@ const workspacesRouter = Router()
  * POST /api/workspaces
  * Create a new workspace
  */
+interface CreateWorkspaceBody {
+  name: unknown
+  description?: string
+  repositories?: string[]
+  settings?: WorkspaceSettings
+  sessionState?: WorkspaceSessionState
+}
+
+interface UpdateWorkspaceBody {
+  name: unknown
+  description?: string
+  repositories?: string[]
+  settings?: WorkspaceSettings
+  sessionState?: WorkspaceSessionState
+}
+
+interface AddMemberBody {
+  userId: unknown
+  role: unknown
+}
+
+interface UpdateMemberRoleBody {
+  role: unknown
+}
+
+interface CreateCodebaseBody {
+  source: unknown
+  type: unknown
+  branch?: string
+  credentials?: CodebaseCredentials
+}
+
 workspacesRouter.post(
   '/',
   authenticate,
   asyncHandler(async (req: Request, res: Response) => {
-    const { name, description, repositories, settings, sessionState } = req.body
+    const { name, description, repositories, settings, sessionState } =
+      req.body as CreateWorkspaceBody
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       throw new ValidationError('Invalid request', 'Workspace name is required')
@@ -149,7 +184,8 @@ workspacesRouter.put(
   authenticate,
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params
-    const { name, description, repositories, settings, sessionState } = req.body
+    const { name, description, repositories, settings, sessionState } =
+      req.body as UpdateWorkspaceBody
 
     if (!id) {
       throw new ValidationError('Invalid request', 'Workspace ID is required')
@@ -173,7 +209,7 @@ workspacesRouter.put(
     }
 
     const input: UpdateWorkspaceInput = {}
-    if (name !== undefined) input.name = name.trim()
+    if (name !== undefined && typeof name === 'string') input.name = name.trim()
     if (description !== undefined) input.description = description
     if (repositories !== undefined) input.repositories = repositories
     if (settings !== undefined) input.settings = settings
@@ -247,7 +283,7 @@ workspacesRouter.post(
   authenticate,
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params
-    const { userId: memberUserId, role } = req.body
+    const { userId: memberUserId, role } = req.body as AddMemberBody
 
     if (!id) {
       throw new ValidationError('Invalid request', 'Workspace ID is required')
@@ -257,7 +293,7 @@ workspacesRouter.post(
       throw new ValidationError('Invalid request', 'User ID is required')
     }
 
-    if (!role || !['admin', 'editor', 'viewer'].includes(role)) {
+    if (!role || !['admin', 'editor', 'viewer'].includes(role as string)) {
       throw new ValidationError(
         'Invalid request',
         'Valid role is required (admin, editor, or viewer)'
@@ -271,7 +307,7 @@ workspacesRouter.post(
 
     const input: AddMemberInput = {
       userId: memberUserId,
-      role,
+      role: role as 'admin' | 'editor' | 'viewer',
     }
 
     try {
@@ -354,7 +390,7 @@ workspacesRouter.put(
   authenticate,
   asyncHandler(async (req: Request, res: Response) => {
     const { id, userId: memberUserId } = req.params
-    const { role } = req.body
+    const { role } = req.body as UpdateMemberRoleBody
 
     if (!id) {
       throw new ValidationError('Invalid request', 'Workspace ID is required')
@@ -364,7 +400,7 @@ workspacesRouter.put(
       throw new ValidationError('Invalid request', 'User ID is required')
     }
 
-    if (!role || !['admin', 'editor', 'viewer'].includes(role)) {
+    if (!role || !['admin', 'editor', 'viewer'].includes(role as string)) {
       throw new ValidationError(
         'Invalid request',
         'Valid role is required (admin, editor, or viewer)'
@@ -376,7 +412,7 @@ workspacesRouter.put(
       throw new ValidationError('Invalid request', 'User ID not found in token')
     }
 
-    const input: UpdateMemberInput = { role }
+    const input: UpdateMemberInput = { role: role as 'admin' | 'editor' | 'viewer' }
 
     try {
       const members = await updateMemberRole(id, memberUserId, input, userId)
@@ -411,7 +447,7 @@ workspacesRouter.post(
   authenticate,
   asyncHandler(async (req: Request, res: Response) => {
     const { workspaceId } = req.params
-    const { source, type, branch, credentials } = req.body
+    const { source, type, branch, credentials } = req.body as CreateCodebaseBody
 
     if (!workspaceId) {
       throw new ValidationError('Invalid request', 'Workspace ID is required')
@@ -421,7 +457,7 @@ workspacesRouter.post(
       throw new ValidationError('Invalid request', 'Source path or URL is required')
     }
 
-    if (!type || !['local', 'git'].includes(type)) {
+    if (!type || !['local', 'git'].includes(type as string)) {
       throw new ValidationError('Invalid request', 'Type must be either local or git')
     }
 
@@ -432,7 +468,7 @@ workspacesRouter.post(
 
     const input: CreateCodebaseInput = {
       source: source.trim(),
-      type,
+      type: type as CodebaseType,
       ...(branch && { branch }),
       ...(credentials && { credentials }),
     }

@@ -18,7 +18,7 @@ export function ViewpointPage() {
 
   useEffect(() => {
     if (id) {
-      loadViewpoint(id)
+      void loadViewpoint(id)
     }
   }, [id])
 

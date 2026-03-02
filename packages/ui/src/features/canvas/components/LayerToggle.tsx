@@ -8,23 +8,23 @@
  * and an additional "External Deps" sub-toggle appears.
  */
 
-import { useCanvasStore } from '../store';
-import { WIRE_COLORS } from '../views/cityViewUtils';
+import { useCanvasStore } from '../store'
+import { WIRE_COLORS } from '../views/wireUtils'
 
 export function LayerToggle() {
-  const visibleLayers = useCanvasStore((s) => s.visibleLayers);
-  const toggleLayer = useCanvasStore((s) => s.toggleLayer);
-  const viewMode = useCanvasStore((s) => s.viewMode);
-  const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion);
-  const undergroundVisible = useCanvasStore((s) => s.citySettings.undergroundVisible);
-  const externalPipesVisible = useCanvasStore((s) => s.citySettings.externalPipesVisible);
-  const toggleUndergroundVisible = useCanvasStore((s) => s.toggleUndergroundVisible);
-  const toggleExternalPipes = useCanvasStore((s) => s.toggleExternalPipes);
+  const visibleLayers = useCanvasStore((s) => s.visibleLayers)
+  const toggleLayer = useCanvasStore((s) => s.toggleLayer)
+  const viewMode = useCanvasStore((s) => s.viewMode)
+  const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion)
+  const undergroundVisible = useCanvasStore((s) => s.citySettings.undergroundVisible)
+  const externalPipesVisible = useCanvasStore((s) => s.citySettings.externalPipesVisible)
+  const toggleUndergroundVisible = useCanvasStore((s) => s.toggleUndergroundVisible)
+  const toggleExternalPipes = useCanvasStore((s) => s.toggleExternalPipes)
 
   // Only show in city view
-  if (viewMode !== 'city') return null;
+  if (viewMode !== 'city') return null
 
-  const isV2 = cityVersion === 'v2';
+  const isV2 = cityVersion === 'v2'
 
   return (
     <div className="flex flex-col gap-2">
@@ -32,9 +32,7 @@ export function LayerToggle() {
       <button
         onClick={() => toggleLayer('aboveGround')}
         className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition-colors ${
-          visibleLayers.aboveGround
-            ? 'bg-blue-600 text-white'
-            : 'bg-gray-700 text-gray-400'
+          visibleLayers.aboveGround ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400'
         }`}
         aria-label="Toggle above ground layer"
         aria-pressed={visibleLayers.aboveGround}
@@ -48,9 +46,7 @@ export function LayerToggle() {
           <button
             onClick={toggleUndergroundVisible}
             className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition-colors ${
-              undergroundVisible
-                ? 'bg-amber-600 text-white'
-                : 'bg-gray-700 text-gray-400'
+              undergroundVisible ? 'bg-amber-600 text-white' : 'bg-gray-700 text-gray-400'
             }`}
             aria-label="Toggle underground pipe layer"
             aria-pressed={undergroundVisible}
@@ -66,8 +62,8 @@ export function LayerToggle() {
               !undergroundVisible
                 ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
                 : externalPipesVisible
-                ? 'bg-amber-500 text-white'
-                : 'bg-gray-700 text-gray-400'
+                  ? 'bg-amber-500 text-white'
+                  : 'bg-gray-700 text-gray-400'
             }`}
             aria-label="Toggle external dependency pipes"
             aria-pressed={externalPipesVisible}
@@ -80,9 +76,7 @@ export function LayerToggle() {
         <button
           onClick={() => toggleLayer('underground')}
           className={`flex-1 px-2 py-1.5 rounded text-xs font-medium transition-colors ${
-            visibleLayers.underground
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-700 text-gray-400'
+            visibleLayers.underground ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400'
           }`}
           aria-label="Toggle underground layer"
           aria-pressed={visibleLayers.underground}
@@ -96,16 +90,20 @@ export function LayerToggle() {
           <p className="text-xs text-gray-500 mb-1">Overhead Wires</p>
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
-              <span style={{ color: WIRE_COLORS['calls'] }} aria-hidden="true">—</span>
+              <span style={{ color: WIRE_COLORS['calls'] }} aria-hidden="true">
+                —
+              </span>
               <span>Calls</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
-              <span style={{ color: WIRE_COLORS['composes'] }} aria-hidden="true">- -</span>
+              <span style={{ color: WIRE_COLORS['composes'] }} aria-hidden="true">
+                - -
+              </span>
               <span>Composes</span>
             </div>
           </div>
         </div>
       )}
     </div>
-  );
+  )
 }

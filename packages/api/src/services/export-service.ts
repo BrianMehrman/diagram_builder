@@ -10,27 +10,27 @@
  * - PNG (.png)
  */
 
-import type { IVMGraph } from '@diagram-builder/core';
-import { getFullGraph } from './graph-service';
+import type { IVMGraph } from '@diagram-builder/core'
+import { getFullGraph } from './graph-service'
 
 /**
  * Graph filters for controlling visibility
  */
 export interface GraphFilters {
   /** Visible node types */
-  nodeTypes?: string[];
+  nodeTypes?: string[]
   /** Visible edge types */
-  edgeTypes?: string[];
+  edgeTypes?: string[]
   /** Maximum LOD level to display */
-  maxLod?: number;
+  maxLod?: number
   /** Path pattern filter (glob or regex) */
-  pathPattern?: string;
+  pathPattern?: string
   /** Language filter */
-  languages?: string[];
+  languages?: string[]
   /** Visible node IDs */
-  visibleNodes?: string[];
+  visibleNodes?: string[]
   /** Hidden node IDs */
-  hiddenNodes?: string[];
+  hiddenNodes?: string[]
 }
 
 /**
@@ -38,13 +38,13 @@ export interface GraphFilters {
  */
 export interface ExportRequest {
   /** Repository ID to export */
-  repoId: string;
+  repoId: string
   /** LOD level for filtering (0-5) */
-  lodLevel?: number;
+  lodLevel?: number
   /** Graph filters to apply */
-  filters?: GraphFilters;
+  filters?: GraphFilters
   /** Format-specific options */
-  options?: Record<string, unknown>;
+  options?: Record<string, unknown>
 }
 
 /**
@@ -52,20 +52,20 @@ export interface ExportRequest {
  */
 export interface ExportResult {
   /** Generated content */
-  content: string | Buffer;
+  content: string | Buffer
   /** MIME type */
-  mimeType: string;
+  mimeType: string
   /** File extension */
-  extension: string;
+  extension: string
   /** Filename */
-  filename: string;
+  filename: string
   /** Export statistics */
   stats: {
-    nodeCount: number;
-    edgeCount: number;
-    duration: number;
-    size: number;
-  };
+    nodeCount: number
+    edgeCount: number
+    duration: number
+    size: number
+  }
 }
 
 /**
@@ -74,27 +74,27 @@ export interface ExportResult {
 function applyLODFilter(graph: IVMGraph, lodLevel: number): IVMGraph {
   if (lodLevel >= 5) {
     // No filtering needed at max LOD
-    return graph;
+    return graph
   }
 
   // Filter nodes based on LOD level
   const filteredNodes = graph.nodes.filter((node) => {
-    const nodeLOD = node.lod;
-    return nodeLOD <= lodLevel;
-  });
+    const nodeLOD = node.lod
+    return nodeLOD <= lodLevel
+  })
 
-  const nodeIds = new Set(filteredNodes.map((n) => n.id));
+  const nodeIds = new Set(filteredNodes.map((n) => n.id))
 
   // Filter edges to only include those between visible nodes
   const filteredEdges = graph.edges.filter(
     (edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target)
-  );
+  )
 
   return {
     ...graph,
     nodes: filteredNodes,
     edges: filteredEdges,
-  };
+  }
 }
 
 /**
@@ -102,78 +102,78 @@ function applyLODFilter(graph: IVMGraph, lodLevel: number): IVMGraph {
  */
 function applyFilters(graph: IVMGraph, filters?: GraphFilters): IVMGraph {
   if (!filters) {
-    return graph;
+    return graph
   }
 
-  let filteredGraph = graph;
+  let filteredGraph = graph
 
   // Filter by node types
   if (filters.nodeTypes && filters.nodeTypes.length > 0) {
-    const nodeTypeSet = new Set(filters.nodeTypes);
+    const nodeTypeSet = new Set(filters.nodeTypes)
     filteredGraph = {
       ...filteredGraph,
       nodes: filteredGraph.nodes.filter((node) => nodeTypeSet.has(node.type)),
-    };
+    }
   }
 
   // Filter by edge types
   if (filters.edgeTypes && filters.edgeTypes.length > 0) {
-    const edgeTypeSet = new Set(filters.edgeTypes);
+    const edgeTypeSet = new Set(filters.edgeTypes)
     filteredGraph = {
       ...filteredGraph,
       edges: filteredGraph.edges.filter((edge) => edgeTypeSet.has(edge.type)),
-    };
+    }
   }
 
   // Filter by path pattern
   if (filters.pathPattern) {
-    const pattern = new RegExp(filters.pathPattern);
+    const pattern = new RegExp(filters.pathPattern)
     filteredGraph = {
       ...filteredGraph,
       nodes: filteredGraph.nodes.filter(
         (node) => node.metadata?.path && pattern.test(node.metadata.path)
       ),
-    };
+    }
   }
 
   // Filter by languages
   if (filters.languages && filters.languages.length > 0) {
-    const langSet = new Set(filters.languages);
+    const langSet = new Set(filters.languages)
     filteredGraph = {
       ...filteredGraph,
       nodes: filteredGraph.nodes.filter(
         (node) => node.metadata?.language && langSet.has(node.metadata.language)
       ),
-    };
+    }
   }
 
   // Filter by visible/hidden nodes
   if (filters.visibleNodes && filters.visibleNodes.length > 0) {
-    const visibleSet = new Set(filters.visibleNodes);
+    const visibleSet = new Set(filters.visibleNodes)
     filteredGraph = {
       ...filteredGraph,
       nodes: filteredGraph.nodes.filter((node) => visibleSet.has(node.id)),
-    };
+    }
   }
 
   if (filters.hiddenNodes && filters.hiddenNodes.length > 0) {
-    const hiddenSet = new Set(filters.hiddenNodes);
+    const hiddenSet = new Set(filters.hiddenNodes)
     filteredGraph = {
       ...filteredGraph,
       nodes: filteredGraph.nodes.filter((node) => !hiddenSet.has(node.id)),
-    };
+    }
   }
 
   // Update edges to only include those between remaining nodes
-  const nodeIds = new Set(filteredGraph.nodes.map((n) => n.id));
+  const nodeIds = new Set(filteredGraph.nodes.map((n) => n.id))
   filteredGraph = {
     ...filteredGraph,
     edges: filteredGraph.edges.filter(
       (edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target)
     ),
-  };
+  }
 
-  return filteredGraph;
+  return filteredGraph
 }
 
 /**
@@ -185,38 +185,34 @@ async function prepareGraphForExport(
   filters?: GraphFilters
 ): Promise<IVMGraph> {
   // Get full graph from Neo4j
-  const graph = await getFullGraph(repoId);
+  const graph = await getFullGraph(repoId)
 
   if (!graph) {
-    throw new Error(`Graph not found for repository ${repoId}`);
+    throw new Error(`Graph not found for repository ${repoId}`)
   }
 
   // Apply LOD filtering
-  let filteredGraph = graph;
+  let filteredGraph = graph
   if (lodLevel !== undefined && lodLevel < 5) {
-    filteredGraph = applyLODFilter(filteredGraph, lodLevel);
+    filteredGraph = applyLODFilter(filteredGraph, lodLevel)
   }
 
   // Apply additional filters
   if (filters) {
-    filteredGraph = applyFilters(filteredGraph, filters);
+    filteredGraph = applyFilters(filteredGraph, filters)
   }
 
-  return filteredGraph;
+  return filteredGraph
 }
 
 /**
  * Export graph as PlantUML
  */
 export async function exportPlantUML(request: ExportRequest): Promise<ExportResult> {
-  const startTime = Date.now();
+  const startTime = Date.now()
 
   // Prepare graph
-  const graph = await prepareGraphForExport(
-    request.repoId,
-    request.lodLevel,
-    request.filters
-  );
+  const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
   // TODO: Import and use PlantUML exporter from core package
   // This requires the core package to be built successfully
@@ -235,12 +231,12 @@ export async function exportPlantUML(request: ExportRequest): Promise<ExportResu
       duration: 0,
       size: 0,
     },
-  };
+  }
 
-  const duration = Date.now() - startTime;
+  const duration = Date.now() - startTime
 
   return {
-    content: result.content as string,
+    content: result.content,
     mimeType: result.mimeType,
     extension: result.extension,
     filename: `${graph.metadata?.name || 'diagram'}.${result.extension}`,
@@ -248,20 +244,16 @@ export async function exportPlantUML(request: ExportRequest): Promise<ExportResu
       ...result.stats,
       duration,
     },
-  };
+  }
 }
 
 /**
  * Export graph as Mermaid
  */
 export async function exportMermaid(request: ExportRequest): Promise<ExportResult> {
-  const startTime = Date.now();
+  const startTime = Date.now()
 
-  const graph = await prepareGraphForExport(
-    request.repoId,
-    request.lodLevel,
-    request.filters
-  );
+  const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
   // TODO: Import and use Mermaid exporter from core package
   // const { exportToMermaid } = await import('@diagram-builder/core');
@@ -278,12 +270,12 @@ export async function exportMermaid(request: ExportRequest): Promise<ExportResul
       duration: 0,
       size: 0,
     },
-  };
+  }
 
-  const duration = Date.now() - startTime;
+  const duration = Date.now() - startTime
 
   return {
-    content: result.content as string,
+    content: result.content,
     mimeType: result.mimeType,
     extension: result.extension,
     filename: `${graph.metadata?.name || 'diagram'}.${result.extension}`,
@@ -291,20 +283,16 @@ export async function exportMermaid(request: ExportRequest): Promise<ExportResul
       ...result.stats,
       duration,
     },
-  };
+  }
 }
 
 /**
  * Export graph as Draw.io
  */
 export async function exportDrawio(request: ExportRequest): Promise<ExportResult> {
-  const startTime = Date.now();
+  const startTime = Date.now()
 
-  const graph = await prepareGraphForExport(
-    request.repoId,
-    request.lodLevel,
-    request.filters
-  );
+  const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
   // TODO: Import and use Draw.io exporter from core package
   // const { exportToDrawio } = await import('@diagram-builder/core');
@@ -321,12 +309,12 @@ export async function exportDrawio(request: ExportRequest): Promise<ExportResult
       duration: 0,
       size: 0,
     },
-  };
+  }
 
-  const duration = Date.now() - startTime;
+  const duration = Date.now() - startTime
 
   return {
-    content: result.content as string,
+    content: result.content,
     mimeType: result.mimeType,
     extension: result.extension,
     filename: `${graph.metadata?.name || 'diagram'}.${result.extension}`,
@@ -334,20 +322,16 @@ export async function exportDrawio(request: ExportRequest): Promise<ExportResult
       ...result.stats,
       duration,
     },
-  };
+  }
 }
 
 /**
  * Export graph as GLTF
  */
 export async function exportGLTF(request: ExportRequest): Promise<ExportResult> {
-  const startTime = Date.now();
+  const startTime = Date.now()
 
-  const graph = await prepareGraphForExport(
-    request.repoId,
-    request.lodLevel,
-    request.filters
-  );
+  const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
   // TODO: Import and use GLTF exporter from core package
   // const { exportToGLTF } = await import('@diagram-builder/core');
@@ -364,12 +348,12 @@ export async function exportGLTF(request: ExportRequest): Promise<ExportResult> 
       duration: 0,
       size: 0,
     },
-  };
+  }
 
-  const duration = Date.now() - startTime;
+  const duration = Date.now() - startTime
 
   return {
-    content: result.content as string,
+    content: result.content,
     mimeType: result.mimeType,
     extension: result.extension,
     filename: `${graph.metadata?.name || 'diagram'}.${result.extension}`,
@@ -377,7 +361,7 @@ export async function exportGLTF(request: ExportRequest): Promise<ExportResult> 
       ...result.stats,
       duration,
     },
-  };
+  }
 }
 
 /**
@@ -385,20 +369,16 @@ export async function exportGLTF(request: ExportRequest): Promise<ExportResult> 
  */
 export interface ImageExportRequest extends ExportRequest {
   /** Image format: png or svg */
-  format: 'png' | 'svg';
+  format: 'png' | 'svg'
 }
 
 /**
  * Export graph as PNG or SVG
  */
 export async function exportImage(request: ImageExportRequest): Promise<ExportResult> {
-  const startTime = Date.now();
+  const startTime = Date.now()
 
-  const graph = await prepareGraphForExport(
-    request.repoId,
-    request.lodLevel,
-    request.filters
-  );
+  const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
   if (request.format === 'svg') {
     // TODO: Import and use SVG exporter from core package
@@ -416,12 +396,12 @@ export async function exportImage(request: ImageExportRequest): Promise<ExportRe
         duration: 0,
         size: 0,
       },
-    };
+    }
 
-    const duration = Date.now() - startTime;
+    const duration = Date.now() - startTime
 
     return {
-      content: result.content as string,
+      content: result.content,
       mimeType: result.mimeType,
       extension: result.extension,
       filename: `${graph.metadata?.name || 'diagram'}.${result.extension}`,
@@ -429,7 +409,7 @@ export async function exportImage(request: ImageExportRequest): Promise<ExportRe
         ...result.stats,
         duration,
       },
-    };
+    }
   } else {
     // TODO: Import and use PNG exporter from core package
     // const { exportToPNG } = await import('@diagram-builder/core');
@@ -446,12 +426,12 @@ export async function exportImage(request: ImageExportRequest): Promise<ExportRe
         duration: 0,
         size: 0,
       },
-    };
+    }
 
-    const duration = Date.now() - startTime;
+    const duration = Date.now() - startTime
 
     return {
-      content: result.content as Buffer,
+      content: result.content,
       mimeType: result.mimeType,
       extension: result.extension,
       filename: `${graph.metadata?.name || 'diagram'}.${result.extension}`,
@@ -459,6 +439,6 @@ export async function exportImage(request: ImageExportRequest): Promise<ExportRe
         ...result.stats,
         duration,
       },
-    };
+    }
   }
 }

@@ -5,19 +5,19 @@
  * and camera flight integration
  */
 
-import React, { useEffect, useRef, useCallback, useMemo } from 'react';
-import * as Dialog from '@radix-ui/react-dialog';
-import { useSearchStore } from './searchStore';
-import { searchNodes, initializeSearchIndex } from './fuzzySearch';
-import { useDebounce } from '../../shared/hooks';
-import type { GraphNode, Position3D } from '../../shared/types';
+import React, { useEffect, useRef, useCallback, useMemo } from 'react'
+import * as Dialog from '@radix-ui/react-dialog'
+import { useSearchStore } from './searchStore'
+import { searchNodes, initializeSearchIndex } from './fuzzySearch'
+import { useDebounce } from '../../shared/hooks'
+import type { GraphNode, Position3D } from '../../shared/types'
 
 /**
  * Props for SearchBarModal
  */
 interface SearchBarModalProps {
-  nodes: GraphNode[];
-  onNodeSelect: (nodeId: string, position?: Position3D) => void;
+  nodes: GraphNode[]
+  onNodeSelect: (nodeId: string, position?: Position3D) => void
 }
 
 /**
@@ -26,17 +26,17 @@ interface SearchBarModalProps {
 function getNodeIcon(type: GraphNode['type']): string {
   switch (type) {
     case 'file':
-      return '📄';
+      return '📄'
     case 'class':
-      return '🏛️';
+      return '🏛️'
     case 'function':
-      return '⚡';
+      return '⚡'
     case 'method':
-      return '🔧';
+      return '🔧'
     case 'variable':
-      return '📦';
+      return '📦'
     default:
-      return '•';
+      return '•'
   }
 }
 
@@ -50,138 +50,130 @@ export function SearchBarModal({
   nodes,
   onNodeSelect,
 }: SearchBarModalProps): React.ReactElement | null {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // Store state
-  const isOpen = useSearchStore((state) => state.isOpen);
-  const query = useSearchStore((state) => state.query);
-  const results = useSearchStore((state) => state.results);
-  const selectedIndex = useSearchStore((state) => state.selectedIndex);
+  const isOpen = useSearchStore((state) => state.isOpen)
+  const query = useSearchStore((state) => state.query)
+  const results = useSearchStore((state) => state.results)
+  const selectedIndex = useSearchStore((state) => state.selectedIndex)
 
   // Store actions
-  const closeSearch = useSearchStore((state) => state.closeSearch);
-  const setQuery = useSearchStore((state) => state.setQuery);
-  const setResults = useSearchStore((state) => state.setResults);
-  const selectNext = useSearchStore((state) => state.selectNext);
-  const selectPrevious = useSearchStore((state) => state.selectPrevious);
-  const selectFirst = useSearchStore((state) => state.selectFirst);
-  const selectLast = useSearchStore((state) => state.selectLast);
-  const addToHistory = useSearchStore((state) => state.addToHistory);
+  const closeSearch = useSearchStore((state) => state.closeSearch)
+  const setQuery = useSearchStore((state) => state.setQuery)
+  const setResults = useSearchStore((state) => state.setResults)
+  const selectNext = useSearchStore((state) => state.selectNext)
+  const selectPrevious = useSearchStore((state) => state.selectPrevious)
+  const selectFirst = useSearchStore((state) => state.selectFirst)
+  const selectLast = useSearchStore((state) => state.selectLast)
+  const addToHistory = useSearchStore((state) => state.addToHistory)
 
   // Debounce query for performance
-  const debouncedQuery = useDebounce(query, 50);
+  const debouncedQuery = useDebounce(query, 50)
 
   // Initialize search index when nodes change
   useEffect(() => {
     if (nodes.length > 0) {
-      initializeSearchIndex(nodes);
+      initializeSearchIndex(nodes)
     }
-  }, [nodes]);
+  }, [nodes])
 
   // Perform search when debounced query changes
   useEffect(() => {
     if (debouncedQuery.trim()) {
-      const searchResults = searchNodes(debouncedQuery);
-      setResults(searchResults);
+      const searchResults = searchNodes(debouncedQuery)
+      setResults(searchResults)
     } else {
-      setResults([]);
+      setResults([])
     }
-  }, [debouncedQuery, setResults]);
+  }, [debouncedQuery, setResults])
 
   // Handle node selection
   const handleNodeSelect = useCallback(
     (node: GraphNode) => {
       if (query.trim()) {
-        addToHistory(query);
+        addToHistory(query)
       }
-      closeSearch();
-      onNodeSelect(node.id, node.position);
+      closeSearch()
+      onNodeSelect(node.id, node.position)
     },
     [query, addToHistory, closeSearch, onNodeSelect]
-  );
+  )
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       switch (event.key) {
         case 'ArrowDown':
-          event.preventDefault();
-          selectNext();
-          break;
+          event.preventDefault()
+          selectNext()
+          break
         case 'ArrowUp':
-          event.preventDefault();
-          selectPrevious();
-          break;
+          event.preventDefault()
+          selectPrevious()
+          break
         case 'Enter':
-          event.preventDefault();
+          event.preventDefault()
           if (results[selectedIndex]) {
-            handleNodeSelect(results[selectedIndex]);
+            handleNodeSelect(results[selectedIndex])
           }
-          break;
+          break
         case 'Home':
-          event.preventDefault();
-          selectFirst();
-          break;
+          event.preventDefault()
+          selectFirst()
+          break
         case 'End':
-          event.preventDefault();
-          selectLast();
-          break;
+          event.preventDefault()
+          selectLast()
+          break
         // Escape is handled by Radix Dialog
       }
     },
-    [
-      results,
-      selectedIndex,
-      selectNext,
-      selectPrevious,
-      selectFirst,
-      selectLast,
-      handleNodeSelect,
-    ]
-  );
+    [results, selectedIndex, selectNext, selectPrevious, selectFirst, selectLast, handleNodeSelect]
+  )
 
   // Handle input change
   const handleInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      setQuery(event.target.value);
+      setQuery(event.target.value)
     },
     [setQuery]
-  );
+  )
 
   // Handle clear button
   const handleClear = useCallback(() => {
-    setQuery('');
-    inputRef.current?.focus();
-  }, [setQuery]);
+    setQuery('')
+    inputRef.current?.focus()
+  }, [setQuery])
 
   // Handle result click
   const handleResultClick = useCallback(
     (node: GraphNode) => {
-      handleNodeSelect(node);
+      handleNodeSelect(node)
     },
     [handleNodeSelect]
-  );
+  )
 
   // Handle dialog open/close change
   const handleOpenChange = useCallback(
     (open: boolean) => {
       if (!open) {
-        closeSearch();
+        closeSearch()
       }
     },
     [closeSearch]
-  );
+  )
 
   // Compute aria-activedescendant
   const activeDescendant = useMemo(() => {
     if (selectedIndex >= 0 && results[selectedIndex]) {
-      return `search-result-${selectedIndex}`;
+      return `search-result-${selectedIndex}`
     }
-    return undefined;
-  }, [selectedIndex, results]);
+    return undefined
+  }, [selectedIndex, results])
 
   // Show empty state?
-  const showEmptyState = query.trim() && results.length === 0;
+  const showEmptyState = query.trim() && results.length === 0
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
@@ -201,8 +193,8 @@ export function SearchBarModal({
           aria-describedby={undefined}
           onKeyDown={handleKeyDown}
           onOpenAutoFocus={(event) => {
-            event.preventDefault();
-            inputRef.current?.focus();
+            event.preventDefault()
+            inputRef.current?.focus()
           }}
         >
           {/* Visually hidden title for accessibility */}
@@ -215,12 +207,7 @@ export function SearchBarModal({
             <div className="relative">
               {/* Search icon */}
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -254,12 +241,7 @@ export function SearchBarModal({
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   aria-label="Clear search"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -295,9 +277,7 @@ export function SearchBarModal({
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-xl flex-shrink-0">
-                      {getNodeIcon(node.type)}
-                    </span>
+                    <span className="text-xl flex-shrink-0">{getNodeIcon(node.type)}</span>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-gray-900 dark:text-white truncate">
                         {node.label}
@@ -323,12 +303,7 @@ export function SearchBarModal({
           )}
 
           {/* Screen reader announcement */}
-          <div
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-            className="sr-only"
-          >
+          <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
             {results.length > 0
               ? `${results.length} results for "${query}"`
               : query.trim()
@@ -360,5 +335,5 @@ export function SearchBarModal({
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
-  );
+  )
 }

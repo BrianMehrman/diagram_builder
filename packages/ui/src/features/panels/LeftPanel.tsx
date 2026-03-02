@@ -5,19 +5,19 @@
  * Contains: Workspace switcher, Codebases list, Import button, Collaboration.
  */
 
-import { useUIStore } from '../../shared/stores/uiStore';
-import { WorkspaceSwitcher } from '../workspace/WorkspaceSwitcher';
-import { CodebaseList } from '../workspace/CodebaseList';
-import { ImportCodebaseButton } from '../workspace/ImportCodebaseButton';
-import SessionControl from '../collaboration/SessionControl';
+import { useUIStore } from '../../shared/stores/uiStore'
+import { WorkspaceSwitcher } from '../workspace/WorkspaceSwitcher'
+import { CodebaseList } from '../workspace/CodebaseList'
+import { ImportCodebaseButton } from '../workspace/ImportCodebaseButton'
+import SessionControl from '../collaboration/SessionControl'
 
 interface LeftPanelProps {
-  workspaceId: string;
-  selectedCodebaseId?: string;
-  onCodebaseSelected: (codebaseId: string) => void;
-  refreshTrigger: number;
-  onImportSuccess: () => void;
-  onImportComplete: (repositoryId: string) => void;
+  workspaceId: string
+  selectedCodebaseId?: string
+  onCodebaseSelected: (codebaseId: string) => void
+  refreshTrigger: number
+  onImportSuccess: () => void
+  onImportComplete: (repositoryId: string) => void
 }
 
 export function LeftPanel({
@@ -28,8 +28,8 @@ export function LeftPanel({
   onImportSuccess,
   onImportComplete,
 }: LeftPanelProps) {
-  const isOpen = useUIStore((state) => state.isLeftPanelOpen);
-  const closePanel = useUIStore((state) => state.closeLeftPanel);
+  const isOpen = useUIStore((state) => state.isLeftPanelOpen)
+  const closePanel = useUIStore((state) => state.closeLeftPanel)
 
   return (
     <aside
@@ -103,5 +103,5 @@ export function LeftPanel({
         </div>
       </div>
     </aside>
-  );
+  )
 }

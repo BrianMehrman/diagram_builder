@@ -9,11 +9,8 @@
  * Compute wall opacity based on X-ray mode state.
  * Returns 1 (solid) when off, xrayOpacity when on.
  */
-export function computeXRayWallOpacity(
-  isXRayMode: boolean,
-  xrayOpacity: number
-): number {
-  return isXRayMode ? xrayOpacity : 1;
+export function computeXRayWallOpacity(isXRayMode: boolean, xrayOpacity: number): number {
+  return isXRayMode ? xrayOpacity : 1
 }
 
 /**
@@ -25,6 +22,6 @@ export function shouldShowXRayDetail(
   distanceToCamera: number,
   detailDistance: number
 ): boolean {
-  if (!isXRayMode) return false;
-  return distanceToCamera <= detailDistance;
+  if (!isXRayMode) return false
+  return distanceToCamera <= detailDistance
 }

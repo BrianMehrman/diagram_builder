@@ -1,6 +1,6 @@
-import type { GraphNode, Position3D } from '../../../../shared/types';
-import type { BlockLayout } from '../types';
-import { BUILDING_Y_OFFSET } from '../../views/cityViewUtils';
+import type { GraphNode, Position3D } from '../../../../shared/types'
+import type { BlockLayout } from '../types'
+import { BUILDING_Y_OFFSET } from '../../views/heightUtils'
 
 /**
  * Calculate the footprint (width x depth) of a file block based on child count and types.
@@ -10,19 +10,19 @@ import { BUILDING_Y_OFFSET } from '../../views/cityViewUtils';
  */
 export function calculateBlockFootprint(
   childCount: number,
-  childTypes: GraphNode['type'][],
+  childTypes: GraphNode['type'][]
 ): { width: number; depth: number } {
   if (childCount === 0) {
-    return { width: 4, depth: 4 };
+    return { width: 4, depth: 4 }
   }
 
-  let weightedCount = 0;
+  let weightedCount = 0
   for (const t of childTypes) {
-    weightedCount += t === 'class' || t === 'interface' || t === 'abstract_class' ? 1.5 : 1.0;
+    weightedCount += t === 'class' || t === 'interface' || t === 'abstract_class' ? 1.5 : 1.0
   }
 
-  const size = Math.min(20, Math.max(4, Math.ceil(Math.sqrt(weightedCount)) * 2 + 2));
-  return { width: size, depth: size };
+  const size = Math.min(20, Math.max(4, Math.ceil(Math.sqrt(weightedCount)) * 2 + 2))
+  return { width: size, depth: size }
 }
 
 /**
@@ -34,29 +34,29 @@ export function calculateBlockFootprint(
  */
 export function placeChildrenInGrid(
   children: GraphNode[],
-  footprint: { width: number; depth: number },
+  footprint: { width: number; depth: number }
 ): { nodeId: string; localPosition: Position3D }[] {
-  if (children.length === 0) return [];
+  if (children.length === 0) return []
 
-  const sorted = [...children].sort((a, b) => a.id.localeCompare(b.id));
-  const gridSize = Math.ceil(Math.sqrt(sorted.length));
+  const sorted = [...children].sort((a, b) => a.id.localeCompare(b.id))
+  const gridSize = Math.ceil(Math.sqrt(sorted.length))
 
-  const cellW = footprint.width / gridSize;
-  const cellD = footprint.depth / gridSize;
+  const cellW = footprint.width / gridSize
+  const cellD = footprint.depth / gridSize
 
   return sorted.map((child, i) => {
-    const col = i % gridSize;
-    const row = Math.floor(i / gridSize);
+    const col = i % gridSize
+    const row = Math.floor(i / gridSize)
 
     // Position relative to block center
-    const localX = (col + 0.5) * cellW - footprint.width / 2;
-    const localZ = (row + 0.5) * cellD - footprint.depth / 2;
+    const localX = (col + 0.5) * cellW - footprint.width / 2
+    const localZ = (row + 0.5) * cellD - footprint.depth / 2
 
     return {
       nodeId: child.id,
       localPosition: { x: localX, y: BUILDING_Y_OFFSET, z: localZ },
-    };
-  });
+    }
+  })
 }
 
 /**
@@ -66,74 +66,75 @@ export function placeChildrenInGrid(
  * Orphans are nodes whose parentId is missing or doesn't reference a file node.
  */
 export function buildFileBlockHierarchy(nodes: GraphNode[]): {
-  fileBlocks: Map<string, GraphNode[]>;
-  orphans: GraphNode[];
-  cycleBreaks: string[];
+  fileBlocks: Map<string, GraphNode[]>
+  orphans: GraphNode[]
+  cycleBreaks: string[]
 } {
-  const fileBlocks = new Map<string, GraphNode[]>();
-  const orphans: GraphNode[] = [];
-  const cycleBreaks: string[] = [];
+  const fileBlocks = new Map<string, GraphNode[]>()
+  const orphans: GraphNode[] = []
+  const cycleBreaks: string[] = []
 
   // Index all nodes by ID
-  const nodeMap = new Map<string, GraphNode>();
+  const nodeMap = new Map<string, GraphNode>()
   for (const node of nodes) {
-    nodeMap.set(node.id, node);
+    nodeMap.set(node.id, node)
   }
 
   // Identify file nodes
-  const fileNodeIds = new Set<string>();
+  const fileNodeIds = new Set<string>()
   for (const node of nodes) {
     if (node.type === 'file') {
-      fileNodeIds.add(node.id);
+      fileNodeIds.add(node.id)
       // Initialize empty children arrays for all file nodes
       if (!fileBlocks.has(node.id)) {
-        fileBlocks.set(node.id, []);
+        fileBlocks.set(node.id, [])
       }
     }
   }
 
   // Assign non-file nodes to their parent file blocks
   for (const node of nodes) {
-    if (node.type === 'file') continue;
+    if (node.type === 'file') continue
 
     if (!node.parentId) {
-      orphans.push(node);
-      continue;
+      orphans.push(node)
+      continue
     }
 
     // Walk parentId chain to find the owning file node
-    const visited = new Set<string>();
-    let currentId: string | undefined = node.parentId;
-    let foundFileId: string | undefined;
+    const visited = new Set<string>()
+    let currentId: string | undefined = node.parentId
+    let foundFileId: string | undefined
 
     while (currentId) {
       if (visited.has(currentId)) {
         // Cycle detected
-        cycleBreaks.push(node.id);
-        break;
+        cycleBreaks.push(node.id)
+        break
       }
-      visited.add(currentId);
+      visited.add(currentId)
 
       if (fileNodeIds.has(currentId)) {
-        foundFileId = currentId;
-        break;
+        foundFileId = currentId
+        break
       }
 
-      const parent = nodeMap.get(currentId);
-      currentId = parent?.parentId;
+      const parent = nodeMap.get(currentId)
+      currentId = parent?.parentId
     }
 
     if (foundFileId) {
-      fileBlocks.get(foundFileId)!.push(node);
+      const fileBlock = fileBlocks.get(foundFileId)
+      if (fileBlock) fileBlock.push(node)
     } else if (!cycleBreaks.includes(node.id)) {
-      orphans.push(node);
+      orphans.push(node)
     } else {
       // Cycle-broken nodes become orphans
-      orphans.push(node);
+      orphans.push(node)
     }
   }
 
-  return { fileBlocks, orphans, cycleBreaks };
+  return { fileBlocks, orphans, cycleBreaks }
 }
 
 /**
@@ -145,19 +146,19 @@ export function buildFileBlockHierarchy(nodes: GraphNode[]): {
 export function createCompoundBlock(
   files: GraphNode[],
   childrenByFile: Map<string, GraphNode[]>,
-  position: Position3D,
+  position: Position3D
 ): BlockLayout {
-  const allChildren: GraphNode[] = [];
-  const sortedFiles = [...files].sort((a, b) => a.id.localeCompare(b.id));
+  const allChildren: GraphNode[] = []
+  const sortedFiles = [...files].sort((a, b) => a.id.localeCompare(b.id))
 
   for (const file of sortedFiles) {
-    const children = childrenByFile.get(file.id) ?? [];
-    allChildren.push(...children);
+    const children = childrenByFile.get(file.id) ?? []
+    allChildren.push(...children)
   }
 
-  const childTypes = allChildren.map((c) => c.type);
-  const footprint = calculateBlockFootprint(allChildren.length, childTypes);
-  const placedChildren = placeChildrenInGrid(allChildren, footprint);
+  const childTypes = allChildren.map((c) => c.type)
+  const footprint = calculateBlockFootprint(allChildren.length, childTypes)
+  const placedChildren = placeChildrenInGrid(allChildren, footprint)
 
   return {
     fileId: sortedFiles.map((f) => f.id).join('+'),
@@ -165,7 +166,7 @@ export function createCompoundBlock(
     footprint,
     children: placedChildren,
     isMerged: true,
-  };
+  }
 }
 
 /**
@@ -177,35 +178,39 @@ export function positionBlocksInArc(
   blocks: { id: string; footprint: { width: number; depth: number } }[],
   arcStart: number,
   arcEnd: number,
-  radius: number,
+  radius: number
 ): { id: string; position: Position3D }[] {
-  if (blocks.length === 0) return [];
+  if (blocks.length === 0) return []
 
-  const arcSpan = arcEnd - arcStart;
-  const totalWidth = blocks.reduce((sum, b) => sum + b.footprint.width, 0);
+  const arcSpan = arcEnd - arcStart
+  const totalWidth = blocks.reduce((sum, b) => sum + b.footprint.width, 0)
 
   // If only one block, center it in the arc
   if (blocks.length === 1) {
-    const angle = arcStart + arcSpan / 2;
-    const effectiveRadius = Math.max(radius, 0.1);
-    return [{
-      id: blocks[0]!.id,
-      position: {
-        x: Math.cos(angle) * effectiveRadius,
-        y: 0,
-        z: Math.sin(angle) * effectiveRadius,
+    const angle = arcStart + arcSpan / 2
+    const effectiveRadius = Math.max(radius, 0.1)
+    const firstBlock = blocks[0]
+    if (!firstBlock) return []
+    return [
+      {
+        id: firstBlock.id,
+        position: {
+          x: Math.cos(angle) * effectiveRadius,
+          y: 0,
+          z: Math.sin(angle) * effectiveRadius,
+        },
       },
-    }];
+    ]
   }
 
-  const effectiveRadius = Math.max(radius, 0.1);
+  const effectiveRadius = Math.max(radius, 0.1)
 
   return blocks.map((block, i) => {
     // Proportion of arc based on footprint width
-    const widthBefore = blocks.slice(0, i).reduce((s, b) => s + b.footprint.width, 0);
-    const centerOffset = widthBefore + block.footprint.width / 2;
-    const proportion = centerOffset / totalWidth;
-    const angle = arcStart + proportion * arcSpan;
+    const widthBefore = blocks.slice(0, i).reduce((s, b) => s + b.footprint.width, 0)
+    const centerOffset = widthBefore + block.footprint.width / 2
+    const proportion = centerOffset / totalWidth
+    const angle = arcStart + proportion * arcSpan
 
     return {
       id: block.id,
@@ -214,6 +219,6 @@ export function positionBlocksInArc(
         y: 0,
         z: Math.sin(angle) * effectiveRadius,
       },
-    };
-  });
+    }
+  })
 }

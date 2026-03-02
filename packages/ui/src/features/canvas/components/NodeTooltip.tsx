@@ -5,12 +5,12 @@
  * (typically after camera flight arrival)
  */
 
-import { useCanvasStore } from '../store';
-import type { GraphNode } from '../../../shared/types';
+import { useCanvasStore } from '../store'
+import type { GraphNode } from '../../../shared/types'
 
 interface NodeTooltipProps {
-  nodes: GraphNode[];
-  className?: string;
+  nodes: GraphNode[]
+  className?: string
 }
 
 /**
@@ -19,17 +19,17 @@ interface NodeTooltipProps {
 function getTypeLabel(type: GraphNode['type']): string {
   switch (type) {
     case 'file':
-      return 'File';
+      return 'File'
     case 'class':
-      return 'Class';
+      return 'Class'
     case 'function':
-      return 'Function';
+      return 'Function'
     case 'method':
-      return 'Method';
+      return 'Method'
     case 'variable':
-      return 'Variable';
+      return 'Variable'
     default:
-      return 'Node';
+      return 'Node'
   }
 }
 
@@ -39,17 +39,17 @@ function getTypeLabel(type: GraphNode['type']): string {
 function getTypeIcon(type: GraphNode['type']): string {
   switch (type) {
     case 'file':
-      return '📄';
+      return '📄'
     case 'class':
-      return '📦';
+      return '📦'
     case 'function':
-      return '⚡';
+      return '⚡'
     case 'method':
-      return '🔧';
+      return '🔧'
     case 'variable':
-      return '📌';
+      return '📌'
     default:
-      return '•';
+      return '•'
   }
 }
 
@@ -59,22 +59,20 @@ function getTypeIcon(type: GraphNode['type']): string {
  * Displays a floating tooltip with node details when a node is highlighted
  */
 export function NodeTooltip({ nodes, className = '' }: NodeTooltipProps) {
-  const highlightedNodeId = useCanvasStore((state) => state.highlightedNodeId);
+  const highlightedNodeId = useCanvasStore((state) => state.highlightedNodeId)
 
   // Find the highlighted node
-  const highlightedNode = highlightedNodeId
-    ? nodes.find((n) => n.id === highlightedNodeId)
-    : null;
+  const highlightedNode = highlightedNodeId ? nodes.find((n) => n.id === highlightedNodeId) : null
 
   if (!highlightedNode) {
-    return null;
+    return null
   }
 
   // Extract metadata for display
-  const path = highlightedNode.metadata.path as string | undefined;
-  const language = highlightedNode.metadata.language as string | undefined;
-  const loc = highlightedNode.metadata.loc as number | undefined;
-  const complexity = highlightedNode.metadata.complexity as number | undefined;
+  const path = highlightedNode.metadata.path as string | undefined
+  const language = highlightedNode.metadata.language as string | undefined
+  const loc = highlightedNode.metadata.loc as number | undefined
+  const complexity = highlightedNode.metadata.complexity as number | undefined
 
   return (
     <div
@@ -92,9 +90,7 @@ export function NodeTooltip({ nodes, className = '' }: NodeTooltipProps) {
             <div className="text-xs text-gray-400 uppercase tracking-wider">
               {getTypeLabel(highlightedNode.type)}
             </div>
-            <div className="font-semibold text-white truncate">
-              {highlightedNode.label}
-            </div>
+            <div className="font-semibold text-white truncate">{highlightedNode.label}</div>
           </div>
         </div>
 
@@ -132,5 +128,5 @@ export function NodeTooltip({ nodes, className = '' }: NodeTooltipProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }

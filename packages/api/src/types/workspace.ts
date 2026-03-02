@@ -13,11 +13,11 @@
  */
 export interface WorkspaceMember {
   /** User ID */
-  userId: string;
+  userId: string
   /** Role in workspace */
-  role: 'owner' | 'admin' | 'editor' | 'viewer';
+  role: 'owner' | 'admin' | 'editor' | 'viewer'
   /** When the user joined */
-  joinedAt: string;
+  joinedAt: string
 }
 
 /**
@@ -26,15 +26,15 @@ export interface WorkspaceMember {
 export interface WorkspaceSettings {
   /** Default visualization settings */
   defaultCamera?: {
-    position: { x: number; y: number; z: number };
-    target: { x: number; y: number; z: number };
-  };
+    position: { x: number; y: number; z: number }
+    target: { x: number; y: number; z: number }
+  }
   /** Default LOD level */
-  defaultLodLevel?: number;
+  defaultLodLevel?: number
   /** Theme preference */
-  theme?: 'light' | 'dark' | 'auto';
+  theme?: 'light' | 'dark' | 'auto'
   /** Auto-save viewpoints */
-  autoSave?: boolean;
+  autoSave?: boolean
 }
 
 /**
@@ -44,17 +44,17 @@ export interface WorkspaceSettings {
 export interface WorkspaceSessionState {
   /** Current camera position (runtime state) */
   currentCamera?: {
-    position: { x: number; y: number; z: number };
-    target: { x: number; y: number; z: number };
-  };
+    position: { x: number; y: number; z: number }
+    target: { x: number; y: number; z: number }
+  }
   /** Currently selected node IDs */
-  selectedNodes?: string[];
+  selectedNodes?: string[]
   /** Active filters */
-  filters?: Record<string, unknown>;
+  filters?: Record<string, unknown>
   /** Current LOD level */
-  currentLodLevel?: number;
+  currentLodLevel?: number
   /** Custom session data */
-  [key: string]: unknown;
+  [key: string]: unknown
 }
 
 /**
@@ -62,27 +62,27 @@ export interface WorkspaceSessionState {
  */
 export interface Workspace {
   /** Unique workspace ID */
-  id: string;
+  id: string
   /** Workspace name */
-  name: string;
+  name: string
   /** Optional description */
-  description?: string;
+  description?: string
   /** Workspace owner user ID */
-  ownerId: string;
+  ownerId: string
   /** Repository IDs in this workspace */
-  repositories: string[];
+  repositories: string[]
   /** Workspace members */
-  members: WorkspaceMember[];
+  members: WorkspaceMember[]
   /** Workspace settings */
-  settings: WorkspaceSettings;
+  settings: WorkspaceSettings
   /** Session state (runtime data) */
-  sessionState: WorkspaceSessionState;
+  sessionState: WorkspaceSessionState
   /** Creation timestamp */
-  createdAt: string;
+  createdAt: string
   /** Last update timestamp */
-  updatedAt: string;
+  updatedAt: string
   /** Last accessed timestamp */
-  lastAccessedAt?: string;
+  lastAccessedAt?: string
 }
 
 /**
@@ -90,15 +90,15 @@ export interface Workspace {
  */
 export interface CreateWorkspaceInput {
   /** Workspace name */
-  name: string;
+  name: string
   /** Optional description */
-  description?: string;
+  description?: string
   /** Initial repository IDs (optional) */
-  repositories?: string[];
+  repositories?: string[]
   /** Initial settings (optional) */
-  settings?: WorkspaceSettings;
+  settings?: WorkspaceSettings
   /** Initial session state (optional) */
-  sessionState?: WorkspaceSessionState;
+  sessionState?: WorkspaceSessionState
 }
 
 /**
@@ -106,15 +106,15 @@ export interface CreateWorkspaceInput {
  */
 export interface UpdateWorkspaceInput {
   /** Workspace name */
-  name?: string;
+  name?: string
   /** Description */
-  description?: string;
+  description?: string
   /** Repository IDs */
-  repositories?: string[];
+  repositories?: string[]
   /** Settings */
-  settings?: WorkspaceSettings;
+  settings?: WorkspaceSettings
   /** Session state */
-  sessionState?: WorkspaceSessionState;
+  sessionState?: WorkspaceSessionState
 }
 
 /**
@@ -122,9 +122,9 @@ export interface UpdateWorkspaceInput {
  */
 export interface AddMemberInput {
   /** User ID to add */
-  userId: string;
+  userId: string
   /** Role to assign */
-  role: 'admin' | 'editor' | 'viewer';
+  role: 'admin' | 'editor' | 'viewer'
 }
 
 /**
@@ -132,5 +132,5 @@ export interface AddMemberInput {
  */
 export interface UpdateMemberInput {
   /** New role */
-  role: 'admin' | 'editor' | 'viewer';
+  role: 'admin' | 'editor' | 'viewer'
 }

@@ -49,11 +49,7 @@ test.describe('Workspace Management @P1', () => {
     await expect(canvas).toBeVisible()
   })
 
-  test('[P1] should display import codebase button', async ({
-    page,
-    testWorkspace,
-    mockGraph,
-  }) => {
+  test('[P1] should display import codebase button', async ({ page, testWorkspace, mockGraph }) => {
     // GIVEN: User is on workspace page
     await mockGraph()
     await page.goto(`/workspace/${testWorkspace.id}`)
@@ -122,11 +118,7 @@ test.describe('Workspace Management @P1', () => {
     await expect(page.locator('[data-testid="branch-input"]')).not.toBeVisible()
   })
 
-  test('[P1] should validate required fields', async ({
-    page,
-    testWorkspace,
-    mockGraph,
-  }) => {
+  test('[P1] should validate required fields', async ({ page, testWorkspace, mockGraph }) => {
     // GIVEN: Import modal is open
     await mockGraph()
     await page.goto(`/workspace/${testWorkspace.id}`)
@@ -145,11 +137,7 @@ test.describe('Workspace Management @P1', () => {
     await expect(errorMessage).toHaveText(/required/i)
   })
 
-  test('[P1] should validate git URL format', async ({
-    page,
-    testWorkspace,
-    mockGraph,
-  }) => {
+  test('[P1] should validate git URL format', async ({ page, testWorkspace, mockGraph }) => {
     // GIVEN: Import modal is open with git type selected
     await mockGraph()
     await page.goto(`/workspace/${testWorkspace.id}`)

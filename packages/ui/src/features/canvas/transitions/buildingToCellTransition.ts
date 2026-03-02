@@ -5,16 +5,16 @@
  * transition fade values when navigating from building → cell view.
  */
 
-import type { Position3D } from '../../../shared/types';
+import type { Position3D } from '../../../shared/types'
 
 interface CellEntryParams {
-  classPosition: Position3D;
-  cellRadius: number;
+  classPosition: Position3D
+  cellRadius: number
 }
 
 interface EntryTarget {
-  position: Position3D;
-  target: Position3D;
+  position: Position3D
+  target: Position3D
 }
 
 /**
@@ -24,33 +24,30 @@ interface EntryTarget {
  * for a good viewing angle of the organelles.
  */
 export function calculateCellEntryTarget(params: CellEntryParams): EntryTarget {
-  const { classPosition, cellRadius } = params;
+  const { classPosition, cellRadius } = params
 
   const entryPosition: Position3D = {
     x: classPosition.x + cellRadius * 0.3,
     y: classPosition.y + cellRadius * 0.2,
     z: classPosition.z + cellRadius * 0.5,
-  };
+  }
 
   const lookTarget: Position3D = {
     x: classPosition.x,
     y: classPosition.y,
     z: classPosition.z,
-  };
+  }
 
-  return { position: entryPosition, target: lookTarget };
+  return { position: entryPosition, target: lookTarget }
 }
 
 /**
  * Compute opacity for building floors during transition.
  * Focused floor stays fully visible. Non-focused floors fade out.
  */
-export function computeFloorFadeOpacity(
-  progress: number,
-  isFocused: boolean
-): number {
-  if (isFocused) return 1;
-  return Math.max(0, 1 - progress);
+export function computeFloorFadeOpacity(progress: number, isFocused: boolean): number {
+  if (isFocused) return 1
+  return Math.max(0, 1 - progress)
 }
 
 /**
@@ -59,11 +56,11 @@ export function computeFloorFadeOpacity(
  * At progress 1: box hidden, sphere visible.
  */
 export function computeRoomToCellProgress(progress: number): {
-  boxOpacity: number;
-  sphereOpacity: number;
+  boxOpacity: number
+  sphereOpacity: number
 } {
   return {
     boxOpacity: Math.max(0, 1 - progress),
     sphereOpacity: Math.min(1, progress),
-  };
+  }
 }

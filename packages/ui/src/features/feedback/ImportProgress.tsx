@@ -13,42 +13,42 @@
  * - On complete: modal closes, camera flies to root, success toast
  */
 
-import * as Dialog from '@radix-ui/react-dialog';
+import * as Dialog from '@radix-ui/react-dialog'
 
 interface ImportProgressProps {
   /** Whether the modal is open */
-  open: boolean;
+  open: boolean
   /** Progress value (0-100) */
-  progress: number;
+  progress: number
   /** Current status message */
-  status: string;
+  status: string
   /** Modal title (default: "Importing Codebase") */
-  title?: string;
+  title?: string
   /** Current stage of import */
-  stage?: 'cloning' | 'parsing' | 'building' | 'complete';
+  stage?: 'cloning' | 'parsing' | 'building' | 'complete'
   /** Estimated time remaining in milliseconds */
-  estimatedTimeRemaining?: number;
+  estimatedTimeRemaining?: number
   /** Whether to show the cancel button (default: true) */
-  showCancel?: boolean;
+  showCancel?: boolean
   /** Callback when cancel is clicked */
-  onCancel: () => void;
+  onCancel: () => void
 }
 
 /**
  * Format milliseconds to human-readable time string
  */
 function formatTime(ms: number): string {
-  const totalSeconds = Math.ceil(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
+  const totalSeconds = Math.ceil(ms / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
 
   if (minutes === 0) {
-    return `${seconds} seconds`;
+    return `${seconds} seconds`
   }
   if (seconds === 0) {
-    return minutes === 1 ? '1 minute' : `${minutes} minutes`;
+    return minutes === 1 ? '1 minute' : `${minutes} minutes`
   }
-  return `${minutes} minute${minutes > 1 ? 's' : ''} ${seconds} seconds`;
+  return `${minutes} minute${minutes > 1 ? 's' : ''} ${seconds} seconds`
 }
 
 export function ImportProgress({
@@ -61,11 +61,11 @@ export function ImportProgress({
   onCancel,
 }: ImportProgressProps) {
   // Clamp progress between 0 and 100
-  const clampedProgress = Math.min(100, Math.max(0, progress));
+  const clampedProgress = Math.min(100, Math.max(0, progress))
 
   // Generate unique IDs for accessibility
-  const titleId = 'import-progress-title';
-  const descriptionId = 'import-progress-description';
+  const titleId = 'import-progress-title'
+  const descriptionId = 'import-progress-description'
 
   return (
     <Dialog.Root open={open}>
@@ -77,7 +77,10 @@ export function ImportProgress({
           className="fixed top-1/4 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 rounded-lg p-6 w-[500px] max-w-[90vw] z-50 shadow-xl"
         >
           {/* Title */}
-          <Dialog.Title id={titleId} className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+          <Dialog.Title
+            id={titleId}
+            className="text-xl font-semibold mb-4 text-gray-900 dark:text-white"
+          >
             {title}
           </Dialog.Title>
 
@@ -132,5 +135,5 @@ export function ImportProgress({
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
-  );
+  )
 }

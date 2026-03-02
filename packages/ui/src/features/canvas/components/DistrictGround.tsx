@@ -5,28 +5,28 @@
  * Uses Three.js RingGeometry with thetaStart/thetaLength for arc segments.
  */
 
-import { useMemo } from 'react';
-import * as THREE from 'three';
+import { useMemo } from 'react'
+import * as THREE from 'three'
 
 interface DistrictGroundProps {
   /** Start angle of the arc in radians */
-  arcStart: number;
+  arcStart: number
   /** End angle of the arc in radians */
-  arcEnd: number;
+  arcEnd: number
   /** Inner radius of the arc segment */
-  innerRadius: number;
+  innerRadius: number
   /** Outer radius of the arc segment */
-  outerRadius: number;
+  outerRadius: number
   /** Fill color for the ground plane */
-  color: string;
+  color: string
   /** District label (used for accessibility) */
-  label: string;
+  label: string
   /** Whether to show the border line (default true) */
-  showBorder?: boolean;
+  showBorder?: boolean
 }
 
 /** Number of segments for arc geometry smoothness */
-const ARC_SEGMENTS = 32;
+const ARC_SEGMENTS = 32
 
 export function DistrictGround({
   arcStart,
@@ -37,46 +37,40 @@ export function DistrictGround({
   label,
   showBorder = true,
 }: DistrictGroundProps) {
-  const thetaLength = arcEnd - arcStart;
+  const thetaLength = arcEnd - arcStart
 
   // Build border line geometry as a BufferGeometry
   const borderGeometry = useMemo(() => {
-    if (!showBorder || thetaLength <= 0) return null;
+    if (!showBorder || thetaLength <= 0) return null
 
-    const points: THREE.Vector3[] = [];
+    const points: THREE.Vector3[] = []
 
     // Inner arc edge
     for (let i = 0; i <= ARC_SEGMENTS; i++) {
-      const angle = arcStart + (i / ARC_SEGMENTS) * thetaLength;
-      points.push(new THREE.Vector3(
-        Math.cos(angle) * innerRadius,
-        0.02,
-        Math.sin(angle) * innerRadius,
-      ));
+      const angle = arcStart + (i / ARC_SEGMENTS) * thetaLength
+      points.push(
+        new THREE.Vector3(Math.cos(angle) * innerRadius, 0.02, Math.sin(angle) * innerRadius)
+      )
     }
 
     // Outer arc edge (reversed for closed loop)
     for (let i = ARC_SEGMENTS; i >= 0; i--) {
-      const angle = arcStart + (i / ARC_SEGMENTS) * thetaLength;
-      points.push(new THREE.Vector3(
-        Math.cos(angle) * outerRadius,
-        0.02,
-        Math.sin(angle) * outerRadius,
-      ));
+      const angle = arcStart + (i / ARC_SEGMENTS) * thetaLength
+      points.push(
+        new THREE.Vector3(Math.cos(angle) * outerRadius, 0.02, Math.sin(angle) * outerRadius)
+      )
     }
 
     // Close the loop
-    points.push(new THREE.Vector3(
-      Math.cos(arcStart) * innerRadius,
-      0.02,
-      Math.sin(arcStart) * innerRadius,
-    ));
+    points.push(
+      new THREE.Vector3(Math.cos(arcStart) * innerRadius, 0.02, Math.sin(arcStart) * innerRadius)
+    )
 
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    return geometry;
-  }, [arcStart, thetaLength, innerRadius, outerRadius, showBorder]);
+    const geometry = new THREE.BufferGeometry().setFromPoints(points)
+    return geometry
+  }, [arcStart, thetaLength, innerRadius, outerRadius, showBorder])
 
-  if (thetaLength <= 0) return null;
+  if (thetaLength <= 0) return null
 
   return (
     <group name={`district-ground-${label}`}>
@@ -94,15 +88,19 @@ export function DistrictGround({
 
       {/* Border line using primitive to avoid SVG line type conflict */}
       {showBorder && borderGeometry && (
-        <primitive object={new THREE.Line(
-          borderGeometry,
-          new THREE.LineBasicMaterial({
-            color,
-            transparent: true,
-            opacity: 0.2,
-          }),
-        )} />
+        <primitive
+          object={
+            new THREE.Line(
+              borderGeometry,
+              new THREE.LineBasicMaterial({
+                color,
+                transparent: true,
+                opacity: 0.2,
+              })
+            )
+          }
+        />
       )}
     </group>
-  );
+  )
 }

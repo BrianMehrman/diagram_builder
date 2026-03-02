@@ -5,17 +5,14 @@
  */
 
 interface GlobalErrorFallbackProps {
-  error: Error;
-  resetError: () => void;
+  error: Error
+  resetError: () => void
 }
 
 /**
  * Global error fallback component
  */
-export function GlobalErrorFallback({
-  error,
-  resetError,
-}: GlobalErrorFallbackProps) {
+export function GlobalErrorFallback({ error, resetError }: GlobalErrorFallbackProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-white rounded-lg shadow-xl p-8">
@@ -36,9 +33,7 @@ export function GlobalErrorFallback({
             </svg>
           </div>
           <div className="ml-4">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Application Error
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900">Application Error</h1>
             <p className="text-gray-600 mt-1">
               An unexpected error occurred and the application needs to restart
             </p>
@@ -46,20 +41,14 @@ export function GlobalErrorFallback({
         </div>
 
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <h2 className="text-sm font-semibold text-red-800 mb-2">
-            Error Details
-          </h2>
-          <p className="text-red-700 font-mono text-sm break-all">
-            {error.message}
-          </p>
+          <h2 className="text-sm font-semibold text-red-800 mb-2">Error Details</h2>
+          <p className="text-red-700 font-mono text-sm break-all">{error.message}</p>
           {error.stack && (
             <details className="mt-3">
               <summary className="text-xs text-red-600 cursor-pointer hover:text-red-800">
                 Stack Trace
               </summary>
-              <pre className="mt-2 text-xs text-red-600 overflow-auto max-h-48">
-                {error.stack}
-              </pre>
+              <pre className="mt-2 text-xs text-red-600 overflow-auto max-h-48">{error.stack}</pre>
             </details>
           )}
         </div>
@@ -72,7 +61,7 @@ export function GlobalErrorFallback({
             Reload Application
           </button>
           <button
-            onClick={() => window.location.href = '/'}
+            onClick={() => (window.location.href = '/')}
             className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition-colors"
           >
             Go to Home
@@ -94,5 +83,5 @@ export function GlobalErrorFallback({
         </div>
       </div>
     </div>
-  );
+  )
 }

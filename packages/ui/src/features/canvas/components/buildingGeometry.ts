@@ -6,7 +6,7 @@
  * actual Three.js geometry (story 9-9).
  */
 
-import type { GraphNode } from '../../../shared/types';
+import type { GraphNode } from '../../../shared/types'
 import {
   CLASS_WIDTH,
   CLASS_DEPTH,
@@ -14,56 +14,56 @@ import {
   KIOSK_DEPTH,
   KIOSK_HEIGHT,
   CRATE_SIZE,
-  FLOOR_HEIGHT,
   GLASS_OPACITY,
   ABSTRACT_OPACITY,
   BUILDING_WIDTH,
   BUILDING_DEPTH,
+  getMethodBasedHeight,
+  getEncodedHeight,
+  getContainmentHeight,
+  getFootprintScale,
+} from '../views/heightUtils'
+import {
   BASE_CLASS_ROUGHNESS,
   BASE_CLASS_METALNESS,
   BASE_CLASS_FOOTPRINT_MULTIPLIER,
-  getMethodBasedHeight,
-  getEncodedHeight,
-  getBuildingHeight,
-  getContainmentHeight,
-  getFootprintScale,
-} from '../views/cityViewUtils';
-import type { EncodedHeightOptions } from '../views/cityViewUtils';
-import { getMethodCount } from './buildings/floorBandUtils';
+} from '../views/colorUtils'
+import type { EncodedHeightOptions } from '../views/heightUtils'
+import { getMethodCount } from './buildings/floorBandUtils'
 
 /**
  * Geometry shape types for Three.js
  */
-export type GeometryShape = 'box' | 'cylinder' | 'cone' | 'sphere' | 'hexagonal' | 'octagonal';
+export type GeometryShape = 'box' | 'cylinder' | 'cone' | 'sphere' | 'hexagonal' | 'octagonal'
 
 /**
  * Describes the geometry dimensions for a building.
  */
 export interface GeometryConfig {
-  shape: GeometryShape;
-  width: number;
-  height: number;
-  depth: number;
+  shape: GeometryShape
+  width: number
+  height: number
+  depth: number
 }
 
 /**
  * Describes the material appearance for a building.
  */
 export interface MaterialConfig {
-  opacity: number;
-  transparent: boolean;
-  wireframe: boolean;
-  roughness: number;
-  metalness: number;
-  dashed: boolean;
+  opacity: number
+  transparent: boolean
+  wireframe: boolean
+  roughness: number
+  metalness: number
+  dashed: boolean
 }
 
 /**
  * Combined building configuration returned by the factory.
  */
 export interface BuildingConfig {
-  geometry: GeometryConfig;
-  material: MaterialConfig;
+  geometry: GeometryConfig
+  material: MaterialConfig
 }
 
 /**
@@ -78,25 +78,23 @@ export interface BuildingConfig {
 export function getBuildingConfig(
   node: GraphNode,
   encodingOptions?: EncodedHeightOptions,
-  isBaseClass?: boolean,
+  isBaseClass?: boolean
 ): BuildingConfig {
-  const resolvedMethodCount = getMethodCount(node);
+  const resolvedMethodCount = getMethodCount(node)
 
   // For class-like types, height is driven by containment (method room stacking).
   // The encoding metric shifts to footprint scaling instead of height.
-  const containmentHeight = getContainmentHeight(resolvedMethodCount);
-  const footprintScale = encodingOptions
-    ? getFootprintScale(node, encodingOptions)
-    : 1.0;
+  const containmentHeight = getContainmentHeight(resolvedMethodCount)
+  const footprintScale = encodingOptions ? getFootprintScale(node, encodingOptions) : 1.0
 
   // For non-class types, use the legacy height calculation
   const legacyHeight = encodingOptions
     ? getEncodedHeight(node, encodingOptions, resolvedMethodCount)
-    : getMethodBasedHeight(resolvedMethodCount || undefined, node.depth);
+    : getMethodBasedHeight(resolvedMethodCount || undefined, node.depth)
 
   switch (node.type) {
     case 'class': {
-      const baseMultiplier = isBaseClass ? BASE_CLASS_FOOTPRINT_MULTIPLIER : 1.0;
+      const baseMultiplier = isBaseClass ? BASE_CLASS_FOOTPRINT_MULTIPLIER : 1.0
       return {
         geometry: {
           shape: 'box',
@@ -112,7 +110,7 @@ export function getBuildingConfig(
           metalness: isBaseClass ? BASE_CLASS_METALNESS : 0.1,
           dashed: false,
         },
-      };
+      }
     }
 
     case 'function':
@@ -132,7 +130,7 @@ export function getBuildingConfig(
           metalness: 0.2,
           dashed: false,
         },
-      };
+      }
 
     case 'variable':
       return {
@@ -150,7 +148,7 @@ export function getBuildingConfig(
           metalness: 0.0,
           dashed: false,
         },
-      };
+      }
 
     case 'interface':
       return {
@@ -168,7 +166,7 @@ export function getBuildingConfig(
           metalness: 0.6,
           dashed: false,
         },
-      };
+      }
 
     case 'abstract_class':
       return {
@@ -186,7 +184,7 @@ export function getBuildingConfig(
           metalness: 0.3,
           dashed: true,
         },
-      };
+      }
 
     case 'enum':
       return {
@@ -204,11 +202,11 @@ export function getBuildingConfig(
           metalness: 0.4,
           dashed: false,
         },
-      };
+      }
 
     // file, method, and any unknown types use default
     default: {
-      const defaultHeight = legacyHeight;
+      const defaultHeight = legacyHeight
       return {
         geometry: {
           shape: 'box',
@@ -224,7 +222,7 @@ export function getBuildingConfig(
           metalness: 0.1,
           dashed: false,
         },
-      };
+      }
     }
   }
 }

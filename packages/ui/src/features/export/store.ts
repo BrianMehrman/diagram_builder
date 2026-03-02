@@ -4,14 +4,14 @@
  * State management for graph export functionality
  */
 
-import { create } from 'zustand';
+import { create } from 'zustand'
 import type {
   ExportFormat,
   ExportFormatInfo,
   ExportOptions,
   ExportResult,
   ExportState,
-} from './types';
+} from './types'
 
 /**
  * Available export formats with metadata
@@ -71,20 +71,20 @@ export const EXPORT_FORMATS: ExportFormatInfo[] = [
     category: 'image',
     supportsPreview: true,
   },
-];
+]
 
 interface ExportStoreState extends ExportState {
-  selectedFormat: ExportFormat;
-  selectedLodLevel: number;
-  selectedRepositoryId: string | null;
+  selectedFormat: ExportFormat
+  selectedLodLevel: number
+  selectedRepositoryId: string | null
 
   // Actions
-  setFormat: (format: ExportFormat) => void;
-  setLodLevel: (level: number) => void;
-  setRepositoryId: (id: string | null) => void;
-  startExport: (options: ExportOptions) => Promise<void>;
-  clearResult: () => void;
-  reset: () => void;
+  setFormat: (format: ExportFormat) => void
+  setLodLevel: (level: number) => void
+  setRepositoryId: (id: string | null) => void
+  startExport: (options: ExportOptions) => Promise<void>
+  clearResult: () => void
+  reset: () => void
 }
 
 const INITIAL_STATE: ExportState = {
@@ -92,7 +92,7 @@ const INITIAL_STATE: ExportState = {
   result: null,
   error: null,
   progress: 0,
-};
+}
 
 /**
  * Export store
@@ -104,15 +104,15 @@ export const useExportStore = create<ExportStoreState>((set) => ({
   selectedRepositoryId: null,
 
   setFormat: (format: ExportFormat) => {
-    set({ selectedFormat: format });
+    set({ selectedFormat: format })
   },
 
   setLodLevel: (level: number) => {
-    set({ selectedLodLevel: level });
+    set({ selectedLodLevel: level })
   },
 
   setRepositoryId: (id: string | null) => {
-    set({ selectedRepositoryId: id });
+    set({ selectedRepositoryId: id })
   },
 
   startExport: async (options: ExportOptions) => {
@@ -120,16 +120,14 @@ export const useExportStore = create<ExportStoreState>((set) => ({
       status: 'exporting',
       error: null,
       progress: 0,
-    });
+    })
 
     try {
-      const { format, lodLevel, repositoryId, filters, formatOptions } = options;
+      const { format, lodLevel, repositoryId, filters, formatOptions } = options
 
       // Determine API endpoint based on format
       const endpoint =
-        format === 'png' || format === 'svg'
-          ? '/api/export/image'
-          : `/api/export/${format}`;
+        format === 'png' || format === 'svg' ? '/api/export/image' : `/api/export/${format}`
 
       // Build request body
       const body: Record<string, unknown> = {
@@ -137,14 +135,14 @@ export const useExportStore = create<ExportStoreState>((set) => ({
         lodLevel,
         ...(filters && { filters }),
         ...(formatOptions && { options: formatOptions }),
-      };
+      }
 
       // Add format for image endpoint
       if (format === 'png' || format === 'svg') {
-        body.format = format;
+        body.format = format
       }
 
-      set({ progress: 50 });
+      set({ progress: 50 })
 
       // Make API request
       const response = await fetch(endpoint, {
@@ -153,26 +151,30 @@ export const useExportStore = create<ExportStoreState>((set) => ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
-      });
+      })
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Export failed');
+        const errorData: unknown = await response.json()
+        const detail =
+          errorData != null && typeof errorData === 'object'
+            ? (errorData as { detail?: string }).detail
+            : undefined
+        throw new Error(detail ?? 'Export failed')
       }
 
-      const result: ExportResult = await response.json();
+      const result = (await response.json()) as unknown as ExportResult
 
       set({
         status: 'success',
         result,
         progress: 100,
-      });
+      })
     } catch (error) {
       set({
         status: 'error',
         error: error instanceof Error ? error.message : 'Unknown error',
         progress: 0,
-      });
+      })
     }
   },
 
@@ -182,7 +184,7 @@ export const useExportStore = create<ExportStoreState>((set) => ({
       result: null,
       error: null,
       progress: 0,
-    });
+    })
   },
 
   reset: () => {
@@ -191,17 +193,17 @@ export const useExportStore = create<ExportStoreState>((set) => ({
       selectedFormat: 'plantuml',
       selectedLodLevel: 2,
       selectedRepositoryId: null,
-    });
+    })
   },
-}));
+}))
 
 /**
  * Get format info by ID
  */
 export function getFormatInfo(format: ExportFormat): ExportFormatInfo {
-  const info = EXPORT_FORMATS.find((f) => f.id === format);
+  const info = EXPORT_FORMATS.find((f) => f.id === format)
   if (!info) {
-    throw new Error(`Unknown format: ${format}`);
+    throw new Error(`Unknown format: ${format}`)
   }
-  return info;
+  return info
 }

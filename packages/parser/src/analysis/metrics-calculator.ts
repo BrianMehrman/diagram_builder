@@ -108,7 +108,7 @@ function calculateComplexityForFunction(node: SyntaxNode): number {
         break
       case 'else_clause':
         // Only count else if, not plain else
-        if (n.children.some(c => c.type === 'if_statement')) {
+        if (n.children.some((c) => c.type === 'if_statement')) {
           complexity++
         }
         break
@@ -131,7 +131,7 @@ function calculateComplexityForFunction(node: SyntaxNode): number {
         break
       case 'binary_expression':
         // Count logical operators (&& and ||)
-        if (n.children.some(c => c.text === '&&' || c.text === '||')) {
+        if (n.children.some((c) => c.text === '&&' || c.text === '||')) {
           complexity++
         }
         break

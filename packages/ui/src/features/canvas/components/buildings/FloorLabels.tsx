@@ -5,27 +5,27 @@
  * Visible only at LOD level 3 or higher.
  */
 
-import { Text } from '@react-three/drei';
-import type { GraphNode } from '../../../../shared/types';
+import { Text } from '@react-three/drei'
+import type { GraphNode } from '../../../../shared/types'
 
 interface FloorLabelsProps {
-  methods: GraphNode[];
-  totalHeight: number;
-  buildingWidth: number;
-  lodLevel: number;
+  methods: GraphNode[]
+  totalHeight: number
+  buildingWidth: number
+  lodLevel: number
 }
 
 export function FloorLabels({ methods, totalHeight, buildingWidth, lodLevel }: FloorLabelsProps) {
-  if (lodLevel < 3 || methods.length === 0) return null;
+  if (lodLevel < 3 || methods.length === 0) return null
 
-  const floorCount = methods.length;
-  const floorHeight = totalHeight / floorCount;
+  const floorCount = methods.length
+  const floorHeight = totalHeight / floorCount
 
   return (
     <>
       {methods.map((method, index) => {
-        const y = floorHeight * (index + 0.5);
-        const label = (method.label ?? method.id).split('/').pop()?.split('.').pop() ?? method.id;
+        const y = floorHeight * (index + 0.5)
+        const label = (method.label ?? method.id).split('/').pop()?.split('.').pop() ?? method.id
 
         return (
           <Text
@@ -40,8 +40,8 @@ export function FloorLabels({ methods, totalHeight, buildingWidth, lodLevel }: F
           >
             {label}
           </Text>
-        );
+        )
       })}
     </>
-  );
+  )
 }

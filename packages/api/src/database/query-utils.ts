@@ -5,8 +5,8 @@
  * Enforces Neo4j naming conventions: PascalCase nodes, camelCase properties, UPPER_SNAKE_CASE relationships
  */
 
-import { getDriver } from './neo4j-config';
-import { Session, QueryResult, ManagedTransaction } from 'neo4j-driver';
+import { getDriver } from './neo4j-config'
+import { Session, QueryResult, ManagedTransaction } from 'neo4j-driver'
 
 /**
  * Run a single Cypher query with parameters
@@ -19,19 +19,19 @@ export async function runQuery<T = unknown>(
   cypher: string,
   params: Record<string, unknown> = {}
 ): Promise<T[]> {
-  const driver = getDriver();
-  const session: Session = driver.session();
+  const driver = getDriver()
+  const session: Session = driver.session()
 
   try {
-    const result: QueryResult = await session.run(cypher, params);
-    return result.records.map(record => record.toObject()) as T[];
+    const result: QueryResult = await session.run(cypher, params)
+    return result.records.map((record) => record.toObject()) as T[]
   } catch (error) {
-    console.error('Neo4j query error:', error);
-    console.error('Query:', cypher);
-    console.error('Params:', params);
-    throw error;
+    console.error('Neo4j query error:', error)
+    console.error('Query:', cypher)
+    console.error('Params:', params)
+    throw error
   } finally {
-    await session.close();
+    await session.close()
   }
 }
 
@@ -39,7 +39,7 @@ export async function runQuery<T = unknown>(
  * Query result with single value
  */
 interface SingleResult {
-  result: number;
+  result: number
 }
 
 /**
@@ -53,16 +53,16 @@ export async function runSingleQuery(
   cypher: string,
   params: Record<string, unknown> = {}
 ): Promise<number> {
-  const results = await runQuery<SingleResult>(cypher, params);
-  return results[0]?.result ?? 0;
+  const results = await runQuery<SingleResult>(cypher, params)
+  return results[0]?.result ?? 0
 }
 
 /**
  * Transaction query definition
  */
 export interface TransactionQuery {
-  cypher: string;
-  params?: Record<string, unknown>;
+  cypher: string
+  params?: Record<string, unknown>
 }
 
 /**
@@ -72,20 +72,20 @@ export interface TransactionQuery {
  * @param queries - Array of queries to run
  */
 export async function runTransaction(queries: TransactionQuery[]): Promise<void> {
-  const driver = getDriver();
-  const session: Session = driver.session();
+  const driver = getDriver()
+  const session: Session = driver.session()
 
   try {
     await session.executeWrite(async (tx: ManagedTransaction) => {
       for (const query of queries) {
-        await tx.run(query.cypher, query.params || {});
+        await tx.run(query.cypher, query.params || {})
       }
-    });
+    })
   } catch (error) {
-    console.error('Neo4j transaction error:', error);
-    console.error('Queries:', queries);
-    throw error;
+    console.error('Neo4j transaction error:', error)
+    console.error('Queries:', queries)
+    throw error
   } finally {
-    await session.close();
+    await session.close()
   }
 }

@@ -158,9 +158,7 @@ export function classifyPackage(packageName: string): InfrastructureType {
  * @param nodes - External DependencyNodes to classify
  * @returns Map of nodeId → InfrastructureType
  */
-export function classifyExternalNodes(
-  nodes: DependencyNode[],
-): Map<string, InfrastructureType> {
+export function classifyExternalNodes(nodes: DependencyNode[]): Map<string, InfrastructureType> {
   const result = new Map<string, InfrastructureType>()
 
   for (const node of nodes) {

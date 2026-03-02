@@ -56,9 +56,9 @@ describe('Inheritance Extractor', () => {
       const inheritance = extractInheritance(parseResult.tree)
 
       expect(inheritance).toHaveLength(2)
-      expect(inheritance.some(i => i.child === 'Stream' && i.parent === 'IReadable')).toBe(true)
-      expect(inheritance.some(i => i.child === 'Stream' && i.parent === 'IWritable')).toBe(true)
-      expect(inheritance.every(i => i.type === 'implements')).toBe(true)
+      expect(inheritance.some((i) => i.child === 'Stream' && i.parent === 'IReadable')).toBe(true)
+      expect(inheritance.some((i) => i.child === 'Stream' && i.parent === 'IWritable')).toBe(true)
+      expect(inheritance.every((i) => i.type === 'implements')).toBe(true)
     })
 
     it('should extract both extends and implements', () => {
@@ -73,8 +73,16 @@ describe('Inheritance Extractor', () => {
       const inheritance = extractInheritance(parseResult.tree)
 
       expect(inheritance).toHaveLength(2)
-      expect(inheritance.some(i => i.child === 'DerivedClass' && i.parent === 'BaseClass' && i.type === 'extends')).toBe(true)
-      expect(inheritance.some(i => i.child === 'DerivedClass' && i.parent === 'IInterface' && i.type === 'implements')).toBe(true)
+      expect(
+        inheritance.some(
+          (i) => i.child === 'DerivedClass' && i.parent === 'BaseClass' && i.type === 'extends'
+        )
+      ).toBe(true)
+      expect(
+        inheritance.some(
+          (i) => i.child === 'DerivedClass' && i.parent === 'IInterface' && i.type === 'implements'
+        )
+      ).toBe(true)
     })
 
     it('should handle multi-level inheritance chains', () => {
@@ -88,8 +96,8 @@ describe('Inheritance Extractor', () => {
       const inheritance = extractInheritance(parseResult.tree)
 
       expect(inheritance).toHaveLength(2)
-      expect(inheritance.some(i => i.child === 'Mammal' && i.parent === 'Animal')).toBe(true)
-      expect(inheritance.some(i => i.child === 'Dog' && i.parent === 'Mammal')).toBe(true)
+      expect(inheritance.some((i) => i.child === 'Mammal' && i.parent === 'Animal')).toBe(true)
+      expect(inheritance.some((i) => i.child === 'Dog' && i.parent === 'Mammal')).toBe(true)
     })
 
     it('should extract interface extends relationships', () => {
@@ -118,8 +126,8 @@ describe('Inheritance Extractor', () => {
       const inheritance = extractInheritance(parseResult.tree)
 
       expect(inheritance).toHaveLength(2)
-      expect(inheritance.some(i => i.child === 'ICombined' && i.parent === 'IFoo')).toBe(true)
-      expect(inheritance.some(i => i.child === 'ICombined' && i.parent === 'IBar')).toBe(true)
+      expect(inheritance.some((i) => i.child === 'ICombined' && i.parent === 'IFoo')).toBe(true)
+      expect(inheritance.some((i) => i.child === 'ICombined' && i.parent === 'IBar')).toBe(true)
     })
 
     it('should include source location information', () => {

@@ -10,7 +10,11 @@ interface SuccessNotificationProps {
   autoHide?: boolean
 }
 
-export function SuccessNotification({ message, onDismiss, autoHide = true }: SuccessNotificationProps) {
+export function SuccessNotification({
+  message,
+  onDismiss,
+  autoHide = true,
+}: SuccessNotificationProps) {
   // Auto-hide after 3 seconds if enabled
   if (autoHide && onDismiss) {
     setTimeout(onDismiss, 3000)
@@ -22,12 +26,7 @@ export function SuccessNotification({ message, onDismiss, autoHide = true }: Suc
         {/* Success Icon */}
         <div className="flex-shrink-0 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
 

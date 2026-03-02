@@ -5,27 +5,27 @@
  * Includes a hover state and double-click to enter the class (cell mode).
  */
 
-import { useState } from 'react';
-import { DoubleSide } from 'three';
-import { Text } from '@react-three/drei';
-import { useCanvasStore } from '../store';
-import type { GraphNode, Position3D } from '../../../shared/types';
+import { useState } from 'react'
+import { DoubleSide } from 'three'
+import { Text } from '@react-three/drei'
+import { useCanvasStore } from '../store'
+import type { GraphNode, Position3D } from '../../../shared/types'
 
 interface FloorProps {
-  classNode: GraphNode;
-  y: number;
-  width: number;
-  depth: number;
-  origin: Position3D;
+  classNode: GraphNode
+  y: number
+  width: number
+  depth: number
+  origin: Position3D
 }
 
 export function Floor({ classNode, y, width, depth, origin }: FloorProps) {
-  const [hovered, setHovered] = useState(false);
-  const enterNode = useCanvasStore((s) => s.enterNode);
+  const [hovered, setHovered] = useState(false)
+  const enterNode = useCanvasStore((s) => s.enterNode)
 
   const handleDoubleClick = () => {
-    enterNode(classNode.id, classNode.type);
-  };
+    enterNode(classNode.id, classNode.type)
+  }
 
   return (
     <group>
@@ -59,5 +59,5 @@ export function Floor({ classNode, y, width, depth, origin }: FloorProps) {
         {classNode.label}
       </Text>
     </group>
-  );
+  )
 }

@@ -8,7 +8,7 @@
  * Rendered inside the RightPanel Layout section.
  */
 
-import { useCanvasStore } from './store';
+import { useCanvasStore } from './store'
 
 const LOD_LEVELS = [
   { value: 0, label: 'Files only' },
@@ -16,21 +16,21 @@ const LOD_LEVELS = [
   { value: 2, label: '+ Functions' },
   { value: 3, label: '+ Methods' },
   { value: 4, label: 'All details' },
-];
+]
 
 export function LodControls() {
-  const lodLevel = useCanvasStore((s) => s.lodLevel);
-  const setLodLevel = useCanvasStore((s) => s.setLodLevel);
-  const lodManualOverride = useCanvasStore((s) => s.lodManualOverride);
-  const setLodManualOverride = useCanvasStore((s) => s.setLodManualOverride);
+  const lodLevel = useCanvasStore((s) => s.lodLevel)
+  const setLodLevel = useCanvasStore((s) => s.setLodLevel)
+  const lodManualOverride = useCanvasStore((s) => s.lodManualOverride)
+  const setLodManualOverride = useCanvasStore((s) => s.setLodManualOverride)
 
   function handleToggleManual() {
-    setLodManualOverride(!lodManualOverride);
+    setLodManualOverride(!lodManualOverride)
   }
 
   function handleSelectLevel(value: number) {
-    if (!lodManualOverride) setLodManualOverride(true);
-    setLodLevel(value);
+    if (!lodManualOverride) setLodManualOverride(true)
+    setLodLevel(value)
   }
 
   return (
@@ -76,5 +76,5 @@ export function LodControls() {
       {/* Level label */}
       <p className="text-gray-500 text-xs">{LOD_LEVELS[lodLevel]?.label ?? ''}</p>
     </div>
-  );
+  )
 }

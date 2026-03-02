@@ -5,10 +5,10 @@
  * Implements CRUD operations and member management
  */
 
-import { v4 as uuidv4 } from 'uuid';
-import { runQuery } from '../database/query-utils';
-import { buildCacheKey } from '../cache/cache-keys';
-import * as cache from '../cache/cache-utils';
+import { v4 as uuidv4 } from 'uuid'
+import { runQuery } from '../database/query-utils'
+import { buildCacheKey } from '../cache/cache-keys'
+import * as cache from '../cache/cache-utils'
 import type {
   Workspace,
   CreateWorkspaceInput,
@@ -16,7 +16,7 @@ import type {
   WorkspaceMember,
   AddMemberInput,
   UpdateMemberInput,
-} from '../types/workspace';
+} from '../types/workspace'
 
 /**
  * Create a new workspace
@@ -29,8 +29,8 @@ export async function createWorkspace(
   input: CreateWorkspaceInput,
   userId: string
 ): Promise<Workspace> {
-  const workspaceId = uuidv4();
-  const now = new Date().toISOString();
+  const workspaceId = uuidv4()
+  const now = new Date().toISOString()
 
   const workspace: Workspace = {
     id: workspaceId,
@@ -49,7 +49,7 @@ export async function createWorkspace(
     sessionState: input.sessionState || {},
     createdAt: now,
     updatedAt: now,
-  };
+  }
 
   // Store in Neo4j
   const query = `
@@ -66,7 +66,7 @@ export async function createWorkspace(
       updatedAt: $updatedAt
     })
     RETURN w
-  `;
+  `
 
   await runQuery(query, {
     id: workspace.id,
@@ -79,12 +79,12 @@ export async function createWorkspace(
     sessionState: JSON.stringify(workspace.sessionState),
     createdAt: workspace.createdAt,
     updatedAt: workspace.updatedAt,
-  });
+  })
 
   // Invalidate the user's workspace list cache
-  await cache.invalidate(buildCacheKey('workspace', `user:${userId}:list`));
+  await cache.invalidate(buildCacheKey('workspace', `user:${userId}:list`))
 
-  return workspace;
+  return workspace
 }
 
 /**
@@ -95,10 +95,10 @@ export async function createWorkspace(
  */
 export async function getWorkspace(workspaceId: string): Promise<Workspace | null> {
   // Check cache first
-  const cacheKey = buildCacheKey('workspace', workspaceId);
-  const cached = await cache.get<Workspace>(cacheKey);
+  const cacheKey = buildCacheKey('workspace', workspaceId)
+  const cached = await cache.get<Workspace>(cacheKey)
   if (cached) {
-    return cached;
+    return cached
   }
 
   const query = `
@@ -109,64 +109,65 @@ export async function getWorkspace(workspaceId: string): Promise<Workspace | nul
            w.sessionState as sessionState,
            w.createdAt as createdAt, w.updatedAt as updatedAt,
            w.lastAccessedAt as lastAccessedAt
-  `;
+  `
 
   const results = await runQuery<{
-    id: string;
-    name: string;
-    description: string | null;
-    ownerId: string;
-    repositories: string;
-    members: string;
-    settings: string;
-    sessionState: string;
-    createdAt: string;
-    updatedAt: string;
-    lastAccessedAt: string | null;
-  }>(query, { id: workspaceId });
+    id: string
+    name: string
+    description: string | null
+    ownerId: string
+    repositories: string
+    members: string
+    settings: string
+    sessionState: string
+    createdAt: string
+    updatedAt: string
+    lastAccessedAt: string | null
+  }>(query, { id: workspaceId })
 
   if (!results || results.length === 0) {
-    return null;
+    return null
   }
 
-  const result = results[0]!;
+  const result = results[0]
+  if (!result) return null
   const workspace: Workspace = {
     id: result.id,
     name: result.name,
     ...(result.description && { description: result.description }),
     ownerId: result.ownerId,
-    repositories: JSON.parse(result.repositories),
-    members: JSON.parse(result.members),
-    settings: JSON.parse(result.settings),
-    sessionState: JSON.parse(result.sessionState),
+    repositories: JSON.parse(result.repositories) as string[],
+    members: JSON.parse(result.members) as Workspace['members'],
+    settings: JSON.parse(result.settings) as Workspace['settings'],
+    sessionState: JSON.parse(result.sessionState) as Workspace['sessionState'],
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
     ...(result.lastAccessedAt && { lastAccessedAt: result.lastAccessedAt }),
-  };
+  }
 
   // Cache the result with 15 minute TTL
-  await cache.set(cacheKey, workspace, 900);
+  await cache.set(cacheKey, workspace, 900)
 
   // Update last accessed timestamp
-  await updateLastAccessed(workspaceId);
+  updateLastAccessed(workspaceId)
 
-  return workspace;
+  return workspace
 }
 
 /**
  * Update last accessed timestamp (non-blocking)
  */
-async function updateLastAccessed(workspaceId: string): Promise<void> {
-  const now = new Date().toISOString();
+function updateLastAccessed(workspaceId: string): void {
+  const now = new Date().toISOString()
   const query = `
     MATCH (w:Workspace {id: $id})
     SET w.lastAccessedAt = $lastAccessedAt
-  `;
+  `
 
   // Fire and forget - don't await
-  runQuery(query, { id: workspaceId, lastAccessedAt: now }).catch(() => {
+  void runQuery(query, { id: workspaceId, lastAccessedAt: now }).catch(() => {
     // Ignore errors in background update
-  });
+  })
 }
 
 /**
@@ -183,65 +184,65 @@ export async function updateWorkspace(
   userId: string
 ): Promise<Workspace | null> {
   // First, get the existing workspace to verify permissions
-  const existing = await getWorkspace(workspaceId);
+  const existing = await getWorkspace(workspaceId)
   if (!existing) {
-    return null;
+    return null
   }
 
   // Check if user has permission (owner or admin)
-  const member = existing.members.find((m) => m.userId === userId);
+  const member = existing.members.find((m) => m.userId === userId)
   if (!member || (member.role !== 'owner' && member.role !== 'admin')) {
-    throw new Error('Unauthorized: Only workspace owners and admins can update workspaces');
+    throw new Error('Unauthorized: Only workspace owners and admins can update workspaces')
   }
 
-  const now = new Date().toISOString();
+  const now = new Date().toISOString()
 
   // Build update query dynamically based on provided fields
-  const setClauses: string[] = ['w.updatedAt = $updatedAt'];
+  const setClauses: string[] = ['w.updatedAt = $updatedAt']
   const params: Record<string, unknown> = {
     id: workspaceId,
     updatedAt: now,
-  };
+  }
 
   if (input.name !== undefined) {
-    setClauses.push('w.name = $name');
-    params.name = input.name;
+    setClauses.push('w.name = $name')
+    params.name = input.name
   }
 
   if (input.description !== undefined) {
-    setClauses.push('w.description = $description');
-    params.description = input.description || null;
+    setClauses.push('w.description = $description')
+    params.description = input.description || null
   }
 
   if (input.repositories !== undefined) {
-    setClauses.push('w.repositories = $repositories');
-    params.repositories = JSON.stringify(input.repositories);
+    setClauses.push('w.repositories = $repositories')
+    params.repositories = JSON.stringify(input.repositories)
   }
 
   if (input.settings !== undefined) {
-    setClauses.push('w.settings = $settings');
-    params.settings = JSON.stringify(input.settings);
+    setClauses.push('w.settings = $settings')
+    params.settings = JSON.stringify(input.settings)
   }
 
   if (input.sessionState !== undefined) {
-    setClauses.push('w.sessionState = $sessionState');
-    params.sessionState = JSON.stringify(input.sessionState);
+    setClauses.push('w.sessionState = $sessionState')
+    params.sessionState = JSON.stringify(input.sessionState)
   }
 
   const query = `
     MATCH (w:Workspace {id: $id})
     SET ${setClauses.join(', ')}
     RETURN w
-  `;
+  `
 
-  await runQuery(query, params);
+  await runQuery(query, params)
 
   // Invalidate both the workspace cache and the user's list cache
-  await cache.invalidate(buildCacheKey('workspace', workspaceId));
-  await cache.invalidate(buildCacheKey('workspace', `user:${userId}:list`));
+  await cache.invalidate(buildCacheKey('workspace', workspaceId))
+  await cache.invalidate(buildCacheKey('workspace', `user:${userId}:list`))
 
   // Return updated workspace
-  return getWorkspace(workspaceId);
+  return getWorkspace(workspaceId)
 }
 
 /**
@@ -251,33 +252,30 @@ export async function updateWorkspace(
  * @param userId - User ID making the deletion
  * @returns True if deleted, false if not found
  */
-export async function deleteWorkspace(
-  workspaceId: string,
-  userId: string
-): Promise<boolean> {
+export async function deleteWorkspace(workspaceId: string, userId: string): Promise<boolean> {
   // First, get the existing workspace to verify ownership
-  const existing = await getWorkspace(workspaceId);
+  const existing = await getWorkspace(workspaceId)
   if (!existing) {
-    return false;
+    return false
   }
 
   // Check if user is the owner
   if (existing.ownerId !== userId) {
-    throw new Error('Unauthorized: Only the workspace owner can delete the workspace');
+    throw new Error('Unauthorized: Only the workspace owner can delete the workspace')
   }
 
   const query = `
     MATCH (w:Workspace {id: $id})
     DETACH DELETE w
-  `;
+  `
 
-  await runQuery(query, { id: workspaceId });
+  await runQuery(query, { id: workspaceId })
 
   // Invalidate both the workspace cache and the user's list cache
-  await cache.invalidate(buildCacheKey('workspace', workspaceId));
-  await cache.invalidate(buildCacheKey('workspace', `user:${userId}:list`));
+  await cache.invalidate(buildCacheKey('workspace', workspaceId))
+  await cache.invalidate(buildCacheKey('workspace', `user:${userId}:list`))
 
-  return true;
+  return true
 }
 
 /**
@@ -287,10 +285,10 @@ export async function deleteWorkspace(
  * @returns Array of workspaces where user is a member
  */
 export async function listUserWorkspaces(userId: string): Promise<Workspace[]> {
-  const cacheKey = buildCacheKey('workspace', `user:${userId}:list`);
-  const cached = await cache.get<Workspace[]>(cacheKey);
+  const cacheKey = buildCacheKey('workspace', `user:${userId}:list`)
+  const cached = await cache.get<Workspace[]>(cacheKey)
   if (cached) {
-    return cached;
+    return cached
   }
 
   const query = `
@@ -303,40 +301,40 @@ export async function listUserWorkspaces(userId: string): Promise<Workspace[]> {
            w.createdAt as createdAt, w.updatedAt as updatedAt,
            w.lastAccessedAt as lastAccessedAt
     ORDER BY w.lastAccessedAt DESC, w.updatedAt DESC
-  `;
+  `
 
   const results = await runQuery<{
-    id: string;
-    name: string;
-    description: string | null;
-    ownerId: string;
-    repositories: string;
-    members: string;
-    settings: string;
-    sessionState: string;
-    createdAt: string;
-    updatedAt: string;
-    lastAccessedAt: string | null;
-  }>(query, { userId });
+    id: string
+    name: string
+    description: string | null
+    ownerId: string
+    repositories: string
+    members: string
+    settings: string
+    sessionState: string
+    createdAt: string
+    updatedAt: string
+    lastAccessedAt: string | null
+  }>(query, { userId })
 
   const workspaces: Workspace[] = results.map((result) => ({
     id: result.id,
     name: result.name,
     ...(result.description && { description: result.description }),
     ownerId: result.ownerId,
-    repositories: JSON.parse(result.repositories),
-    members: JSON.parse(result.members),
-    settings: JSON.parse(result.settings),
-    sessionState: JSON.parse(result.sessionState),
+    repositories: JSON.parse(result.repositories) as string[],
+    members: JSON.parse(result.members) as Workspace['members'],
+    settings: JSON.parse(result.settings) as Workspace['settings'],
+    sessionState: JSON.parse(result.sessionState) as Workspace['sessionState'],
     createdAt: result.createdAt,
     updatedAt: result.updatedAt,
     ...(result.lastAccessedAt && { lastAccessedAt: result.lastAccessedAt }),
-  }));
+  }))
 
   // Cache the result
-  await cache.set(cacheKey, workspaces, 900);
+  await cache.set(cacheKey, workspaces, 900)
 
-  return workspaces;
+  return workspaces
 }
 
 /**
@@ -353,20 +351,20 @@ export async function addWorkspaceMember(
   userId: string
 ): Promise<WorkspaceMember[]> {
   // Get existing workspace
-  const workspace = await getWorkspace(workspaceId);
+  const workspace = await getWorkspace(workspaceId)
   if (!workspace) {
-    throw new Error('Workspace not found');
+    throw new Error('Workspace not found')
   }
 
   // Check permissions
-  const requestor = workspace.members.find((m) => m.userId === userId);
+  const requestor = workspace.members.find((m) => m.userId === userId)
   if (!requestor || (requestor.role !== 'owner' && requestor.role !== 'admin')) {
-    throw new Error('Unauthorized: Only owners and admins can add members');
+    throw new Error('Unauthorized: Only owners and admins can add members')
   }
 
   // Check if user is already a member
   if (workspace.members.some((m) => m.userId === input.userId)) {
-    throw new Error('User is already a member of this workspace');
+    throw new Error('User is already a member of this workspace')
   }
 
   // Add new member
@@ -374,26 +372,26 @@ export async function addWorkspaceMember(
     userId: input.userId,
     role: input.role,
     joinedAt: new Date().toISOString(),
-  };
+  }
 
-  const updatedMembers = [...workspace.members, newMember];
+  const updatedMembers = [...workspace.members, newMember]
 
   const query = `
     MATCH (w:Workspace {id: $id})
     SET w.members = $members, w.updatedAt = $updatedAt
     RETURN w
-  `;
+  `
 
   await runQuery(query, {
     id: workspaceId,
     members: JSON.stringify(updatedMembers),
     updatedAt: new Date().toISOString(),
-  });
+  })
 
   // Invalidate cache
-  await cache.invalidate(buildCacheKey('workspace', workspaceId));
+  await cache.invalidate(buildCacheKey('workspace', workspaceId))
 
-  return updatedMembers;
+  return updatedMembers
 }
 
 /**
@@ -410,41 +408,41 @@ export async function removeWorkspaceMember(
   userId: string
 ): Promise<WorkspaceMember[]> {
   // Get existing workspace
-  const workspace = await getWorkspace(workspaceId);
+  const workspace = await getWorkspace(workspaceId)
   if (!workspace) {
-    throw new Error('Workspace not found');
+    throw new Error('Workspace not found')
   }
 
   // Check permissions
-  const requestor = workspace.members.find((m) => m.userId === userId);
+  const requestor = workspace.members.find((m) => m.userId === userId)
   if (!requestor || (requestor.role !== 'owner' && requestor.role !== 'admin')) {
-    throw new Error('Unauthorized: Only owners and admins can remove members');
+    throw new Error('Unauthorized: Only owners and admins can remove members')
   }
 
   // Cannot remove the owner
   if (memberUserId === workspace.ownerId) {
-    throw new Error('Cannot remove the workspace owner');
+    throw new Error('Cannot remove the workspace owner')
   }
 
   // Remove member
-  const updatedMembers = workspace.members.filter((m) => m.userId !== memberUserId);
+  const updatedMembers = workspace.members.filter((m) => m.userId !== memberUserId)
 
   const query = `
     MATCH (w:Workspace {id: $id})
     SET w.members = $members, w.updatedAt = $updatedAt
     RETURN w
-  `;
+  `
 
   await runQuery(query, {
     id: workspaceId,
     members: JSON.stringify(updatedMembers),
     updatedAt: new Date().toISOString(),
-  });
+  })
 
   // Invalidate cache
-  await cache.invalidate(buildCacheKey('workspace', workspaceId));
+  await cache.invalidate(buildCacheKey('workspace', workspaceId))
 
-  return updatedMembers;
+  return updatedMembers
 }
 
 /**
@@ -463,40 +461,40 @@ export async function updateMemberRole(
   userId: string
 ): Promise<WorkspaceMember[]> {
   // Get existing workspace
-  const workspace = await getWorkspace(workspaceId);
+  const workspace = await getWorkspace(workspaceId)
   if (!workspace) {
-    throw new Error('Workspace not found');
+    throw new Error('Workspace not found')
   }
 
   // Only owner can update roles
   if (workspace.ownerId !== userId) {
-    throw new Error('Unauthorized: Only the workspace owner can update member roles');
+    throw new Error('Unauthorized: Only the workspace owner can update member roles')
   }
 
   // Cannot change owner's role
   if (memberUserId === workspace.ownerId) {
-    throw new Error('Cannot change the workspace owner\'s role');
+    throw new Error("Cannot change the workspace owner's role")
   }
 
   // Update member role
   const updatedMembers = workspace.members.map((m) =>
     m.userId === memberUserId ? { ...m, role: input.role } : m
-  );
+  )
 
   const query = `
     MATCH (w:Workspace {id: $id})
     SET w.members = $members, w.updatedAt = $updatedAt
     RETURN w
-  `;
+  `
 
   await runQuery(query, {
     id: workspaceId,
     members: JSON.stringify(updatedMembers),
     updatedAt: new Date().toISOString(),
-  });
+  })
 
   // Invalidate cache
-  await cache.invalidate(buildCacheKey('workspace', workspaceId));
+  await cache.invalidate(buildCacheKey('workspace', workspaceId))
 
-  return updatedMembers;
+  return updatedMembers
 }

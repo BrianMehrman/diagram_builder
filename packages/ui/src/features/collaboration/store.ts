@@ -129,7 +129,8 @@ export const useCollaborationStore = create<CollaborationState>((set) => ({
 
   removeUser: (userId: string) => {
     set((state) => {
-      const { [userId]: removed, ...remainingUsers } = state.users
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [userId]: _, ...remainingUsers } = state.users
       return {
         users: remainingUsers,
         currentSession: state.currentSession

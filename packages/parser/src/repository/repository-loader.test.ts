@@ -38,8 +38,8 @@ describe('Repository Loader', () => {
 
       expect(context.path).toBe(testDir)
       expect(context.files).toHaveLength(2)
-      expect(context.files.some(f => f.endsWith('index.js'))).toBe(true)
-      expect(context.files.some(f => f.endsWith('utils.ts'))).toBe(true)
+      expect(context.files.some((f) => f.endsWith('index.js'))).toBe(true)
+      expect(context.files.some((f) => f.endsWith('utils.ts'))).toBe(true)
       expect(context.metadata.type).toBe('local')
     })
 
@@ -77,8 +77,8 @@ describe('Repository Loader', () => {
       const context = await loadRepository(testDir)
 
       expect(context.files).toHaveLength(2)
-      expect(context.files.some(f => f.includes('index.js'))).toBe(true)
-      expect(context.files.some(f => f.includes(path.join('src', 'app.js')))).toBe(true)
+      expect(context.files.some((f) => f.includes('index.js'))).toBe(true)
+      expect(context.files.some((f) => f.includes(path.join('src', 'app.js')))).toBe(true)
     })
 
     it('should respect .gitignore in local directory', async () => {
@@ -91,7 +91,7 @@ describe('Repository Loader', () => {
 
       expect(context.files).toHaveLength(1)
       expect(context.files[0]).toContain('src.js')
-      expect(context.files.some(f => f.includes('node_modules'))).toBe(false)
+      expect(context.files.some((f) => f.includes('node_modules'))).toBe(false)
     })
 
     it('should include repository metadata', async () => {

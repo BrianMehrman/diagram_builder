@@ -10,41 +10,45 @@
  * and layer visibility conditionals.
  */
 
-import { CityBlocks } from './CityBlocks';
-import { CitySky } from './CitySky';
-import { CityAtmosphere } from './CityAtmosphere';
-import { GroundPlane } from './GroundPlane';
-import { UndergroundLayer } from './UndergroundLayer';
-import { CityUnderground } from '../components/CityUnderground';
-import { LodController } from '../components/LodController';
-import { useCanvasStore } from '../store';
-import { useCityLayout } from '../hooks/useCityLayout';
-import { useCameraTiltAssist } from '../hooks/useCameraTiltAssist';
-import { computeGroundOpacity } from '../undergroundUtils';
-import { computeUndergroundGroundOpacity } from './cityViewUtils';
-import type { Graph } from '../../../shared/types';
+import { CityBlocks } from './CityBlocks'
+import { CitySky } from './CitySky'
+import { CityAtmosphere } from './CityAtmosphere'
+import { GroundPlane } from './GroundPlane'
+import { UndergroundLayer } from './UndergroundLayer'
+import { CityUnderground } from '../components/CityUnderground'
+import { LodController } from '../components/LodController'
+import { useCanvasStore } from '../store'
+import { useCityLayout } from '../hooks/useCityLayout'
+import { useCameraTiltAssist } from '../hooks/useCameraTiltAssist'
+import { useFocusEscape } from '../hooks/useFocusEscape'
+import { computeGroundOpacity } from '../undergroundUtils'
+import { computeUndergroundGroundOpacity } from './heightUtils'
+import type { Graph } from '../../../shared/types'
 
 interface CityViewProps {
-  graph: Graph;
+  graph: Graph
 }
 
 export function CityView({ graph }: CityViewProps) {
-  const isUndergroundMode = useCanvasStore((s) => s.isUndergroundMode);
-  const visibleLayers = useCanvasStore((s) => s.visibleLayers);
-  const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion);
-  const undergroundVisible = useCanvasStore((s) => s.citySettings.undergroundVisible);
+  const isUndergroundMode = useCanvasStore((s) => s.isUndergroundMode)
+  const visibleLayers = useCanvasStore((s) => s.visibleLayers)
+  const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion)
+  const undergroundVisible = useCanvasStore((s) => s.citySettings.undergroundVisible)
 
-  const { positions, groundWidth, groundDepth } = useCityLayout(graph);
+  const { positions, groundWidth, groundDepth } = useCityLayout(graph)
 
   // Tilt camera upward on node selection to reveal sky edges
-  useCameraTiltAssist();
+  useCameraTiltAssist()
+
+  // Escape key clears node selection and closes the radial overlay
+  useFocusEscape()
 
   // In v2 mode, ground opacity tracks the new underground toggle.
   // In v1 mode, keep the existing isUndergroundMode-based opacity.
   const groundOpacity =
     cityVersion === 'v2'
       ? computeUndergroundGroundOpacity(undergroundVisible)
-      : computeGroundOpacity(isUndergroundMode);
+      : computeGroundOpacity(isUndergroundMode)
 
   return (
     <group name="city-view">
@@ -79,5 +83,5 @@ export function CityView({ graph }: CityViewProps) {
         <CityUnderground graph={graph} />
       )}
     </group>
-  );
+  )
 }

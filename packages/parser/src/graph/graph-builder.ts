@@ -25,7 +25,7 @@ export interface GraphBuildInput {
  * @returns Dependency graph
  */
 export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph {
-  logger.debug('Building dependency graph', { fileCount: files.length });
+  logger.debug('Building dependency graph', { fileCount: files.length })
 
   const graph = new DependencyGraph()
 
@@ -39,15 +39,15 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
   for (const file of files) {
     const language = detectLanguage(file.filePath)
 
-    let analysis;
+    let analysis
     try {
       analysis = analyzeContent(file.content, language)
     } catch (err) {
       logger.warn('Failed to analyze file, creating minimal node', {
         filePath: file.filePath,
         language,
-        error: (err as Error).message
-      });
+        error: (err as Error).message,
+      })
       // Track failed file to skip in second pass
       failedFiles.add(file.filePath)
       // Create minimal file node for failed analysis
@@ -60,12 +60,19 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
         path: file.filePath,
         metadata: {
           language,
-          metrics: { loc: file.content.split('\n').length, classCount: 0, functionCount: 0, averageComplexity: 1, maxComplexity: 1, maxNestingDepth: 0 },
+          metrics: {
+            loc: file.content.split('\n').length,
+            classCount: 0,
+            functionCount: 0,
+            averageComplexity: 1,
+            maxComplexity: 1,
+            maxNestingDepth: 0,
+          },
           parseError: (err as Error).message,
         },
       }
       graph.addNode(fileNode)
-      continue;
+      continue
     }
 
     // Create file node
@@ -111,7 +118,10 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
 
       // Create individual method nodes as children of the class
       for (const methodInfo of classInfo.methods) {
-        const methodNodeId = createNodeId('method', `${file.filePath}:${classInfo.name}.${methodInfo.name}`)
+        const methodNodeId = createNodeId(
+          'method',
+          `${file.filePath}:${classInfo.name}.${methodInfo.name}`
+        )
         const methodNode: DependencyNode = {
           id: methodNodeId,
           type: 'method',
@@ -174,8 +184,8 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
 
     const language = detectLanguage(file.filePath)
 
-    let parseResult;
-    let analysis;
+    let parseResult
+    let analysis
     try {
       parseResult = parseContent(file.content, language)
       analysis = analyzeContent(file.content, language)
@@ -183,8 +193,8 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
       logger.warn('Failed to parse file in second pass, skipping edges', {
         filePath: file.filePath,
         language,
-        error: (err as Error).message
-      });
+        error: (err as Error).message,
+      })
       continue
     }
 
@@ -258,8 +268,8 @@ export function buildDependencyGraph(files: GraphBuildInput[]): DependencyGraph 
 
   logger.debug('Dependency graph built', {
     nodeCount: graph.getNodes().length,
-    edgeCount: graph.getEdges().length
-  });
+    edgeCount: graph.getEdges().length,
+  })
 
   return graph
 }

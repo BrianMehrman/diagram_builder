@@ -1,9 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { DependencyNode, DependencyEdge } from '../graph/dependency-graph'
-import {
-  buildContainmentHierarchy,
-  type ContainmentResult,
-} from './containmentAnalyzer'
+import { buildContainmentHierarchy } from './containmentAnalyzer'
 
 // Helper to create a file node (matching graph-builder pattern)
 function makeFileNode(filePath: string): DependencyNode {
@@ -105,12 +102,12 @@ describe('containmentAnalyzer', () => {
 
       expect(result.containmentEdges).toHaveLength(2)
 
-      const classEdge = result.containmentEdges.find(e => e.target === classNode.id)
+      const classEdge = result.containmentEdges.find((e) => e.target === classNode.id)
       expect(classEdge).toBeDefined()
       expect(classEdge!.source).toBe(fileNode.id)
       expect(classEdge!.type).toBe('contains')
 
-      const funcEdge = result.containmentEdges.find(e => e.target === funcNode.id)
+      const funcEdge = result.containmentEdges.find((e) => e.target === funcNode.id)
       expect(funcEdge).toBeDefined()
       expect(funcEdge!.source).toBe(fileNode.id)
       expect(funcEdge!.type).toBe('contains')
@@ -212,7 +209,7 @@ describe('containmentAnalyzer', () => {
       // Every entry in parentMap should have a matching containment edge
       for (const [childId, parentId] of result.parentMap) {
         const matchingEdge = result.containmentEdges.find(
-          e => e.source === parentId && e.target === childId
+          (e) => e.source === parentId && e.target === childId
         )
         expect(matchingEdge).toBeDefined()
       }

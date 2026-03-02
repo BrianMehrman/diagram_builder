@@ -5,8 +5,8 @@
  * tier classification, height, color, visibility, and dash style.
  */
 
-import type { GraphEdge } from '../../../shared/types';
-import type { EdgeTierVisibility } from '../store';
+import type { GraphEdge } from '../../../shared/types'
+import type { EdgeTierVisibility } from '../store'
 
 /**
  * Sky-edge tier classification.
@@ -17,7 +17,7 @@ import type { EdgeTierVisibility } from '../store';
  * Structural relationships (imports, depends_on, inherits) were moved to the
  * underground layer in Story 11-9 and no longer appear in the sky.
  */
-export type SkyEdgeTier = 'crossDistrict';
+export type SkyEdgeTier = 'crossDistrict'
 
 /**
  * Map a GraphEdge type to its sky-edge tier.
@@ -29,9 +29,9 @@ export type SkyEdgeTier = 'crossDistrict';
 export function getSkyEdgeTier(edgeType: GraphEdge['type']): SkyEdgeTier | null {
   switch (edgeType) {
     case 'calls':
-      return 'crossDistrict';
+      return 'crossDistrict'
     default:
-      return null;
+      return null
   }
 }
 
@@ -42,9 +42,9 @@ export function getSkyEdgeTier(edgeType: GraphEdge['type']): SkyEdgeTier | null 
 export function getSkyEdgeHeight(edgeType: GraphEdge['type']): number {
   switch (edgeType) {
     case 'calls':
-      return 40;
+      return 40
     default:
-      return 0;
+      return 0
   }
 }
 
@@ -52,9 +52,9 @@ export function getSkyEdgeHeight(edgeType: GraphEdge['type']): number {
 export function getSkyEdgeColor(edgeType: GraphEdge['type']): string {
   switch (edgeType) {
     case 'calls':
-      return '#34d399';
+      return '#34d399'
     default:
-      return '#6b7280';
+      return '#6b7280'
   }
 }
 
@@ -69,17 +69,17 @@ export function getSkyEdgeColor(edgeType: GraphEdge['type']): string {
 export function isSkyEdgeVisible(
   edgeType: GraphEdge['type'],
   lodLevel: number,
-  edgeTierVisibility: EdgeTierVisibility,
+  edgeTierVisibility: EdgeTierVisibility
 ): boolean {
-  if (lodLevel < 2) return false;
+  if (lodLevel < 2) return false
 
-  const tier = getSkyEdgeTier(edgeType);
-  if (tier === null) return false;
+  const tier = getSkyEdgeTier(edgeType)
+  if (tier === null) return false
 
-  return edgeTierVisibility[tier];
+  return edgeTierVisibility[tier]
 }
 
 /** Whether the edge should render as a dashed line. None currently. */
 export function isSkyEdgeDashed(_edgeType: GraphEdge['type']): boolean {
-  return false;
+  return false
 }

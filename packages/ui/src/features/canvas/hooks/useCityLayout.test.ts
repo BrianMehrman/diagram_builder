@@ -2,17 +2,17 @@
  * useCityLayout Hook Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
-import { useCityLayout } from './useCityLayout';
-import { useCanvasStore } from '../store';
-import type { Graph, GraphNode } from '../../../shared/types';
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { renderHook } from '@testing-library/react'
+import { useCityLayout } from './useCityLayout'
+import { useCanvasStore } from '../store'
+import type { Graph, GraphNode } from '../../../shared/types'
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
-const mockPositions = new Map<string, { x: number; y: number; z: number }>();
+const mockPositions = new Map<string, { x: number; y: number; z: number }>()
 const mockDistrictArcs = [
   {
     id: 'src/features',
@@ -23,7 +23,7 @@ const mockDistrictArcs = [
     ringDepth: 1,
     nodeCount: 2,
   },
-];
+]
 
 const mockDistricts = [
   {
@@ -32,12 +32,12 @@ const mockDistricts = [
     blocks: [],
     isCompound: false,
   },
-];
+]
 
 const mockExternalZones: Array<{
-  zoneMetadata: { type: string; arcStart: number; arcEnd: number; nodeCount: number };
-  nodes: Array<{ nodeId: string; position: { x: number; y: number; z: number } }>;
-}> = [];
+  zoneMetadata: { type: string; arcStart: number; arcEnd: number; nodeCount: number }
+  nodes: Array<{ nodeId: string; position: { x: number; y: number; z: number } }>
+}> = []
 
 vi.mock('../layout/engines/radialCityLayout', () => ({
   RadialCityLayoutEngine: class MockRadialCityLayoutEngine {
@@ -51,10 +51,10 @@ vi.mock('../layout/engines/radialCityLayout', () => ({
         metadata: { districtArcs: mockDistrictArcs },
         districts: mockDistricts,
         externalZones: mockExternalZones,
-      };
+      }
     }
   },
-}));
+}))
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -69,19 +69,19 @@ function createNode(id: string, type: GraphNode['type'] = 'file'): GraphNode {
     lod: 3,
     depth: 1,
     isExternal: false,
-  };
+  }
 }
 
 function createGraph(nodeCount = 3): Graph {
-  const nodes: GraphNode[] = [];
+  const nodes: GraphNode[] = []
   for (let i = 0; i < nodeCount; i++) {
-    nodes.push(createNode(`node-${i}`));
+    nodes.push(createNode(`node-${i}`))
   }
   return {
     nodes,
     edges: [],
     metadata: { repositoryId: 'test', name: 'Test', totalNodes: nodes.length, totalEdges: 0 },
-  };
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -90,105 +90,105 @@ function createGraph(nodeCount = 3): Graph {
 
 describe('useCityLayout', () => {
   beforeEach(() => {
-    useCanvasStore.getState().reset();
-    mockPositions.clear();
-  });
+    useCanvasStore.getState().reset()
+    mockPositions.clear()
+  })
 
   it('returns positions for all nodes', () => {
-    const graph = createGraph(3);
+    const graph = createGraph(3)
     graph.nodes.forEach((n, i) => {
-      mockPositions.set(n.id, { x: i * 5, y: 0, z: i * 3 });
-    });
+      mockPositions.set(n.id, { x: i * 5, y: 0, z: i * 3 })
+    })
 
-    const { result } = renderHook(() => useCityLayout(graph));
+    const { result } = renderHook(() => useCityLayout(graph))
 
-    expect(result.current.positions.size).toBe(3);
-    expect(result.current.positions.get('node-0')).toEqual({ x: 0, y: 0, z: 0 });
-  });
+    expect(result.current.positions.size).toBe(3)
+    expect(result.current.positions.get('node-0')).toEqual({ x: 0, y: 0, z: 0 })
+  })
 
   it('returns district arc metadata', () => {
-    const graph = createGraph(2);
+    const graph = createGraph(2)
     graph.nodes.forEach((n, i) => {
-      mockPositions.set(n.id, { x: i, y: 0, z: i });
-    });
+      mockPositions.set(n.id, { x: i, y: 0, z: i })
+    })
 
-    const { result } = renderHook(() => useCityLayout(graph));
+    const { result } = renderHook(() => useCityLayout(graph))
 
-    expect(result.current.districtArcs).toHaveLength(1);
-    expect(result.current.districtArcs[0]!.id).toBe('src/features');
-  });
+    expect(result.current.districtArcs).toHaveLength(1)
+    expect(result.current.districtArcs[0]!.id).toBe('src/features')
+  })
 
   it('computes groundWidth and groundDepth from bounds', () => {
-    const graph = createGraph(1);
-    mockPositions.set('node-0', { x: 0, y: 0, z: 0 });
+    const graph = createGraph(1)
+    mockPositions.set('node-0', { x: 0, y: 0, z: 0 })
 
-    const { result } = renderHook(() => useCityLayout(graph));
+    const { result } = renderHook(() => useCityLayout(graph))
 
     // bounds: min(-50,0,-50) max(50,20,50)
-    expect(result.current.groundWidth).toBe(100);
-    expect(result.current.groundDepth).toBe(100);
-  });
+    expect(result.current.groundWidth).toBe(100)
+    expect(result.current.groundDepth).toBe(100)
+  })
 
   it('publishes positions to store via setLayoutPositions', () => {
-    const graph = createGraph(2);
+    const graph = createGraph(2)
     graph.nodes.forEach((n, i) => {
-      mockPositions.set(n.id, { x: i, y: 0, z: i });
-    });
+      mockPositions.set(n.id, { x: i, y: 0, z: i })
+    })
 
-    renderHook(() => useCityLayout(graph));
+    renderHook(() => useCityLayout(graph))
 
-    const storePositions = useCanvasStore.getState().layoutPositions;
-    expect(storePositions.size).toBe(2);
-  });
+    const storePositions = useCanvasStore.getState().layoutPositions
+    expect(storePositions.size).toBe(2)
+  })
 
   it('returns same reference when graph and density are unchanged', () => {
-    const graph = createGraph(2);
+    const graph = createGraph(2)
     graph.nodes.forEach((n, i) => {
-      mockPositions.set(n.id, { x: i, y: 0, z: i });
-    });
+      mockPositions.set(n.id, { x: i, y: 0, z: i })
+    })
 
-    const { result, rerender } = renderHook(() => useCityLayout(graph));
-    const firstPositions = result.current.positions;
+    const { result, rerender } = renderHook(() => useCityLayout(graph))
+    const firstPositions = result.current.positions
 
-    rerender();
-    expect(result.current.positions).toBe(firstPositions);
-  });
+    rerender()
+    expect(result.current.positions).toBe(firstPositions)
+  })
 
   it('returns districtArcs as empty array when metadata has no arcs', () => {
     // Override mock to return no metadata
-    const originalArcs = [...mockDistrictArcs];
-    mockDistrictArcs.length = 0;
+    const originalArcs = [...mockDistrictArcs]
+    mockDistrictArcs.length = 0
 
-    const graph = createGraph(1);
-    mockPositions.set('node-0', { x: 0, y: 0, z: 0 });
+    const graph = createGraph(1)
+    mockPositions.set('node-0', { x: 0, y: 0, z: 0 })
 
-    const { result } = renderHook(() => useCityLayout(graph));
+    const { result } = renderHook(() => useCityLayout(graph))
 
-    expect(result.current.districtArcs).toEqual([]);
+    expect(result.current.districtArcs).toEqual([])
 
     // Restore
-    mockDistrictArcs.push(...originalArcs);
-  });
+    mockDistrictArcs.push(...originalArcs)
+  })
 
   it('exposes districts from hierarchical result', () => {
-    const graph = createGraph(2);
+    const graph = createGraph(2)
     graph.nodes.forEach((n, i) => {
-      mockPositions.set(n.id, { x: i, y: 0, z: i });
-    });
+      mockPositions.set(n.id, { x: i, y: 0, z: i })
+    })
 
-    const { result } = renderHook(() => useCityLayout(graph));
+    const { result } = renderHook(() => useCityLayout(graph))
 
-    expect(result.current.districts).toBeDefined();
-    expect(Array.isArray(result.current.districts)).toBe(true);
-  });
+    expect(result.current.districts).toBeDefined()
+    expect(Array.isArray(result.current.districts)).toBe(true)
+  })
 
   it('exposes externalZones from hierarchical result', () => {
-    const graph = createGraph(1);
-    mockPositions.set('node-0', { x: 0, y: 0, z: 0 });
+    const graph = createGraph(1)
+    mockPositions.set('node-0', { x: 0, y: 0, z: 0 })
 
-    const { result } = renderHook(() => useCityLayout(graph));
+    const { result } = renderHook(() => useCityLayout(graph))
 
-    expect(result.current.externalZones).toBeDefined();
-    expect(Array.isArray(result.current.externalZones)).toBe(true);
-  });
-});
+    expect(result.current.externalZones).toBeDefined()
+    expect(Array.isArray(result.current.externalZones)).toBe(true)
+  })
+})

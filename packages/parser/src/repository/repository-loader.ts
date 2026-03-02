@@ -62,7 +62,10 @@ export async function loadRepository(
   options?: ScanOptions
 ): Promise<RepositoryContext> {
   const startTime = Date.now()
-  const op = logOperation('loadRepository', { source: typeof source === 'string' ? source : source.path || source.url, options })
+  const op = logOperation('loadRepository', {
+    source: typeof source === 'string' ? source : source.path || source.url,
+    options,
+  })
 
   try {
     // Normalize source to config
@@ -81,12 +84,14 @@ export async function loadRepository(
     op.timing(startTime, {
       fileCount: result.files.length,
       type: result.metadata.type,
-      path: result.path
+      path: result.path,
     })
 
     return result
   } catch (error) {
-    op.fail(error as Error, { source: typeof source === 'string' ? source : source.path || source.url })
+    op.fail(error as Error, {
+      source: typeof source === 'string' ? source : source.path || source.url,
+    })
     throw error
   }
 }
@@ -120,7 +125,7 @@ function isGitUrl(str: string): boolean {
     /^https?:\/\/(github|gitlab|bitbucket)\.(com|org)\/.+\/.+/,
   ]
 
-  return patterns.some(pattern => pattern.test(str))
+  return patterns.some((pattern) => pattern.test(str))
 }
 
 /**

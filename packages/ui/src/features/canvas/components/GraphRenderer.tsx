@@ -4,35 +4,34 @@
  * Renders the complete graph with LOD filtering
  */
 
-import { useMemo } from 'react';
-import { NodeRenderer } from './NodeRenderer';
-import { EdgeRenderer } from './EdgeRenderer';
-import { useCanvasStore } from '../store';
-import type { Graph } from '../../../shared/types';
+import { useMemo } from 'react'
+import { NodeRenderer } from './NodeRenderer'
+import { EdgeRenderer } from './EdgeRenderer'
+import { useCanvasStore } from '../store'
+import type { Graph } from '../../../shared/types'
 
 interface GraphRendererProps {
-  graph: Graph;
+  graph: Graph
 }
 
 /**
  * GraphRenderer component
  */
 export function GraphRenderer({ graph }: GraphRendererProps) {
-  const lodLevel = useCanvasStore((state) => state.lodLevel);
+  const lodLevel = useCanvasStore((state) => state.lodLevel)
 
   // Filter nodes by LOD level
   const visibleNodes = useMemo(() => {
-    return graph.nodes.filter((node) => node.lod <= lodLevel);
-  }, [graph.nodes, lodLevel]);
+    return graph.nodes.filter((node) => node.lod <= lodLevel)
+  }, [graph.nodes, lodLevel])
 
   // Filter edges - only show edges where both nodes are visible
   const visibleEdges = useMemo(() => {
-    const visibleNodeIds = new Set(visibleNodes.map((n) => n.id));
+    const visibleNodeIds = new Set(visibleNodes.map((n) => n.id))
     return graph.edges.filter(
-      (edge) =>
-        visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target)
-    );
-  }, [graph.edges, visibleNodes]);
+      (edge) => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target)
+    )
+  }, [graph.edges, visibleNodes])
 
   return (
     <group>
@@ -46,7 +45,7 @@ export function GraphRenderer({ graph }: GraphRendererProps) {
         <NodeRenderer key={node.id} node={node} />
       ))}
     </group>
-  );
+  )
 }
 
 // Log stats in development

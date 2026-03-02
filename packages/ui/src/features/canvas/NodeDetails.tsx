@@ -4,12 +4,12 @@
  * Displays details of the selected node with dark theme matching the HUD.
  */
 
-import { useCanvasStore } from './store';
-import type { GraphNode } from '../../shared/types';
+import { useCanvasStore } from './store'
+import type { GraphNode } from '../../shared/types'
 
 interface NodeDetailsProps {
-  nodes: GraphNode[];
-  className?: string;
+  nodes: GraphNode[]
+  className?: string
 }
 
 /**
@@ -18,23 +18,23 @@ interface NodeDetailsProps {
 function getNodeIcon(type: GraphNode['type']): string {
   switch (type) {
     case 'file':
-      return '📄';
+      return '📄'
     case 'class':
-      return '🏛️';
+      return '🏛️'
     case 'function':
-      return '⚡';
+      return '⚡'
     case 'method':
-      return '🔧';
+      return '🔧'
     case 'variable':
-      return '📦';
+      return '📦'
     case 'interface':
-      return '🔗';
+      return '🔗'
     case 'enum':
-      return '📋';
+      return '📋'
     case 'abstract_class':
-      return '🏗️';
+      return '🏗️'
     default:
-      return '❓';
+      return '❓'
   }
 }
 
@@ -42,23 +42,23 @@ function getNodeIcon(type: GraphNode['type']): string {
  * NodeDetails component
  */
 export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
-  const selectedNodeId = useCanvasStore((state) => state.selectedNodeId);
-  const selectNode = useCanvasStore((state) => state.selectNode);
-  const layoutPositions = useCanvasStore((state) => state.layoutPositions);
+  const selectedNodeId = useCanvasStore((state) => state.selectedNodeId)
+  const selectNode = useCanvasStore((state) => state.selectNode)
+  const layoutPositions = useCanvasStore((state) => state.layoutPositions)
 
-  const selectedNode = nodes.find((n) => n.id === selectedNodeId);
+  const selectedNode = nodes.find((n) => n.id === selectedNodeId)
 
   if (!selectedNode) {
-    return null;
+    return null
   }
 
   const handleClose = () => {
-    selectNode(null);
-  };
+    selectNode(null)
+  }
 
   // Prefer layout positions over graph node positions
-  const layoutPos = selectedNodeId ? layoutPositions.get(selectedNodeId) : undefined;
-  const displayPos = layoutPos ?? selectedNode.position;
+  const layoutPos = selectedNodeId ? layoutPositions.get(selectedNodeId) : undefined
+  const displayPos = layoutPos ?? selectedNode.position
 
   return (
     <div
@@ -68,21 +68,14 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="text-2xl">{getNodeIcon(selectedNode.type)}</span>
-          <h3 className="text-lg font-bold text-white">
-            {selectedNode.label}
-          </h3>
+          <h3 className="text-lg font-bold text-white">{selectedNode.label}</h3>
         </div>
         <button
           onClick={handleClose}
           className="text-gray-400 hover:text-gray-200 transition-colors"
           aria-label="Close"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -95,30 +88,22 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
 
       <div className="space-y-3">
         <div>
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-            Type
-          </div>
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Type</div>
           <div className="text-sm text-gray-200 capitalize mt-1">
             {selectedNode.type.replace('_', ' ')}
           </div>
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-            ID
-          </div>
-          <div className="text-sm text-gray-200 font-mono mt-1 break-all">
-            {selectedNode.id}
-          </div>
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">ID</div>
+          <div className="text-sm text-gray-200 font-mono mt-1 break-all">{selectedNode.id}</div>
         </div>
 
         <div>
           <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
             LOD Level
           </div>
-          <div className="text-sm text-gray-200 mt-1">
-            {selectedNode.lod}
-          </div>
+          <div className="text-sm text-gray-200 mt-1">{selectedNode.lod}</div>
         </div>
 
         {displayPos && (
@@ -127,8 +112,7 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
               Position
             </div>
             <div className="text-sm text-gray-200 font-mono mt-1">
-              x: {displayPos.x.toFixed(2)}, y:{' '}
-              {displayPos.y.toFixed(2)}, z:{' '}
+              x: {displayPos.x.toFixed(2)}, y: {displayPos.y.toFixed(2)}, z:{' '}
               {displayPos.z.toFixed(2)}
             </div>
           </div>
@@ -136,9 +120,7 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
 
         {selectedNode.depth !== undefined && (
           <div>
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-              Depth
-            </div>
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Depth</div>
             <div className="text-sm text-gray-200 mt-1">{selectedNode.depth}</div>
           </div>
         )}
@@ -175,18 +157,22 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
         {/* Boolean flags */}
         {(selectedNode.isExternal || selectedNode.isDeprecated || selectedNode.isExported) && (
           <div>
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-              Flags
-            </div>
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Flags</div>
             <div className="flex flex-wrap gap-1 mt-1">
               {selectedNode.isExternal && (
-                <span className="text-[10px] bg-blue-900/60 text-blue-300 px-1.5 py-0.5 rounded">external</span>
+                <span className="text-[10px] bg-blue-900/60 text-blue-300 px-1.5 py-0.5 rounded">
+                  external
+                </span>
               )}
               {selectedNode.isDeprecated && (
-                <span className="text-[10px] bg-yellow-900/60 text-yellow-300 px-1.5 py-0.5 rounded">deprecated</span>
+                <span className="text-[10px] bg-yellow-900/60 text-yellow-300 px-1.5 py-0.5 rounded">
+                  deprecated
+                </span>
               )}
               {selectedNode.isExported && (
-                <span className="text-[10px] bg-green-900/60 text-green-300 px-1.5 py-0.5 rounded">exported</span>
+                <span className="text-[10px] bg-green-900/60 text-green-300 px-1.5 py-0.5 rounded">
+                  exported
+                </span>
               )}
             </div>
           </div>
@@ -202,9 +188,13 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
                 <div key={key} className="flex justify-between">
                   <span className="text-gray-400">{key}:</span>
                   <span className="font-medium">
-                    {typeof value === 'object'
+                    {value !== null && typeof value === 'object'
                       ? JSON.stringify(value)
-                      : String(value)}
+                      : typeof value === 'string'
+                        ? value
+                        : typeof value === 'number' || typeof value === 'boolean'
+                          ? String(value)
+                          : JSON.stringify(value)}
                   </span>
                 </div>
               ))}
@@ -222,5 +212,5 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
         </button>
       </div>
     </div>
-  );
+  )
 }

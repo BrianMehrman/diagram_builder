@@ -57,9 +57,10 @@ export function Breadcrumbs({
   const flightTargetNodeId = useCanvasStore((state) => state.flightTargetNodeId)
 
   // During flight, show the target node path; otherwise show selected node path
-  const targetNode = isFlying && flightTargetNodeId
-    ? nodes.find((n) => n.id === flightTargetNodeId) ?? selectedNode
-    : selectedNode
+  const targetNode =
+    isFlying && flightTargetNodeId
+      ? (nodes.find((n) => n.id === flightTargetNodeId) ?? selectedNode)
+      : selectedNode
 
   if (!targetNode) {
     return null
@@ -122,9 +123,7 @@ export function Breadcrumbs({
       ))}
 
       {/* Flying status text */}
-      {isFlying && (
-        <span className="text-xs text-gray-400 ml-2">Flying...</span>
-      )}
+      {isFlying && <span className="text-xs text-gray-400 ml-2">Flying...</span>}
     </div>
   )
 }

@@ -4,33 +4,33 @@
  * Zustand store for SearchBarModal state management
  */
 
-import { create } from 'zustand';
-import type { GraphNode } from '../../shared/types';
+import { create } from 'zustand'
+import type { GraphNode } from '../../shared/types'
 
 /**
  * Search store state and actions
  */
 interface SearchStore {
   // State
-  isOpen: boolean;
-  query: string;
-  results: GraphNode[];
-  selectedIndex: number;
-  searchHistory: string[];
+  isOpen: boolean
+  query: string
+  results: GraphNode[]
+  selectedIndex: number
+  searchHistory: string[]
 
   // Actions (verb-first naming per project-context.md)
-  openSearch: () => void;
-  closeSearch: () => void;
-  setQuery: (query: string) => void;
-  setResults: (results: GraphNode[]) => void;
-  selectNext: () => void;
-  selectPrevious: () => void;
-  selectFirst: () => void;
-  selectLast: () => void;
-  selectByIndex: (index: number) => void;
-  addToHistory: (query: string) => void;
-  clearHistory: () => void;
-  resetSearch: () => void;
+  openSearch: () => void
+  closeSearch: () => void
+  setQuery: (query: string) => void
+  setResults: (results: GraphNode[]) => void
+  selectNext: () => void
+  selectPrevious: () => void
+  selectFirst: () => void
+  selectLast: () => void
+  selectByIndex: (index: number) => void
+  addToHistory: (query: string) => void
+  clearHistory: () => void
+  resetSearch: () => void
 }
 
 /**
@@ -66,17 +66,14 @@ export const useSearchStore = create<SearchStore>((set) => ({
   selectNext: () =>
     set((state) => ({
       selectedIndex:
-        state.results.length > 0
-          ? (state.selectedIndex + 1) % state.results.length
-          : -1,
+        state.results.length > 0 ? (state.selectedIndex + 1) % state.results.length : -1,
     })),
 
   selectPrevious: () =>
     set((state) => ({
       selectedIndex:
         state.results.length > 0
-          ? (state.selectedIndex - 1 + state.results.length) %
-            state.results.length
+          ? (state.selectedIndex - 1 + state.results.length) % state.results.length
           : -1,
     })),
 
@@ -84,18 +81,14 @@ export const useSearchStore = create<SearchStore>((set) => ({
 
   selectLast: () =>
     set((state) => ({
-      selectedIndex:
-        state.results.length > 0 ? state.results.length - 1 : -1,
+      selectedIndex: state.results.length > 0 ? state.results.length - 1 : -1,
     })),
 
   selectByIndex: (index) => set({ selectedIndex: index }),
 
   addToHistory: (query) =>
     set((state) => ({
-      searchHistory: [
-        query,
-        ...state.searchHistory.filter((q) => q !== query),
-      ].slice(0, 5),
+      searchHistory: [query, ...state.searchHistory.filter((q) => q !== query)].slice(0, 5),
     })),
 
   clearHistory: () => set({ searchHistory: [] }),
@@ -106,4 +99,4 @@ export const useSearchStore = create<SearchStore>((set) => ({
       results: [],
       selectedIndex: -1,
     }),
-}));
+}))

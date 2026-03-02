@@ -2,6 +2,15 @@
   "hooks": {
     "PostToolUse": [
       {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/brianmehrman/projects/diagram_builder && npm run type-check 2>&1 | tail -20"
+          }
+        ]
+      },
+      {
         "matcher": "TaskCompleted",
         "hooks": [
           {

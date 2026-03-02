@@ -15,8 +15,16 @@ function makeExternalNode(name: string): DependencyNode {
 describe('classifyPackage', () => {
   describe('database packages (AC-1)', () => {
     it.each([
-      'pg', 'mysql', 'mysql2', 'mongoose', 'prisma',
-      'sequelize', 'typeorm', 'knex', 'mongodb', 'sqlite3',
+      'pg',
+      'mysql',
+      'mysql2',
+      'mongoose',
+      'prisma',
+      'sequelize',
+      'typeorm',
+      'knex',
+      'mongodb',
+      'sqlite3',
     ])('classifies %s as database', (pkg) => {
       expect(classifyPackage(pkg)).toBe('database')
     })
@@ -31,60 +39,63 @@ describe('classifyPackage', () => {
   })
 
   describe('API packages (AC-2)', () => {
-    it.each([
-      'axios', 'node-fetch', 'got', 'superagent', 'request',
-      'express', 'fastify', 'koa',
-    ])('classifies %s as api', (pkg) => {
-      expect(classifyPackage(pkg)).toBe('api')
-    })
+    it.each(['axios', 'node-fetch', 'got', 'superagent', 'request', 'express', 'fastify', 'koa'])(
+      'classifies %s as api',
+      (pkg) => {
+        expect(classifyPackage(pkg)).toBe('api')
+      }
+    )
   })
 
   describe('queue packages (AC-3)', () => {
-    it.each([
-      'bull', 'bullmq', 'amqplib', 'kafkajs', 'bee-queue',
-    ])('classifies %s as queue', (pkg) => {
-      expect(classifyPackage(pkg)).toBe('queue')
-    })
+    it.each(['bull', 'bullmq', 'amqplib', 'kafkajs', 'bee-queue'])(
+      'classifies %s as queue',
+      (pkg) => {
+        expect(classifyPackage(pkg)).toBe('queue')
+      }
+    )
   })
 
   describe('cache packages (AC-4)', () => {
-    it.each([
-      'redis', 'memcached', 'ioredis', 'lru-cache', 'node-cache',
-    ])('classifies %s as cache', (pkg) => {
-      expect(classifyPackage(pkg)).toBe('cache')
-    })
+    it.each(['redis', 'memcached', 'ioredis', 'lru-cache', 'node-cache'])(
+      'classifies %s as cache',
+      (pkg) => {
+        expect(classifyPackage(pkg)).toBe('cache')
+      }
+    )
   })
 
   describe('filesystem packages (AC-5)', () => {
-    it.each([
-      'fs-extra', 'glob', 'chokidar', 'rimraf', 'globby',
-    ])('classifies %s as filesystem', (pkg) => {
-      expect(classifyPackage(pkg)).toBe('filesystem')
-    })
+    it.each(['fs-extra', 'glob', 'chokidar', 'rimraf', 'globby'])(
+      'classifies %s as filesystem',
+      (pkg) => {
+        expect(classifyPackage(pkg)).toBe('filesystem')
+      }
+    )
   })
 
   describe('auth packages (AC-6)', () => {
-    it.each([
-      'passport', 'jsonwebtoken', 'bcrypt', 'bcryptjs', 'oauth', 'jose',
-    ])('classifies %s as auth', (pkg) => {
-      expect(classifyPackage(pkg)).toBe('auth')
-    })
+    it.each(['passport', 'jsonwebtoken', 'bcrypt', 'bcryptjs', 'oauth', 'jose'])(
+      'classifies %s as auth',
+      (pkg) => {
+        expect(classifyPackage(pkg)).toBe('auth')
+      }
+    )
   })
 
   describe('logging packages (AC-7)', () => {
-    it.each([
-      'winston', 'pino', 'bunyan', 'morgan', 'debug',
-    ])('classifies %s as logging', (pkg) => {
+    it.each(['winston', 'pino', 'bunyan', 'morgan', 'debug'])('classifies %s as logging', (pkg) => {
       expect(classifyPackage(pkg)).toBe('logging')
     })
   })
 
   describe('unknown packages (AC-8)', () => {
-    it.each([
-      'lodash', 'react', 'vue', 'moment', 'uuid', 'chalk',
-    ])('classifies %s as general', (pkg) => {
-      expect(classifyPackage(pkg)).toBe('general')
-    })
+    it.each(['lodash', 'react', 'vue', 'moment', 'uuid', 'chalk'])(
+      'classifies %s as general',
+      (pkg) => {
+        expect(classifyPackage(pkg)).toBe('general')
+      }
+    )
   })
 
   describe('scoped packages', () => {

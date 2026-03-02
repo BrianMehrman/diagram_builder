@@ -104,7 +104,8 @@ export function HUD({ nodes = [], className = '' }: HUDProps) {
       <div className="border-t border-gray-600 mt-2 pt-2">
         <div className="text-gray-400 text-[10px] uppercase tracking-wide mb-1">Camera</div>
         <div className="font-mono text-[10px] text-gray-300">
-          {camera.position.x.toFixed(2)}, {camera.position.y.toFixed(2)}, {camera.position.z.toFixed(2)}
+          {camera.position.x.toFixed(2)}, {camera.position.y.toFixed(2)},{' '}
+          {camera.position.z.toFixed(2)}
         </div>
       </div>
 
@@ -123,7 +124,8 @@ export function HUD({ nodes = [], className = '' }: HUDProps) {
             <div>
               <span className="text-gray-400 text-[10px]">Pos: </span>
               <span className="font-mono text-[10px] text-gray-300">
-                {selectedLayoutPos.x.toFixed(2)}, {selectedLayoutPos.y.toFixed(2)}, {selectedLayoutPos.z.toFixed(2)}
+                {selectedLayoutPos.x.toFixed(2)}, {selectedLayoutPos.y.toFixed(2)},{' '}
+                {selectedLayoutPos.z.toFixed(2)}
               </span>
             </div>
           )}
@@ -132,7 +134,10 @@ export function HUD({ nodes = [], className = '' }: HUDProps) {
 
       {/* Hovered Node Info */}
       {hoveredNode && hoveredNode.id !== selectedNodeId && (
-        <div className="border-t border-gray-600 mt-2 pt-2 space-y-1" data-testid="hovered-node-info">
+        <div
+          className="border-t border-gray-600 mt-2 pt-2 space-y-1"
+          data-testid="hovered-node-info"
+        >
           <div className="flex justify-between gap-2">
             <span className="text-gray-400">Hover:</span>
             <span className="font-semibold truncate max-w-[120px]">{hoveredNode.label}</span>

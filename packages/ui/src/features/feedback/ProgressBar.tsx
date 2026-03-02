@@ -11,14 +11,14 @@
  */
 
 interface ProgressBarProps {
-  progress: number; // 0-100
-  status?: string;
-  className?: string;
+  progress: number // 0-100
+  status?: string
+  className?: string
 }
 
 export function ProgressBar({ progress, status, className = '' }: ProgressBarProps) {
   // Clamp progress between 0 and 100
-  const clampedProgress = Math.min(100, Math.max(0, progress));
+  const clampedProgress = Math.min(100, Math.max(0, progress))
 
   return (
     <div data-testid="progressbar-container" className={className}>
@@ -42,5 +42,5 @@ export function ProgressBar({ progress, status, className = '' }: ProgressBarPro
         <span className="text-gray-500 dark:text-gray-400 ml-auto">{clampedProgress}%</span>
       </div>
     </div>
-  );
+  )
 }

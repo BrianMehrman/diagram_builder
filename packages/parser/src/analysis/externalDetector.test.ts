@@ -5,7 +5,6 @@ import {
   isNodeBuiltin,
   detectExternalImports,
   type ExternalImportInfo,
-  type ExternalDetectionResult,
   type PackageJsonDeps,
 } from './externalDetector'
 
@@ -120,14 +119,14 @@ describe('externalDetector', () => {
 
       expect(result.externalNodes).toHaveLength(2)
 
-      const expressNode = result.externalNodes.find(n => n.name === 'express')
+      const expressNode = result.externalNodes.find((n) => n.name === 'express')
       expect(expressNode).toBeDefined()
       expect(expressNode!.id).toBe('external:express')
       expect(expressNode!.type).toBe('module')
       expect(expressNode!.metadata.isExternal).toBe(true)
       expect(expressNode!.metadata.isBuiltin).toBe(false)
 
-      const reactNode = result.externalNodes.find(n => n.name === 'react')
+      const reactNode = result.externalNodes.find((n) => n.name === 'react')
       expect(reactNode).toBeDefined()
       expect(reactNode!.id).toBe('external:react')
     })
@@ -174,13 +173,13 @@ describe('externalDetector', () => {
 
       expect(result.externalNodes).toHaveLength(2)
 
-      const fsNode = result.externalNodes.find(n => n.name === 'fs')
+      const fsNode = result.externalNodes.find((n) => n.name === 'fs')
       expect(fsNode).toBeDefined()
       expect(fsNode!.id).toBe('external:fs')
       expect(fsNode!.metadata.isBuiltin).toBe(true)
       expect(fsNode!.metadata.isExternal).toBe(true)
 
-      const pathNode = result.externalNodes.find(n => n.name === 'path')
+      const pathNode = result.externalNodes.find((n) => n.name === 'path')
       expect(pathNode).toBeDefined()
       expect(pathNode!.metadata.isBuiltin).toBe(true)
     })
@@ -215,11 +214,11 @@ describe('externalDetector', () => {
 
       const result = detectExternalImports(imports, packageJson)
 
-      const expressNode = result.externalNodes.find(n => n.name === 'express')
+      const expressNode = result.externalNodes.find((n) => n.name === 'express')
       expect(expressNode!.metadata.packageVersion).toBe('^4.18.0')
       expect(expressNode!.metadata.isDevDependency).toBe(false)
 
-      const jestNode = result.externalNodes.find(n => n.name === 'jest')
+      const jestNode = result.externalNodes.find((n) => n.name === 'jest')
       expect(jestNode!.metadata.packageVersion).toBe('^29.0.0')
       expect(jestNode!.metadata.isDevDependency).toBe(true)
     })

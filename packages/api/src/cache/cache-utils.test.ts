@@ -2,250 +2,311 @@
  * Tests for Redis cache utilities
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { get, set, invalidate, invalidatePattern, DEFAULT_CACHE_TTL } from './cache-utils';
-import { getRedisClient } from './redis-config';
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { get, set, invalidate, invalidatePattern, DEFAULT_CACHE_TTL } from './cache-utils'
+import { getRedisClient } from './redis-config'
+
+// In-memory Redis mock — no real Redis required in CI
+vi.mock('./redis-config', () => {
+  const store = new Map<string, { value: string; ttl: number | null }>()
+
+  const client = {
+    async flushdb(): Promise<string> {
+      store.clear()
+      return 'OK'
+    },
+    async set(key: string, value: string): Promise<string> {
+      store.set(key, { value, ttl: null })
+      return 'OK'
+    },
+    async setex(key: string, ttl: number, value: string): Promise<string> {
+      store.set(key, { value, ttl })
+      return 'OK'
+    },
+    async get(key: string): Promise<string | null> {
+      return store.get(key)?.value ?? null
+    },
+    async del(key: string): Promise<number> {
+      const existed = store.has(key)
+      store.delete(key)
+      return existed ? 1 : 0
+    },
+    async exists(key: string): Promise<number> {
+      return store.has(key) ? 1 : 0
+    },
+    async ttl(key: string): Promise<number> {
+      const entry = store.get(key)
+      if (!entry) return -2
+      if (entry.ttl === null) return -1
+      return entry.ttl
+    },
+    async scan(
+      _cursor: string,
+      _kw1: string,
+      pattern: string,
+      _kw2: string,
+      _count: number
+    ): Promise<[string, string[]]> {
+      const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')
+      const regex = new RegExp(`^${escaped}$`)
+      const matched = Array.from(store.keys()).filter((k) => regex.test(k))
+      return ['0', matched]
+    },
+    pipeline() {
+      const delKeys: string[] = []
+      const pipe = {
+        del(key: string) {
+          delKeys.push(key)
+          return pipe
+        },
+        async exec(): Promise<Array<[null, number]>> {
+          for (const key of delKeys) {
+            store.delete(key)
+          }
+          return delKeys.map((): [null, number] => [null, 1])
+        },
+      }
+      return pipe
+    },
+  }
+
+  return {
+    getRedisClient: () => client,
+    closeRedisClient: async () => {},
+    default: client,
+  }
+})
 
 describe('Cache Utilities', () => {
-  const redis = getRedisClient();
+  const redis = getRedisClient()
 
   beforeEach(async () => {
     // Clear all test keys before each test
-    await redis.flushdb();
-  });
+    await redis.flushdb()
+  })
 
   describe('get', () => {
     it('should retrieve and parse cached JSON value', async () => {
-      const key = 'test:get:simple';
-      const value = { id: '123', name: 'Test' };
+      const key = 'test:get:simple'
+      const value = { id: '123', name: 'Test' }
 
-      await redis.set(key, JSON.stringify(value));
+      await redis.set(key, JSON.stringify(value))
 
-      const result = await get<typeof value>(key);
+      const result = await get<typeof value>(key)
 
-      expect(result).toEqual(value);
-    });
+      expect(result).toEqual(value)
+    })
 
     it('should return null for non-existent key', async () => {
-      const result = await get('test:get:nonexistent');
+      const result = await get('test:get:nonexistent')
 
-      expect(result).toBeNull();
-    });
+      expect(result).toBeNull()
+    })
 
     it('should return null and log error for invalid JSON', async () => {
-      const key = 'test:get:invalid';
+      const key = 'test:get:invalid'
 
-      await redis.set(key, 'not valid json{');
+      await redis.set(key, 'not valid json{')
 
-      const result = await get(key);
+      const result = await get(key)
 
-      expect(result).toBeNull();
-    });
+      expect(result).toBeNull()
+    })
 
     it('should handle complex nested objects', async () => {
-      const key = 'test:get:complex';
+      const key = 'test:get:complex'
       const value = {
         id: '123',
         metadata: {
           tags: ['tag1', 'tag2'],
-          count: 42
+          count: 42,
         },
         items: [
           { id: '1', value: 100 },
-          { id: '2', value: 200 }
-        ]
-      };
+          { id: '2', value: 200 },
+        ],
+      }
 
-      await redis.set(key, JSON.stringify(value));
+      await redis.set(key, JSON.stringify(value))
 
-      const result = await get<typeof value>(key);
+      const result = await get<typeof value>(key)
 
-      expect(result).toEqual(value);
-    });
-  });
+      expect(result).toEqual(value)
+    })
+  })
 
   describe('set', () => {
     it('should serialize and cache value with default TTL', async () => {
-      const key = 'test:set:default-ttl';
-      const value = { id: '456', status: 'active' };
+      const key = 'test:set:default-ttl'
+      const value = { id: '456', status: 'active' }
 
-      await set(key, value);
+      await set(key, value)
 
-      const cached = await redis.get(key);
-      const ttl = await redis.ttl(key);
+      const cached = await redis.get(key)
+      const ttl = await redis.ttl(key)
 
-      expect(JSON.parse(cached as string)).toEqual(value);
-      expect(ttl).toBeGreaterThan(0);
-      expect(ttl).toBeLessThanOrEqual(DEFAULT_CACHE_TTL);
-    });
+      expect(JSON.parse(cached as string)).toEqual(value)
+      expect(ttl).toBeGreaterThan(0)
+      expect(ttl).toBeLessThanOrEqual(DEFAULT_CACHE_TTL)
+    })
 
     it('should cache value with custom TTL', async () => {
-      const key = 'test:set:custom-ttl';
-      const value = { id: '789', status: 'pending' };
-      const customTTL = 60;
+      const key = 'test:set:custom-ttl'
+      const value = { id: '789', status: 'pending' }
+      const customTTL = 60
 
-      await set(key, value, customTTL);
+      await set(key, value, customTTL)
 
-      const cached = await redis.get(key);
-      const ttl = await redis.ttl(key);
+      const cached = await redis.get(key)
+      const ttl = await redis.ttl(key)
 
-      expect(JSON.parse(cached as string)).toEqual(value);
-      expect(ttl).toBeGreaterThan(0);
-      expect(ttl).toBeLessThanOrEqual(customTTL);
-    });
+      expect(JSON.parse(cached as string)).toEqual(value)
+      expect(ttl).toBeGreaterThan(0)
+      expect(ttl).toBeLessThanOrEqual(customTTL)
+    })
 
     it('should handle arrays', async () => {
-      const key = 'test:set:array';
-      const value = [1, 2, 3, 4, 5];
+      const key = 'test:set:array'
+      const value = [1, 2, 3, 4, 5]
 
-      await set(key, value);
+      await set(key, value)
 
-      const cached = await redis.get(key);
+      const cached = await redis.get(key)
 
-      expect(JSON.parse(cached as string)).toEqual(value);
-    });
+      expect(JSON.parse(cached as string)).toEqual(value)
+    })
 
     it('should handle strings', async () => {
-      const key = 'test:set:string';
-      const value = 'simple string value';
+      const key = 'test:set:string'
+      const value = 'simple string value'
 
-      await set(key, value);
+      await set(key, value)
 
-      const cached = await redis.get(key);
+      const cached = await redis.get(key)
 
-      expect(JSON.parse(cached as string)).toEqual(value);
-    });
-  });
+      expect(JSON.parse(cached as string)).toEqual(value)
+    })
+  })
 
   describe('invalidate', () => {
     it('should delete a single key', async () => {
-      const key = 'test:invalidate:single';
-      const value = { id: 'test' };
+      const key = 'test:invalidate:single'
+      const value = { id: 'test' }
 
-      await redis.set(key, JSON.stringify(value));
+      await redis.set(key, JSON.stringify(value))
 
-      let exists = await redis.exists(key);
-      expect(exists).toBe(1);
+      let exists = await redis.exists(key)
+      expect(exists).toBe(1)
 
-      await invalidate(key);
+      await invalidate(key)
 
-      exists = await redis.exists(key);
-      expect(exists).toBe(0);
-    });
+      exists = await redis.exists(key)
+      expect(exists).toBe(0)
+    })
 
     it('should not throw error for non-existent key', async () => {
-      await expect(invalidate('test:invalidate:nonexistent')).resolves.not.toThrow();
-    });
-  });
+      await expect(invalidate('test:invalidate:nonexistent')).resolves.not.toThrow()
+    })
+  })
 
   describe('invalidatePattern', () => {
     it('should delete all keys matching pattern', async () => {
-      const keys = [
-        'test:pattern:user:1',
-        'test:pattern:user:2',
-        'test:pattern:user:3'
-      ];
+      const keys = ['test:pattern:user:1', 'test:pattern:user:2', 'test:pattern:user:3']
 
       for (const key of keys) {
-        await redis.set(key, JSON.stringify({ id: key }));
+        await redis.set(key, JSON.stringify({ id: key }))
       }
 
-      await invalidatePattern('test:pattern:user:*');
+      await invalidatePattern('test:pattern:user:*')
 
       for (const key of keys) {
-        const exists = await redis.exists(key);
-        expect(exists).toBe(0);
+        const exists = await redis.exists(key)
+        expect(exists).toBe(0)
       }
-    });
+    })
 
     it('should not delete keys that do not match pattern', async () => {
-      const matchingKeys = [
-        'test:pattern:match:1',
-        'test:pattern:match:2'
-      ];
+      const matchingKeys = ['test:pattern:match:1', 'test:pattern:match:2']
 
-      const nonMatchingKeys = [
-        'test:pattern:other:1',
-        'test:different:match:1'
-      ];
+      const nonMatchingKeys = ['test:pattern:other:1', 'test:different:match:1']
 
       for (const key of [...matchingKeys, ...nonMatchingKeys]) {
-        await redis.set(key, JSON.stringify({ id: key }));
+        await redis.set(key, JSON.stringify({ id: key }))
       }
 
-      await invalidatePattern('test:pattern:match:*');
+      await invalidatePattern('test:pattern:match:*')
 
       for (const key of matchingKeys) {
-        const exists = await redis.exists(key);
-        expect(exists).toBe(0);
+        const exists = await redis.exists(key)
+        expect(exists).toBe(0)
       }
 
       for (const key of nonMatchingKeys) {
-        const exists = await redis.exists(key);
-        expect(exists).toBe(1);
+        const exists = await redis.exists(key)
+        expect(exists).toBe(1)
       }
-    });
+    })
 
     it('should handle pattern with no matching keys', async () => {
-      await expect(invalidatePattern('test:pattern:nomatch:*')).resolves.not.toThrow();
-    });
+      await expect(invalidatePattern('test:pattern:nomatch:*')).resolves.not.toThrow()
+    })
 
     it('should handle large number of keys efficiently', async () => {
-      const baseKey = 'test:pattern:bulk:';
-      const count = 150;
+      const baseKey = 'test:pattern:bulk:'
+      const count = 150
 
       for (let i = 0; i < count; i++) {
-        await redis.set(`${baseKey}${i}`, JSON.stringify({ id: i }));
+        await redis.set(`${baseKey}${i}`, JSON.stringify({ id: i }))
       }
 
-      await invalidatePattern(`${baseKey}*`);
+      await invalidatePattern(`${baseKey}*`)
 
       for (let i = 0; i < count; i++) {
-        const exists = await redis.exists(`${baseKey}${i}`);
-        expect(exists).toBe(0);
+        const exists = await redis.exists(`${baseKey}${i}`)
+        expect(exists).toBe(0)
       }
-    });
-  });
+    })
+  })
 
   describe('integration', () => {
     it('should support full cache lifecycle', async () => {
-      const key = 'test:integration:lifecycle';
-      const value = { id: 'test', data: [1, 2, 3] };
+      const key = 'test:integration:lifecycle'
+      const value = { id: 'test', data: [1, 2, 3] }
 
       // Set
-      await set(key, value, 60);
+      await set(key, value, 60)
 
       // Get
-      const retrieved = await get<typeof value>(key);
-      expect(retrieved).toEqual(value);
+      const retrieved = await get<typeof value>(key)
+      expect(retrieved).toEqual(value)
 
       // Invalidate
-      await invalidate(key);
+      await invalidate(key)
 
       // Verify deleted
-      const afterDelete = await get(key);
-      expect(afterDelete).toBeNull();
-    });
+      const afterDelete = await get(key)
+      expect(afterDelete).toBeNull()
+    })
 
     it('should handle concurrent operations', async () => {
-      const operations = [];
+      const operations = []
 
       for (let i = 0; i < 10; i++) {
-        operations.push(set(`test:integration:concurrent:${i}`, { id: i }));
+        operations.push(set(`test:integration:concurrent:${i}`, { id: i }))
       }
 
-      await Promise.all(operations);
+      await Promise.all(operations)
 
-      const getOperations = [];
+      const getOperations = []
       for (let i = 0; i < 10; i++) {
-        getOperations.push(get(`test:integration:concurrent:${i}`));
+        getOperations.push(get(`test:integration:concurrent:${i}`))
       }
 
-      const results = await Promise.all(getOperations);
+      const results = await Promise.all(getOperations)
 
       results.forEach((result, index) => {
-        expect(result).toEqual({ id: index });
-      });
-    });
-  });
-});
+        expect(result).toEqual({ id: index })
+      })
+    })
+  })
+})

@@ -4,7 +4,7 @@
  * Example graph data for testing and demo purposes
  */
 
-import type { Graph } from '../../shared/types';
+import type { Graph } from '../../shared/types'
 
 /**
  * Sample graph with various node types and relationships
@@ -192,4 +192,4 @@ export const sampleGraph: Graph = {
     totalNodes: 11,
     totalEdges: 10,
   },
-};
+}

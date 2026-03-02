@@ -6,37 +6,46 @@
  * Rendered inside the RightPanel alongside other layout controls.
  */
 
-import { useCanvasStore } from '../store';
-import type { HeightEncoding } from '../store';
+import { useCanvasStore } from '../store'
+import type { HeightEncoding } from '../store'
 
 interface EncodingOption {
-  value: HeightEncoding;
-  label: string;
-  tooltip: string;
+  value: HeightEncoding
+  label: string
+  tooltip: string
 }
 
 const ENCODING_OPTIONS: EncodingOption[] = [
-  { value: 'methodCount', label: 'Method Count', tooltip: 'Height based on number of methods in a class' },
-  { value: 'dependencies', label: 'Dependencies', tooltip: 'Height based on how many other nodes depend on this' },
+  {
+    value: 'methodCount',
+    label: 'Method Count',
+    tooltip: 'Height based on number of methods in a class',
+  },
+  {
+    value: 'dependencies',
+    label: 'Dependencies',
+    tooltip: 'Height based on how many other nodes depend on this',
+  },
   { value: 'loc', label: 'Lines of Code', tooltip: 'Height based on source file line count' },
   { value: 'complexity', label: 'Complexity', tooltip: 'Height based on cyclomatic complexity' },
-  { value: 'churn', label: 'Change Frequency', tooltip: 'Height based on git change frequency (requires git data)' },
-];
+  {
+    value: 'churn',
+    label: 'Change Frequency',
+    tooltip: 'Height based on git change frequency (requires git data)',
+  },
+]
 
 export function HeightEncodingSelector() {
-  const heightEncoding = useCanvasStore((s) => s.citySettings.heightEncoding);
-  const setHeightEncoding = useCanvasStore((s) => s.setHeightEncoding);
-  const viewMode = useCanvasStore((s) => s.viewMode);
+  const heightEncoding = useCanvasStore((s) => s.citySettings.heightEncoding)
+  const setHeightEncoding = useCanvasStore((s) => s.setHeightEncoding)
+  const viewMode = useCanvasStore((s) => s.viewMode)
 
   // Only show in city view
-  if (viewMode !== 'city') return null;
+  if (viewMode !== 'city') return null
 
   return (
     <div className="space-y-1" data-testid="height-encoding-selector">
-      <label
-        htmlFor="height-encoding"
-        className="text-gray-400 text-xs"
-      >
+      <label htmlFor="height-encoding" className="text-gray-400 text-xs">
         Building Height
       </label>
       <select
@@ -53,5 +62,5 @@ export function HeightEncodingSelector() {
         ))}
       </select>
     </div>
-  );
+  )
 }

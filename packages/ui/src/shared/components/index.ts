@@ -4,7 +4,7 @@
  * Central export for all shared components
  */
 
-export * from './ErrorBoundary';
-export * from './GlobalErrorFallback';
-export * from './FeatureErrorFallback';
-export * from './KeyboardShortcutsModal';
+export * from './ErrorBoundary'
+export * from './GlobalErrorFallback'
+export * from './FeatureErrorFallback'
+export * from './KeyboardShortcutsModal'

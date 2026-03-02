@@ -33,7 +33,7 @@ export const logger = winston.createLogger({
         winston.format.colorize(),
         winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
           const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : ''
-          return `${timestamp} [${service}] ${level}: ${message}${metaStr}`
+          return `${String(timestamp)} [${String(service)}] ${String(level)}: ${String(message)}${metaStr}`
         })
       ),
     }),
@@ -69,15 +69,15 @@ export const loggerStream = {
 }
 
 // Helper function for HTTP request logging
-export const logRequest = (method: string, path: string, meta?: Record<string, any>) => {
+export const logRequest = (method: string, path: string, meta?: Record<string, unknown>) => {
   logger.info(`HTTP ${method} ${path}`, meta)
 }
 
 // Helper function for database operations
-export const logDbOperation = (operation: string, data?: Record<string, any>) => {
+export const logDbOperation = (operation: string, data?: Record<string, unknown>) => {
   logger.debug(`[DB] ${operation}`, data)
   return {
-    success: (result?: Record<string, any>) => {
+    success: (result?: Record<string, unknown>) => {
       logger.debug(`[DB SUCCESS] ${operation}`, result)
     },
     fail: (error: Error | string) => {

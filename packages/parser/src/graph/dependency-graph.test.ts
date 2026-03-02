@@ -75,7 +75,13 @@ describe('DependencyGraph', () => {
     it('should allow multiple edges between same nodes with different types', () => {
       const graph = new DependencyGraph()
       graph.addNode({ id: 'class1', type: 'class', name: 'Base', path: '/base.ts', metadata: {} })
-      graph.addNode({ id: 'class2', type: 'class', name: 'Derived', path: '/derived.ts', metadata: {} })
+      graph.addNode({
+        id: 'class2',
+        type: 'class',
+        name: 'Derived',
+        path: '/derived.ts',
+        metadata: {},
+      })
 
       graph.addEdge({ source: 'class2', target: 'class1', type: 'extends', metadata: {} })
       graph.addEdge({ source: 'class2', target: 'class1', type: 'calls', metadata: {} })
@@ -110,8 +116,20 @@ describe('DependencyGraph', () => {
   describe('getNodes', () => {
     it('should return all nodes', () => {
       const graph = new DependencyGraph()
-      const node1: DependencyNode = { id: 'file1', type: 'file', name: 'a.ts', path: '/a.ts', metadata: {} }
-      const node2: DependencyNode = { id: 'file2', type: 'file', name: 'b.ts', path: '/b.ts', metadata: {} }
+      const node1: DependencyNode = {
+        id: 'file1',
+        type: 'file',
+        name: 'a.ts',
+        path: '/a.ts',
+        metadata: {},
+      }
+      const node2: DependencyNode = {
+        id: 'file2',
+        type: 'file',
+        name: 'b.ts',
+        path: '/b.ts',
+        metadata: {},
+      }
 
       graph.addNode(node1)
       graph.addNode(node2)
@@ -130,8 +148,18 @@ describe('DependencyGraph', () => {
       graph.addNode({ id: 'file2', type: 'file', name: 'b.ts', path: '/b.ts', metadata: {} })
       graph.addNode({ id: 'file3', type: 'file', name: 'c.ts', path: '/c.ts', metadata: {} })
 
-      const edge1: DependencyEdge = { source: 'file1', target: 'file2', type: 'imports', metadata: {} }
-      const edge2: DependencyEdge = { source: 'file2', target: 'file3', type: 'imports', metadata: {} }
+      const edge1: DependencyEdge = {
+        source: 'file1',
+        target: 'file2',
+        type: 'imports',
+        metadata: {},
+      }
+      const edge2: DependencyEdge = {
+        source: 'file2',
+        target: 'file3',
+        type: 'imports',
+        metadata: {},
+      }
 
       graph.addEdge(edge1)
       graph.addEdge(edge2)
@@ -156,7 +184,7 @@ describe('DependencyGraph', () => {
 
       const outgoing = graph.getOutgoingEdges('file1')
       expect(outgoing).toHaveLength(2)
-      expect(outgoing.every(e => e.source === 'file1')).toBe(true)
+      expect(outgoing.every((e) => e.source === 'file1')).toBe(true)
     })
 
     it('should return empty array for node with no outgoing edges', () => {
@@ -179,7 +207,7 @@ describe('DependencyGraph', () => {
 
       const incoming = graph.getIncomingEdges('file3')
       expect(incoming).toHaveLength(2)
-      expect(incoming.every(e => e.target === 'file3')).toBe(true)
+      expect(incoming.every((e) => e.target === 'file3')).toBe(true)
     })
 
     it('should return empty array for node with no incoming edges', () => {
@@ -265,9 +293,7 @@ describe('DependencyGraph', () => {
           { id: 'file1', type: 'file' as const, name: 'a.ts', path: '/a.ts', metadata: {} },
           { id: 'file2', type: 'file' as const, name: 'b.ts', path: '/b.ts', metadata: {} },
         ],
-        edges: [
-          { source: 'file1', target: 'file2', type: 'imports' as const, metadata: {} },
-        ],
+        edges: [{ source: 'file1', target: 'file2', type: 'imports' as const, metadata: {} }],
       }
 
       const graph = DependencyGraph.fromJSON(json)

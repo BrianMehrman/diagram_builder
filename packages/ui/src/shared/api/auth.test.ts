@@ -20,7 +20,7 @@ describe('auth', () => {
   describe('Token Management', () => {
     it('should start with no token when cleared', () => {
       clearToken()
-      
+
       if (!isDevModeAuth()) {
         expect(getToken()).toBeNull()
       }
@@ -74,7 +74,7 @@ describe('auth', () => {
       clearToken()
       const authenticated = isAuthenticated()
       expect(typeof authenticated).toBe('boolean')
-      
+
       // If dev mode, should be authenticated without token
       if (isDevModeAuth()) {
         expect(authenticated).toBe(true)
@@ -84,7 +84,7 @@ describe('auth', () => {
     it('should return dev-user in dev mode', () => {
       clearToken()
       const userId = getCurrentUserId()
-      
+
       if (isDevModeAuth()) {
         expect(userId).toBe('dev-user')
       } else {
@@ -133,16 +133,16 @@ describe('auth', () => {
 
     it('should handle invalid JWT token gracefully', () => {
       setToken('invalid-token')
-      
+
       const result = getCurrentUserId()
-      
+
       // In dev mode, returns dev-user; otherwise handles invalid token
       if (isDevModeAuth()) {
         expect(result).toBe('dev-user')
       } else {
         expect(result).toBeNull()
       }
-      
+
       clearToken()
     })
   })

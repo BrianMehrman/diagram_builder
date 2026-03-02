@@ -629,8 +629,12 @@ test.describe('Codebase Import @P1', () => {
           }
         }
 
-        const state = ((r3f.root as Record<string, unknown>).store as { getState: () => Record<string, unknown> }).getState()
-        const scene = state.scene as { children: unknown[]; traverse: (fn: (obj: Record<string, unknown>) => void) => void } | undefined
+        const state = (
+          (r3f.root as Record<string, unknown>).store as { getState: () => Record<string, unknown> }
+        ).getState()
+        const scene = state.scene as
+          | { children: unknown[]; traverse: (fn: (obj: Record<string, unknown>) => void) => void }
+          | undefined
 
         if (!scene) {
           return { success: false, error: 'No scene found in R3F store' }
@@ -654,7 +658,13 @@ test.describe('Codebase Import @P1', () => {
               visible: object.visible,
               position: { x: position.x, y: position.y, z: position.z },
               geometryType: geometry?.type,
-              vertexCount: ((geometry?.attributes as Record<string, unknown>)?.position as Record<string, unknown>)?.count || 0,
+              vertexCount:
+                (
+                  (geometry?.attributes as Record<string, unknown>)?.position as Record<
+                    string,
+                    unknown
+                  >
+                )?.count || 0,
             })
           } else if (object.type === 'Line' || object.type === 'LineSegments') {
             lines.push({
@@ -809,9 +819,7 @@ test.describe('Codebase Import @P1', () => {
         expect(canvasPixelData.hasContent).toBe(true)
         expect(canvasPixelData.viewportSet).toBe(true)
         const viewport = canvasPixelData.viewport as { width: number; height: number }
-        console.log(
-          `✅ WebGL viewport configured (${viewport.width}x${viewport.height})`
-        )
+        console.log(`✅ WebGL viewport configured (${viewport.width}x${viewport.height})`)
       } else if (canvasPixelData.method === '2d') {
         expect(canvasPixelData.hasContent).toBe(true)
         expect(canvasPixelData.percentageRendered as number).toBeGreaterThan(1)
@@ -938,11 +946,7 @@ test.describe('Codebase Import @P1', () => {
     expect(classNodes.length).toBeGreaterThanOrEqual(1) // Will FAIL if parser doesn't analyze AST
 
     // Should have edges (CONTAINS, DEPENDS_ON relationships)
-    console.log(
-      '⚠️  PARSER BUG CHECK: Found',
-      graphData.edges.length,
-      'edges (expected >= 4)'
-    )
+    console.log('⚠️  PARSER BUG CHECK: Found', graphData.edges.length, 'edges (expected >= 4)')
     expect(graphData.edges.length).toBeGreaterThanOrEqual(4) // Will FAIL if no relationships
 
     console.log('✅ LOCAL PATH IMPORT VALIDATION PASSED')
@@ -1102,7 +1106,8 @@ test.describe('Codebase Import @P1', () => {
             (cb) => cb.type === 'git' && cb.source === 'https://github.com/developit/mitt.git'
           )
           .sort(
-            (a, b) => new Date(b.importedAt ?? '').getTime() - new Date(a.importedAt ?? '').getTime()
+            (a, b) =>
+              new Date(b.importedAt ?? '').getTime() - new Date(a.importedAt ?? '').getTime()
           )
 
         const codebase = mittCodebases[0]

@@ -4,7 +4,7 @@
  * Types for layout algorithms, configuration, and results.
  */
 
-import type { Position3D, IVMNode, IVMEdge, BoundingBox, LODLevel } from '../ivm/types.js';
+import type { Position3D, IVMNode, IVMEdge, BoundingBox, LODLevel } from '../ivm/types.js'
 
 // =============================================================================
 // Layout Configuration Types
@@ -15,34 +15,34 @@ import type { Position3D, IVMNode, IVMEdge, BoundingBox, LODLevel } from '../ivm
  */
 export interface ForceDirectedConfig {
   /** Repulsion strength between nodes (default: 1000) */
-  repulsionStrength: number;
+  repulsionStrength: number
 
   /** Attraction strength for connected nodes (default: 0.1) */
-  attractionStrength: number;
+  attractionStrength: number
 
   /** Optimal distance between connected nodes (default: 100) */
-  linkDistance: number;
+  linkDistance: number
 
   /** Damping factor to slow down movement (0-1, default: 0.9) */
-  damping: number;
+  damping: number
 
   /** Minimum velocity threshold for stabilization (default: 0.1) */
-  minVelocity: number;
+  minVelocity: number
 
   /** Maximum iterations before stopping (default: 500) */
-  maxIterations: number;
+  maxIterations: number
 
   /** Time step for physics simulation (default: 0.1) */
-  timeStep: number;
+  timeStep: number
 
   /** Center gravity strength - pulls nodes toward center (default: 0.01) */
-  centerGravity: number;
+  centerGravity: number
 
   /** Whether to enable 3D layout (default: true) */
-  enable3D: boolean;
+  enable3D: boolean
 
   /** Barnes-Hut approximation theta (0 = exact, higher = faster but less accurate) */
-  theta: number;
+  theta: number
 }
 
 /**
@@ -50,25 +50,25 @@ export interface ForceDirectedConfig {
  */
 export interface HierarchicalConfig {
   /** Direction of hierarchy */
-  direction: 'TB' | 'BT' | 'LR' | 'RL';
+  direction: 'TB' | 'BT' | 'LR' | 'RL'
 
   /** Spacing between levels */
-  levelSpacing: number;
+  levelSpacing: number
 
   /** Spacing between nodes on same level */
-  nodeSpacing: number;
+  nodeSpacing: number
 
   /** Whether to align nodes to grid */
-  alignToGrid: boolean;
+  alignToGrid: boolean
 
   /** Whether to minimize edge crossings */
-  minimizeCrossings: boolean;
+  minimizeCrossings: boolean
 }
 
 /**
  * Union of all layout configurations
  */
-export type LayoutConfig = ForceDirectedConfig | HierarchicalConfig;
+export type LayoutConfig = ForceDirectedConfig | HierarchicalConfig
 
 // =============================================================================
 // Layout State Types
@@ -78,18 +78,18 @@ export type LayoutConfig = ForceDirectedConfig | HierarchicalConfig;
  * Velocity vector for physics simulation
  */
 export interface Velocity3D {
-  vx: number;
-  vy: number;
-  vz: number;
+  vx: number
+  vy: number
+  vz: number
 }
 
 /**
  * Force vector applied to a node
  */
 export interface Force3D {
-  fx: number;
-  fy: number;
-  fz: number;
+  fx: number
+  fy: number
+  fz: number
 }
 
 /**
@@ -97,25 +97,25 @@ export interface Force3D {
  */
 export interface LayoutNode {
   /** Node ID */
-  id: string;
+  id: string
 
   /** Current position */
-  position: Position3D;
+  position: Position3D
 
   /** Current velocity */
-  velocity: Velocity3D;
+  velocity: Velocity3D
 
   /** Accumulated force */
-  force: Force3D;
+  force: Force3D
 
   /** Mass (affects force response, default: 1) */
-  mass: number;
+  mass: number
 
   /** Whether this node is fixed/pinned */
-  fixed: boolean;
+  fixed: boolean
 
   /** Original IVM node reference */
-  node: IVMNode;
+  node: IVMNode
 }
 
 /**
@@ -123,16 +123,16 @@ export interface LayoutNode {
  */
 export interface LayoutEdge {
   /** Source node ID */
-  source: string;
+  source: string
 
   /** Target node ID */
-  target: string;
+  target: string
 
   /** Edge weight (affects attraction strength) */
-  weight: number;
+  weight: number
 
   /** Original IVM edge reference */
-  edge: IVMEdge;
+  edge: IVMEdge
 }
 
 /**
@@ -140,22 +140,22 @@ export interface LayoutEdge {
  */
 export interface LayoutState {
   /** All nodes in the simulation */
-  nodes: Map<string, LayoutNode>;
+  nodes: Map<string, LayoutNode>
 
   /** All edges in the simulation */
-  edges: LayoutEdge[];
+  edges: LayoutEdge[]
 
   /** Current iteration count */
-  iteration: number;
+  iteration: number
 
   /** Total kinetic energy (sum of velocities) */
-  energy: number;
+  energy: number
 
   /** Whether the layout has stabilized */
-  stabilized: boolean;
+  stabilized: boolean
 
   /** Bounding box of current positions */
-  bounds: BoundingBox;
+  bounds: BoundingBox
 }
 
 // =============================================================================
@@ -167,44 +167,44 @@ export interface LayoutState {
  */
 export interface LayoutResult {
   /** Updated node positions */
-  positions: Map<string, Position3D>;
+  positions: Map<string, Position3D>
 
   /** Number of iterations performed */
-  iterations: number;
+  iterations: number
 
   /** Final energy level */
-  energy: number;
+  energy: number
 
   /** Whether layout converged */
-  converged: boolean;
+  converged: boolean
 
   /** Time taken in milliseconds */
-  duration: number;
+  duration: number
 
   /** Bounding box of all positions */
-  bounds: BoundingBox;
+  bounds: BoundingBox
 }
 
 /**
  * Progress callback for long-running layouts
  */
-export type LayoutProgressCallback = (progress: LayoutProgress) => void;
+export type LayoutProgressCallback = (progress: LayoutProgress) => void
 
 /**
  * Layout progress information
  */
 export interface LayoutProgress {
   /** Current iteration */
-  iteration: number;
+  iteration: number
 
   /** Maximum iterations */
-  maxIterations: number;
+  maxIterations: number
 
   /** Current energy level */
-  energy: number;
+  energy: number
 
   /** Percentage complete (0-100) */
-  percent: number;
+  percent: number
 }
 
 // =============================================================================
@@ -216,16 +216,16 @@ export interface LayoutProgress {
  */
 export interface LODConfig {
   /** Current LOD level to display */
-  currentLevel: LODLevel;
+  currentLevel: LODLevel
 
   /** Whether to include all ancestors of visible nodes */
-  includeAncestors: boolean;
+  includeAncestors: boolean
 
   /** Whether to collapse edges to ancestor nodes */
-  collapseEdges: boolean;
+  collapseEdges: boolean
 
   /** Minimum node count before enabling LOD (default: 100) */
-  minNodesForLOD: number;
+  minNodesForLOD: number
 }
 
 /**
@@ -233,19 +233,19 @@ export interface LODConfig {
  */
 export interface LODFilterResult {
   /** Visible nodes at current LOD */
-  visibleNodes: IVMNode[];
+  visibleNodes: IVMNode[]
 
   /** Visible edges at current LOD */
-  visibleEdges: IVMEdge[];
+  visibleEdges: IVMEdge[]
 
   /** Hidden node count */
-  hiddenNodeCount: number;
+  hiddenNodeCount: number
 
   /** Hidden edge count */
-  hiddenEdgeCount: number;
+  hiddenEdgeCount: number
 
   /** Collapsed edge mappings (original -> collapsed) */
-  collapsedEdges: Map<string, string>;
+  collapsedEdges: Map<string, string>
 }
 
 // =============================================================================
@@ -257,13 +257,13 @@ export interface LODFilterResult {
  */
 export interface SphericalCoords {
   /** Radial distance */
-  r: number;
+  r: number
 
   /** Polar angle (theta) - angle from z-axis */
-  theta: number;
+  theta: number
 
   /** Azimuthal angle (phi) - angle from x-axis in xy-plane */
-  phi: number;
+  phi: number
 }
 
 /**
@@ -271,13 +271,13 @@ export interface SphericalCoords {
  */
 export interface CylindricalCoords {
   /** Radial distance from z-axis */
-  r: number;
+  r: number
 
   /** Azimuthal angle (theta) */
-  theta: number;
+  theta: number
 
   /** Height along z-axis */
-  z: number;
+  z: number
 }
 
 // =============================================================================
@@ -298,7 +298,7 @@ export const DEFAULT_FORCE_DIRECTED_CONFIG: ForceDirectedConfig = {
   centerGravity: 0.01,
   enable3D: true,
   theta: 0.8,
-};
+}
 
 /**
  * Default hierarchical layout configuration
@@ -309,7 +309,7 @@ export const DEFAULT_HIERARCHICAL_CONFIG: HierarchicalConfig = {
   nodeSpacing: 50,
   alignToGrid: true,
   minimizeCrossings: true,
-};
+}
 
 /**
  * Default LOD configuration
@@ -319,4 +319,4 @@ export const DEFAULT_LOD_CONFIG: LODConfig = {
   includeAncestors: true,
   collapseEdges: true,
   minNodesForLOD: 100,
-};
+}

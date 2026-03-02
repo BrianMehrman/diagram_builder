@@ -4,19 +4,19 @@
  * Utilities for persisting workspace state to localStorage
  */
 
-import type { Workspace } from '../../shared/types';
+import type { Workspace } from '../../shared/types'
 
-const STORAGE_KEY = 'diagram-builder:workspaces';
-const CURRENT_WORKSPACE_KEY = 'diagram-builder:current-workspace';
+const STORAGE_KEY = 'diagram-builder:workspaces'
+const CURRENT_WORKSPACE_KEY = 'diagram-builder:current-workspace'
 
 /**
  * Save workspaces to localStorage
  */
 export function saveWorkspaces(workspaces: Workspace[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(workspaces));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(workspaces))
   } catch (error) {
-    console.error('Failed to save workspaces:', error);
+    console.error('Failed to save workspaces:', error)
   }
 }
 
@@ -25,14 +25,14 @@ export function saveWorkspaces(workspaces: Workspace[]): void {
  */
 export function loadWorkspaces(): Workspace[] {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
+    const data = localStorage.getItem(STORAGE_KEY)
     if (data) {
-      return JSON.parse(data);
+      return JSON.parse(data) as Workspace[]
     }
   } catch (error) {
-    console.error('Failed to load workspaces:', error);
+    console.error('Failed to load workspaces:', error)
   }
-  return [];
+  return []
 }
 
 /**
@@ -41,12 +41,12 @@ export function loadWorkspaces(): Workspace[] {
 export function saveCurrentWorkspaceId(workspaceId: string | null): void {
   try {
     if (workspaceId) {
-      localStorage.setItem(CURRENT_WORKSPACE_KEY, workspaceId);
+      localStorage.setItem(CURRENT_WORKSPACE_KEY, workspaceId)
     } else {
-      localStorage.removeItem(CURRENT_WORKSPACE_KEY);
+      localStorage.removeItem(CURRENT_WORKSPACE_KEY)
     }
   } catch (error) {
-    console.error('Failed to save current workspace ID:', error);
+    console.error('Failed to save current workspace ID:', error)
   }
 }
 
@@ -55,10 +55,10 @@ export function saveCurrentWorkspaceId(workspaceId: string | null): void {
  */
 export function loadCurrentWorkspaceId(): string | null {
   try {
-    return localStorage.getItem(CURRENT_WORKSPACE_KEY);
+    return localStorage.getItem(CURRENT_WORKSPACE_KEY)
   } catch (error) {
-    console.error('Failed to load current workspace ID:', error);
-    return null;
+    console.error('Failed to load current workspace ID:', error)
+    return null
   }
 }
 
@@ -67,9 +67,9 @@ export function loadCurrentWorkspaceId(): string | null {
  */
 export function clearWorkspaceData(): void {
   try {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(CURRENT_WORKSPACE_KEY);
+    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(CURRENT_WORKSPACE_KEY)
   } catch (error) {
-    console.error('Failed to clear workspace data:', error);
+    console.error('Failed to clear workspace data:', error)
   }
 }

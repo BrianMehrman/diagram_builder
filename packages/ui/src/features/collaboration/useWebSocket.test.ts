@@ -7,7 +7,6 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { io, Socket } from 'socket.io-client'
 import useWebSocket from './useWebSocket'
 import { useCollaborationStore } from './store'
-import { useCanvasStore } from '../canvas/store'
 
 vi.mock('socket.io-client')
 
@@ -18,8 +17,8 @@ describe('useWebSocket', () => {
     useCollaborationStore.getState().reset()
 
     mockSocket = {
-      on: vi.fn((event: string, callback: any) => mockSocket as Socket),
-      off: vi.fn((event: string, callback?: any) => mockSocket as Socket),
+      on: vi.fn((_event: string, _callback: unknown) => mockSocket as Socket),
+      off: vi.fn((_event: string, _callback?: unknown) => mockSocket as Socket),
       emit: vi.fn(),
       disconnect: vi.fn(),
       connected: false,

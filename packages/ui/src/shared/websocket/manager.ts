@@ -86,21 +86,21 @@ export class WebSocketManager {
   /**
    * Emit event
    */
-  emit(event: string, data: any): void {
+  emit(event: string, data: unknown): void {
     this.socket?.emit(event, data)
   }
 
   /**
    * Listen to event
    */
-  on(event: string, callback: (...args: any[]) => void): void {
+  on(event: string, callback: (...args: unknown[]) => void): void {
     this.socket?.on(event, callback)
   }
 
   /**
    * Remove event listener
    */
-  off(event: string, callback?: (...args: any[]) => void): void {
+  off(event: string, callback?: (...args: unknown[]) => void): void {
     this.socket?.off(event, callback)
   }
 }

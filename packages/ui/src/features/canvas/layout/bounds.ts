@@ -1,5 +1,5 @@
-import type { Position3D } from '../../../shared/types';
-import type { BoundingBox } from './types';
+import type { Position3D } from '../../../shared/types'
+import type { BoundingBox } from './types'
 
 /**
  * Returns the center point of a bounding box.
@@ -9,7 +9,7 @@ export function boundsCenter(box: BoundingBox): Position3D {
     x: (box.min.x + box.max.x) / 2,
     y: (box.min.y + box.max.y) / 2,
     z: (box.min.z + box.max.z) / 2,
-  };
+  }
 }
 
 /**
@@ -20,7 +20,7 @@ export function boundsSize(box: BoundingBox): Position3D {
     x: box.max.x - box.min.x,
     y: box.max.y - box.min.y,
     z: box.max.z - box.min.z,
-  };
+  }
 }
 
 /**
@@ -28,10 +28,13 @@ export function boundsSize(box: BoundingBox): Position3D {
  */
 export function boundsContains(box: BoundingBox, point: Position3D): boolean {
   return (
-    point.x >= box.min.x && point.x <= box.max.x &&
-    point.y >= box.min.y && point.y <= box.max.y &&
-    point.z >= box.min.z && point.z <= box.max.z
-  );
+    point.x >= box.min.x &&
+    point.x <= box.max.x &&
+    point.y >= box.min.y &&
+    point.y <= box.max.y &&
+    point.z >= box.min.z &&
+    point.z <= box.max.z
+  )
 }
 
 /**
@@ -49,7 +52,7 @@ export function mergeBounds(a: BoundingBox, b: BoundingBox): BoundingBox {
       y: Math.max(a.max.y, b.max.y),
       z: Math.max(a.max.z, b.max.z),
     },
-  };
+  }
 }
 
 /**
@@ -58,20 +61,20 @@ export function mergeBounds(a: BoundingBox, b: BoundingBox): BoundingBox {
  */
 export function boundsFromPositions(positions: Position3D[]): BoundingBox {
   if (positions.length === 0) {
-    return { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } };
+    return { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } }
   }
 
-  const min = { x: Infinity, y: Infinity, z: Infinity };
-  const max = { x: -Infinity, y: -Infinity, z: -Infinity };
+  const min = { x: Infinity, y: Infinity, z: Infinity }
+  const max = { x: -Infinity, y: -Infinity, z: -Infinity }
 
   for (const pos of positions) {
-    min.x = Math.min(min.x, pos.x);
-    min.y = Math.min(min.y, pos.y);
-    min.z = Math.min(min.z, pos.z);
-    max.x = Math.max(max.x, pos.x);
-    max.y = Math.max(max.y, pos.y);
-    max.z = Math.max(max.z, pos.z);
+    min.x = Math.min(min.x, pos.x)
+    min.y = Math.min(min.y, pos.y)
+    min.z = Math.min(min.z, pos.z)
+    max.x = Math.max(max.x, pos.x)
+    max.y = Math.max(max.y, pos.y)
+    max.z = Math.max(max.z, pos.z)
   }
 
-  return { min, max };
+  return { min, max }
 }

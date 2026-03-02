@@ -4,50 +4,41 @@
  * Additional camera control UI (reset, zoom presets, etc.)
  */
 
-import { useCamera } from './hooks/useCamera';
+import { useCamera } from './hooks/useCamera'
 
 interface CameraControlsProps {
-  className?: string;
+  className?: string
 }
 
 /**
  * Camera controls UI component
  */
 export function CameraControls({ className = '' }: CameraControlsProps) {
-  const camera = useCamera();
+  const camera = useCamera()
 
   const handleReset = () => {
-    camera.reset();
-  };
+    camera.reset()
+  }
 
   const handleZoomIn = () => {
-    camera.setZoom(Math.min(camera.zoom * 1.2, 5));
-  };
+    camera.setZoom(Math.min(camera.zoom * 1.2, 5))
+  }
 
   const handleZoomOut = () => {
-    camera.setZoom(Math.max(camera.zoom * 0.8, 0.2));
-  };
+    camera.setZoom(Math.max(camera.zoom * 0.8, 0.2))
+  }
 
   const handleTopView = () => {
-    camera.moveTo(
-      { x: 0, y: 20, z: 0 },
-      { x: 0, y: 0, z: 0 }
-    );
-  };
+    camera.moveTo({ x: 0, y: 20, z: 0 }, { x: 0, y: 0, z: 0 })
+  }
 
   const handleFrontView = () => {
-    camera.moveTo(
-      { x: 0, y: 5, z: 15 },
-      { x: 0, y: 0, z: 0 }
-    );
-  };
+    camera.moveTo({ x: 0, y: 5, z: 15 }, { x: 0, y: 0, z: 0 })
+  }
 
   const handleSideView = () => {
-    camera.moveTo(
-      { x: 15, y: 5, z: 0 },
-      { x: 0, y: 0, z: 0 }
-    );
-  };
+    camera.moveTo({ x: 15, y: 5, z: 0 }, { x: 0, y: 0, z: 0 })
+  }
 
   return (
     <div className={`absolute top-4 right-4 flex flex-col gap-2 ${className}`}>
@@ -103,5 +94,5 @@ export function CameraControls({ className = '' }: CameraControlsProps) {
         Reset
       </button>
     </div>
-  );
+  )
 }

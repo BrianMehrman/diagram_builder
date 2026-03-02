@@ -21,19 +21,19 @@ export const districtColorPalette: string[] = [
   '#3d2d4a', // dark violet
   '#4a2d2d', // dark rust
   '#2d4a2d', // dark forest
-];
+]
 
 /**
  * Simple string hash for deterministic color selection.
  */
 function hashString(str: string): number {
-  let hash = 0;
+  let hash = 0
   for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
+    const char = str.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash = hash & hash // Convert to 32-bit integer
   }
-  return Math.abs(hash);
+  return Math.abs(hash)
 }
 
 /**
@@ -48,8 +48,8 @@ function hashString(str: string): number {
  */
 export function getDistrictColor(districtName: string, index?: number): string {
   if (index !== undefined) {
-    return districtColorPalette[index % districtColorPalette.length] ?? districtColorPalette[0]!;
+    return districtColorPalette[index % districtColorPalette.length] ?? '#2d4a3e'
   }
-  const hash = hashString(districtName);
-  return districtColorPalette[hash % districtColorPalette.length] ?? districtColorPalette[0]!;
+  const hash = hashString(districtName)
+  return districtColorPalette[hash % districtColorPalette.length] ?? '#2d4a3e'
 }

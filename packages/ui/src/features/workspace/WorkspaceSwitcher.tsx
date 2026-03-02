@@ -5,97 +5,97 @@
  * Navigating to a workspace reloads the graph via React Router.
  */
 
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router';
-import { workspaces as workspacesApi } from '../../shared/api/endpoints';
-import { WorkspaceConfig } from './WorkspaceConfig';
-import type { Workspace } from '../../shared/types';
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router'
+import { workspaces as workspacesApi } from '../../shared/api/endpoints'
+import { WorkspaceConfig } from './WorkspaceConfig'
+import type { Workspace } from '../../shared/types'
 
 interface WorkspaceSwitcherProps {
-  className?: string;
+  className?: string
 }
 
 function formatDate(isoString: string): string {
-  const date = new Date(isoString);
-  return date.toLocaleDateString();
+  const date = new Date(isoString)
+  return date.toLocaleDateString()
 }
 
 export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
-  const navigate = useNavigate();
-  const { id: currentWorkspaceId } = useParams<{ id: string }>();
+  const navigate = useNavigate()
+  const { id: currentWorkspaceId } = useParams<{ id: string }>()
 
-  const [workspaceList, setWorkspaceList] = useState<Workspace[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showConfig, setShowConfig] = useState(false);
-  const [editingId, setEditingId] = useState<string | undefined>();
+  const [workspaceList, setWorkspaceList] = useState<Workspace[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [showConfig, setShowConfig] = useState(false)
+  const [editingId, setEditingId] = useState<string | undefined>()
 
   useEffect(() => {
-    fetchWorkspaces();
-  }, []);
+    void fetchWorkspaces()
+  }, [])
 
   const fetchWorkspaces = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const data = await workspacesApi.list();
-      setWorkspaceList(data);
+      setLoading(true)
+      setError(null)
+      const data = await workspacesApi.list()
+      setWorkspaceList(data)
     } catch (err) {
-      setError('Failed to load workspaces');
-      console.error('Failed to fetch workspaces:', err);
+      setError('Failed to load workspaces')
+      console.error('Failed to fetch workspaces:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSwitch = (workspaceId: string) => {
-    navigate(`/workspace/${workspaceId}`);
-  };
+    void navigate(`/workspace/${workspaceId}`)
+  }
 
   const handleCreateNew = () => {
-    setEditingId(undefined);
-    setShowConfig(true);
-  };
+    setEditingId(undefined)
+    setShowConfig(true)
+  }
 
   const handleEdit = (workspaceId: string) => {
-    setEditingId(workspaceId);
-    setShowConfig(true);
-  };
+    setEditingId(workspaceId)
+    setShowConfig(true)
+  }
 
   const handleDelete = async (workspaceId: string) => {
     if (confirm('Are you sure you want to delete this workspace?')) {
       try {
-        await workspacesApi.delete(workspaceId);
-        setWorkspaceList((prev) => prev.filter((w) => w.id !== workspaceId));
+        await workspacesApi.delete(workspaceId)
+        setWorkspaceList((prev) => prev.filter((w) => w.id !== workspaceId))
         if (currentWorkspaceId === workspaceId) {
-          navigate('/');
+          void navigate('/')
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to delete workspace');
+        setError(err instanceof Error ? err.message : 'Failed to delete workspace')
       }
     }
-  };
+  }
 
   const handleConfigSave = (workspaceId: string) => {
-    setShowConfig(false);
-    setEditingId(undefined);
-    fetchWorkspaces();
+    setShowConfig(false)
+    setEditingId(undefined)
+    void fetchWorkspaces()
     if (!currentWorkspaceId) {
-      navigate(`/workspace/${workspaceId}`);
+      void navigate(`/workspace/${workspaceId}`)
     }
-  };
+  }
 
   if (showConfig) {
     return (
       <WorkspaceConfig
         {...(editingId && { workspaceId: editingId })}
         onClose={() => {
-          setShowConfig(false);
-          setEditingId(undefined);
+          setShowConfig(false)
+          setEditingId(undefined)
         }}
         onSave={handleConfigSave}
       />
-    );
+    )
   }
 
   return (
@@ -132,7 +132,9 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
           <div className="text-center text-red-500 text-sm py-8">
             <p>{error}</p>
             <button
-              onClick={fetchWorkspaces}
+              onClick={() => {
+                void fetchWorkspaces()
+              }}
               className="mt-2 text-primary-600 hover:text-primary-700 text-sm"
             >
               Retry
@@ -170,9 +172,7 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 truncate">
-                      {workspace.name}
-                    </h3>
+                    <h3 className="font-semibold text-gray-900 truncate">{workspace.name}</h3>
                     {workspace.description && (
                       <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                         {workspace.description}
@@ -229,7 +229,9 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
                       </svg>
                     </button>
                     <button
-                      onClick={() => handleDelete(workspace.id)}
+                      onClick={() => {
+                        void handleDelete(workspace.id)
+                      }}
                       className="p-1.5 text-red-600 hover:bg-red-100 rounded transition-colors"
                       aria-label="Delete workspace"
                     >
@@ -262,5 +264,5 @@ export function WorkspaceSwitcher({ className = '' }: WorkspaceSwitcherProps) {
         )}
       </div>
     </div>
-  );
+  )
 }

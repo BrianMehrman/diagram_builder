@@ -4,187 +4,191 @@
  * Zustand store for canvas state management (camera, selection, etc.)
  */
 
-import { create } from 'zustand';
-import type { Position3D, GraphNode } from '../../shared/types';
+import { create } from 'zustand'
+import type { Position3D, GraphNode } from '../../shared/types'
 
 /**
  * Camera state
  */
 export interface CameraState {
-  position: Position3D;
-  target: Position3D;
-  zoom: number;
+  position: Position3D
+  target: Position3D
+  zoom: number
 }
 
 /**
  * Control mode
  */
-export type ControlMode = 'orbit' | 'fly';
+export type ControlMode = 'orbit' | 'fly'
 
 /**
  * View mode for city-to-cell navigation
  */
-export type ViewMode = 'city' | 'building' | 'cell';
+export type ViewMode = 'city' | 'building' | 'cell'
 
 /**
  * Layer name for visibility toggling
  */
-export type LayerName = 'aboveGround' | 'underground';
+export type LayerName = 'aboveGround' | 'underground'
 
 /**
  * Layer visibility state
  */
 export interface VisibleLayers {
-  aboveGround: boolean;
-  underground: boolean;
+  aboveGround: boolean
+  underground: boolean
 }
 
 /**
  * Height encoding metric for building height
  */
-export type HeightEncoding = 'methodCount' | 'dependencies' | 'loc' | 'complexity' | 'churn';
+export type HeightEncoding = 'methodCount' | 'dependencies' | 'loc' | 'complexity' | 'churn'
 
 /**
  * City version feature flag
  */
-export type CityVersion = 'v1' | 'v2';
+export type CityVersion = 'v1' | 'v2'
 
 /**
  * Atmosphere overlay toggles
  */
 export interface AtmosphereOverlays {
-  cranes: boolean;
-  smog: boolean;
-  lighting: boolean;
-  deprecated: boolean;
+  cranes: boolean
+  smog: boolean
+  lighting: boolean
+  deprecated: boolean
 }
 
 /**
  * Edge tier visibility toggles
  */
 export interface EdgeTierVisibility {
-  crossDistrict: boolean;
-  inheritance: boolean;
+  crossDistrict: boolean
+  inheritance: boolean
 }
 
 /**
  * City settings namespace — forward-planned state for Phases 1-4
  */
 export interface CitySettings {
-  heightEncoding: HeightEncoding;
-  transitMapMode: boolean;
-  atmosphereOverlays: AtmosphereOverlays;
-  edgeTierVisibility: EdgeTierVisibility;
-  cityVersion: CityVersion;
-  cameraTiltAssist: boolean;
+  heightEncoding: HeightEncoding
+  transitMapMode: boolean
+  atmosphereOverlays: AtmosphereOverlays
+  edgeTierVisibility: EdgeTierVisibility
+  cityVersion: CityVersion
+  cameraTiltAssist: boolean
   /** Whether the underground pipe layer is visible (Story 11-10). Default: false. */
-  undergroundVisible: boolean;
+  undergroundVisible: boolean
   /** Whether external dependency pipes are shown when underground is on (Story 11-10). Default: false. */
-  externalPipesVisible: boolean;
+  externalPipesVisible: boolean
 }
 
 /**
  * Atmosphere overlay key
  */
-export type AtmosphereOverlayKey = keyof AtmosphereOverlays;
+export type AtmosphereOverlayKey = keyof AtmosphereOverlays
 
 /**
  * Edge tier key
  */
-export type EdgeTierKey = keyof EdgeTierVisibility;
+export type EdgeTierKey = keyof EdgeTierVisibility
 
 /**
  * Canvas store state
  */
 interface CanvasState {
   // Camera state
-  camera: CameraState;
-  setCamera: (camera: Partial<CameraState>) => void;
-  setCameraPosition: (position: Position3D) => void;
-  setCameraTarget: (target: Position3D) => void;
-  setZoom: (zoom: number) => void;
+  camera: CameraState
+  setCamera: (camera: Partial<CameraState>) => void
+  setCameraPosition: (position: Position3D) => void
+  setCameraTarget: (target: Position3D) => void
+  setZoom: (zoom: number) => void
 
   // Control mode
-  controlMode: ControlMode;
-  setControlMode: (mode: ControlMode) => void;
-  toggleControlMode: () => void;
+  controlMode: ControlMode
+  setControlMode: (mode: ControlMode) => void
+  toggleControlMode: () => void
 
   // Selection state
-  selectedNodeId: string | null;
-  selectNode: (nodeId: string | null) => void;
+  selectedNodeId: string | null
+  selectNode: (nodeId: string | null) => void
 
   // Hover state
-  hoveredNodeId: string | null;
-  setHoveredNode: (nodeId: string | null) => void;
+  hoveredNodeId: string | null
+  setHoveredNode: (nodeId: string | null) => void
 
   // Highlighted node state (for arrival feedback)
-  highlightedNodeId: string | null;
-  setHighlightedNode: (nodeId: string | null) => void;
+  highlightedNodeId: string | null
+  setHighlightedNode: (nodeId: string | null) => void
+
+  // Connection radial overlay
+  showRadialOverlay: boolean
+  toggleRadialOverlay: () => void
 
   // Flight state (for breadcrumb updates during flight)
-  isFlying: boolean;
-  flightTargetNodeId: string | null;
-  setFlightState: (isFlying: boolean, targetNodeId?: string | null) => void;
+  isFlying: boolean
+  flightTargetNodeId: string | null
+  setFlightState: (isFlying: boolean, targetNodeId?: string | null) => void
 
   // LOD level
-  lodLevel: number;
-  setLodLevel: (level: number) => void;
-  lodManualOverride: boolean;
-  setLodManualOverride: (manual: boolean) => void;
+  lodLevel: number
+  setLodLevel: (level: number) => void
+  lodManualOverride: boolean
+  setLodManualOverride: (manual: boolean) => void
 
   // View mode (city-to-cell navigation)
-  viewMode: ViewMode;
-  focusedNodeId: string | null;
-  focusHistory: string[];
-  setViewMode: (mode: ViewMode, focusedNodeId?: string) => void;
-  enterNode: (nodeId: string, nodeType: GraphNode['type']) => void;
-  exitToParent: () => void;
-  resetToCity: () => void;
+  viewMode: ViewMode
+  focusedNodeId: string | null
+  focusHistory: string[]
+  setViewMode: (mode: ViewMode, focusedNodeId?: string) => void
+  enterNode: (nodeId: string, nodeType: GraphNode['type']) => void
+  exitToParent: () => void
+  resetToCity: () => void
 
   // Pending camera flight — set by any component, consumed by WorkspacePage
-  pendingFlyToNodeId: string | null;
-  requestFlyToNode: (nodeId: string | null) => void;
+  pendingFlyToNodeId: string | null
+  requestFlyToNode: (nodeId: string | null) => void
 
   // Layout positions (computed by view renderers)
-  layoutPositions: Map<string, Position3D>;
-  setLayoutPositions: (positions: Map<string, Position3D>) => void;
+  layoutPositions: Map<string, Position3D>
+  setLayoutPositions: (positions: Map<string, Position3D>) => void
 
   // X-ray mode
-  isXRayMode: boolean;
-  xrayOpacity: number;
-  toggleXRay: () => void;
+  isXRayMode: boolean
+  xrayOpacity: number
+  toggleXRay: () => void
 
   // Underground mode
-  isUndergroundMode: boolean;
-  toggleUnderground: () => void;
+  isUndergroundMode: boolean
+  toggleUnderground: () => void
 
   // Flow animation (underground tunnel particles)
-  showFlowAnimation: boolean;
-  toggleFlowAnimation: () => void;
+  showFlowAnimation: boolean
+  toggleFlowAnimation: () => void
 
   // Layout density (radial layout spacing multiplier)
-  layoutDensity: number;
-  setLayoutDensity: (density: number) => void;
+  layoutDensity: number
+  setLayoutDensity: (density: number) => void
 
   // Layer visibility
-  visibleLayers: VisibleLayers;
-  toggleLayer: (layer: LayerName) => void;
+  visibleLayers: VisibleLayers
+  toggleLayer: (layer: LayerName) => void
 
   // City settings (forward-planned state for Phases 1-4)
-  citySettings: CitySettings;
-  setCityVersion: (version: CityVersion) => void;
-  setHeightEncoding: (encoding: HeightEncoding) => void;
-  toggleTransitMapMode: () => void;
-  toggleAtmosphereOverlay: (key: AtmosphereOverlayKey) => void;
-  toggleEdgeTierVisibility: (key: EdgeTierKey) => void;
-  toggleCameraTiltAssist: () => void;
+  citySettings: CitySettings
+  setCityVersion: (version: CityVersion) => void
+  setHeightEncoding: (encoding: HeightEncoding) => void
+  toggleTransitMapMode: () => void
+  toggleAtmosphereOverlay: (key: AtmosphereOverlayKey) => void
+  toggleEdgeTierVisibility: (key: EdgeTierKey) => void
+  toggleCameraTiltAssist: () => void
   /** Toggle underground pipe layer on/off (Story 11-10) */
-  toggleUndergroundVisible: () => void;
+  toggleUndergroundVisible: () => void
   /** Toggle external dependency pipes on/off (Story 11-10) */
-  toggleExternalPipes: () => void;
+  toggleExternalPipes: () => void
 
   // Reset to defaults
-  reset: () => void;
+  reset: () => void
 }
 
 /**
@@ -207,7 +211,7 @@ const DEFAULT_CITY_SETTINGS: CitySettings = {
   cameraTiltAssist: true,
   undergroundVisible: false,
   externalPipesVisible: false,
-};
+}
 
 /**
  * Default camera state
@@ -216,7 +220,7 @@ const DEFAULT_CAMERA: CameraState = {
   position: { x: 0, y: 5, z: 10 },
   target: { x: 0, y: 0, z: 0 },
   zoom: 1,
-};
+}
 
 /**
  * Canvas store
@@ -266,6 +270,10 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   highlightedNodeId: null,
   setHighlightedNode: (nodeId) => set({ highlightedNodeId: nodeId }),
 
+  // Connection radial overlay
+  showRadialOverlay: false,
+  toggleRadialOverlay: () => set((state) => ({ showRadialOverlay: !state.showRadialOverlay })),
+
   // Flight state (for breadcrumb updates during flight)
   isFlying: false,
   flightTargetNodeId: null,
@@ -287,13 +295,13 @@ export const useCanvasStore = create<CanvasState>((set) => ({
     set({ viewMode: mode, focusedNodeId: focusedNodeId ?? null }),
 
   enterNode: (nodeId, nodeType) => {
-    let newMode: ViewMode;
+    let newMode: ViewMode
     if (nodeType === 'file') {
-      newMode = 'building';
+      newMode = 'building'
     } else if (nodeType === 'class') {
-      newMode = 'cell';
+      newMode = 'cell'
     } else {
-      return; // Can't enter this node type
+      return // Can't enter this node type
     }
 
     set((state) => ({
@@ -302,7 +310,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       focusHistory: state.focusedNodeId
         ? [...state.focusHistory, state.focusedNodeId]
         : state.focusHistory,
-    }));
+    }))
   },
 
   exitToParent: () =>
@@ -312,15 +320,15 @@ export const useCanvasStore = create<CanvasState>((set) => ({
           viewMode: 'city' as ViewMode,
           focusedNodeId: null,
           focusHistory: [],
-        };
+        }
       }
 
-      const parentId = state.focusHistory[state.focusHistory.length - 1] ?? null;
+      const parentId = state.focusHistory[state.focusHistory.length - 1] ?? null
       return {
         viewMode: parentId ? ('building' as ViewMode) : ('city' as ViewMode),
         focusedNodeId: parentId,
         focusHistory: state.focusHistory.slice(0, -1),
-      };
+      }
     }),
 
   resetToCity: () =>
@@ -345,13 +353,11 @@ export const useCanvasStore = create<CanvasState>((set) => ({
 
   // Underground mode
   isUndergroundMode: false,
-  toggleUnderground: () =>
-    set((state) => ({ isUndergroundMode: !state.isUndergroundMode })),
+  toggleUnderground: () => set((state) => ({ isUndergroundMode: !state.isUndergroundMode })),
 
   // Flow animation
   showFlowAnimation: false,
-  toggleFlowAnimation: () =>
-    set((state) => ({ showFlowAnimation: !state.showFlowAnimation })),
+  toggleFlowAnimation: () => set((state) => ({ showFlowAnimation: !state.showFlowAnimation })),
 
   // Layout density (radial layout spacing multiplier)
   layoutDensity: 1.0,
@@ -361,12 +367,12 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   visibleLayers: { aboveGround: true, underground: true },
   toggleLayer: (layer) =>
     set((state) => {
-      const updated = { ...state.visibleLayers, [layer]: !state.visibleLayers[layer] };
+      const updated = { ...state.visibleLayers, [layer]: !state.visibleLayers[layer] }
       // Sync underground layer with existing isUndergroundMode for backwards compatibility
       if (layer === 'underground') {
-        return { visibleLayers: updated, isUndergroundMode: updated.underground };
+        return { visibleLayers: updated, isUndergroundMode: updated.underground }
       }
-      return { visibleLayers: updated };
+      return { visibleLayers: updated }
     }),
 
   // City settings
@@ -433,6 +439,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       selectedNodeId: null,
       hoveredNodeId: null,
       highlightedNodeId: null,
+      showRadialOverlay: false,
       isFlying: false,
       flightTargetNodeId: null,
       pendingFlyToNodeId: null,
@@ -450,4 +457,4 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       visibleLayers: { aboveGround: true, underground: true },
       citySettings: { ...DEFAULT_CITY_SETTINGS },
     }),
-}));
+}))

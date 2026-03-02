@@ -5,17 +5,17 @@
  * Rotated 45 degrees to form a diamond shape.
  */
 
-import { Text } from '@react-three/drei';
-import type { SignProps } from './types';
+import { Text } from '@react-three/drei'
+import type { SignProps } from './types'
 
-const SIGN_COLOR = '#eab308';
-const TEXT_COLOR = '#000000';
-const POST_COLOR = '#78716c';
+const SIGN_COLOR = '#eab308'
+const TEXT_COLOR = '#000000'
+const POST_COLOR = '#78716c'
 
 export function ConstructionSign({ text, position, visible, color }: SignProps) {
-  if (!visible) return null;
+  if (!visible) return null
 
-  const signColor = color ?? SIGN_COLOR;
+  const signColor = color ?? SIGN_COLOR
 
   return (
     <group position={[position.x, position.y, position.z]}>
@@ -27,11 +27,7 @@ export function ConstructionSign({ text, position, visible, color }: SignProps) 
       {/* Diamond sign (rotated 45 degrees) */}
       <mesh position={[0, 0.1, 0]} rotation={[0, 0, Math.PI / 4]}>
         <planeGeometry args={[0.6, 0.6]} />
-        <meshStandardMaterial
-          color={signColor}
-          roughness={0.5}
-          side={2} /* DoubleSide */
-        />
+        <meshStandardMaterial color={signColor} roughness={0.5} side={2} /* DoubleSide */ />
       </mesh>
       {/* Warning text below diamond */}
       <Text
@@ -46,5 +42,5 @@ export function ConstructionSign({ text, position, visible, color }: SignProps) 
         {text}
       </Text>
     </group>
-  );
+  )
 }

@@ -8,10 +8,10 @@
  */
 
 // IVM exports
-export * from './ivm/index.js';
+export * from './ivm/index.js'
 
 // Layout exports
-export * from './layout/index.js';
+export * from './layout/index.js'
 
 // Exporter exports
-export * from './exporters/index.js';
+export * from './exporters/index.js'

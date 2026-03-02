@@ -4,21 +4,21 @@
  * HTTP client for making API requests with authentication
  */
 
-import type { ApiError, ProblemDetails } from '../types';
+import type { ApiError, ProblemDetails } from '../types'
 
 /**
  * API client configuration
  */
 interface ApiClientConfig {
-  baseUrl: string;
-  getToken: () => string | null | undefined;
+  baseUrl: string
+  getToken: () => string | null | undefined
 }
 
 /**
  * API request options
  */
 export interface RequestOptions extends RequestInit {
-  params?: Record<string, string | number | boolean>;
+  params?: Record<string, string | number | boolean>
 }
 
 /**
@@ -29,8 +29,8 @@ export class ApiClientError extends Error {
     public problemDetails: ProblemDetails,
     public status: number
   ) {
-    super(problemDetails.title);
-    this.name = 'ApiClientError';
+    super(problemDetails.title)
+    this.name = 'ApiClientError'
   }
 }
 
@@ -38,55 +38,52 @@ export class ApiClientError extends Error {
  * Create API client
  */
 export function createApiClient(config: ApiClientConfig) {
-  const { baseUrl, getToken } = config;
+  const { baseUrl, getToken } = config
 
   /**
    * Make an API request
    */
-  async function request<T>(
-    endpoint: string,
-    options: RequestOptions = {}
-  ): Promise<T> {
-    const { params, ...fetchOptions } = options;
+  async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+    const { params, ...fetchOptions } = options
 
     // Build URL with query parameters
-    let url = `${baseUrl}${endpoint}`;
+    let url = `${baseUrl}${endpoint}`
     if (params) {
       const queryString = new URLSearchParams(
         Object.entries(params).map(([key, value]) => [key, String(value)])
-      ).toString();
+      ).toString()
       if (queryString) {
-        url += `?${queryString}`;
+        url += `?${queryString}`
       }
     }
 
     // Add authentication header if token exists
-    const token = getToken();
-    const headers = new Headers(fetchOptions.headers);
+    const token = getToken()
+    const headers = new Headers(fetchOptions.headers)
     if (token) {
-      headers.set('Authorization', `Bearer ${token}`);
+      headers.set('Authorization', `Bearer ${token}`)
     }
-    headers.set('Content-Type', 'application/json');
+    headers.set('Content-Type', 'application/json')
 
     // Make request
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
-    });
+    })
 
     // Handle error responses
     if (!response.ok) {
-      const problemDetails = (await response.json()) as ApiError;
-      throw new ApiClientError(problemDetails, response.status);
+      const problemDetails = (await response.json()) as ApiError
+      throw new ApiClientError(problemDetails, response.status)
     }
 
     // Handle empty responses (204 No Content)
     if (response.status === 204) {
-      return undefined as T;
+      return undefined as T
     }
 
     // Parse JSON response
-    return response.json() as Promise<T>;
+    return response.json() as Promise<T>
   }
 
   return {
@@ -116,5 +113,5 @@ export function createApiClient(config: ApiClientConfig) {
 
     delete: <T>(endpoint: string, options?: RequestOptions) =>
       request<T>(endpoint, { ...options, method: 'DELETE' }),
-  };
+  }
 }

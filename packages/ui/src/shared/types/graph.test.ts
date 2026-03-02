@@ -5,8 +5,8 @@
  * including new city-to-cell layout fields (depth, isExternal, parentId)
  */
 
-import { describe, it, expect } from 'vitest';
-import type { GraphNode, GraphEdge, Graph, Position3D } from './graph';
+import { describe, it, expect } from 'vitest'
+import type { GraphNode, GraphEdge, Graph } from './graph'
 
 describe('GraphNode type', () => {
   it('creates a node with all fields including new layout fields', () => {
@@ -20,13 +20,13 @@ describe('GraphNode type', () => {
       depth: 2,
       isExternal: false,
       parentId: 'dir-1',
-    };
+    }
 
-    expect(node.id).toBe('file-1');
-    expect(node.depth).toBe(2);
-    expect(node.isExternal).toBe(false);
-    expect(node.parentId).toBe('dir-1');
-  });
+    expect(node.id).toBe('file-1')
+    expect(node.depth).toBe(2)
+    expect(node.isExternal).toBe(false)
+    expect(node.parentId).toBe('dir-1')
+  })
 
   it('creates a node without new fields (backward compatibility)', () => {
     const node: GraphNode = {
@@ -35,13 +35,13 @@ describe('GraphNode type', () => {
       label: 'handleClick',
       metadata: {},
       lod: 3,
-    };
+    }
 
-    expect(node.id).toBe('func-1');
-    expect(node.depth).toBeUndefined();
-    expect(node.isExternal).toBeUndefined();
-    expect(node.parentId).toBeUndefined();
-  });
+    expect(node.id).toBe('func-1')
+    expect(node.depth).toBeUndefined()
+    expect(node.isExternal).toBeUndefined()
+    expect(node.parentId).toBeUndefined()
+  })
 
   it('creates an external library node', () => {
     const node: GraphNode = {
@@ -52,10 +52,10 @@ describe('GraphNode type', () => {
       lod: 1,
       isExternal: true,
       depth: 0,
-    };
+    }
 
-    expect(node.isExternal).toBe(true);
-  });
+    expect(node.isExternal).toBe(true)
+  })
 
   it('creates a deeply nested node with parent', () => {
     const parentNode: GraphNode = {
@@ -65,7 +65,7 @@ describe('GraphNode type', () => {
       metadata: {},
       lod: 2,
       depth: 1,
-    };
+    }
 
     const childNode: GraphNode = {
       id: 'method-1',
@@ -75,22 +75,28 @@ describe('GraphNode type', () => {
       lod: 3,
       depth: 2,
       parentId: parentNode.id,
-    };
+    }
 
-    expect(childNode.parentId).toBe('class-1');
-    expect(childNode.depth).toBeGreaterThan(parentNode.depth!);
-  });
+    expect(childNode.parentId).toBe('class-1')
+    expect(childNode.depth).toBeGreaterThan(parentNode.depth!)
+  })
 
   it('supports all node types including new Epic 9-B types', () => {
     const types: GraphNode['type'][] = [
-      'file', 'class', 'function', 'method', 'variable',
-      'interface', 'enum', 'abstract_class',
-    ];
+      'file',
+      'class',
+      'function',
+      'method',
+      'variable',
+      'interface',
+      'enum',
+      'abstract_class',
+    ]
     types.forEach((type) => {
-      const node: GraphNode = { id: `${type}-1`, type, label: type, metadata: {}, lod: 1 };
-      expect(node.type).toBe(type);
-    });
-  });
+      const node: GraphNode = { id: `${type}-1`, type, label: type, metadata: {}, lod: 1 }
+      expect(node.type).toBe(type)
+    })
+  })
 
   it('creates an interface node', () => {
     const node: GraphNode = {
@@ -100,11 +106,11 @@ describe('GraphNode type', () => {
       metadata: {},
       lod: 2,
       methodCount: 5,
-    };
+    }
 
-    expect(node.type).toBe('interface');
-    expect(node.methodCount).toBe(5);
-  });
+    expect(node.type).toBe('interface')
+    expect(node.methodCount).toBe(5)
+  })
 
   it('creates an enum node', () => {
     const node: GraphNode = {
@@ -113,10 +119,10 @@ describe('GraphNode type', () => {
       label: 'Status',
       metadata: {},
       lod: 2,
-    };
+    }
 
-    expect(node.type).toBe('enum');
-  });
+    expect(node.type).toBe('enum')
+  })
 
   it('creates an abstract class node with shape metadata', () => {
     const node: GraphNode = {
@@ -128,13 +134,13 @@ describe('GraphNode type', () => {
       isAbstract: true,
       methodCount: 12,
       hasNestedTypes: true,
-    };
+    }
 
-    expect(node.type).toBe('abstract_class');
-    expect(node.isAbstract).toBe(true);
-    expect(node.methodCount).toBe(12);
-    expect(node.hasNestedTypes).toBe(true);
-  });
+    expect(node.type).toBe('abstract_class')
+    expect(node.isAbstract).toBe(true)
+    expect(node.methodCount).toBe(12)
+    expect(node.hasNestedTypes).toBe(true)
+  })
 
   it('shape metadata fields are optional (backward compatibility)', () => {
     const node: GraphNode = {
@@ -143,12 +149,12 @@ describe('GraphNode type', () => {
       label: 'UserService',
       metadata: {},
       lod: 2,
-    };
+    }
 
-    expect(node.methodCount).toBeUndefined();
-    expect(node.isAbstract).toBeUndefined();
-    expect(node.hasNestedTypes).toBeUndefined();
-  });
+    expect(node.methodCount).toBeUndefined()
+    expect(node.isAbstract).toBeUndefined()
+    expect(node.hasNestedTypes).toBeUndefined()
+  })
 
   it('creates a node with sign metadata fields', () => {
     const node: GraphNode = {
@@ -160,15 +166,15 @@ describe('GraphNode type', () => {
       visibility: 'public',
       isDeprecated: false,
       isExported: true,
-    };
+    }
 
-    expect(node.visibility).toBe('public');
-    expect(node.isDeprecated).toBe(false);
-    expect(node.isExported).toBe(true);
-  });
+    expect(node.visibility).toBe('public')
+    expect(node.isDeprecated).toBe(false)
+    expect(node.isExported).toBe(true)
+  })
 
   it('supports all visibility values', () => {
-    const visibilities: GraphNode['visibility'][] = ['public', 'protected', 'private', 'static'];
+    const visibilities: GraphNode['visibility'][] = ['public', 'protected', 'private', 'static']
     visibilities.forEach((vis) => {
       const node: GraphNode = {
         id: `vis-${vis}`,
@@ -177,10 +183,10 @@ describe('GraphNode type', () => {
         metadata: {},
         lod: 1,
         visibility: vis,
-      };
-      expect(node.visibility).toBe(vis);
-    });
-  });
+      }
+      expect(node.visibility).toBe(vis)
+    })
+  })
 
   it('creates a deprecated node', () => {
     const node: GraphNode = {
@@ -190,10 +196,10 @@ describe('GraphNode type', () => {
       metadata: {},
       lod: 2,
       isDeprecated: true,
-    };
+    }
 
-    expect(node.isDeprecated).toBe(true);
-  });
+    expect(node.isDeprecated).toBe(true)
+  })
 
   it('sign metadata fields are optional (backward compatibility)', () => {
     const node: GraphNode = {
@@ -202,23 +208,23 @@ describe('GraphNode type', () => {
       label: 'Service',
       metadata: {},
       lod: 2,
-    };
+    }
 
-    expect(node.visibility).toBeUndefined();
-    expect(node.isDeprecated).toBeUndefined();
-    expect(node.isExported).toBeUndefined();
-  });
-});
+    expect(node.visibility).toBeUndefined()
+    expect(node.isDeprecated).toBeUndefined()
+    expect(node.isExported).toBeUndefined()
+  })
+})
 
 describe('GraphEdge type', () => {
   it('creates an edge with all types', () => {
-    const types: GraphEdge['type'][] = ['contains', 'depends_on', 'calls', 'inherits', 'imports'];
+    const types: GraphEdge['type'][] = ['contains', 'depends_on', 'calls', 'inherits', 'imports']
     types.forEach((type) => {
-      const edge: GraphEdge = { id: `edge-${type}`, source: 'a', target: 'b', type, metadata: {} };
-      expect(edge.type).toBe(type);
-    });
-  });
-});
+      const edge: GraphEdge = { id: `edge-${type}`, source: 'a', target: 'b', type, metadata: {} }
+      expect(edge.type).toBe(type)
+    })
+  })
+})
 
 describe('Graph type', () => {
   it('creates a graph with nodes containing new fields', () => {
@@ -228,19 +234,17 @@ describe('Graph type', () => {
         { id: 'c1', type: 'class', label: 'App', metadata: {}, lod: 2, depth: 1, parentId: 'f1' },
         { id: 'ext', type: 'file', label: 'react', metadata: {}, lod: 1, isExternal: true },
       ],
-      edges: [
-        { id: 'e1', source: 'f1', target: 'c1', type: 'contains', metadata: {} },
-      ],
+      edges: [{ id: 'e1', source: 'f1', target: 'c1', type: 'contains', metadata: {} }],
       metadata: {
         repositoryId: 'repo-1',
         name: 'test-repo',
         totalNodes: 3,
         totalEdges: 1,
       },
-    };
+    }
 
-    expect(graph.nodes).toHaveLength(3);
-    expect(graph.nodes[1].parentId).toBe('f1');
-    expect(graph.nodes[2].isExternal).toBe(true);
-  });
-});
+    expect(graph.nodes).toHaveLength(3)
+    expect(graph.nodes[1].parentId).toBe('f1')
+    expect(graph.nodes[2].isExternal).toBe(true)
+  })
+})

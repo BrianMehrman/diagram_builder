@@ -2,16 +2,16 @@
  * GraphRenderer Tests
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
-import { GraphRenderer } from './GraphRenderer';
-import { useCanvasStore } from '../store';
-import type { Graph } from '../../../shared/types';
+import { describe, it, expect, beforeEach } from 'vitest'
+import { render } from '@testing-library/react'
+import { GraphRenderer } from './GraphRenderer'
+import { useCanvasStore } from '../store'
+import type { Graph } from '../../../shared/types'
 
 // Mock Canvas for tests
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}));
+}))
 
 const mockGraph: Graph = {
   nodes: [
@@ -55,55 +55,48 @@ const mockGraph: Graph = {
     totalNodes: 3,
     totalEdges: 1,
   },
-};
+}
 
 describe('GraphRenderer', () => {
   beforeEach(() => {
-    useCanvasStore.getState().reset();
-  });
+    useCanvasStore.getState().reset()
+  })
 
   it('renders without crashing', () => {
-    const { container } = render(<GraphRenderer graph={mockGraph} />);
-    expect(container).toBeDefined();
-  });
+    const { container } = render(<GraphRenderer graph={mockGraph} />)
+    expect(container).toBeDefined()
+  })
 
   it('filters nodes by LOD level', () => {
-    useCanvasStore.getState().setLodLevel(1);
+    useCanvasStore.getState().setLodLevel(1)
 
-    const lodLevel = useCanvasStore.getState().lodLevel;
-    const visibleNodes = mockGraph.nodes.filter(
-      (node) => node.lodLevel <= lodLevel
-    );
+    const lodLevel = useCanvasStore.getState().lodLevel
+    const visibleNodes = mockGraph.nodes.filter((node) => node.lodLevel <= lodLevel)
 
-    expect(visibleNodes).toHaveLength(2); // file and class, not method
-    expect(visibleNodes.map((n) => n.id)).toEqual(['node-1', 'node-2']);
-  });
+    expect(visibleNodes).toHaveLength(2) // file and class, not method
+    expect(visibleNodes.map((n) => n.id)).toEqual(['node-1', 'node-2'])
+  })
 
   it('shows all nodes at max LOD', () => {
-    useCanvasStore.getState().setLodLevel(4);
+    useCanvasStore.getState().setLodLevel(4)
 
-    const lodLevel = useCanvasStore.getState().lodLevel;
-    const visibleNodes = mockGraph.nodes.filter(
-      (node) => node.lodLevel <= lodLevel
-    );
+    const lodLevel = useCanvasStore.getState().lodLevel
+    const visibleNodes = mockGraph.nodes.filter((node) => node.lodLevel <= lodLevel)
 
-    expect(visibleNodes).toHaveLength(3);
-  });
+    expect(visibleNodes).toHaveLength(3)
+  })
 
   it('filters edges when nodes are hidden', () => {
-    useCanvasStore.getState().setLodLevel(0);
+    useCanvasStore.getState().setLodLevel(0)
 
-    const lodLevel = useCanvasStore.getState().lodLevel;
-    const visibleNodes = mockGraph.nodes.filter(
-      (node) => node.lodLevel <= lodLevel
-    );
-    const visibleNodeIds = new Set(visibleNodes.map((n) => n.id));
+    const lodLevel = useCanvasStore.getState().lodLevel
+    const visibleNodes = mockGraph.nodes.filter((node) => node.lodLevel <= lodLevel)
+    const visibleNodeIds = new Set(visibleNodes.map((n) => n.id))
     const visibleEdges = mockGraph.edges.filter(
-      (edge) =>
-        visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target)
-    );
+      (edge) => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target)
+    )
 
     // Only file is visible, so edge from file to class should be hidden
-    expect(visibleEdges).toHaveLength(0);
-  });
-});
+    expect(visibleEdges).toHaveLength(0)
+  })
+})

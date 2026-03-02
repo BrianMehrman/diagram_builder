@@ -20,6 +20,7 @@ import type {
   CreateCodebaseRequest,
   CodebasesListResponse,
 } from '../types/api'
+import type { Graph } from '../types'
 import type { Viewpoint, Workspace } from '../types'
 
 /**
@@ -52,18 +53,18 @@ export const parsing = {
  * Graph query endpoints
  */
 export const graph = {
-  getFullGraph: (repoId: string) => apiClient.get<any>(`/api/graph/${repoId}`),
+  getFullGraph: (repoId: string) => apiClient.get<Graph>(`/api/graph/${repoId}`),
 
   query: (request: GraphQueryRequest) =>
     apiClient.post<GraphQueryResponse>('/api/graph/query', request),
 
-  getNode: (nodeId: string) => apiClient.get<any>(`/api/graph/nodes/${nodeId}`),
+  getNode: (nodeId: string) => apiClient.get<unknown>(`/api/graph/nodes/${nodeId}`),
 
   getNodeDependencies: (nodeId: string) =>
-    apiClient.get<any[]>(`/api/graph/nodes/${nodeId}/dependencies`),
+    apiClient.get<unknown[]>(`/api/graph/nodes/${nodeId}/dependencies`),
 
   getNodeDependents: (nodeId: string) =>
-    apiClient.get<any[]>(`/api/graph/nodes/${nodeId}/dependents`),
+    apiClient.get<unknown[]>(`/api/graph/nodes/${nodeId}/dependents`),
 }
 
 /**
@@ -118,10 +119,10 @@ export const workspaces = {
  * Collaboration endpoints
  */
 export const collaboration = {
-  getSessions: () => apiClient.get<any[]>('/api/collaboration/sessions'),
+  getSessions: () => apiClient.get<unknown[]>('/api/collaboration/sessions'),
 
   getSessionUsers: (sessionId: string) =>
-    apiClient.get<any[]>(`/api/collaboration/sessions/${sessionId}/users`),
+    apiClient.get<unknown[]>(`/api/collaboration/sessions/${sessionId}/users`),
 }
 
 /**

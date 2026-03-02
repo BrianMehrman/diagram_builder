@@ -4,13 +4,9 @@
  * Tests for fuzzy search functionality using Fuse.js
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import {
-  initializeSearchIndex,
-  searchNodes,
-  clearSearchIndex,
-} from './fuzzySearch';
-import type { GraphNode } from '../../shared/types';
+import { describe, it, expect, beforeEach } from 'vitest'
+import { initializeSearchIndex, searchNodes, clearSearchIndex } from './fuzzySearch'
+import type { GraphNode } from '../../shared/types'
 
 describe('fuzzySearch', () => {
   const mockNodes: GraphNode[] = [
@@ -84,75 +80,75 @@ describe('fuzzySearch', () => {
       metadata: { path: 'src/db/DatabaseConnection.ts' },
       lod: 1,
     },
-  ];
+  ]
 
   beforeEach(() => {
-    clearSearchIndex();
-    initializeSearchIndex(mockNodes);
-  });
+    clearSearchIndex()
+    initializeSearchIndex(mockNodes)
+  })
 
   describe('fuzzy matching', () => {
     it('finds matches with "auth" prefix', () => {
-      const results = searchNodes('auth');
+      const results = searchNodes('auth')
 
-      expect(results.length).toBeGreaterThan(0);
+      expect(results.length).toBeGreaterThan(0)
 
       // Should find AuthService, AuthController, authenticate, authMiddleware
-      const labels = results.map((r) => r.label);
-      expect(labels.some((l) => l.includes('Auth'))).toBe(true);
-    });
+      const labels = results.map((r) => r.label)
+      expect(labels.some((l) => l.includes('Auth'))).toBe(true)
+    })
 
     it('finds AuthService, AuthController, authenticate with "auth"', () => {
-      const results = searchNodes('auth');
-      const labels = results.map((r) => r.label);
+      const results = searchNodes('auth')
+      const labels = results.map((r) => r.label)
 
-      expect(labels).toContain('AuthService.ts');
-      expect(labels).toContain('AuthController');
-      expect(labels).toContain('authenticate');
-    });
+      expect(labels).toContain('AuthService.ts')
+      expect(labels).toContain('AuthController')
+      expect(labels).toContain('authenticate')
+    })
 
     it('performs case-insensitive matching', () => {
-      const resultsLower = searchNodes('auth');
-      const resultsUpper = searchNodes('AUTH');
-      const resultsMixed = searchNodes('Auth');
+      const resultsLower = searchNodes('auth')
+      const resultsUpper = searchNodes('AUTH')
+      const resultsMixed = searchNodes('Auth')
 
       // All should return results (fuzzy matching is case-insensitive)
-      expect(resultsLower.length).toBeGreaterThan(0);
-      expect(resultsUpper.length).toBeGreaterThan(0);
-      expect(resultsMixed.length).toBeGreaterThan(0);
-    });
+      expect(resultsLower.length).toBeGreaterThan(0)
+      expect(resultsUpper.length).toBeGreaterThan(0)
+      expect(resultsMixed.length).toBeGreaterThan(0)
+    })
 
     it('finds matches by ID', () => {
-      const results = searchNodes('node-5');
+      const results = searchNodes('node-5')
 
-      expect(results.length).toBeGreaterThan(0);
-      expect(results[0].id).toBe('node-5');
-    });
+      expect(results.length).toBeGreaterThan(0)
+      expect(results[0].id).toBe('node-5')
+    })
 
     it('finds matches by type', () => {
-      const results = searchNodes('function');
+      const results = searchNodes('function')
 
-      expect(results.length).toBeGreaterThan(0);
-      const types = results.map((r) => r.type);
-      expect(types).toContain('function');
-    });
-  });
+      expect(results.length).toBeGreaterThan(0)
+      const types = results.map((r) => r.type)
+      expect(types).toContain('function')
+    })
+  })
 
   describe('result ranking', () => {
     it('returns best matches first', () => {
-      const results = searchNodes('AuthService');
+      const results = searchNodes('AuthService')
 
       // First result should be the exact match
-      expect(results[0].label).toBe('AuthService.ts');
-    });
+      expect(results[0].label).toBe('AuthService.ts')
+    })
 
     it('ranks exact label matches higher than partial matches', () => {
-      const results = searchNodes('config');
+      const results = searchNodes('config')
 
       // 'config' should rank higher than labels that just contain 'config' as substring
-      expect(results[0].label).toBe('config');
-    });
-  });
+      expect(results[0].label).toBe('config')
+    })
+  })
 
   describe('result limits', () => {
     it('returns maximum 10 results', () => {
@@ -163,67 +159,65 @@ describe('fuzzySearch', () => {
         label: `TestFile${i}.ts`,
         metadata: {},
         lod: 1,
-      }));
+      }))
 
-      clearSearchIndex();
-      initializeSearchIndex(manyNodes);
+      clearSearchIndex()
+      initializeSearchIndex(manyNodes)
 
-      const results = searchNodes('Test');
+      const results = searchNodes('Test')
 
-      expect(results.length).toBeLessThanOrEqual(10);
-    });
-  });
+      expect(results.length).toBeLessThanOrEqual(10)
+    })
+  })
 
   describe('edge cases', () => {
     it('returns empty array for empty query', () => {
-      const results = searchNodes('');
+      const results = searchNodes('')
 
-      expect(results).toEqual([]);
-    });
+      expect(results).toEqual([])
+    })
 
     it('returns empty array for whitespace-only query', () => {
-      const results = searchNodes('   ');
+      const results = searchNodes('   ')
 
-      expect(results).toEqual([]);
-    });
+      expect(results).toEqual([])
+    })
 
     it('returns empty array when no matches found', () => {
-      const results = searchNodes('xyznonexistent');
+      const results = searchNodes('xyznonexistent')
 
-      expect(results).toEqual([]);
-    });
+      expect(results).toEqual([])
+    })
 
     it('returns empty array when index not initialized', () => {
-      clearSearchIndex();
+      clearSearchIndex()
 
-      const results = searchNodes('auth');
+      const results = searchNodes('auth')
 
-      expect(results).toEqual([]);
-    });
-  });
+      expect(results).toEqual([])
+    })
+  })
 
   describe('performance', () => {
     it('completes search in less than 100ms for 1000 nodes', () => {
       // Create 1000 nodes
       const largeNodeSet: GraphNode[] = Array.from({ length: 1000 }, (_, i) => ({
         id: `perf-node-${i}`,
-        type: ['file', 'class', 'function', 'method', 'variable'][
-          i % 5
-        ] as GraphNode['type'],
+        type: ['file', 'class', 'function', 'method', 'variable'][i % 5] as GraphNode['type'],
         label: `TestNode${i}_${['Service', 'Controller', 'Utils', 'Helper', 'Module'][i % 5]}.ts`,
         metadata: { path: `src/path/to/TestNode${i}.ts` },
         lod: (i % 4) + 1,
-      }));
+      }))
 
-      clearSearchIndex();
-      initializeSearchIndex(largeNodeSet);
+      clearSearchIndex()
+      initializeSearchIndex(largeNodeSet)
 
-      const startTime = performance.now();
-      searchNodes('Test');
-      const endTime = performance.now();
+      const startTime = performance.now()
+      searchNodes('Test')
+      const endTime = performance.now()
 
-      const duration = endTime - startTime;
-      expect(duration).toBeLessThan(100);
-    });
-  });
-});
+      const duration = endTime - startTime
+      expect(duration).toBeLessThan(100)
+    })
+  })
+})

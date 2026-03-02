@@ -20,11 +20,7 @@ test.describe('3D Canvas Visualization @P0 @smoke', () => {
     })
   })
 
-  test('[P0] should load workspace with canvas', async ({
-    page,
-    testWorkspace,
-    mockGraph,
-  }) => {
+  test('[P0] should load workspace with canvas', async ({ page, testWorkspace, mockGraph }) => {
     // GIVEN: Graph with specific node/edge counts
     await mockGraph({
       metadata: {
@@ -66,11 +62,7 @@ test.describe('3D Canvas Visualization @P0 @smoke', () => {
     await expect(page.locator('[data-testid="workspace-header"]')).toBeVisible()
   })
 
-  test('[P2] should display export button', async ({
-    page,
-    testWorkspace,
-    mockGraph,
-  }) => {
+  test('[P2] should display export button', async ({ page, testWorkspace, mockGraph }) => {
     // GIVEN: User is on workspace page
     await mockGraph()
     await page.goto(`/workspace/${testWorkspace.id}`)

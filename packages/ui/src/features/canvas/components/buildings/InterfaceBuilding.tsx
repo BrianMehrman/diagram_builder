@@ -5,85 +5,133 @@
  * Supports per-method visibility-colored floor bands via vertex coloring.
  */
 
-import { useState, useMemo } from 'react';
-import * as THREE from 'three';
-import { Text, Edges } from '@react-three/drei';
-import { useCanvasStore } from '../../store';
-import { getBuildingConfig } from '../buildingGeometry';
-import { getDirectoryFromLabel, getDirectoryColor, sortMethodsByVisibility, getLodTransition, BASE_CLASS_EMISSIVE } from '../../views/cityViewUtils';
-import { getFloorCount, applyFloorBandColors, getMethodCount } from './floorBandUtils';
-import { FloorLabels } from './FloorLabels';
-import { MethodRoom } from './MethodRoom';
-import { calculateRoomLayout } from './roomLayout';
-import { useTransitMapStyle } from '../../hooks/useTransitMapStyle';
-import type { ClassBuildingProps } from './types';
+import { useState, useMemo } from 'react'
+import * as THREE from 'three'
+import { Text, Edges } from '@react-three/drei'
+import { useCanvasStore } from '../../store'
+import { getBuildingConfig } from '../buildingGeometry'
+import {
+  getDirectoryFromLabel,
+  getDirectoryColor,
+  BASE_CLASS_EMISSIVE,
+} from '../../views/colorUtils'
+import { getLodTransition } from '../../views/heightUtils'
+import { getNodeFocusOpacity } from '../../views/focusUtils'
+import { sortMethodsByVisibility } from '../../views/methodUtils'
+import { getFloorCount, applyFloorBandColors, getMethodCount } from './floorBandUtils'
+import { FloorLabels } from './FloorLabels'
+import { MethodRoom } from './MethodRoom'
+import { calculateRoomLayout } from './roomLayout'
+import { useTransitMapStyle } from '../../hooks/useTransitMapStyle'
+import { useFocusedConnections } from '../../hooks/useFocusedConnections'
+import type { ClassBuildingProps } from './types'
 
-export function InterfaceBuilding({ node, position, methods, lodLevel, encodingOptions, isBaseClass }: ClassBuildingProps) {
-  const [hovered, setHovered] = useState(false);
-  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId);
-  const selectNode = useCanvasStore((s) => s.selectNode);
-  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode);
-  const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode);
-  const transitStyle = useTransitMapStyle();
+export function InterfaceBuilding({
+  node,
+  position,
+  methods,
+  lodLevel,
+  encodingOptions,
+  isBaseClass,
+  graph,
+}: ClassBuildingProps) {
+  const [hovered, setHovered] = useState(false)
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
+  const selectNode = useCanvasStore((s) => s.selectNode)
+  const setHoveredNode = useCanvasStore((s) => s.setHoveredNode)
+  const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode)
+  const transitStyle = useTransitMapStyle()
+  const { directNodeIds, secondHopNodeIds } = useFocusedConnections(graph)
+  const isFocusMode = selectedNodeId !== null
+  const focusOpacity = getNodeFocusOpacity(node.id, selectedNodeId, directNodeIds, secondHopNodeIds)
 
-  const isSelected = selectedNodeId === node.id;
-  const config = useMemo(() => getBuildingConfig(node, encodingOptions), [node, encodingOptions]);
-  const { width, height } = config.geometry;
-  const directory = getDirectoryFromLabel(node.label);
-  const color = getDirectoryColor(directory);
-  const fileName = (node.label ?? node.id).split('/').pop() ?? node.id;
+  const isSelected = selectedNodeId === node.id
+  const config = useMemo(() => getBuildingConfig(node, encodingOptions), [node, encodingOptions])
+  const { width, height } = config.geometry
+  const directory = getDirectoryFromLabel(node.label)
+  const color = getDirectoryColor(directory)
+  const fileName = (node.label ?? node.id).split('/').pop() ?? node.id
 
   // Sort methods by visibility: public (bottom) → protected → private (top)
   const sortedMethods = useMemo(
     () => (methods && methods.length > 0 ? sortMethodsByVisibility(methods) : methods),
-    [methods],
-  );
+    [methods]
+  )
 
-  const methodCount = sortedMethods?.length ?? getMethodCount(node);
-  const floorCount = getFloorCount(methodCount > 0 ? methodCount : undefined);
+  const methodCount = sortedMethods?.length ?? getMethodCount(node)
+  const floorCount = getFloorCount(methodCount > 0 ? methodCount : undefined)
 
   const geometry = useMemo(() => {
-    const geo = new THREE.CylinderGeometry(width / 2, width / 2, height, 8, floorCount);
+    const geo = new THREE.CylinderGeometry(width / 2, width / 2, height, 8, floorCount)
 
     if (methodCount > 0) {
-      const visibilities: Array<string | undefined> = sortedMethods && sortedMethods.length > 0
-        ? sortedMethods.map((m) => m.visibility)
-        : new Array(floorCount).fill(undefined);
-      applyFloorBandColors(geo, floorCount, visibilities, height);
+      const visibilities: Array<string | undefined> =
+        sortedMethods && sortedMethods.length > 0
+          ? (sortedMethods.map((m) => m.visibility) as Array<string | undefined>)
+          : ([] as Array<string | undefined>).concat(
+              Array.from({ length: floorCount }, () => undefined)
+            )
+      applyFloorBandColors(geo, floorCount, visibilities, height)
     }
 
-    return geo;
-  }, [width, height, floorCount, methodCount, sortedMethods]);
+    return geo
+  }, [width, height, floorCount, methodCount, sortedMethods])
 
-  const hasFloorBands = methodCount > 0;
-  const currentLod = lodLevel ?? 2;
-  const { bandOpacity, roomOpacity, showRooms: lodShowRooms } = getLodTransition(currentLod);
-  const showRooms = lodShowRooms && sortedMethods != null && sortedMethods.length > 0;
+  const hasFloorBands = methodCount > 0
+  const currentLod = lodLevel ?? 2
+  const { bandOpacity, roomOpacity, showRooms: lodShowRooms } = getLodTransition(currentLod)
+  const showRooms = lodShowRooms && sortedMethods != null && sortedMethods.length > 0
 
   const roomPlacements = useMemo(() => {
-    if (!sortedMethods || sortedMethods.length === 0) return [];
+    if (!sortedMethods || sortedMethods.length === 0) return []
     // Cylinder interior uses width for both dimensions
-    return calculateRoomLayout(sortedMethods.length, width, height, width);
-  }, [sortedMethods, width, height]);
+    return calculateRoomLayout(sortedMethods.length, width, height, width)
+  }, [sortedMethods, width, height])
 
   return (
     <group position={[position.x, position.y, position.z]}>
       <mesh
         position={[0, height / 2, 0]}
         geometry={geometry}
-        onClick={() => selectNode(isSelected ? null : node.id)}
-        onDoubleClick={() => requestFlyToNode(node.id)}
-        onPointerOver={() => { setHovered(true); setHoveredNode(node.id); document.body.style.cursor = 'pointer'; }}
-        onPointerOut={() => { setHovered(false); setHoveredNode(null); document.body.style.cursor = 'auto'; }}
+        onClick={(e) => {
+          e.stopPropagation()
+          selectNode(node.id)
+        }}
+        onDoubleClick={(e) => {
+          e.stopPropagation()
+          requestFlyToNode(node.id)
+        }}
+        onPointerOver={() => {
+          setHovered(true)
+          setHoveredNode(node.id)
+          document.body.style.cursor = 'pointer'
+        }}
+        onPointerOut={() => {
+          setHovered(false)
+          setHoveredNode(null)
+          document.body.style.cursor = 'auto'
+        }}
       >
         <meshStandardMaterial
           color={hasFloorBands ? '#ffffff' : color}
           vertexColors={hasFloorBands}
-          opacity={showRooms
-            ? (bandOpacity * (transitStyle.transparent ? transitStyle.opacity : config.material.opacity) + (1 - bandOpacity) * 0.3)
-            : (transitStyle.transparent ? transitStyle.opacity : config.material.opacity)}
-          transparent={showRooms || transitStyle.transparent || config.material.transparent}
-          emissive={hovered ? '#f59e0b' : isSelected ? color : isBaseClass ? BASE_CLASS_EMISSIVE : '#000000'}
+          opacity={
+            isFocusMode
+              ? focusOpacity
+              : showRooms
+                ? bandOpacity *
+                    (transitStyle.transparent ? transitStyle.opacity : config.material.opacity) +
+                  (1 - bandOpacity) * 0.3
+                : transitStyle.transparent
+                  ? transitStyle.opacity
+                  : config.material.opacity
+          }
+          transparent={
+            isFocusMode || showRooms || transitStyle.transparent || config.material.transparent
+          }
+          emissive={
+            hovered ? '#f59e0b' : isSelected ? color : isBaseClass ? BASE_CLASS_EMISSIVE : '#000000'
+          }
           emissiveIntensity={hovered ? 0.4 : isSelected ? 0.3 : isBaseClass ? 0.15 : 0}
           roughness={config.material.roughness}
           metalness={config.material.metalness}
@@ -122,8 +170,8 @@ export function InterfaceBuilding({ node, position, methods, lodLevel, encodingO
       {showRooms && (
         <group position={[0, 0, 0]}>
           {roomPlacements.map((placement) => {
-            const method = sortedMethods![placement.methodIndex];
-            if (!method) return null;
+            const method = sortedMethods[placement.methodIndex]
+            if (!method) return null
             return (
               <MethodRoom
                 key={method.id}
@@ -132,7 +180,7 @@ export function InterfaceBuilding({ node, position, methods, lodLevel, encodingO
                 size={placement.size}
                 opacity={roomOpacity}
               />
-            );
+            )
           })}
         </group>
       )}
@@ -145,5 +193,5 @@ export function InterfaceBuilding({ node, position, methods, lodLevel, encodingO
         />
       )}
     </group>
-  );
+  )
 }

@@ -198,7 +198,7 @@ describe('ProtectedRoute', () => {
     it('should use replace navigation for login redirect', () => {
       vi.mocked(auth.isAuthenticated).mockReturnValue(false)
 
-      const { container } = render(
+      render(
         <BrowserRouter>
           <Routes>
             <Route

@@ -130,9 +130,7 @@ describe('CodebaseList', () => {
         codebases: mockCodebases,
       })
 
-      render(
-        <CodebaseList workspaceId={mockWorkspaceId} onCodebaseSelected={onSelected} />
-      )
+      render(<CodebaseList workspaceId={mockWorkspaceId} onCodebaseSelected={onSelected} />)
 
       await waitFor(() => {
         expect(screen.getByText(/repo1/i)).toBeInTheDocument()
@@ -190,9 +188,7 @@ describe('CodebaseList', () => {
       const deleteButtons = screen.getAllByRole('button', { name: /delete/i })
       await userEvent.click(deleteButtons[0])
 
-      expect(window.confirm).toHaveBeenCalledWith(
-        expect.stringContaining('Delete')
-      )
+      expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('Delete'))
       expect(api.codebases.delete).toHaveBeenCalledWith(mockWorkspaceId, 'cb-1')
     })
 
@@ -339,9 +335,7 @@ describe('CodebaseList', () => {
         codebases: [mockCodebases[0]], // First load: only completed
       })
 
-      const { rerender } = render(
-        <CodebaseList workspaceId={mockWorkspaceId} refreshTrigger={0} />
-      )
+      const { rerender } = render(<CodebaseList workspaceId={mockWorkspaceId} refreshTrigger={0} />)
 
       await waitFor(() => {
         expect(screen.getByText(/repo1/i)).toBeInTheDocument()

@@ -5,18 +5,18 @@
  * Visible from the farthest distance (LOD 1).
  */
 
-import { Text } from '@react-three/drei';
-import type { SignProps } from './types';
+import { Text } from '@react-three/drei'
+import type { SignProps } from './types'
 
-const PANEL_COLOR = '#166534';
-const TEXT_COLOR = '#ffffff';
-const POST_COLOR = '#6b7280';
+const PANEL_COLOR = '#166534'
+const TEXT_COLOR = '#ffffff'
+const POST_COLOR = '#6b7280'
 
 export function HighwaySign({ text, position, visible, color }: SignProps) {
-  if (!visible) return null;
+  if (!visible) return null
 
-  const textColor = color ?? TEXT_COLOR;
-  const panelWidth = Math.min(text.length * 0.25 + 0.6, 5);
+  const textColor = color ?? TEXT_COLOR
+  const panelWidth = Math.min(text.length * 0.25 + 0.6, 5)
 
   return (
     <group position={[position.x, position.y, position.z]}>
@@ -44,5 +44,5 @@ export function HighwaySign({ text, position, visible, color }: SignProps) {
         {text}
       </Text>
     </group>
-  );
+  )
 }
