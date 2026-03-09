@@ -15,6 +15,7 @@ import express, { Express } from 'express'
 import { exportRouter } from './export'
 import { errorHandler } from '../middleware/error-handler'
 import { generateToken } from '../auth/jwt'
+import type { IVMGraph, EdgeType, LODLevel } from '@diagram-builder/core'
 
 // Mock graph service
 vi.mock('../services/graph-service', () => ({
@@ -50,11 +51,27 @@ vi.mock('../services/graph-service', () => ({
         },
       ],
       edges: [
-        { source: 'func1', target: 'file1', type: 'contains', metadata: {} },
-        { source: 'class1', target: 'file1', type: 'contains', metadata: {} },
+        { id: 'edge1', source: 'func1', target: 'file1', type: 'contains' as EdgeType, lod: 1 as LODLevel, metadata: {} },
+        { id: 'edge2', source: 'class1', target: 'file1', type: 'contains' as EdgeType, lod: 2 as LODLevel, metadata: {} },
       ],
-      metadata: { name: 'test-repo', version: '1.0.0' },
-    }
+      metadata: {
+        name: 'test-repo',
+        schemaVersion: '1.0.0',
+        generatedAt: new Date().toISOString(),
+        rootPath: '/src',
+        stats: {
+          totalNodes: 3,
+          totalEdges: 2,
+          nodesByType: { file: 1, function: 1, class: 1, directory: 0, module: 0, interface: 0, method: 0, variable: 0, type: 0, enum: 0, namespace: 0, package: 0, repository: 0 },
+          edgesByType: { contains: 2, imports: 0, exports: 0, extends: 0, implements: 0, calls: 0, uses: 0, depends_on: 0, type_of: 0, returns: 0, parameter_of: 0 },
+        },
+        languages: ['typescript'],
+      },
+      bounds: {
+        min: { x: 0, y: 0, z: 0 },
+        max: { x: 2, y: 0, z: 0 },
+      },
+    } as IVMGraph
   }),
 }))
 

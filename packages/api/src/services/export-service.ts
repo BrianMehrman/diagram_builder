@@ -230,7 +230,7 @@ export async function exportPlantUML(request: ExportRequest): Promise<ExportResu
   // Prepare graph
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
-  const result = exportToPlantUML(graph, request.options as PlantUMLExportOptions | undefined)
+  const result = exportToPlantUML(graph, request.options as unknown as PlantUMLExportOptions | undefined)
 
   const duration = Date.now() - startTime
 
@@ -254,7 +254,7 @@ export async function exportMermaid(request: ExportRequest): Promise<ExportResul
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
-  const result = exportToMermaid(graph, request.options as MermaidExportOptions | undefined)
+  const result = exportToMermaid(graph, request.options as unknown as MermaidExportOptions | undefined)
 
   const duration = Date.now() - startTime
 
@@ -278,7 +278,7 @@ export async function exportDrawio(request: ExportRequest): Promise<ExportResult
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
-  const result = exportToDrawio(graph, request.options as DrawioExportOptions | undefined)
+  const result = exportToDrawio(graph, request.options as unknown as DrawioExportOptions | undefined)
 
   const duration = Date.now() - startTime
 
@@ -302,7 +302,7 @@ export async function exportGLTF(request: ExportRequest): Promise<ExportResult> 
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
-  const result = exportToGLTF(graph, request.options as GLTFExportOptions | undefined)
+  const result = exportToGLTF(graph, request.options as unknown as GLTFExportOptions | undefined)
 
   const duration = Date.now() - startTime
 
@@ -335,7 +335,7 @@ export async function exportImage(request: ImageExportRequest): Promise<ExportRe
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
   if (request.format === 'svg') {
-    const result = exportToSVG(graph, request.options as SVGExportOptions | undefined)
+    const result = exportToSVG(graph, request.options as unknown as SVGExportOptions | undefined)
 
     const duration = Date.now() - startTime
 
@@ -350,7 +350,7 @@ export async function exportImage(request: ImageExportRequest): Promise<ExportRe
       },
     }
   } else {
-    const result = exportToPNG(graph, request.options as PNGExportOptions | undefined)
+    const result = exportToPNG(graph, request.options as unknown as PNGExportOptions | undefined)
 
     const duration = Date.now() - startTime
 
