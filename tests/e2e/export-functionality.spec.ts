@@ -69,4 +69,66 @@ test.describe('Export Functionality @P2', () => {
     // Verify at least one format option exists
     expect(optionsCount).toBeGreaterThan(0)
   })
+
+  test('[P2] should show all 6 export formats in the dialog', async ({ page, mockGraph }) => {
+    // GIVEN: Export dialog is open
+    await mockGraph()
+    await page.goto('/canvas')
+    await page.waitForLoadState('networkidle')
+
+    const exportButton = page.getByRole('button', { name: /export/i })
+    await exportButton.click()
+
+    const exportDialog = page.locator('[data-testid="export-dialog"]')
+    await expect(exportDialog).toBeVisible()
+
+    // THEN: All 6 format options are visible
+    await expect(page.locator('[data-testid="export-format-plantuml"]')).toBeVisible()
+    await expect(page.locator('[data-testid="export-format-mermaid"]')).toBeVisible()
+    await expect(page.locator('[data-testid="export-format-drawio"]')).toBeVisible()
+    await expect(page.locator('[data-testid="export-format-gltf"]')).toBeVisible()
+    await expect(page.locator('[data-testid="export-format-svg"]')).toBeVisible()
+    await expect(page.locator('[data-testid="export-format-png"]')).toBeVisible()
+  })
+
+  test('[P2] should enable export button when a format is selected', async ({
+    page,
+    mockGraph,
+  }) => {
+    // GIVEN: Export dialog is open
+    await mockGraph()
+    await page.goto('/canvas')
+    await page.waitForLoadState('networkidle')
+
+    const exportButton = page.getByRole('button', { name: /export/i })
+    await exportButton.click()
+
+    const exportDialog = page.locator('[data-testid="export-dialog"]')
+    await expect(exportDialog).toBeVisible()
+
+    // WHEN: User selects the mermaid format
+    await page.locator('[data-testid="export-format-mermaid"]').click()
+
+    // THEN: The export submit button is enabled
+    const submitButton = page.locator('[data-testid="export-submit-button"]')
+    await expect(submitButton).toBeVisible()
+    await expect(submitButton).toBeEnabled()
+  })
+
+  test('[P2] should show LOD level control in export dialog', async ({ page, mockGraph }) => {
+    // GIVEN: Export dialog is open
+    await mockGraph()
+    await page.goto('/canvas')
+    await page.waitForLoadState('networkidle')
+
+    const exportButton = page.getByRole('button', { name: /export/i })
+    await exportButton.click()
+
+    const exportDialog = page.locator('[data-testid="export-dialog"]')
+    await expect(exportDialog).toBeVisible()
+
+    // THEN: The LOD level select control is visible
+    const lodSelect = page.locator('[data-testid="lod-level-select"]')
+    await expect(lodSelect).toBeVisible()
+  })
 })
