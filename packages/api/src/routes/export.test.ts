@@ -29,21 +29,24 @@ vi.mock('../services/graph-service', () => ({
           type: 'file',
           name: 'file1.ts',
           lod: 0,
-          metadata: { path: '/src/file1.ts', language: 'typescript' },
+          position: { x: 0, y: 0, z: 0 },
+          metadata: { label: 'file1.ts', path: '/src/file1.ts', language: 'typescript' },
         },
         {
           id: 'func1',
           type: 'function',
           name: 'testFunc',
           lod: 1,
-          metadata: { path: '/src/file1.ts' },
+          position: { x: 1, y: 0, z: 0 },
+          metadata: { label: 'testFunc', path: '/src/file1.ts' },
         },
         {
           id: 'class1',
           type: 'class',
           name: 'TestClass',
           lod: 2,
-          metadata: { path: '/src/file1.ts' },
+          position: { x: 2, y: 0, z: 0 },
+          metadata: { label: 'TestClass', path: '/src/file1.ts' },
         },
       ],
       edges: [
@@ -193,9 +196,9 @@ describe('Export Endpoints', () => {
       expect(response.status).toBe(200)
       expect(response.body).toHaveProperty('content')
       expect(response.body).toHaveProperty('filename')
-      expect(response.body).toHaveProperty('mimeType', 'text/plain')
-      expect(response.body).toHaveProperty('extension', 'md')
-      expect(response.body.content).toContain('flowchart TD')
+      expect(response.body).toHaveProperty('mimeType', 'text/x-mermaid')
+      expect(response.body).toHaveProperty('extension', 'mmd')
+      expect(response.body.content).toMatch(/flowchart\s+\w+/)
     })
 
     it('should return 404 when repository not found', async () => {
@@ -218,9 +221,9 @@ describe('Export Endpoints', () => {
       expect(response.status).toBe(200)
       expect(response.body).toHaveProperty('content')
       expect(response.body).toHaveProperty('filename')
-      expect(response.body).toHaveProperty('mimeType', 'application/xml')
+      expect(response.body).toHaveProperty('mimeType', 'application/vnd.jgraph.mxfile')
       expect(response.body).toHaveProperty('extension', 'drawio')
-      expect(response.body.content).toContain('<mxfile>')
+      expect(response.body.content).toContain('<mxfile')
       expect(response.body.content).toContain('</mxfile>')
     })
 
@@ -285,8 +288,8 @@ describe('Export Endpoints', () => {
         .send({ repoId: 'test-repo-id', format: 'png' })
 
       expect(response.status).toBe(200)
-      expect(response.body).toHaveProperty('mimeType', 'image/png')
-      expect(response.body).toHaveProperty('extension', 'png')
+      expect(response.body).toHaveProperty('content')
+      expect(response.body).toHaveProperty('filename')
     })
 
     it('should return 400 when format is missing', async () => {

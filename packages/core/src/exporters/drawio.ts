@@ -400,8 +400,8 @@ function generateDrawioXml(
   // Generate metadata comment if requested
   let metadataComment = ''
   if (options.includeMetadata) {
-    metadataComment = `<!-- Generated from: ${escapeXml(graph.metadata.name)} -->
-<!-- Schema version: ${escapeXml(graph.metadata.schemaVersion)} -->
+    metadataComment = `<!-- Generated from: ${escapeXml(graph.metadata.name ?? '')} -->
+<!-- Schema version: ${escapeXml(graph.metadata.schemaVersion ?? '')} -->
 <!-- Generated at: ${new Date().toISOString()} -->
 <!-- Nodes: ${nodes.length}, Edges: ${edges.length} -->
 `
