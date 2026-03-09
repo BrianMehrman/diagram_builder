@@ -70,7 +70,7 @@ test.describe('Export Functionality @P2', () => {
     expect(optionsCount).toBeGreaterThan(0)
   })
 
-  test('[P2] should show all 6 export formats in the dialog', async ({ page, mockGraph }) => {
+  test('[P2] should show all 6 export formats in the dialog', async ({ page, mockGraph, mockExport }) => {
     // GIVEN: Export dialog is open
     await mockGraph()
     await page.goto('/canvas')
@@ -91,12 +91,14 @@ test.describe('Export Functionality @P2', () => {
     await expect(page.locator('[data-testid="export-format-png"]')).toBeVisible()
   })
 
-  test('[P2] should enable export button when a format is selected', async ({
+  test('[P2] should trigger export API call when submit button is clicked', async ({
     page,
     mockGraph,
+    mockExport,
   }) => {
-    // GIVEN: Export dialog is open
+    // GIVEN: Graph data and export API are mocked
     await mockGraph()
+    await mockExport()
     await page.goto('/canvas')
     await page.waitForLoadState('networkidle')
 
@@ -106,16 +108,22 @@ test.describe('Export Functionality @P2', () => {
     const exportDialog = page.locator('[data-testid="export-dialog"]')
     await expect(exportDialog).toBeVisible()
 
-    // WHEN: User selects the mermaid format
+    // WHEN: User selects the mermaid format and clicks submit
     await page.locator('[data-testid="export-format-mermaid"]').click()
 
-    // THEN: The export submit button is enabled
     const submitButton = page.locator('[data-testid="export-submit-button"]')
     await expect(submitButton).toBeVisible()
     await expect(submitButton).toBeEnabled()
+
+    const responsePromise = page.waitForResponse('**/api/export/mermaid')
+    await submitButton.click()
+
+    // THEN: The export API was called
+    const response = await responsePromise
+    expect(response.status()).toBe(200)
   })
 
-  test('[P2] should show LOD level control in export dialog', async ({ page, mockGraph }) => {
+  test('[P2] should show LOD level control in export dialog', async ({ page, mockGraph, mockExport }) => {
     // GIVEN: Export dialog is open
     await mockGraph()
     await page.goto('/canvas')

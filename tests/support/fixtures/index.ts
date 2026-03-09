@@ -97,11 +97,8 @@ export const test = base.extend<TestFixtures>({
    * Mock graph data - intercepts graph API calls
    */
   mockGraph: async ({ page }, use) => {
-    let mockData: Graph | null = null
-
     const setupMock = async (overrides: Partial<Graph> = {}) => {
       const graph = createGraph(10, 5, overrides)
-      mockData = graph
 
       // Network-first: Intercept BEFORE navigation
       await page.route('**/api/graph/**', (route) => {
@@ -125,11 +122,8 @@ export const test = base.extend<TestFixtures>({
    * Mock repository data - intercepts repository API calls
    */
   mockRepository: async ({ page }, use) => {
-    let mockData: Repository | null = null
-
     const setupMock = async (overrides: Partial<Repository> = {}) => {
       const repository = createRepository(overrides)
-      mockData = repository
 
       // Network-first: Intercept BEFORE navigation
       await page.route('**/api/repositories/**', (route) => {

@@ -13,6 +13,7 @@
 import { test, expect } from '../support/fixtures'
 import path from 'path'
 import fs from 'fs'
+import os from 'os'
 
 // ---------------------------------------------------------------------------
 // Mock response bodies keyed by format
@@ -23,7 +24,7 @@ const MOCK_EXPORT_CONTENT: Record<string, string> = {
   mermaid: 'flowchart TD\n  A --> B',
   drawio: '<mxfile version="14.0.0"><diagram>test</diagram></mxfile>',
   gltf: JSON.stringify({ asset: { version: '2.0' }, scene: 0, scenes: [], nodes: [] }),
-  png: '',
+  png: 'PNG_PLACEHOLDER',
   svg: '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"></svg>',
 }
 
@@ -37,9 +38,9 @@ const MOCK_EXPORT_FILENAMES: Record<string, string> = {
 }
 
 const MOCK_EXPORT_MIME_TYPES: Record<string, string> = {
-  plantuml: 'text/plain',
-  mermaid: 'text/markdown',
-  drawio: 'application/xml',
+  plantuml: 'text/x-plantuml',
+  mermaid: 'text/x-mermaid',
+  drawio: 'application/vnd.jgraph.mxfile',
   gltf: 'model/gltf+json',
   png: 'image/png',
   svg: 'image/svg+xml',
@@ -53,7 +54,7 @@ function buildMockExportResponse(format: string): string {
   return JSON.stringify({
     content,
     mimeType: MOCK_EXPORT_MIME_TYPES[format] ?? 'text/plain',
-    extension: path.extname(MOCK_EXPORT_FILENAMES[format] ?? 'export.txt'),
+    extension: path.extname(MOCK_EXPORT_FILENAMES[format] ?? 'export.txt').slice(1),
     filename: MOCK_EXPORT_FILENAMES[format] ?? 'export.txt',
     stats: {
       nodeCount: 10,
@@ -131,8 +132,8 @@ async function triggerExport(
   await downloadButton.click()
   const download = await downloadPromise
 
-  // Step 6: Save the downloaded file to /tmp
-  const destPath = `/tmp/test-export-${format}-${Date.now()}`
+  // Step 6: Save the downloaded file to the OS temp directory
+  const destPath = `${os.tmpdir()}/test-export-${format}-${Date.now()}`
   await download.saveAs(destPath)
 
   return destPath
@@ -257,10 +258,10 @@ test.describe('Export Download Flow @P1', () => {
 
     const filePath = await triggerExport(page, 'png')
 
-    // THEN: Downloaded file exists (allow zero size since mock returns empty string)
+    // THEN: Downloaded file exists and has non-zero size
     try {
       const stats = fs.statSync(filePath)
-      expect(stats.size).toBeGreaterThanOrEqual(0)
+      expect(stats.size).toBeGreaterThan(0)
     } finally {
       fs.unlinkSync(filePath)
     }
