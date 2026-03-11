@@ -100,7 +100,7 @@ const INITIAL_STATE: ExportState = {
 export const useExportStore = create<ExportStoreState>((set) => ({
   ...INITIAL_STATE,
   selectedFormat: 'plantuml',
-  selectedLodLevel: 2,
+  selectedLodLevel: 5,
   selectedRepositoryId: null,
 
   setFormat: (format: ExportFormat) => {
@@ -191,7 +191,7 @@ export const useExportStore = create<ExportStoreState>((set) => ({
     set({
       ...INITIAL_STATE,
       selectedFormat: 'plantuml',
-      selectedLodLevel: 2,
+      selectedLodLevel: 5,
       selectedRepositoryId: null,
     })
   },

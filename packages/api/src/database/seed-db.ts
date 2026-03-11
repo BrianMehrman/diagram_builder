@@ -40,6 +40,7 @@ export async function seedDatabase(): Promise<void> {
   try {
     await seedWorkspaces()
     await seedRepositories()
+    await seedGraphNodes()
     await seedViewpoints()
     await seedExportHistory()
     await validateSeedData()
@@ -282,6 +283,72 @@ async function seedRepositories(): Promise<void> {
   }
 
   console.warn('  ✓ Repositories seeded')
+}
+
+/**
+ * Seed graph nodes for repo-sample-javascript
+ * Creates a realistic file/class/function hierarchy with relationships
+ */
+async function seedGraphNodes(): Promise<void> {
+  // Idempotency check
+  const checkQuery = `
+    MATCH (r:Repository {id: $repoId})-[:CONTAINS]->(n)
+    RETURN count(n) as count
+  `
+  const existing = await runQuery<{ count: number }>(checkQuery, { repoId: REPOSITORY_IDS.SAMPLE_JS })
+  if (existing && existing[0] && Number(existing[0].count) > 0) {
+    console.warn(`  ↻ Graph nodes for ${REPOSITORY_IDS.SAMPLE_JS} already exist, skipping`)
+    return
+  }
+
+  const createQuery = `
+    MATCH (r:Repository {id: $repoId})
+    CREATE
+      (f1:IVMNode {id: 'js-file-auth', type: 'file', label: 'auth.js', path: 'src/auth.js', x: -20.0, y: 0.0, z: 0.0, lod: 1, language: 'javascript', loc: 120, complexity: 8}),
+      (f2:IVMNode {id: 'js-file-database', type: 'file', label: 'database.js', path: 'src/database.js', x: 20.0, y: 0.0, z: 0.0, lod: 1, language: 'javascript', loc: 80, complexity: 5}),
+      (f3:IVMNode {id: 'js-file-utils', type: 'file', label: 'utils.js', path: 'src/utils.js', x: 0.0, y: 0.0, z: 20.0, lod: 1, language: 'javascript', loc: 45, complexity: 3}),
+      (f4:IVMNode {id: 'js-file-index', type: 'file', label: 'index.js', path: 'src/index.js', x: 0.0, y: 0.0, z: -20.0, lod: 1, language: 'javascript', loc: 30, complexity: 2}),
+
+      (c1:IVMNode {id: 'js-class-auth', type: 'class', label: 'AuthService', path: 'src/auth.js::AuthService', x: -20.0, y: 5.0, z: 0.0, lod: 2, language: 'javascript', loc: 100, complexity: 8, parentId: 'js-file-auth', visibility: 'public', methodCount: 3}),
+      (c2:IVMNode {id: 'js-class-database', type: 'class', label: 'Database', path: 'src/database.js::Database', x: 20.0, y: 5.0, z: 0.0, lod: 2, language: 'javascript', loc: 70, complexity: 5, parentId: 'js-file-database', visibility: 'public', methodCount: 2}),
+
+      (m1:IVMNode {id: 'js-method-login', type: 'method', label: 'login', path: 'src/auth.js::AuthService::login', x: -30.0, y: 10.0, z: 0.0, lod: 3, language: 'javascript', loc: 25, complexity: 4, parentId: 'js-class-auth', visibility: 'public', startLine: 10, endLine: 34}),
+      (m2:IVMNode {id: 'js-method-logout', type: 'method', label: 'logout', path: 'src/auth.js::AuthService::logout', x: -20.0, y: 10.0, z: 5.0, lod: 3, language: 'javascript', loc: 15, complexity: 2, parentId: 'js-class-auth', visibility: 'public', startLine: 36, endLine: 50}),
+      (m3:IVMNode {id: 'js-method-validate', type: 'method', label: 'validateToken', path: 'src/auth.js::AuthService::validateToken', x: -10.0, y: 10.0, z: 0.0, lod: 3, language: 'javascript', loc: 20, complexity: 5, parentId: 'js-class-auth', visibility: 'public', startLine: 52, endLine: 71}),
+      (m4:IVMNode {id: 'js-method-connect', type: 'method', label: 'connect', path: 'src/database.js::Database::connect', x: 15.0, y: 10.0, z: 0.0, lod: 3, language: 'javascript', loc: 20, complexity: 3, parentId: 'js-class-database', visibility: 'public', startLine: 5, endLine: 24}),
+      (m5:IVMNode {id: 'js-method-query', type: 'method', label: 'query', path: 'src/database.js::Database::query', x: 25.0, y: 10.0, z: 0.0, lod: 3, language: 'javascript', loc: 30, complexity: 4, parentId: 'js-class-database', visibility: 'public', startLine: 26, endLine: 55}),
+
+      (fn1:IVMNode {id: 'js-func-format', type: 'function', label: 'formatDate', path: 'src/utils.js::formatDate', x: -5.0, y: 10.0, z: 20.0, lod: 3, language: 'javascript', loc: 10, complexity: 2, parentId: 'js-file-utils', startLine: 1, endLine: 10}),
+      (fn2:IVMNode {id: 'js-func-genid', type: 'function', label: 'generateId', path: 'src/utils.js::generateId', x: 5.0, y: 10.0, z: 20.0, lod: 3, language: 'javascript', loc: 8, complexity: 1, parentId: 'js-file-utils', startLine: 12, endLine: 19}),
+
+      (r)-[:CONTAINS]->(f1),
+      (r)-[:CONTAINS]->(f2),
+      (r)-[:CONTAINS]->(f3),
+      (r)-[:CONTAINS]->(f4),
+
+      (f1)-[:CONTAINS]->(c1),
+      (f2)-[:CONTAINS]->(c2),
+      (f3)-[:CONTAINS]->(fn1),
+      (f3)-[:CONTAINS]->(fn2),
+
+      (c1)-[:CONTAINS]->(m1),
+      (c1)-[:CONTAINS]->(m2),
+      (c1)-[:CONTAINS]->(m3),
+      (c2)-[:CONTAINS]->(m4),
+      (c2)-[:CONTAINS]->(m5),
+
+      (f1)-[:IMPORTS]->(f2),
+      (f1)-[:IMPORTS]->(f3),
+      (f4)-[:IMPORTS]->(f1),
+      (m1)-[:CALLS]->(m5),
+      (m3)-[:CALLS]->(fn1),
+      (m2)-[:CALLS]->(fn2)
+
+    RETURN count(f1) as created
+  `
+
+  await runQuery(createQuery, { repoId: REPOSITORY_IDS.SAMPLE_JS })
+  console.warn(`  ✓ Graph nodes seeded for ${REPOSITORY_IDS.SAMPLE_JS}`)
 }
 
 /**

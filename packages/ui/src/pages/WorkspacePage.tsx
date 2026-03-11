@@ -21,6 +21,7 @@ import { LeftPanel, RightPanel } from '../features/panels'
 import { HUD } from '../features/navigation/HUD'
 import { useGlobalSearchShortcut, useGlobalKeyboardShortcuts } from '../shared/hooks'
 import { useUIStore } from '../shared/stores/uiStore'
+import { useExportStore } from '../features/export/store'
 import { workspaces, codebases, graph } from '../shared/api/endpoints'
 import type { Workspace, Graph, Position3D } from '../shared/types'
 
@@ -37,6 +38,9 @@ export function WorkspacePage() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [selectedCodebaseId, setSelectedCodebaseId] = useState<string | null>(null)
   const [listRefreshTrigger, setListRefreshTrigger] = useState(0)
+
+  // Sync active repository to export store
+  const setExportRepositoryId = useExportStore((state) => state.setRepositoryId)
 
   // Panel states (from global UI store for ESC handling)
   const leftPanelOpen = useUIStore((state) => state.isLeftPanelOpen)
@@ -247,6 +251,7 @@ export function WorkspacePage() {
           graphResponse ? 'valid data' : 'null'
         )
         setGraphData(graphResponse)
+        setExportRepositoryId(completedCodebase.repositoryId)
         console.log('[WorkspacePage] setGraphData called')
         setProcessingStatus('completed')
         setImportError(null)
