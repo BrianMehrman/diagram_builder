@@ -11,6 +11,22 @@
  */
 
 import type { IVMGraph } from '@diagram-builder/core'
+import {
+  exportToPlantUML,
+  exportToMermaid,
+  exportToDrawio,
+  exportToGLTF,
+  exportToSVG,
+  exportToPNG,
+} from '@diagram-builder/core'
+import type {
+  PlantUMLExportOptions,
+  MermaidExportOptions,
+  DrawioExportOptions,
+  GLTFExportOptions,
+  SVGExportOptions,
+  PNGExportOptions,
+} from '@diagram-builder/core'
 import { getFullGraph } from './graph-service'
 
 /**
@@ -214,24 +230,10 @@ export async function exportPlantUML(request: ExportRequest): Promise<ExportResu
   // Prepare graph
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
-  // TODO: Import and use PlantUML exporter from core package
-  // This requires the core package to be built successfully
-  // Once core package build issues are resolved, uncomment:
-  // const { exportToPlantUML } = await import('@diagram-builder/core');
-  // const result = exportToPlantUML(graph, request.options);
-
-  // Temporary placeholder until core package is built
-  const result = {
-    content: '@startuml\n' + `title ${graph.metadata?.name || 'Diagram'}\n` + '@enduml\n',
-    mimeType: 'text/x-plantuml',
-    extension: 'puml',
-    stats: {
-      nodeCount: graph.nodes.length,
-      edgeCount: graph.edges.length,
-      duration: 0,
-      size: 0,
-    },
-  }
+  const result = exportToPlantUML(
+    graph,
+    request.options as unknown as PlantUMLExportOptions | undefined
+  )
 
   const duration = Date.now() - startTime
 
@@ -255,22 +257,10 @@ export async function exportMermaid(request: ExportRequest): Promise<ExportResul
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
-  // TODO: Import and use Mermaid exporter from core package
-  // const { exportToMermaid } = await import('@diagram-builder/core');
-  // const result = exportToMermaid(graph, request.options);
-
-  // Temporary placeholder
-  const result = {
-    content: `flowchart TD\n  Start[${graph.metadata?.name || 'Diagram'}]\n`,
-    mimeType: 'text/plain',
-    extension: 'md',
-    stats: {
-      nodeCount: graph.nodes.length,
-      edgeCount: graph.edges.length,
-      duration: 0,
-      size: 0,
-    },
-  }
+  const result = exportToMermaid(
+    graph,
+    request.options as unknown as MermaidExportOptions | undefined
+  )
 
   const duration = Date.now() - startTime
 
@@ -294,22 +284,10 @@ export async function exportDrawio(request: ExportRequest): Promise<ExportResult
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
-  // TODO: Import and use Draw.io exporter from core package
-  // const { exportToDrawio } = await import('@diagram-builder/core');
-  // const result = exportToDrawio(graph, request.options);
-
-  // Temporary placeholder
-  const result = {
-    content: `<mxfile><diagram name="${graph.metadata?.name || 'Diagram'}"></diagram></mxfile>`,
-    mimeType: 'application/xml',
-    extension: 'drawio',
-    stats: {
-      nodeCount: graph.nodes.length,
-      edgeCount: graph.edges.length,
-      duration: 0,
-      size: 0,
-    },
-  }
+  const result = exportToDrawio(
+    graph,
+    request.options as unknown as DrawioExportOptions | undefined
+  )
 
   const duration = Date.now() - startTime
 
@@ -333,22 +311,7 @@ export async function exportGLTF(request: ExportRequest): Promise<ExportResult> 
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
-  // TODO: Import and use GLTF exporter from core package
-  // const { exportToGLTF } = await import('@diagram-builder/core');
-  // const result = exportToGLTF(graph, request.options);
-
-  // Temporary placeholder
-  const result = {
-    content: JSON.stringify({ asset: { version: '2.0' }, scenes: [], nodes: [], meshes: [] }),
-    mimeType: 'model/gltf+json',
-    extension: 'gltf',
-    stats: {
-      nodeCount: graph.nodes.length,
-      edgeCount: graph.edges.length,
-      duration: 0,
-      size: 0,
-    },
-  }
+  const result = exportToGLTF(graph, request.options as unknown as GLTFExportOptions | undefined)
 
   const duration = Date.now() - startTime
 
@@ -381,22 +344,7 @@ export async function exportImage(request: ImageExportRequest): Promise<ExportRe
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
   if (request.format === 'svg') {
-    // TODO: Import and use SVG exporter from core package
-    // const { exportToSVG } = await import('@diagram-builder/core');
-    // const result = exportToSVG(graph, request.options);
-
-    // Temporary placeholder
-    const result = {
-      content: `<svg xmlns="http://www.w3.org/2000/svg"><text>${graph.metadata?.name || 'Diagram'}</text></svg>`,
-      mimeType: 'image/svg+xml',
-      extension: 'svg',
-      stats: {
-        nodeCount: graph.nodes.length,
-        edgeCount: graph.edges.length,
-        duration: 0,
-        size: 0,
-      },
-    }
+    const result = exportToSVG(graph, request.options as unknown as SVGExportOptions | undefined)
 
     const duration = Date.now() - startTime
 
@@ -411,22 +359,7 @@ export async function exportImage(request: ImageExportRequest): Promise<ExportRe
       },
     }
   } else {
-    // TODO: Import and use PNG exporter from core package
-    // const { exportToPNG } = await import('@diagram-builder/core');
-    // const result = exportToPNG(graph, request.options);
-
-    // Temporary placeholder (empty PNG)
-    const result = {
-      content: Buffer.from([]),
-      mimeType: 'image/png',
-      extension: 'png',
-      stats: {
-        nodeCount: graph.nodes.length,
-        edgeCount: graph.edges.length,
-        duration: 0,
-        size: 0,
-      },
-    }
+    const result = exportToPNG(graph, request.options as unknown as PNGExportOptions | undefined)
 
     const duration = Date.now() - startTime
 

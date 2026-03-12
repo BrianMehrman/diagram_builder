@@ -275,21 +275,42 @@ function generateFlowchart(graph: IVMGraph, options: Required<MermaidExportOptio
     }
   }
 
-  // Add edges
+  // Build a node-id → rendered-id map: if a node was rendered inside a subgraph whose
+  // parent was rendered as a subgraph node, map it up to the nearest rendered ancestor.
+  // This collapses method→method `calls` edges to their parent file/class nodes,
+  // preventing Mermaid's 1000-edge limit from being exceeded on large codebases.
+  function resolveRenderedId(nodeId: string): string | undefined {
+    if (renderedNodes.has(sanitizeId(nodeId))) return sanitizeId(nodeId)
+    // Walk up parentId chain until we find a rendered ancestor
+    const node = graph.nodes.find((n) => n.id === nodeId)
+    if (!node?.parentId) return undefined
+    return resolveRenderedId(node.parentId)
+  }
+
+  // Add edges — deduplicated after parent-collapsing
+  const seenEdges = new Set<string>()
   lines.push('')
   for (const edge of graph.edges) {
-    const sourceId = sanitizeId(edge.source)
-    const targetId = sanitizeId(edge.target)
+    // Skip pure-containment edges (already shown via subgraph nesting)
+    if (edge.type === 'contains') continue
+
+    const resolvedSource = resolveRenderedId(edge.source)
+    const resolvedTarget = resolveRenderedId(edge.target)
+    if (!resolvedSource || !resolvedTarget || resolvedSource === resolvedTarget) continue
+
+    const dedupeKey = `${resolvedSource}|${edge.type}|${resolvedTarget}`
+    if (seenEdges.has(dedupeKey)) continue
+    seenEdges.add(dedupeKey)
+
     const arrow = EDGE_TYPE_TO_FLOWCHART_ARROW[edge.type]
 
-    if (showEdgeLabels && edge.metadata.label) {
-      const label = escapeLabel(edge.metadata.label)
-      lines.push(`    ${sourceId} ${arrow}|"${label}"| ${targetId}`)
-    } else if (showEdgeLabels) {
-      const label = EDGE_TYPE_LABELS[edge.type]
-      lines.push(`    ${sourceId} ${arrow}|${label}| ${targetId}`)
+    if (showEdgeLabels) {
+      const label = edge.metadata.label
+        ? escapeLabel(edge.metadata.label)
+        : EDGE_TYPE_LABELS[edge.type]
+      lines.push(`    ${resolvedSource} ${arrow}|${label}| ${resolvedTarget}`)
     } else {
-      lines.push(`    ${sourceId} ${arrow} ${targetId}`)
+      lines.push(`    ${resolvedSource} ${arrow} ${resolvedTarget}`)
     }
   }
 
@@ -323,7 +344,9 @@ function generateClassDiagram(graph: IVMGraph, _options: Required<MermaidExportO
   const classes = graph.nodes.filter((n) => n.type === 'class')
   const interfaces = graph.nodes.filter((n) => n.type === 'interface')
   const enums = graph.nodes.filter((n) => n.type === 'enum')
-  const otherNodes = graph.nodes.filter((n) => !['class', 'interface', 'enum'].includes(n.type))
+
+  // Track method/function nodes claimed by a class so they aren't rendered as standalone nodes
+  const claimedNodeIds = new Set<string>()
 
   // Render classes
   for (const node of classes) {
@@ -331,8 +354,17 @@ function generateClassDiagram(graph: IVMGraph, _options: Required<MermaidExportO
     const label = escapeLabel(node.metadata.label)
     lines.push(`    class ${nodeId}["${label}"] {`)
 
-    // Add properties from metadata if available
-    if (node.metadata.properties?.methods) {
+    // Collect child method/function nodes
+    const childMembers = graph.nodes.filter(
+      (n) => n.parentId === node.id && (n.type === 'method' || n.type === 'function')
+    )
+    for (const member of childMembers) {
+      lines.push(`        +${escapeLabel(member.metadata.label)}()`)
+      claimedNodeIds.add(member.id)
+    }
+
+    // Fall back to embedded metadata if no child nodes found
+    if (childMembers.length === 0 && node.metadata.properties?.methods) {
       const methods = node.metadata.properties.methods as string[]
       for (const method of methods) {
         lines.push(`        +${method}()`)
@@ -347,6 +379,10 @@ function generateClassDiagram(graph: IVMGraph, _options: Required<MermaidExportO
 
     lines.push('    }')
   }
+
+  const otherNodes = graph.nodes.filter(
+    (n) => !['class', 'interface', 'enum'].includes(n.type) && !claimedNodeIds.has(n.id)
+  )
 
   // Render interfaces
   for (const node of interfaces) {
@@ -381,9 +417,28 @@ function generateClassDiagram(graph: IVMGraph, _options: Required<MermaidExportO
     lines.push(`    class ${nodeId}["${label}"]`)
   }
 
-  // Add relationships
+  // Add relationships — only inter-class structural edges to stay within Mermaid's maxEdges limit.
+  // Exclude `contains` (shown as class members) and `calls` (too many, too granular).
+  const classTypeSet = new Set(['class', 'interface', 'enum'])
+  const classNodeIds = new Set(graph.nodes.filter((n) => classTypeSet.has(n.type)).map((n) => n.id))
+  const relevantEdgeTypes = new Set<EdgeType>([
+    'extends',
+    'implements',
+    'imports',
+    'uses',
+    'depends_on',
+  ])
+
+  const seenEdges = new Set<string>()
   lines.push('')
   for (const edge of graph.edges) {
+    if (!relevantEdgeTypes.has(edge.type)) continue
+    if (!classNodeIds.has(edge.source) || !classNodeIds.has(edge.target)) continue
+
+    const dedupeKey = `${edge.source}|${edge.type}|${edge.target}`
+    if (seenEdges.has(dedupeKey)) continue
+    seenEdges.add(dedupeKey)
+
     const sourceId = sanitizeId(edge.source)
     const targetId = sanitizeId(edge.target)
     const relation = EDGE_TYPE_TO_CLASS_RELATION[edge.type]

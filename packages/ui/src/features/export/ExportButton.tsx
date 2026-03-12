@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ExportDialog } from './ExportDialog'
+import { useExportStore } from './store'
 
 /**
  * ExportButton Component
@@ -9,6 +10,8 @@ import { ExportDialog } from './ExportDialog'
  */
 export function ExportButton() {
   const [isOpen, setIsOpen] = useState(false)
+  const repositoryId =
+    useExportStore((state) => state.selectedRepositoryId) ?? 'repo-sample-javascript'
 
   return (
     <>
@@ -19,7 +22,7 @@ export function ExportButton() {
       >
         Export
       </button>
-      <ExportDialog isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      <ExportDialog isOpen={isOpen} onClose={() => setIsOpen(false)} repositoryId={repositoryId} />
     </>
   )
 }

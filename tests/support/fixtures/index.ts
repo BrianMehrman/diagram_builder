@@ -51,6 +51,12 @@ type TestFixtures = {
     interceptRoute: (url: string, response: unknown) => Promise<void>
     waitForRoute: (url: string) => Promise<Response>
   }
+
+  /**
+   * Mock export fixture
+   * Intercepts all /api/export/** routes and returns format-appropriate mock responses
+   */
+  mockExport: () => Promise<void>
 }
 
 /**
@@ -91,11 +97,8 @@ export const test = base.extend<TestFixtures>({
    * Mock graph data - intercepts graph API calls
    */
   mockGraph: async ({ page }, use) => {
-    let mockData: Graph | null = null
-
     const setupMock = async (overrides: Partial<Graph> = {}) => {
       const graph = createGraph(10, 5, overrides)
-      mockData = graph
 
       // Network-first: Intercept BEFORE navigation
       await page.route('**/api/graph/**', (route) => {
@@ -119,11 +122,8 @@ export const test = base.extend<TestFixtures>({
    * Mock repository data - intercepts repository API calls
    */
   mockRepository: async ({ page }, use) => {
-    let mockData: Repository | null = null
-
     const setupMock = async (overrides: Partial<Repository> = {}) => {
       const repository = createRepository(overrides)
-      mockData = repository
 
       // Network-first: Intercept BEFORE navigation
       await page.route('**/api/repositories/**', (route) => {
@@ -140,6 +140,90 @@ export const test = base.extend<TestFixtures>({
     await use(setupMock)
 
     // Cleanup: Unroute all
+    await page.unrouteAll()
+  },
+
+  /**
+   * Mock export - intercepts all /api/export/** routes
+   */
+  mockExport: async ({ page }, use) => {
+    const setupMock = async () => {
+      await page.route('**/api/export/plantuml', (route) => {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            content: '@startuml\ntitle Test\ncomponent A\n@enduml\n',
+            filename: 'diagram.puml',
+            mimeType: 'text/x-plantuml',
+            extension: 'puml',
+            stats: { nodeCount: 5, edgeCount: 3, duration: 10, size: 42 },
+          }),
+        })
+      })
+      await page.route('**/api/export/mermaid', (route) => {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            content: 'flowchart TD\n  A[Start] --> B[End]\n',
+            filename: 'diagram.mmd',
+            mimeType: 'text/x-mermaid',
+            extension: 'mmd',
+            stats: { nodeCount: 5, edgeCount: 3, duration: 10, size: 38 },
+          }),
+        })
+      })
+      await page.route('**/api/export/drawio', (route) => {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            content: '<mxfile><diagram name="Test"><mxGraphModel/></diagram></mxfile>',
+            filename: 'diagram.drawio',
+            mimeType: 'application/vnd.jgraph.mxfile',
+            extension: 'drawio',
+            stats: { nodeCount: 5, edgeCount: 3, duration: 10, size: 65 },
+          }),
+        })
+      })
+      await page.route('**/api/export/gltf', (route) => {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            content: JSON.stringify({
+              asset: { version: '2.0' },
+              scenes: [],
+              nodes: [],
+              meshes: [],
+            }),
+            filename: 'diagram.gltf',
+            mimeType: 'model/gltf+json',
+            extension: 'gltf',
+            stats: { nodeCount: 5, edgeCount: 3, duration: 10, size: 80 },
+          }),
+        })
+      })
+      await page.route('**/api/export/image', async (route) => {
+        const postData = route.request().postDataJSON() as { format?: string } | null
+        const isSVG = postData?.format === 'svg'
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            content: isSVG
+              ? '<svg xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40"/></svg>'
+              : '',
+            filename: isSVG ? 'diagram.svg' : 'diagram.png',
+            mimeType: isSVG ? 'image/svg+xml' : 'image/png',
+            extension: isSVG ? 'svg' : 'png',
+            stats: { nodeCount: 5, edgeCount: 3, duration: 10, size: 100 },
+          }),
+        })
+      })
+    }
+    await use(setupMock)
     await page.unrouteAll()
   },
 

@@ -16,5 +16,8 @@
     "**/dist": true,
     "**/package-lock.json": true
   },
-  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"]
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "files.watcherExclude": {
+    "**/target": true
+  }
 }

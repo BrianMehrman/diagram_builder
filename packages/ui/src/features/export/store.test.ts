@@ -20,7 +20,7 @@ describe('useExportStore', () => {
     expect(state.error).toBeNull()
     expect(state.progress).toBe(0)
     expect(state.selectedFormat).toBe('plantuml')
-    expect(state.selectedLodLevel).toBe(2)
+    expect(state.selectedLodLevel).toBe(5)
     expect(state.selectedRepositoryId).toBeNull()
   })
 
@@ -80,7 +80,7 @@ describe('useExportStore', () => {
 
     const state = useExportStore.getState()
     expect(state.selectedFormat).toBe('plantuml')
-    expect(state.selectedLodLevel).toBe(2)
+    expect(state.selectedLodLevel).toBe(5)
     expect(state.selectedRepositoryId).toBeNull()
     expect(state.status).toBe('idle')
   })
