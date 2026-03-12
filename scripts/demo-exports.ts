@@ -15,7 +15,9 @@ const root = join(__dirname, '..')
 const FIXTURE_PATH = join(root, 'tests/fixtures/repositories/small-ts-repo')
 const OUTPUT_DIR = join(root, 'scripts/demo-output')
 
-function hr(char = '─', width = 70) { return char.repeat(width) }
+function hr(char = '─', width = 70) {
+  return char.repeat(width)
+}
 function banner(title: string) {
   console.log('\n' + hr('═'))
   console.log(`  ${title}`)
@@ -36,7 +38,8 @@ async function main() {
   console.log('  src/utils/helpers.ts — formatUser(), validateEmail()')
 
   // ── 1. Parse the real fixture codebase ─────────────────────────────────
-  const { loadRepository, buildDependencyGraph, convertToIVM } = await import('@diagram-builder/parser')
+  const { loadRepository, buildDependencyGraph, convertToIVM } =
+    await import('@diagram-builder/parser')
   const { readFile } = await import('fs/promises')
 
   console.log('\n⏳  Parsing...')
@@ -71,28 +74,23 @@ async function main() {
   }
   console.log('\n  Edges:')
   for (const e of graph.edges) {
-    const src = graph.nodes.find(n => n.id === e.source)?.metadata?.label ?? e.source
-    const tgt = graph.nodes.find(n => n.id === e.target)?.metadata?.label ?? e.target
+    const src = graph.nodes.find((n) => n.id === e.source)?.metadata?.label ?? e.source
+    const tgt = graph.nodes.find((n) => n.id === e.target)?.metadata?.label ?? e.target
     console.log(`    ${String(src).padEnd(20)} --[${e.type}]--> ${tgt}`)
   }
 
   // ── 2. Run all exporters ──────────────────────────────────────────────────
-  const {
-    exportToPlantUML,
-    exportToMermaid,
-    exportToDrawio,
-    exportToGLTF,
-    exportToSVG,
-  } = await import('@diagram-builder/core')
+  const { exportToPlantUML, exportToMermaid, exportToDrawio, exportToGLTF, exportToSVG } =
+    await import('@diagram-builder/core')
 
   mkdirSync(OUTPUT_DIR, { recursive: true })
 
   const formatExports = [
-    { name: 'PlantUML', ext: 'puml',   fn: () => exportToPlantUML(graph) },
-    { name: 'Mermaid',  ext: 'mmd',    fn: () => exportToMermaid(graph) },
-    { name: 'Draw.io',  ext: 'drawio', fn: () => exportToDrawio(graph) },
-    { name: 'GLTF',     ext: 'gltf',   fn: () => exportToGLTF(graph) },
-    { name: 'SVG',      ext: 'svg',    fn: () => exportToSVG(graph) },
+    { name: 'PlantUML', ext: 'puml', fn: () => exportToPlantUML(graph) },
+    { name: 'Mermaid', ext: 'mmd', fn: () => exportToMermaid(graph) },
+    { name: 'Draw.io', ext: 'drawio', fn: () => exportToDrawio(graph) },
+    { name: 'GLTF', ext: 'gltf', fn: () => exportToGLTF(graph) },
+    { name: 'SVG', ext: 'svg', fn: () => exportToSVG(graph) },
   ]
 
   for (const { name, ext, fn } of formatExports) {
@@ -109,7 +107,7 @@ async function main() {
       console.log('\n  Content:')
       const lines = result.content.split('\n')
       const preview = lines.slice(0, 35)
-      console.log(preview.map(l => '    ' + l).join('\n'))
+      console.log(preview.map((l) => '    ' + l).join('\n'))
       if (lines.length > 35) console.log(`    ... (${lines.length - 35} more lines)`)
     } catch (err: any) {
       console.log(`  ❌  Export failed: ${err.message}`)
@@ -120,7 +118,7 @@ async function main() {
   console.log(`\nAll files saved to: ${OUTPUT_DIR}\n`)
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err)
   process.exit(1)
 })

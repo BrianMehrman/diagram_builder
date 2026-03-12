@@ -10,7 +10,8 @@ import { useExportStore } from './store'
  */
 export function ExportButton() {
   const [isOpen, setIsOpen] = useState(false)
-  const repositoryId = useExportStore((state) => state.selectedRepositoryId) ?? 'repo-sample-javascript'
+  const repositoryId =
+    useExportStore((state) => state.selectedRepositoryId) ?? 'repo-sample-javascript'
 
   return (
     <>

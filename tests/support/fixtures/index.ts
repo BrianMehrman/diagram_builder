@@ -192,7 +192,12 @@ export const test = base.extend<TestFixtures>({
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({
-            content: JSON.stringify({ asset: { version: '2.0' }, scenes: [], nodes: [], meshes: [] }),
+            content: JSON.stringify({
+              asset: { version: '2.0' },
+              scenes: [],
+              nodes: [],
+              meshes: [],
+            }),
             filename: 'diagram.gltf',
             mimeType: 'model/gltf+json',
             extension: 'gltf',

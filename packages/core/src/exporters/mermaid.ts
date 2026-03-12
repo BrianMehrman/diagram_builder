@@ -305,7 +305,9 @@ function generateFlowchart(graph: IVMGraph, options: Required<MermaidExportOptio
     const arrow = EDGE_TYPE_TO_FLOWCHART_ARROW[edge.type]
 
     if (showEdgeLabels) {
-      const label = edge.metadata.label ? escapeLabel(edge.metadata.label) : EDGE_TYPE_LABELS[edge.type]
+      const label = edge.metadata.label
+        ? escapeLabel(edge.metadata.label)
+        : EDGE_TYPE_LABELS[edge.type]
       lines.push(`    ${resolvedSource} ${arrow}|${label}| ${resolvedTarget}`)
     } else {
       lines.push(`    ${resolvedSource} ${arrow} ${resolvedTarget}`)
@@ -419,7 +421,13 @@ function generateClassDiagram(graph: IVMGraph, _options: Required<MermaidExportO
   // Exclude `contains` (shown as class members) and `calls` (too many, too granular).
   const classTypeSet = new Set(['class', 'interface', 'enum'])
   const classNodeIds = new Set(graph.nodes.filter((n) => classTypeSet.has(n.type)).map((n) => n.id))
-  const relevantEdgeTypes = new Set<EdgeType>(['extends', 'implements', 'imports', 'uses', 'depends_on'])
+  const relevantEdgeTypes = new Set<EdgeType>([
+    'extends',
+    'implements',
+    'imports',
+    'uses',
+    'depends_on',
+  ])
 
   const seenEdges = new Set<string>()
   lines.push('')

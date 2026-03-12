@@ -230,7 +230,10 @@ export async function exportPlantUML(request: ExportRequest): Promise<ExportResu
   // Prepare graph
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
-  const result = exportToPlantUML(graph, request.options as unknown as PlantUMLExportOptions | undefined)
+  const result = exportToPlantUML(
+    graph,
+    request.options as unknown as PlantUMLExportOptions | undefined
+  )
 
   const duration = Date.now() - startTime
 
@@ -254,7 +257,10 @@ export async function exportMermaid(request: ExportRequest): Promise<ExportResul
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
-  const result = exportToMermaid(graph, request.options as unknown as MermaidExportOptions | undefined)
+  const result = exportToMermaid(
+    graph,
+    request.options as unknown as MermaidExportOptions | undefined
+  )
 
   const duration = Date.now() - startTime
 
@@ -278,7 +284,10 @@ export async function exportDrawio(request: ExportRequest): Promise<ExportResult
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
-  const result = exportToDrawio(graph, request.options as unknown as DrawioExportOptions | undefined)
+  const result = exportToDrawio(
+    graph,
+    request.options as unknown as DrawioExportOptions | undefined
+  )
 
   const duration = Date.now() - startTime
 

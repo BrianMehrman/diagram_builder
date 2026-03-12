@@ -295,7 +295,9 @@ async function seedGraphNodes(): Promise<void> {
     MATCH (r:Repository {id: $repoId})-[:CONTAINS]->(n)
     RETURN count(n) as count
   `
-  const existing = await runQuery<{ count: number }>(checkQuery, { repoId: REPOSITORY_IDS.SAMPLE_JS })
+  const existing = await runQuery<{ count: number }>(checkQuery, {
+    repoId: REPOSITORY_IDS.SAMPLE_JS,
+  })
   if (existing && existing[0] && Number(existing[0].count) > 0) {
     console.warn(`  ↻ Graph nodes for ${REPOSITORY_IDS.SAMPLE_JS} already exist, skipping`)
     return

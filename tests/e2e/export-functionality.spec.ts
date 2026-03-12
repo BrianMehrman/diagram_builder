@@ -70,7 +70,11 @@ test.describe('Export Functionality @P2', () => {
     expect(optionsCount).toBeGreaterThan(0)
   })
 
-  test('[P2] should show all 6 export formats in the dialog', async ({ page, mockGraph, mockExport }) => {
+  test('[P2] should show all 6 export formats in the dialog', async ({
+    page,
+    mockGraph,
+    mockExport,
+  }) => {
     // GIVEN: Export dialog is open
     await mockGraph()
     await page.goto('/canvas')
@@ -123,7 +127,11 @@ test.describe('Export Functionality @P2', () => {
     expect(response.status()).toBe(200)
   })
 
-  test('[P2] should show LOD level control in export dialog', async ({ page, mockGraph, mockExport }) => {
+  test('[P2] should show LOD level control in export dialog', async ({
+    page,
+    mockGraph,
+    mockExport,
+  }) => {
     // GIVEN: Export dialog is open
     await mockGraph()
     await page.goto('/canvas')

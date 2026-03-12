@@ -108,9 +108,7 @@ test.describe('Export API - Input Validation @P1 @api', () => {
     expect([400, 401]).toContain(status)
   })
 
-  test('[P1] POST /api/export/image - should reject invalid format value', async ({
-    request,
-  }) => {
+  test('[P1] POST /api/export/image - should reject invalid format value', async ({ request }) => {
     // GIVEN: Request with auth but unsupported format 'bmp'
     // WHEN: Calling image export with invalid format
     const response = await request.post(`${API_BASE_URL}/export/image`, {
@@ -206,9 +204,7 @@ test.describe('Export API - Format Content Validation @P1 @api', () => {
     }
   })
 
-  test('[P1] POST /api/export/gltf - should return valid GLTF content', async ({
-    request,
-  }) => {
+  test('[P1] POST /api/export/gltf - should return valid GLTF content', async ({ request }) => {
     // GIVEN: Valid request with auth
     // WHEN: Requesting gltf export
     const response = await request.post(`${API_BASE_URL}/export/gltf`, {
