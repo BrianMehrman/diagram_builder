@@ -1,0 +1,31 @@
+# Dependencies — reinstalled inside the image via npm ci
+node_modules
+packages/*/node_modules
+
+# Compiled output — rebuilt inside the image
+packages/*/dist
+
+# Environment secrets — injected at runtime via Docker / Kubernetes
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Test output
+coverage/
+test-results/
+playwright-report/
+
+# Logs
+logs/
+*.log
+
+# IDE and OS metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Large project-management artefacts not needed in the build context
+_bmad-output/
+docs/

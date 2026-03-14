@@ -114,6 +114,41 @@ Once the services are running:
 - **API**: http://localhost:4000
 - **Neo4j Browser**: http://localhost:7474
 
+## Building Docker Images
+
+Both application services have multi-stage Dockerfiles. Run all commands from the **monorepo root** — the full workspace is the build context.
+
+```bash
+# API (node:22.12-alpine3.21 runtime, ~node + dist only)
+docker build -f docker/api/Dockerfile -t diagram-builder-api:local .
+
+# UI (nginx:1.27-alpine3.21 runtime, serves Vite output)
+docker build -f docker/ui/Dockerfile -t diagram-builder-ui:local .
+```
+
+**Verify the API image:**
+```bash
+# Container should start and /health should return 200
+docker run --rm -p 4000:4000 \
+  -e NODE_ENV=development \
+  -e JWT_SECRET=dev-secret-at-least-32-chars-long \
+  -e NEO4J_URI=bolt://host.docker.internal:7687 \
+  -e NEO4J_USERNAME=neo4j \
+  -e NEO4J_PASSWORD=password123 \
+  -e REDIS_HOST=host.docker.internal \
+  diagram-builder-api:local
+```
+
+**Scan for vulnerabilities (requires [trivy](https://trivy.dev) or Docker Scout):**
+```bash
+trivy image --severity HIGH,CRITICAL diagram-builder-api:local
+trivy image --severity HIGH,CRITICAL diagram-builder-ui:local
+
+# Or with Docker Scout
+docker scout cves diagram-builder-api:local
+docker scout cves diagram-builder-ui:local
+```
+
 **Development Mode:**
 - Authentication is **optional** in development (both UI and API)
 - Click "Skip Login" button to bypass authentication

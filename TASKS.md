@@ -549,31 +549,34 @@ All tests must follow these rules:
 
 #### Story 12-1: Dockerfiles for API and UI
 
-- [ ] Create `docker/api/Dockerfile` (multi-stage)
-  - Stage 1 `builder`: `node:22-alpine` — copy monorepo root + `packages/core`, `packages/parser`, `packages/api`; run `npm ci`; run `npm run build --workspace=@diagram-builder/api`
-  - Stage 2 `runtime`: `node:22-alpine` — copy `dist/` and pruned `node_modules` from builder; `USER node` (non-root); `EXPOSE 4000`; `ENTRYPOINT ["node", "dist/server.js"]`
-- [ ] Create `docker/ui/Dockerfile` (multi-stage)
-  - Stage 1 `builder`: `node:22-alpine` — copy monorepo root + `packages/core`, `packages/ui`; run `npm ci`; run `npm run build --workspace=@diagram-builder/ui`
-  - Stage 2 `runtime`: `nginx:alpine` — copy Vite `dist/` to `/usr/share/nginx/html`; copy `docker/ui/nginx.conf`; `EXPOSE 80`
-- [ ] Create `docker/ui/nginx.conf`
-  - SPA routing: `try_files $uri /index.html`
-  - Proxy `/api/` → `http://api:4000` (preserves headers, supports streaming)
-  - Proxy `/socket.io/` → `http://api:4000` with WebSocket upgrade headers
-  - Correct MIME types for JS modules and WASM
-- [ ] Add `docker/api/.dockerignore` and `docker/ui/.dockerignore`
-  - Exclude `node_modules`, `dist`, `.env`, `*.test.ts`, `*.spec.ts`, `.git`
-- [ ] Add `HEALTHCHECK` to API Dockerfile (`curl -f http://localhost:4000/health`)
-- [ ] Add `HEALTHCHECK` to UI Dockerfile (`wget -qO- http://localhost/`)
+- [x] Create `docker/api/Dockerfile` (multi-stage: deps → builder → runtime)
+  - Stage 1 `deps`: `node:22.12-alpine3.21` — installs build tools (python3, make, g++ for tree-sitter), copies workspace manifests, runs `npm ci`
+  - Stage 2 `builder`: compiles core → parser → api in dependency order; runs `npm prune --omit=dev`
+  - Stage 3 `runtime`: `node:22.12-alpine3.21` — copies pruned node_modules + dist only; `USER node`; `EXPOSE 4000`; `CMD ["node", "dist/server.js"]`
+- [x] Create `docker/ui/Dockerfile` (multi-stage: deps → builder → runtime)
+  - Stage 1 `deps`: `node:22.12-alpine3.21` — copies workspace manifests, runs `npm ci`
+  - Stage 2 `builder`: builds core then UI (`tsc && vite build`)
+  - Stage 3 `runtime`: `nginx:1.27-alpine3.21` — copies `packages/ui/dist` to nginx html; `EXPOSE 80`
+- [x] Create `docker/ui/nginx.conf`
+  - SPA routing: `try_files $uri $uri/ /index.html`
+  - Proxy `/api/` → `http://api:4000` with forwarding headers
+  - Proxy `/socket.io/` → `http://api:4000` with WebSocket upgrade headers and 24h timeout
+  - Gzip compression for text assets; immutable cache headers for hashed assets
+  - Security headers (X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, Referrer-Policy)
+- [x] Create `.dockerignore` at repo root
+  - Excludes `node_modules`, `packages/*/node_modules`, `packages/*/dist`, `.env*`, test output, logs, IDE files, `_bmad-output/`, `docs/`
+- [x] Add `HEALTHCHECK` to API Dockerfile (node inline HTTP check against `/health`)
+- [x] Add `HEALTHCHECK` to UI Dockerfile (`wget -qO- http://localhost/`)
 - [ ] Validate both images build successfully: `docker build -f docker/api/Dockerfile .`
 - [ ] Validate API container starts and `/health` responds `200`
 
 #### Story 12-2: Docker image hardening
 
-- [ ] Pin base image digests (replace `:latest`/`:alpine` tags with `@sha256:...` or exact version tags)
-- [ ] Verify API image runs as non-root (`USER node` confirmed, no `sudo` or root-writable paths)
-- [ ] Scan images with `docker scout` or `trivy` — zero critical/high CVEs
-- [ ] Minimize final image size: ensure `devDependencies` are not in runtime image (`npm ci --omit=dev` in stage 2)
-- [ ] Document image build commands in README
+- [x] Pin base image versions (exact tags: `node:22.12-alpine3.21`, `nginx:1.27-alpine3.21`)
+- [x] API runs as non-root (`USER node` set before `EXPOSE`; `--chown=node:node` on all COPY in runtime stage)
+- [x] Minimize final image size: `npm prune --omit=dev` in builder stage; runtime stage copies only `dist/` + pruned `node_modules`
+- [x] Document image build and scan commands in README (`Building Docker Images` section)
+- [ ] Scan images with `docker scout` or `trivy` — zero critical/high CVEs (run after first successful build)
 
 ---
 
