@@ -6,6 +6,8 @@
  * by both CLI and web UI.
  */
 
+import { SemanticTier, SEMANTIC_TIER_DESCRIPTIONS as _SEMANTIC_TIER_DESCRIPTIONS } from './semantic-tier.js'
+
 // =============================================================================
 // Position Types
 // =============================================================================
@@ -51,8 +53,9 @@ export type NodeType =
 
 /**
  * Level of Detail for progressive rendering
+ * @deprecated Use SemanticTier instead
  */
-export type LODLevel = 0 | 1 | 2 | 3 | 4 | 5
+export type LODLevel = SemanticTier
 
 /**
  * Metadata associated with a node
@@ -409,12 +412,5 @@ export const IVM_SCHEMA_VERSION = '1.0.0'
 /** Default LOD level for new nodes */
 export const DEFAULT_LOD: LODLevel = 3
 
-/** LOD level descriptions */
-export const LOD_DESCRIPTIONS: Record<LODLevel, string> = {
-  0: 'Repository level - shows only repositories',
-  1: 'Package level - shows packages/modules',
-  2: 'Directory level - shows directories',
-  3: 'File level - shows files',
-  4: 'Class/Function level - shows major code elements',
-  5: 'Full detail - shows all code elements',
-}
+/** @deprecated Use SEMANTIC_TIER_DESCRIPTIONS instead */
+export const LOD_DESCRIPTIONS = _SEMANTIC_TIER_DESCRIPTIONS
