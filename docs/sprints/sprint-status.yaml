@@ -466,8 +466,8 @@ epics:
   # Epic 12: Observability & Infrastructure
   epic-12: not-started
   # Epic 12-A: Application Containerization
-  12-1-dockerfiles-api-ui: not-started
-  12-2-docker-image-hardening: not-started
+  12-1-dockerfiles-api-ui: review  # docker/api/Dockerfile, docker/ui/Dockerfile, docker/ui/nginx.conf, .dockerignore - COMPLETE (2026-03-14)
+  12-2-docker-image-hardening: review  # Pinned base images, non-root USER, npm prune, build docs in README - trivy scan pending first build (2026-03-14)
   # Epic 12-B: Docker Compose Full Stack with Observability
   12-3-docker-compose-profiles: not-started
   12-4-observability-services-docker-compose: not-started
