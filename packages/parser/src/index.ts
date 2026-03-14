@@ -118,3 +118,7 @@ export { convertEdge, convertEdges } from './ivm/edge-converter'
 export { enrichGraphMetadata } from './ivm/metadata-enricher'
 export { validateIVM } from './ivm/validator'
 export type { ValidationError, ValidationResult } from './ivm/validator'
+
+// IVM Hierarchy & Parse Result
+export { buildParseResult } from './ivm/build-parse-result'
+export { buildGroupHierarchy } from './ivm/hierarchy-builder'
