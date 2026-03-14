@@ -10,18 +10,118 @@ Migrate the UI to consume `ParseResult` directly. Replace the hand-rolled `Graph
 
 ## Architecture Overview
 
+### Diagram 1 — End-to-End Data Flow
+
+```mermaid
+flowchart TD
+    WP[WorkspacePage]
+    API[GET /api/graph/:repoId/parse-result]
+    PR[ParseResult\ngraph + hierarchy + tiers]
+    CS[canvasStore\nparseResult + resolver + activeLayout]
+    VR[ViewResolver\ncreateViewResolver]
+    UL[useLayout\nreads activeLayout]
+
+    LOD1[lodLevel 1-2\ngetTier File or Module]
+    LOD34[lodLevel 3-4\ngetView with expand or focalNode]
+
+    CityE[city engine\nuseCityLayout + useCityFiltering]
+    B3DE[basic3d engine\nuseBasic3DLayout stub]
+
+    CityV[CityView]
+    B3DV[Basic3DView]
+
+    WP -->|fetch| API
+    API -->|ParseResult| WP
+    WP -->|setParseResult| CS
+    CS -->|createViewResolver| VR
+    CS --> UL
+    UL -->|activeLayout = city| CityE
+    UL -->|activeLayout = basic3d| B3DE
+    VR --> LOD1
+    VR --> LOD34
+    LOD1 -->|IVMGraph| CityE
+    LOD34 -->|ViewResult.graph| CityE
+    LOD1 -->|IVMGraph| B3DE
+    CityE --> CityV
+    B3DE --> B3DV
 ```
-API /api/graph/:repoId/parse-result
-        ↓
-    ParseResult
-        ↓
-  canvasStore.setParseResult()  →  createViewResolver(parseResult) cached in store
-        ↓
-  useLayout(activeLayout) → LayoutResult { engine: LayoutEngine }
-        ↓
-  resolver.getTier(SemanticTier.File) → IVMGraph  (via useCityLayout / useBasic3DLayout)
-        ↓
-  CityView / Basic3DView
+
+### Diagram 2 — Layout Architecture
+
+```mermaid
+flowchart TD
+    subgraph layouts[features/canvas/layouts]
+        T[types.ts\nLayoutEngine interface\nLayoutResult type]
+        I[index.ts\nuseLayout hook]
+
+        subgraph city[layouts/city]
+            CL[useCityLayout.ts\nreads resolver.getTier]
+            CF[useCityFiltering.ts\nreads hierarchy for districts]
+            CV[CityView.tsx]
+            CB[CityBlocks.tsx]
+            CS2[CitySky.tsx]
+        end
+
+        subgraph basic3d[layouts/basic3d]
+            BL[useBasic3DLayout.ts\nforce-directed grid stub]
+            BV[Basic3DView.tsx\nspheres and line edges stub]
+        end
+    end
+
+    store[canvasStore\nactiveLayout]
+    vmr[ViewModeRenderer]
+
+    store -->|activeLayout| I
+    I -->|engine.component| vmr
+    T -.->|defines| I
+    I -->|city| CV
+    I -->|basic3d| BV
+    CL --> CV
+    CF --> CV
+    CB --> CV
+    CS2 --> CV
+    BL --> BV
+```
+
+### Diagram 3 — WorkspacePage Before and After
+
+```mermaid
+flowchart LR
+    subgraph before[BEFORE]
+        direction TB
+        WPB[WorkspacePage]
+        GD[graphData state\nGraph type]
+        C3B[Canvas3D\ngraph prop]
+        HB[HUD\nnodes prop]
+        NB[Navigation\nnodes prop]
+        MB[MiniMap\nnodes prop]
+        OB[...5 more consumers]
+
+        WPB -->|fetch Graph| GD
+        GD --> C3B
+        GD --> HB
+        GD --> NB
+        GD --> MB
+        GD --> OB
+    end
+
+    subgraph after[AFTER]
+        direction TB
+        WPA[WorkspacePage]
+        ST[canvasStore\nparseResult + resolver]
+        C3A[Canvas3D\nno graph prop]
+        HA[HUD\nreads store]
+        NA[Navigation\nreads store]
+        MA[MiniMap\nreads store]
+        OA[...6 more consumers\nread store]
+
+        WPA -->|fetch ParseResult\nsetParseResult| ST
+        ST --> C3A
+        ST --> HA
+        ST --> NA
+        ST --> MA
+        ST --> OA
+    end
 ```
 
 ## API Layer
