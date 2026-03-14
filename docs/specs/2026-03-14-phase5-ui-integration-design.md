@@ -132,7 +132,7 @@ This is a wide migration. Over 50 UI files currently import `GraphNode`, `Graph`
 | `useGlobalKeyboardShortcuts` | `nodes: graphData?.nodes \|\| []` | reads `IVMNode[]` from `canvasStore.parseResult?.graph.nodes ?? []` |
 | `SuccessNotification` (inline) | `` `Graph loaded with ${graphData.nodes?.length \|\| 0} nodes` `` | `` `Graph loaded with ${parseResult?.graph.nodes.length ?? 0} nodes` `` |
 
-The prop signatures of `HUD`, `NodeDetails`, `Navigation`, `SearchBarModal`, `MiniMap`, and `useGlobalKeyboardShortcuts` change from `nodes: GraphNode[]` to `nodes: IVMNode[]`. Internal rendering logic in each component migrates field access per the mapping table above.
+The nine consumers above cover all `graphData` references in `WorkspacePage`. The prop signatures of `HUD`, `NodeDetails`, `Navigation`, `SearchBarModal`, `MiniMap`, and `useGlobalKeyboardShortcuts` change from `nodes: GraphNode[]` to `nodes: IVMNode[]`. Internal rendering logic in each component migrates field access per the mapping table above.
 
 `Canvas3D` drops its `graph?: Graph` prop entirely — the graph is now read from the store.
 
@@ -246,6 +246,11 @@ The canvas store's existing `lodLevel` field (a 1-based integer 1–4 driven by 
 
 `focusedGroupId` — the `GroupNode.id` of the district the camera is currently closest to. Stored as `canvasStore.focusedGroupId: string | null`. The centroid computation (camera position vs. mean of a group's node positions) is an implementation detail left to the agent; it should update when camera position settles (debounced), not every frame. `selectedNodeId` maps to existing `canvasStore.selectedNodeId`.
 
+**Null guards:**
+
+- **`focusedGroupId` is `null`** (initial state or camera not near any group) — LOD 3 falls back to the LOD 2 call: `resolver.getTier(SemanticTier.File)`. Do not pass `[null]` to `expand`.
+- **`resolver` is `null`** (before `setParseResult` completes) — all hooks that read from `canvasStore.resolver` must guard with an early return and render nothing (empty graph `{ nodes: [], edges: [], metadata: ..., bounds: ... }`). This pattern must be applied consistently at all 50+ migration sites.
+
 ## Testing Strategy
 
 ### Unit Tests
@@ -257,7 +262,7 @@ The canvas store's existing `lodLevel` field (a 1-based integer 1–4 driven by 
 
 ### Integration Tests
 
-- `WorkspacePage` — mocks `/api/graph/:repoId/parse-result`, confirms `ParseResult` reaches store and `resolver` is initialized; confirms all seven former `graphData` consumers receive `IVMNode[]` from store
+- `WorkspacePage` — mocks `/api/graph/:repoId/parse-result`, confirms `ParseResult` reaches store and `resolver` is initialized; confirms all nine former `graphData` consumers receive `IVMNode[]` from store (including `useGlobalKeyboardShortcuts` and the `SuccessNotification` node count)
 - `useCityLayout` — fixture `ParseResult` → `resolver.getTier(File)` IVMGraph used for layout, not `parseResult.graph`
 - Layout switcher — `city` ↔ `basic3d` swap renders the correct view component
 
