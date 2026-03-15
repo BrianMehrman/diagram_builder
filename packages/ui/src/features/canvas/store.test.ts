@@ -3,7 +3,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useCanvasStore } from './store'
+import { act } from '@testing-library/react'
+import { useCanvasStore, initialState } from './store'
 
 describe('useCanvasStore', () => {
   beforeEach(() => {
@@ -387,5 +388,38 @@ describe('useCanvasStore', () => {
       useCanvasStore.getState().reset()
       expect(useCanvasStore.getState().showRadialOverlay).toBe(false)
     })
+  })
+})
+
+describe('canvas store — ParseResult', () => {
+  beforeEach(() => {
+    useCanvasStore.setState(initialState)
+  })
+
+  it('initialises parseResult and resolver as null', () => {
+    const { parseResult, resolver } = useCanvasStore.getState()
+    expect(parseResult).toBeNull()
+    expect(resolver).toBeNull()
+  })
+
+  it('setParseResult stores result and creates resolver', () => {
+    const mockResult = {
+      graph: { nodes: [], edges: [], metadata: {} as any, bounds: {} as any },
+      hierarchy: { root: { id: 'r', label: 'r', tier: 0, nodeIds: [], children: [] }, tierCount: {} as any, edgesByTier: {} as any },
+      tiers: {} as any,
+    }
+    act(() => useCanvasStore.getState().setParseResult(mockResult))
+    const { parseResult, resolver } = useCanvasStore.getState()
+    expect(parseResult).toBe(mockResult)
+    expect(resolver).not.toBeNull()
+  })
+
+  it('initialises activeLayout as city', () => {
+    expect(useCanvasStore.getState().activeLayout).toBe('city')
+  })
+
+  it('setActiveLayout updates activeLayout', () => {
+    act(() => useCanvasStore.getState().setActiveLayout('basic3d'))
+    expect(useCanvasStore.getState().activeLayout).toBe('basic3d')
   })
 })
