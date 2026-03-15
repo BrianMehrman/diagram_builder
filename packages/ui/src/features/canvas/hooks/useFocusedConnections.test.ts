@@ -2,16 +2,16 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useFocusedConnections } from './useFocusedConnections'
 import { useCanvasStore } from '../store'
-import type { Graph, GraphNode, GraphEdge } from '../../../shared/types'
+import type { IVMGraph, IVMNode, IVMEdge } from '../../../shared/types'
 
-function node(id: string): GraphNode {
+function node(id: string): IVMNode {
   return { id, type: 'file', label: id, metadata: {}, lod: 1, depth: 1, isExternal: false }
 }
-function edge(source: string, target: string, type: GraphEdge['type'] = 'imports'): GraphEdge {
+function edge(source: string, target: string, type: IVMEdge['type'] = 'imports'): IVMEdge {
   return { id: `${source}-${type}-${target}`, source, target, type, metadata: {} }
 }
 
-const graph: Graph = {
+const graph: IVMGraph = {
   nodes: [node('A'), node('B'), node('C'), node('D')],
   edges: [edge('A', 'B', 'imports'), edge('A', 'C', 'calls'), edge('B', 'D', 'depends_on')],
   metadata: { repositoryId: 'test', name: 'test', totalNodes: 4, totalEdges: 3 },

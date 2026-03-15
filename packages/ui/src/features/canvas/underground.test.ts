@@ -13,7 +13,7 @@ import {
   generateTunnelPoints,
   filterImportEdges,
 } from './undergroundUtils'
-import type { GraphEdge, Position3D } from '../../shared/types'
+import type { IVMEdge, Position3D } from '../../shared/types'
 
 describe('Underground Mode - Store State', () => {
   beforeEach(() => {
@@ -116,7 +116,7 @@ describe('Underground Mode - Tunnel Path Generation', () => {
 })
 
 describe('Underground Mode - Edge Filtering', () => {
-  const edges: GraphEdge[] = [
+  const edges: IVMEdge[] = [
     { id: 'e1', source: 'a', target: 'b', type: 'imports', metadata: {} },
     { id: 'e2', source: 'a', target: 'c', type: 'calls', metadata: {} },
     { id: 'e3', source: 'b', target: 'c', type: 'depends_on', metadata: {} },

@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import type { Graph, GraphNode } from '../../../../shared/types'
+import type { IVMGraph, IVMNode } from '../../../../shared/types'
 import { CellLayoutEngine } from './cellLayout'
 
 function makeNode(
   id: string,
-  type: GraphNode['type'],
+  type: IVMNode['type'],
   label: string,
   opts: { parentId?: string; position?: { x: number; y: number; z: number } } = {}
-): GraphNode {
+): IVMNode {
   return {
     id,
     type,
@@ -19,7 +19,7 @@ function makeNode(
   }
 }
 
-function makeGraph(nodes: GraphNode[]): Graph {
+function makeGraph(nodes: IVMNode[]): IVMGraph {
   return {
     nodes,
     edges: [],
@@ -202,7 +202,7 @@ describe('CellLayoutEngine', () => {
     })
 
     it('should handle many organelles without overlap issues', () => {
-      const nodes: GraphNode[] = [makeNode('c1', 'class', 'BigClass')]
+      const nodes: IVMNode[] = [makeNode('c1', 'class', 'BigClass')]
       for (let i = 0; i < 20; i++) {
         nodes.push(makeNode(`m${i}`, 'method', `method${i}`, { parentId: 'c1' }))
       }

@@ -10,10 +10,10 @@ import { useState } from 'react'
 import { Text } from '@react-three/drei'
 import { useCanvasStore } from '../../store'
 import { METHOD_ROOM_COLORS } from '../../views/heightUtils'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
 export interface MethodRoomProps {
-  method: GraphNode
+  method: IVMNode
   position: { x: number; y: number; z: number }
   size: { width: number; height: number; depth: number }
   /** Opacity multiplier for LOD cross-fade (0–1). Defaults to 1. */
@@ -23,21 +23,22 @@ export interface MethodRoomProps {
 /**
  * Determine room color from method node metadata.
  */
-function getRoomColor(method: GraphNode): string {
+function getRoomColor(method: IVMNode): string {
   // Check for constructor
-  const name = (method.label ?? method.id).split('.').pop() ?? ''
+  const name = (method.metadata.label ?? method.id).split('.').pop() ?? ''
   if (name === 'constructor' || name === '__init__') {
     return METHOD_ROOM_COLORS.constructor
   }
 
   // Check metadata for static flag (static is an overlay, not a visibility tier)
-  if (method.metadata?.isStatic === true) {
+  if ((method.metadata?.properties as Record<string, unknown> | undefined)?.isStatic === true) {
     return METHOD_ROOM_COLORS.static
   }
 
   // Check visibility
-  if (method.visibility && method.visibility in METHOD_ROOM_COLORS) {
-    return METHOD_ROOM_COLORS[method.visibility as keyof typeof METHOD_ROOM_COLORS]
+  const vis = method.metadata?.properties?.visibility as string | undefined
+  if (vis && vis in METHOD_ROOM_COLORS) {
+    return METHOD_ROOM_COLORS[vis as keyof typeof METHOD_ROOM_COLORS]
   }
 
   return METHOD_ROOM_COLORS.default
@@ -49,7 +50,7 @@ export function MethodRoom({ method, position, size, opacity = 1 }: MethodRoomPr
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode)
 
   const color = getRoomColor(method)
-  const label = (method.label ?? method.id).split('/').pop()?.split('.').pop() ?? method.id
+  const label = (method.metadata.label ?? method.id).split('/').pop()?.split('.').pop() ?? method.id
 
   return (
     <group position={[position.x, position.y, position.z]}>

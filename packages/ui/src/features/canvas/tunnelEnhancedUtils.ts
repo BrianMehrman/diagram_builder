@@ -5,7 +5,7 @@
  * color mapping, junction sizing, and legend data.
  */
 
-import type { GraphEdge } from '../../shared/types'
+import type { IVMEdge } from '../../shared/types'
 
 /**
  * Dependency type for color coding
@@ -65,7 +65,7 @@ export function computeJunctionSize(tunnelCount: number): number {
  * Count the number of tunnel connections per node ID.
  * Each edge contributes +1 to both source and target node counts.
  */
-export function countTunnelsPerNode(edges: GraphEdge[]): Map<string, number> {
+export function countTunnelsPerNode(edges: IVMEdge[]): Map<string, number> {
   const counts = new Map<string, number>()
   for (const edge of edges) {
     counts.set(edge.source, (counts.get(edge.source) ?? 0) + 1)

@@ -5,17 +5,17 @@
  */
 
 import { useCanvasStore } from './store'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
 interface NodeDetailsProps {
-  nodes: GraphNode[]
+  nodes: IVMNode[]
   className?: string
 }
 
 /**
  * Get node type icon
  */
-function getNodeIcon(type: GraphNode['type']): string {
+function getNodeIcon(type: IVMNode['type']): string {
   switch (type) {
     case 'file':
       return '📄'
@@ -31,7 +31,7 @@ function getNodeIcon(type: GraphNode['type']): string {
       return '🔗'
     case 'enum':
       return '📋'
-    case 'abstract_class':
+    case 'namespace':
       return '🏗️'
     default:
       return '❓'
@@ -68,7 +68,7 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="text-2xl">{getNodeIcon(selectedNode.type)}</span>
-          <h3 className="text-lg font-bold text-white">{selectedNode.label}</h3>
+          <h3 className="text-lg font-bold text-white">{selectedNode.metadata.label}</h3>
         </div>
         <button
           onClick={handleClose}
@@ -118,10 +118,10 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
           </div>
         )}
 
-        {selectedNode.depth !== undefined && (
+        {(selectedNode.metadata.properties?.depth as number | undefined) !== undefined && (
           <div>
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Depth</div>
-            <div className="text-sm text-gray-200 mt-1">{selectedNode.depth}</div>
+            <div className="text-sm text-gray-200 mt-1">{selectedNode.metadata.properties?.depth as number | undefined}</div>
           </div>
         )}
 
@@ -136,40 +136,40 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
           </div>
         )}
 
-        {selectedNode.visibility && (
+        {(selectedNode.metadata.properties?.visibility as string | undefined) && (
           <div>
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
               Visibility
             </div>
-            <div className="text-sm text-gray-200 capitalize mt-1">{selectedNode.visibility}</div>
+            <div className="text-sm text-gray-200 capitalize mt-1">{selectedNode.metadata.properties?.visibility as string | undefined}</div>
           </div>
         )}
 
-        {selectedNode.methodCount !== undefined && (
+        {(selectedNode.metadata.properties?.methodCount as number | undefined) !== undefined && (
           <div>
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
               Methods
             </div>
-            <div className="text-sm text-gray-200 mt-1">{selectedNode.methodCount}</div>
+            <div className="text-sm text-gray-200 mt-1">{(selectedNode.metadata.properties?.methodCount as number | undefined)}</div>
           </div>
         )}
 
         {/* Boolean flags */}
-        {(selectedNode.isExternal || selectedNode.isDeprecated || selectedNode.isExported) && (
+        {((selectedNode.metadata.properties?.isExternal as boolean | undefined) || (selectedNode.metadata.properties?.isDeprecated as boolean | undefined) || (selectedNode.metadata.properties?.isExported as boolean | undefined)) && (
           <div>
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Flags</div>
             <div className="flex flex-wrap gap-1 mt-1">
-              {selectedNode.isExternal && (
+              {(selectedNode.metadata.properties?.isExternal as boolean | undefined) && (
                 <span className="text-[10px] bg-blue-900/60 text-blue-300 px-1.5 py-0.5 rounded">
                   external
                 </span>
               )}
-              {selectedNode.isDeprecated && (
+              {(selectedNode.metadata.properties?.isDeprecated as boolean | undefined) && (
                 <span className="text-[10px] bg-yellow-900/60 text-yellow-300 px-1.5 py-0.5 rounded">
                   deprecated
                 </span>
               )}
-              {selectedNode.isExported && (
+              {(selectedNode.metadata.properties?.isExported as boolean | undefined) && (
                 <span className="text-[10px] bg-green-900/60 text-green-300 px-1.5 py-0.5 rounded">
                   exported
                 </span>

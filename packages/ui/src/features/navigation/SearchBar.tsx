@@ -14,10 +14,10 @@
 import { useState, useEffect } from 'react'
 import { useDebounce } from '../../shared/hooks'
 import { searchNodes, initializeSearchIndex } from './fuzzySearch'
-import type { GraphNode, Position3D } from '../../shared/types'
+import type { IVMNode, Position3D } from '../../shared/types'
 
 export interface SearchBarProps {
-  nodes?: GraphNode[]
+  nodes?: IVMNode[]
   onNodeSelect?: ((nodeId: string, position?: Position3D) => void) | undefined
   className?: string
 }
@@ -28,7 +28,7 @@ export interface SearchBarProps {
 export function SearchBar({ nodes = [], onNodeSelect = () => {}, className = '' }: SearchBarProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [isOpen, setIsOpen] = useState(false)
-  const [filteredNodes, setFilteredNodes] = useState<GraphNode[]>([])
+  const [filteredNodes, setFilteredNodes] = useState<IVMNode[]>([])
   const debouncedSearch = useDebounce(searchTerm, 50)
 
   // Initialize search index when nodes change
@@ -48,7 +48,7 @@ export function SearchBar({ nodes = [], onNodeSelect = () => {}, className = '' 
     }
   }, [debouncedSearch])
 
-  const handleNodeClick = (node: GraphNode) => {
+  const handleNodeClick = (node: IVMNode) => {
     onNodeSelect(node.id, node.position)
     setSearchTerm('')
     setIsOpen(false)
@@ -70,7 +70,7 @@ export function SearchBar({ nodes = [], onNodeSelect = () => {}, className = '' 
     setTimeout(() => setIsOpen(false), 200)
   }
 
-  const getNodeIcon = (type: GraphNode['type']): string => {
+  const getNodeIcon = (type: IVMNode['type']): string => {
     switch (type) {
       case 'file':
         return '📄'
@@ -123,7 +123,7 @@ export function SearchBar({ nodes = [], onNodeSelect = () => {}, className = '' 
               <div className="flex items-center gap-3">
                 <span className="text-xl">{getNodeIcon(node.type)}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 truncate">{node.label}</div>
+                  <div className="font-medium text-gray-900 truncate">{node.metadata.label}</div>
                   <div className="text-xs text-gray-500 flex items-center gap-2">
                     <span className="capitalize">{node.type}</span>
                     <span>•</span>

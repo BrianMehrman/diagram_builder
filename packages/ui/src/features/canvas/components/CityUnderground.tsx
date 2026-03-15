@@ -19,10 +19,10 @@ import { useCityLayout } from '../layouts/city/useCityLayout'
 import { useCityFiltering } from '../layouts/city/useCityFiltering'
 import { classifyEdgeRouting } from '../views/wireUtils'
 import { useCanvasStore } from '../store'
-import type { Graph } from '../../../shared/types'
+import type { IVMGraph } from '../../../shared/types'
 
 interface CityUndergroundProps {
-  graph: Graph
+  graph: IVMGraph
 }
 
 export function CityUnderground({ graph }: CityUndergroundProps) {
@@ -39,7 +39,7 @@ export function CityUnderground({ graph }: CityUndergroundProps) {
   const externalNodeIds = useMemo(() => {
     const ids = new Set<string>()
     for (const node of graph.nodes) {
-      if (node.isExternal) ids.add(node.id)
+      if ((node.metadata.properties?.isExternal as boolean | undefined)) ids.add(node.id)
     }
     return ids
   }, [graph.nodes])

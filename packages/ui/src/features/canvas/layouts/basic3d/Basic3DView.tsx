@@ -1,5 +1,4 @@
 // packages/ui/src/features/canvas/layouts/basic3d/Basic3DView.tsx
-import React from 'react'
 
 /**
  * Basic3DView — stub layout

@@ -6,40 +6,39 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SearchBar } from './SearchBar'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
-const mockNodes: GraphNode[] = [
+const mockNodes: IVMNode[] = [
   {
     id: 'file-1',
     type: 'file',
-    label: 'app.ts',
-    metadata: {},
+    metadata: { label: 'app.ts', path: 'src/app.ts' },
     position: { x: 0, y: 0, z: 0 },
-    lodLevel: 0,
+    lod: 0,
   },
   {
     id: 'class-1',
     type: 'class',
-    label: 'Application',
-    metadata: { file: 'file-1' },
+    metadata: { label: 'Application', path: 'src/Application.ts' },
     position: { x: 1, y: 1, z: 1 },
-    lodLevel: 1,
+    lod: 1,
+    parentId: 'file-1',
   },
   {
     id: 'method-1',
     type: 'method',
-    label: 'initialize',
-    metadata: { class: 'class-1', file: 'file-1' },
+    metadata: { label: 'initialize', path: 'src/Application.ts' },
     position: { x: 1.5, y: 1.5, z: 1.5 },
-    lodLevel: 2,
+    lod: 2,
+    parentId: 'class-1',
   },
   {
     id: 'function-1',
     type: 'function',
-    label: 'helper',
-    metadata: { file: 'file-1' },
+    metadata: { label: 'helper', path: 'src/helper.ts' },
     position: { x: 2, y: 0, z: 0 },
-    lodLevel: 1,
+    lod: 1,
+    parentId: 'file-1',
   },
 ]
 
@@ -138,13 +137,12 @@ describe('SearchBar', () => {
 
   it('limits results to 10 items', async () => {
     const user = userEvent.setup()
-    const manyNodes: GraphNode[] = Array.from({ length: 20 }, (_, i) => ({
+    const manyNodes: IVMNode[] = Array.from({ length: 20 }, (_, i) => ({
       id: `node-${i}`,
-      type: 'file',
-      label: `file-${i}.ts`,
-      metadata: {},
+      type: 'file' as const,
+      metadata: { label: `file-${i}.ts`, path: `src/file-${i}.ts` },
       position: { x: i, y: 0, z: 0 },
-      lodLevel: 0,
+      lod: 0,
     }))
 
     render(<SearchBar nodes={manyNodes} onNodeSelect={onNodeSelect} />)

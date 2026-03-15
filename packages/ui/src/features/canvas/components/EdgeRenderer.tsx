@@ -10,17 +10,17 @@ import { useFrame } from '@react-three/fiber'
 import { Color, LineBasicMaterial, Vector3 } from 'three'
 import { useCanvasStore } from '../store'
 import { useReducedMotion } from '../../../shared/hooks/useReducedMotion'
-import type { GraphEdge, GraphNode } from '../../../shared/types'
+import type { IVMEdge, IVMNode } from '../../../shared/types'
 
 interface EdgeRendererProps {
-  edge: GraphEdge
-  nodes: GraphNode[]
+  edge: IVMEdge
+  nodes: IVMNode[]
 }
 
 /**
  * Get edge color based on type
  */
-function getEdgeColor(type: GraphEdge['type']): string {
+function getEdgeColor(type: IVMEdge['type']): string {
   switch (type) {
     case 'contains':
       return '#60a5fa' // Blue
@@ -28,7 +28,7 @@ function getEdgeColor(type: GraphEdge['type']): string {
       return '#a78bfa' // Purple
     case 'calls':
       return '#34d399' // Green
-    case 'inherits':
+    case 'extends':
       return '#fbbf24' // Amber
     case 'imports':
       return '#f87171' // Red

@@ -5,7 +5,7 @@
  * Extracted for testability without React Three Fiber dependencies.
  */
 
-import type { GraphEdge, Position3D } from '../../shared/types'
+import type { IVMEdge, Position3D } from '../../shared/types'
 
 /** Depth below ground plane for tunnel paths */
 const UNDERGROUND_Y = -3
@@ -60,6 +60,6 @@ export function generateTunnelPoints(source: Position3D, target: Position3D): Po
  * Filter edges to only include dependency-related edges
  * (imports and depends_on).
  */
-export function filterImportEdges(edges: GraphEdge[]): GraphEdge[] {
+export function filterImportEdges(edges: IVMEdge[]): IVMEdge[] {
   return edges.filter((e) => e.type === 'imports' || e.type === 'depends_on')
 }

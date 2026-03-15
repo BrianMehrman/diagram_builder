@@ -16,38 +16,26 @@ import {
   DEPRECATED_ROUGHNESS,
   DEPRECATED_METALNESS,
 } from './deprecatedUtils'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
-/** Helper: create a minimal GraphNode with optional isDeprecated */
+/** Helper: create a minimal IVMNode with optional isDeprecated in properties */
 function makeNode(
   id: string,
   options: {
     deprecated?: boolean
-    nestedDeprecated?: boolean
-    metadataDeprecated?: boolean
   } = {}
-): GraphNode {
-  const metadata: Record<string, unknown> = {}
-  if (options.metadataDeprecated !== undefined) {
-    metadata.isDeprecated = options.metadataDeprecated
-  }
-  if (options.nestedDeprecated !== undefined) {
-    metadata.properties = { isDeprecated: options.nestedDeprecated }
-  }
-
-  const node: GraphNode = {
+): IVMNode {
+  return {
     id,
     type: 'class',
-    label: id,
-    metadata,
+    metadata: {
+      label: id,
+      path: `src/${id}.ts`,
+      properties: options.deprecated !== undefined ? { isDeprecated: options.deprecated } : {},
+    },
     lod: 1,
+    position: { x: 0, y: 0, z: 0 },
   }
-
-  if (options.deprecated !== undefined) {
-    node.isDeprecated = options.deprecated
-  }
-
-  return node
 }
 
 describe('DeprecatedOverlay', () => {
@@ -57,29 +45,14 @@ describe('DeprecatedOverlay', () => {
 
   // ── isDeprecated ──────────────────────────────────────────────
   describe('isDeprecated', () => {
-    it('returns true when node.isDeprecated is true', () => {
+    it('returns true when metadata.properties.isDeprecated is true', () => {
       const node = makeNode('a', { deprecated: true })
       expect(isDeprecated(node)).toBe(true)
     })
 
-    it('returns false when node.isDeprecated is false', () => {
+    it('returns false when metadata.properties.isDeprecated is false', () => {
       const node = makeNode('a', { deprecated: false })
       expect(isDeprecated(node)).toBe(false)
-    })
-
-    it('returns true when metadata.isDeprecated is true', () => {
-      const node = makeNode('a', { metadataDeprecated: true })
-      expect(isDeprecated(node)).toBe(true)
-    })
-
-    it('returns false when metadata.isDeprecated is false', () => {
-      const node = makeNode('a', { metadataDeprecated: false })
-      expect(isDeprecated(node)).toBe(false)
-    })
-
-    it('returns true when metadata.properties.isDeprecated is true', () => {
-      const node = makeNode('a', { nestedDeprecated: true })
-      expect(isDeprecated(node)).toBe(true)
     })
 
     it('returns false when no deprecated flag set (AC-4)', () => {
@@ -87,21 +60,15 @@ describe('DeprecatedOverlay', () => {
       expect(isDeprecated(node)).toBe(false)
     })
 
-    it('returns false when metadata is empty object', () => {
-      const node: GraphNode = {
+    it('returns false when metadata.properties is empty', () => {
+      const node: IVMNode = {
         id: 'x',
         type: 'file',
-        label: 'x',
-        metadata: {},
+        metadata: { label: 'x', path: 'x.ts', properties: {} },
         lod: 1,
+        position: { x: 0, y: 0, z: 0 },
       }
       expect(isDeprecated(node)).toBe(false)
-    })
-
-    it('prioritizes direct field over metadata', () => {
-      const node = makeNode('a', { deprecated: true, metadataDeprecated: false })
-      // Direct field is checked first, returns true
-      expect(isDeprecated(node)).toBe(true)
     })
   })
 

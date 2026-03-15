@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { GraphEdge } from '../../../../shared/types'
+import type { IVMEdge } from '../../../../shared/types'
 import type { BlockLayout } from '../types'
 import { hashSeed, createSeededRng, refineDistrictProximity } from './proximityRefinement'
 
@@ -17,7 +17,7 @@ function makeBlock(fileId: string, x: number, z: number, width = 4): BlockLayout
   }
 }
 
-function makeEdge(source: string, target: string): GraphEdge {
+function makeEdge(source: string, target: string): IVMEdge {
   return {
     id: `${source}->${target}`,
     source,
@@ -164,7 +164,7 @@ describe('refineDistrictProximity', () => {
 
   it('ignores edges of non-import types', () => {
     const blocks = [makeBlock('f1', -20, 0, 4), makeBlock('f2', 20, 0, 4)]
-    const edges: GraphEdge[] = [
+    const edges: IVMEdge[] = [
       {
         id: 'e1',
         source: 'f1',

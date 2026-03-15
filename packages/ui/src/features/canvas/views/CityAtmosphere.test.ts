@@ -21,15 +21,21 @@ import {
   computeSmogThreshold,
   shouldShowSmog,
 } from '../components/atmosphere/smogUtils'
-import type { GraphNode } from '../../../shared/types'
+import type { IVMNode } from '../../../shared/types'
 
-/** Helper: create a minimal GraphNode with optional metadata */
+/** Helper: create a minimal IVMNode with optional properties */
 function makeNode(
   id: string,
-  type: GraphNode['type'] = 'class',
-  metadata: Record<string, unknown> = {}
-): GraphNode {
-  return { id, type, label: id, metadata, lod: 1 }
+  type: IVMNode['type'] = 'class',
+  properties: Record<string, unknown> = {}
+): IVMNode {
+  return {
+    id,
+    type,
+    metadata: { label: id, path: `src/${id}.ts`, properties },
+    lod: 1,
+    position: { x: 0, y: 0, z: 0 },
+  }
 }
 
 describe('CityAtmosphere', () => {
@@ -155,8 +161,7 @@ describe('CityAtmosphere', () => {
     })
 
     it('deprecated: node with isDeprecated flag qualifies', () => {
-      const node = makeNode('a')
-      node.isDeprecated = true
+      const node = makeNode('a', 'class', { isDeprecated: true })
       expect(isDeprecated(node)).toBe(true)
     })
   })

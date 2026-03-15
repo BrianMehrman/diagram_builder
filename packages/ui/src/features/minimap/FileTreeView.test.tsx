@@ -6,32 +6,31 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
 import { act } from 'react'
 import { FileTreeView } from './FileTreeView'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
-const mockNodes: GraphNode[] = [
+const mockNodes: IVMNode[] = [
   {
     id: 'file-1',
     type: 'file',
-    label: 'app.ts',
-    metadata: {},
+    metadata: { label: 'app.ts', path: 'src/app.ts' },
     position: { x: 0, y: 0, z: 0 },
-    lodLevel: 0,
+    lod: 0,
   },
   {
     id: 'class-1',
     type: 'class',
-    label: 'Application',
-    metadata: { file: 'file-1' },
+    metadata: { label: 'Application', path: 'src/Application.ts' },
     position: { x: 1, y: 1, z: 1 },
-    lodLevel: 1,
+    lod: 1,
+    parentId: 'file-1',
   },
   {
     id: 'method-1',
     type: 'method',
-    label: 'start',
-    metadata: { class: 'class-1' },
+    metadata: { label: 'start', path: 'src/Application.ts' },
     position: { x: 2, y: 2, z: 2 },
-    lodLevel: 3,
+    lod: 3,
+    parentId: 'class-1',
   },
 ]
 

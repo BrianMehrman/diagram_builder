@@ -10,31 +10,28 @@ import userEvent from '@testing-library/user-event'
 import { SearchBarModal } from './SearchBarModal'
 import { useSearchStore } from './searchStore'
 import { initializeSearchIndex, clearSearchIndex } from './fuzzySearch'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
 // Mock nodes for testing
-const mockNodes: GraphNode[] = [
+const mockNodes: IVMNode[] = [
   {
     id: 'node-1',
     type: 'file',
-    label: 'AuthService.ts',
-    metadata: { path: 'src/services/AuthService.ts' },
+    metadata: { label: 'AuthService.ts', path: 'src/services/AuthService.ts' },
     lod: 1,
     position: { x: 0, y: 0, z: 0 },
   },
   {
     id: 'node-2',
     type: 'class',
-    label: 'AuthController',
-    metadata: { path: 'src/controllers/AuthController.ts' },
+    metadata: { label: 'AuthController', path: 'src/controllers/AuthController.ts' },
     lod: 1,
     position: { x: 10, y: 0, z: 0 },
   },
   {
     id: 'node-3',
     type: 'function',
-    label: 'authenticate',
-    metadata: { path: 'src/utils/auth.ts' },
+    metadata: { label: 'authenticate', path: 'src/utils/auth.ts' },
     lod: 2,
     position: { x: 20, y: 0, z: 0 },
   },
@@ -45,7 +42,7 @@ function renderSearchModal(
   options: {
     isOpen?: boolean
     query?: string
-    results?: GraphNode[]
+    results?: IVMNode[]
     selectedIndex?: number
     onNodeSelect?: (nodeId: string, position?: { x: number; y: number; z: number }) => void
   } = {}

@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useCityFiltering } from './useCityFiltering'
 import { useCanvasStore } from '../../store'
-import type { Graph, GraphNode, GraphEdge, Position3D } from '../../../../shared/types'
+import type { IVMGraph, IVMNode, IVMEdge, Position3D } from '../../../../shared/types'
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -33,37 +33,56 @@ vi.mock('../../layout/engines/clusterUtils', () => ({
 
 function createNode(
   id: string,
-  type: GraphNode['type'] = 'file',
+  type: IVMNode['type'] = 'file',
   dir = 'src/features',
-  overrides: Partial<GraphNode> = {}
-): GraphNode {
+  opts: { parentId?: string; isExternal?: boolean; path?: string } = {}
+): IVMNode {
   return {
     id,
     type,
-    label: id,
-    metadata: { path: `${dir}/${id}.ts` },
+    metadata: {
+      label: id,
+      path: opts.path ?? (dir ? `${dir}/${id}.ts` : `${id}.ts`),
+      properties: { isExternal: opts.isExternal ?? false, depth: 1 },
+    },
     lod: 3,
-    depth: 1,
-    isExternal: false,
-    ...overrides,
+    position: { x: 0, y: 0, z: 0 },
+    parentId: opts.parentId,
   }
 }
 
 function createEdge(
   source: string,
   target: string,
-  type: GraphEdge['type'] = 'imports'
-): GraphEdge {
+  type: IVMEdge['type'] = 'imports'
+): IVMEdge {
   return {
     id: `${source}--${type}--${target}`,
     source,
     target,
     type,
     metadata: {},
+    lod: 0,
   }
 }
 
-function buildPositions(nodes: GraphNode[]): Map<string, Position3D> {
+function makeGraph(nodes: IVMNode[], edges: IVMEdge[] = []): IVMGraph {
+  return {
+    nodes,
+    edges,
+    metadata: {
+      name: 'T',
+      schemaVersion: '1.0.0',
+      generatedAt: new Date().toISOString(),
+      rootPath: 'src/',
+      stats: { totalNodes: nodes.length, totalEdges: edges.length, nodesByType: {} as never, edgesByType: {} as never },
+      languages: [],
+    },
+    bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
+  }
+}
+
+function buildPositions(nodes: IVMNode[]): Map<string, Position3D> {
   const positions = new Map<string, Position3D>()
   nodes.forEach((n, i) => {
     positions.set(n.id, { x: i * 5, y: 0, z: i * 3 })
@@ -87,11 +106,7 @@ describe('useCityFiltering', () => {
         createNode('b', 'class'),
         createNode('ext', 'file', 'node_modules/lodash', { isExternal: true }),
       ]
-      const graph: Graph = {
-        nodes,
-        edges: [],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 3, totalEdges: 0 },
-      }
+      const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -109,11 +124,7 @@ describe('useCityFiltering', () => {
         createNode('b', 'file', 'src/features'),
         createNode('c', 'file', 'src/utils'),
       ]
-      const graph: Graph = {
-        nodes,
-        edges: [],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 3, totalEdges: 0 },
-      }
+      const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -123,12 +134,8 @@ describe('useCityFiltering', () => {
     })
 
     it('groups nodes without path into root district', () => {
-      const nodes = [createNode('a', 'file', '', { metadata: {}, label: 'index.ts' })]
-      const graph: Graph = {
-        nodes,
-        edges: [],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 1, totalEdges: 0 },
-      }
+      const nodes = [createNode('a', 'file', '', { path: 'index.ts' })]
+      const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -141,15 +148,11 @@ describe('useCityFiltering', () => {
     it('creates clusters for large districts at LOD 1', () => {
       useCanvasStore.getState().setLodLevel(1)
 
-      const nodes: GraphNode[] = []
+      const nodes: IVMNode[] = []
       for (let i = 0; i < 25; i++) {
         nodes.push(createNode(`n-${i}`, 'file', 'src/big'))
       }
-      const graph: Graph = {
-        nodes,
-        edges: [],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 25, totalEdges: 0 },
-      }
+      const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -162,15 +165,11 @@ describe('useCityFiltering', () => {
     it('does not cluster at LOD 2+', () => {
       useCanvasStore.getState().setLodLevel(2)
 
-      const nodes: GraphNode[] = []
+      const nodes: IVMNode[] = []
       for (let i = 0; i < 25; i++) {
         nodes.push(createNode(`n-${i}`, 'file', 'src/big'))
       }
-      const graph: Graph = {
-        nodes,
-        edges: [],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 25, totalEdges: 0 },
-      }
+      const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -183,18 +182,14 @@ describe('useCityFiltering', () => {
       useCanvasStore.getState().setLodLevel(1)
 
       // 5 files (below threshold of 20) + 20 classes — classes must not trigger clustering
-      const nodes: GraphNode[] = []
+      const nodes: IVMNode[] = []
       for (let i = 0; i < 5; i++) {
         nodes.push(createNode(`file-${i}`, 'file', 'src/big'))
       }
       for (let i = 0; i < 20; i++) {
         nodes.push(createNode(`class-${i}`, 'class', 'src/big', { parentId: `file-${i % 5}` }))
       }
-      const graph: Graph = {
-        nodes,
-        edges: [],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: nodes.length, totalEdges: 0 },
-      }
+      const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -206,7 +201,7 @@ describe('useCityFiltering', () => {
     it('also hides child nodes of clustered files', () => {
       useCanvasStore.getState().setLodLevel(1)
 
-      const nodes: GraphNode[] = []
+      const nodes: IVMNode[] = []
       // 25 file nodes — triggers clustering
       for (let i = 0; i < 25; i++) {
         nodes.push(createNode(`file-${i}`, 'file', 'src/big'))
@@ -219,11 +214,7 @@ describe('useCityFiltering', () => {
       for (let i = 0; i < 2; i++) {
         nodes.push(createNode(`method-${i}`, 'method', 'src/big', { parentId: 'class-0' }))
       }
-      const graph: Graph = {
-        nodes,
-        edges: [],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: nodes.length, totalEdges: 0 },
-      }
+      const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -236,11 +227,7 @@ describe('useCityFiltering', () => {
       useCanvasStore.getState().setLodLevel(1)
 
       const nodes = [createNode('a', 'file', 'src/small'), createNode('b', 'file', 'src/small')]
-      const graph: Graph = {
-        nodes,
-        edges: [],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 0 },
-      }
+      const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -256,11 +243,7 @@ describe('useCityFiltering', () => {
         createNode('file-1', 'file'),
         createNode('class-1', 'class', 'src/features', { parentId: 'file-1' }),
       ]
-      const graph: Graph = {
-        nodes,
-        edges: [],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 0 },
-      }
+      const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -276,11 +259,7 @@ describe('useCityFiltering', () => {
         createNode('class-1', 'class', 'src/features', { parentId: 'file-1' }),
         createNode('func-1', 'function', 'src/features', { parentId: 'file-1' }),
       ]
-      const graph: Graph = {
-        nodes,
-        edges: [],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 3, totalEdges: 0 },
-      }
+      const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -292,11 +271,7 @@ describe('useCityFiltering', () => {
   describe('nodeMap', () => {
     it('maps every node by id', () => {
       const nodes = [createNode('a', 'file'), createNode('b', 'class')]
-      const graph: Graph = {
-        nodes,
-        edges: [],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 0 },
-      }
+      const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -310,11 +285,7 @@ describe('useCityFiltering', () => {
     it('includes imports edges with both endpoints positioned', () => {
       useCanvasStore.getState().setCityVersion('v1')
       const nodes = [createNode('a'), createNode('b')]
-      const graph: Graph = {
-        nodes,
-        edges: [createEdge('a', 'b', 'imports')],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
-      }
+      const graph = makeGraph(nodes, [createEdge('a', 'b', 'imports')])
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -324,11 +295,7 @@ describe('useCityFiltering', () => {
 
     it('filters out contains edges', () => {
       const nodes = [createNode('a'), createNode('b')]
-      const graph: Graph = {
-        nodes,
-        edges: [createEdge('a', 'b', 'contains')],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
-      }
+      const graph = makeGraph(nodes, [createEdge('a', 'b', 'contains')])
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -338,11 +305,7 @@ describe('useCityFiltering', () => {
 
     it('filters out edges without positioned endpoints', () => {
       const nodes = [createNode('a'), createNode('b')]
-      const graph: Graph = {
-        nodes,
-        edges: [createEdge('a', 'b', 'imports')],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
-      }
+      const graph = makeGraph(nodes, [createEdge('a', 'b', 'imports')])
       // Only position node 'a'
       const positions = new Map<string, Position3D>()
       positions.set('a', { x: 0, y: 0, z: 0 })
@@ -355,11 +318,7 @@ describe('useCityFiltering', () => {
     it('includes depends_on and calls edges', () => {
       useCanvasStore.getState().setCityVersion('v1')
       const nodes = [createNode('a'), createNode('b'), createNode('c')]
-      const graph: Graph = {
-        nodes,
-        edges: [createEdge('a', 'b', 'depends_on'), createEdge('b', 'c', 'calls')],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 3, totalEdges: 2 },
-      }
+      const graph = makeGraph(nodes, [createEdge('a', 'b', 'depends_on'), createEdge('b', 'c', 'calls')])
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -367,13 +326,9 @@ describe('useCityFiltering', () => {
       expect(result.current.visibleEdges).toHaveLength(2)
     })
 
-    it('includes inherits edges', () => {
+    it('includes extends edges', () => {
       const nodes = [createNode('a', 'file', 'src/models'), createNode('b', 'file', 'src/services')]
-      const graph: Graph = {
-        nodes,
-        edges: [createEdge('a', 'b', 'inherits')],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
-      }
+      const graph = makeGraph(nodes, [createEdge('a', 'b', 'extends')])
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -391,11 +346,7 @@ describe('useCityFiltering', () => {
         createNode('a', 'file', 'src/features'),
         createNode('b', 'file', 'src/features'),
       ]
-      const graph: Graph = {
-        nodes,
-        edges: [createEdge('a', 'b', 'imports')],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
-      }
+      const graph = makeGraph(nodes, [createEdge('a', 'b', 'imports')])
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -408,11 +359,7 @@ describe('useCityFiltering', () => {
 
       // Nodes in different directories
       const nodes = [createNode('a', 'file', 'src/features'), createNode('b', 'file', 'src/utils')]
-      const graph: Graph = {
-        nodes,
-        edges: [createEdge('a', 'b', 'imports')],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
-      }
+      const graph = makeGraph(nodes, [createEdge('a', 'b', 'imports')])
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -426,11 +373,7 @@ describe('useCityFiltering', () => {
         createNode('a', 'file', 'src/features'),
         createNode('b', 'file', 'src/features'),
       ]
-      const graph: Graph = {
-        nodes,
-        edges: [createEdge('a', 'b', 'imports')],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
-      }
+      const graph = makeGraph(nodes, [createEdge('a', 'b', 'imports')])
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -442,11 +385,7 @@ describe('useCityFiltering', () => {
       useCanvasStore.getState().setCityVersion('v2')
 
       const nodes = [createNode('a', 'file', 'src/features'), createNode('b', 'file', 'src/utils')]
-      const graph: Graph = {
-        nodes,
-        edges: [createEdge('a', 'b', 'contains')],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
-      }
+      const graph = makeGraph(nodes, [createEdge('a', 'b', 'contains')])
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -462,11 +401,7 @@ describe('useCityFiltering', () => {
         createNode('b', 'file', 'src/features'),
         createNode('c', 'file', 'src/features'),
       ]
-      const graph: Graph = {
-        nodes,
-        edges: [createEdge('a', 'b', 'depends_on'), createEdge('b', 'c', 'calls')],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 3, totalEdges: 2 },
-      }
+      const graph = makeGraph(nodes, [createEdge('a', 'b', 'depends_on'), createEdge('b', 'c', 'calls')])
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -474,15 +409,11 @@ describe('useCityFiltering', () => {
       expect(result.current.visibleEdges).toHaveLength(0)
     })
 
-    it('keeps cross-district inherits in v2 mode', () => {
+    it('keeps cross-district extends in v2 mode', () => {
       useCanvasStore.getState().setCityVersion('v2')
 
       const nodes = [createNode('a', 'file', 'src/models'), createNode('b', 'file', 'src/services')]
-      const graph: Graph = {
-        nodes,
-        edges: [createEdge('a', 'b', 'inherits')],
-        metadata: { repositoryId: 'test', name: 'T', totalNodes: 2, totalEdges: 1 },
-      }
+      const graph = makeGraph(nodes, [createEdge('a', 'b', 'extends')])
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))

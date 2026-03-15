@@ -10,7 +10,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
 import { CityView } from './CityView'
 import { useCanvasStore } from '../../store'
-import type { Graph, GraphNode, GraphEdge } from '../../../../shared/types'
+import type { IVMGraph, IVMNode, IVMEdge } from '../../../../shared/types'
 
 // ---------------------------------------------------------------------------
 // Mocks — R3F primitives, child components, layout engine
@@ -36,32 +36,32 @@ vi.mock('@react-three/drei', () => ({
 }))
 
 // Track which child components are rendered and with what props
-const mockBuildingCalls: Array<{ node: GraphNode }> = []
-const mockClassBuildingCalls: Array<{ node: GraphNode }> = []
-const mockFunctionShopCalls: Array<{ node: GraphNode }> = []
-const mockInterfaceBuildingCalls: Array<{ node: GraphNode }> = []
-const mockAbstractBuildingCalls: Array<{ node: GraphNode }> = []
-const mockVariableCrateCalls: Array<{ node: GraphNode }> = []
-const mockEnumCrateCalls: Array<{ node: GraphNode }> = []
+const mockBuildingCalls: Array<{ node: IVMNode }> = []
+const mockClassBuildingCalls: Array<{ node: IVMNode }> = []
+const mockFunctionShopCalls: Array<{ node: IVMNode }> = []
+const mockInterfaceBuildingCalls: Array<{ node: IVMNode }> = []
+const mockAbstractBuildingCalls: Array<{ node: IVMNode }> = []
+const mockVariableCrateCalls: Array<{ node: IVMNode }> = []
+const mockEnumCrateCalls: Array<{ node: IVMNode }> = []
 const mockDistrictGroundCalls: Array<Record<string, unknown>>[] = []
 const mockCityEdgeCalls: Array<Record<string, unknown>>[] = []
 const mockClusterBuildingCalls: Array<Record<string, unknown>>[] = []
 
 vi.mock('../../views/Building', () => ({
-  Building: (props: { node: GraphNode }) => {
+  Building: (props: { node: IVMNode }) => {
     mockBuildingCalls.push({ node: props.node })
     return <div data-testid={`building-${props.node.id}`} />
   },
 }))
 
 vi.mock('../../views/ExternalBuilding', () => ({
-  ExternalBuilding: (props: { node: GraphNode }) => (
+  ExternalBuilding: (props: { node: IVMNode }) => (
     <div data-testid={`external-building-${props.node.id}`} />
   ),
 }))
 
 vi.mock('../../views/XRayBuilding', () => ({
-  XRayBuilding: (props: { node: GraphNode }) => (
+  XRayBuilding: (props: { node: IVMNode }) => (
     <div data-testid={`xray-building-${props.node.id}`} />
   ),
 }))
@@ -69,7 +69,7 @@ vi.mock('../../views/XRayBuilding', () => ({
 vi.mock('./CityEdge', () => ({
   CityEdge: (props: Record<string, unknown>) => {
     ;(mockCityEdgeCalls as unknown as Array<Record<string, unknown>>).push(props)
-    return <div data-testid={`city-edge-${(props.edge as GraphEdge).id}`} />
+    return <div data-testid={`city-edge-${(props.edge as IVMEdge).id}`} />
   },
 }))
 
@@ -100,32 +100,32 @@ vi.mock('../../components/LodController', () => ({
 }))
 
 vi.mock('../../components/buildings', () => ({
-  ClassBuilding: (props: { node: GraphNode }) => {
+  ClassBuilding: (props: { node: IVMNode }) => {
     mockClassBuildingCalls.push({ node: props.node })
     return <div data-testid={`class-building-${props.node.id}`} />
   },
-  FunctionShop: (props: { node: GraphNode }) => {
+  FunctionShop: (props: { node: IVMNode }) => {
     mockFunctionShopCalls.push({ node: props.node })
     return <div data-testid={`function-shop-${props.node.id}`} />
   },
-  InterfaceBuilding: (props: { node: GraphNode }) => {
+  InterfaceBuilding: (props: { node: IVMNode }) => {
     mockInterfaceBuildingCalls.push({ node: props.node })
     return <div data-testid={`interface-building-${props.node.id}`} />
   },
-  AbstractBuilding: (props: { node: GraphNode }) => {
+  AbstractBuilding: (props: { node: IVMNode }) => {
     mockAbstractBuildingCalls.push({ node: props.node })
     return <div data-testid={`abstract-building-${props.node.id}`} />
   },
-  VariableCrate: (props: { node: GraphNode }) => {
+  VariableCrate: (props: { node: IVMNode }) => {
     mockVariableCrateCalls.push({ node: props.node })
     return <div data-testid={`variable-crate-${props.node.id}`} />
   },
-  EnumCrate: (props: { node: GraphNode }) => {
+  EnumCrate: (props: { node: IVMNode }) => {
     mockEnumCrateCalls.push({ node: props.node })
     return <div data-testid={`enum-crate-${props.node.id}`} />
   },
   RooftopGarden: () => <div data-testid="rooftop-garden" />,
-  buildNestedTypeMap: (_nodes: GraphNode[]) => new Map<string, GraphNode[]>(),
+  buildNestedTypeMap: (_nodes: IVMNode[]) => new Map<string, IVMNode[]>(),
 }))
 
 vi.mock('../../components/buildingGeometry', () => ({
@@ -148,16 +148,16 @@ vi.mock('../../components/signs', () => ({
 }))
 
 vi.mock('../../components/infrastructure', () => ({
-  PowerStation: (props: { node: GraphNode }) => (
+  PowerStation: (props: { node: IVMNode }) => (
     <div data-testid={`power-station-${props.node.id}`} />
   ),
-  WaterTower: (props: { node: GraphNode }) => <div data-testid={`water-tower-${props.node.id}`} />,
-  MunicipalBuilding: (props: { node: GraphNode }) => (
+  WaterTower: (props: { node: IVMNode }) => <div data-testid={`water-tower-${props.node.id}`} />,
+  MunicipalBuilding: (props: { node: IVMNode }) => (
     <div data-testid={`municipal-building-${props.node.id}`} />
   ),
-  Harbor: (props: { node: GraphNode }) => <div data-testid={`harbor-${props.node.id}`} />,
-  Airport: (props: { node: GraphNode }) => <div data-testid={`airport-${props.node.id}`} />,
-  CityGate: (props: { node: GraphNode }) => <div data-testid={`city-gate-${props.node.id}`} />,
+  Harbor: (props: { node: IVMNode }) => <div data-testid={`harbor-${props.node.id}`} />,
+  Airport: (props: { node: IVMNode }) => <div data-testid={`airport-${props.node.id}`} />,
+  CityGate: (props: { node: IVMNode }) => <div data-testid={`city-gate-${props.node.id}`} />,
 }))
 
 vi.mock('../../xrayUtils', () => ({
@@ -230,38 +230,52 @@ vi.mock('../../layout/engines/clusterUtils', () => ({
 
 function createNode(
   id: string,
-  type: GraphNode['type'] = 'file',
+  type: IVMNode['type'] = 'file',
   dir = 'src/features',
-  overrides: Partial<GraphNode> = {}
-): GraphNode {
+  opts: { parentId?: string; isExternal?: boolean } = {}
+): IVMNode {
   return {
     id,
     type,
-    label: id,
-    metadata: { path: `${dir}/${id}.ts` },
+    metadata: {
+      label: id,
+      path: `${dir}/${id}.ts`,
+      properties: { isExternal: opts.isExternal ?? false, depth: 1 },
+    },
     lod: 3,
-    depth: 1,
-    isExternal: false,
-    ...overrides,
+    position: { x: 0, y: 0, z: 0 },
+    parentId: opts.parentId,
   }
 }
 
 function createEdge(
   source: string,
   target: string,
-  type: GraphEdge['type'] = 'imports'
-): GraphEdge {
+  type: IVMEdge['type'] = 'imports'
+): IVMEdge {
   return {
     id: `${source}--${type}--${target}`,
     source,
     target,
     type,
     metadata: {},
+    lod: 0,
   }
 }
 
-function createTestGraph(): Graph {
-  const nodes: GraphNode[] = [
+function makeGraphMetadata(nodes: IVMNode[], edges: IVMEdge[]) {
+  return {
+    name: 'TestProject',
+    schemaVersion: '1.0.0',
+    generatedAt: new Date().toISOString(),
+    rootPath: 'src/',
+    stats: { totalNodes: nodes.length, totalEdges: edges.length, nodesByType: {} as never, edgesByType: {} as never },
+    languages: [],
+  }
+}
+
+function createTestGraph(): IVMGraph {
+  const nodes: IVMNode[] = [
     createNode('file-a', 'file', 'src/features'),
     createNode('class-b', 'class', 'src/features'),
     createNode('func-c', 'function', 'src/features'),
@@ -269,7 +283,7 @@ function createTestGraph(): Graph {
     createNode('iface-e', 'interface', 'src/utils'),
   ]
 
-  const edges: GraphEdge[] = [
+  const edges: IVMEdge[] = [
     createEdge('file-a', 'util-d', 'imports'),
     createEdge('class-b', 'iface-e', 'imports'),
   ]
@@ -277,12 +291,8 @@ function createTestGraph(): Graph {
   return {
     nodes,
     edges,
-    metadata: {
-      repositoryId: 'test-repo',
-      name: 'TestProject',
-      totalNodes: nodes.length,
-      totalEdges: edges.length,
-    },
+    metadata: makeGraphMetadata(nodes, edges),
+    bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
   }
 }
 
@@ -290,8 +300,8 @@ function createTestGraph(): Graph {
  * Creates a large graph for clustering tests.
  * Places 25 nodes in one district to trigger LOD 1 clustering.
  */
-function createLargeDistrictGraph(): Graph {
-  const nodes: GraphNode[] = []
+function createLargeDistrictGraph(): IVMGraph {
+  const nodes: IVMNode[] = []
   for (let i = 0; i < 25; i++) {
     nodes.push(createNode(`node-${i}`, 'file', 'src/big-district'))
   }
@@ -302,12 +312,8 @@ function createLargeDistrictGraph(): Graph {
   return {
     nodes,
     edges: [],
-    metadata: {
-      repositoryId: 'test-repo',
-      name: 'LargeProject',
-      totalNodes: nodes.length,
-      totalEdges: 0,
-    },
+    metadata: makeGraphMetadata(nodes, []),
+    bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
   }
 }
 
@@ -315,7 +321,7 @@ function createLargeDistrictGraph(): Graph {
 // Setup
 // ---------------------------------------------------------------------------
 
-function setupPositions(graph: Graph) {
+function setupPositions(graph: IVMGraph) {
   mockPositions.clear()
   graph.nodes.forEach((node, i) => {
     mockPositions.set(node.id, { x: i * 5, y: 0, z: i * 3 })

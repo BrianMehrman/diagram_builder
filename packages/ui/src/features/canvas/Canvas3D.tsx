@@ -14,19 +14,19 @@ import { DependencyLegend } from './components/DependencyLegend'
 import { FocusToggleButton } from './components/FocusToggleButton'
 import { RadialOverlay } from './components/RadialOverlay'
 import { useUIStore } from '../../shared/stores/uiStore'
-import type { Graph } from '../../shared/types'
+import type { IVMGraph } from '../../shared/types'
 import './visualization/setup' // register built-in visualization styles
 
 interface Canvas3DProps {
   className?: string
-  graph?: Graph
+  graph?: IVMGraph
 }
 
 /**
  * Camera controller
  * Syncs Three.js camera with Zustand store
  */
-function CameraController({ graph }: { graph?: Graph | undefined }) {
+function CameraController({ graph }: { graph?: IVMGraph | undefined }) {
   const camera = useCanvasStore((state) => state.camera)
   const setCamera = useCanvasStore((state) => state.setCamera)
   const setCameraTarget = useCanvasStore((state) => state.setCameraTarget)
@@ -122,7 +122,7 @@ function CameraController({ graph }: { graph?: Graph | undefined }) {
 /**
  * Scene content
  */
-function Scene({ graph }: { graph?: Graph }) {
+function Scene({ graph }: { graph?: IVMGraph }) {
   return (
     <>
       {/* Lighting */}

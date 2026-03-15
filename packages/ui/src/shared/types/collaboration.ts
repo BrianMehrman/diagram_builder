@@ -4,7 +4,7 @@
  * Types for real-time collaboration and WebSocket communication
  */
 
-import type { Position3D } from './graph'
+import type { Position3D } from '@diagram-builder/core'
 
 /**
  * User position in 3D space

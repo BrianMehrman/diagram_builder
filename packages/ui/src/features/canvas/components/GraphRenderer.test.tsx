@@ -6,14 +6,14 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
 import { GraphRenderer } from './GraphRenderer'
 import { useCanvasStore } from '../store'
-import type { Graph } from '../../../shared/types'
+import type { IVMGraph } from '../../../shared/types'
 
 // Mock Canvas for tests
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
-const mockGraph: Graph = {
+const mockGraph: IVMGraph = {
   nodes: [
     {
       id: 'node-1',

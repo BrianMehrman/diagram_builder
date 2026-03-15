@@ -1,5 +1,5 @@
 import type { LayoutEngine, LayoutConfig, LayoutResult, BoundingBox } from '../types'
-import type { Graph, GraphNode, Position3D } from '../../../../shared/types'
+import type { IVMGraph, IVMNode, Position3D } from '../../../../shared/types'
 
 export interface CellLayoutConfig extends LayoutConfig {
   membraneRadius?: number
@@ -26,7 +26,7 @@ function seededRandom(seed: string): () => number {
 export class CellLayoutEngine implements LayoutEngine {
   readonly type = 'cell' as const
 
-  layout(graph: Graph, config: CellLayoutConfig): LayoutResult {
+  layout(graph: IVMGraph, config: CellLayoutConfig): LayoutResult {
     const positions = new Map<string, Position3D>()
     const { membraneRadius = 10, organelleSpacing = 1.5, nucleusRadius = 3 } = config
 
@@ -74,12 +74,12 @@ export class CellLayoutEngine implements LayoutEngine {
     }
   }
 
-  canHandle(graph: Graph): boolean {
+  canHandle(graph: IVMGraph): boolean {
     return graph.nodes.some((n) => n.parentId !== undefined)
   }
 
   private positionNucleus(
-    nodes: GraphNode[],
+    nodes: IVMNode[],
     center: Position3D,
     radius: number,
     random: () => number,
@@ -104,7 +104,7 @@ export class CellLayoutEngine implements LayoutEngine {
   }
 
   private positionOrganelles(
-    nodes: GraphNode[],
+    nodes: IVMNode[],
     center: Position3D,
     innerRadius: number,
     outerRadius: number,

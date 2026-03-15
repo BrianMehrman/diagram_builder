@@ -10,24 +10,20 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useCanvasStore } from '../../store'
 import { getTestCoverage, computeLightIntensity, computeLightColor } from './coverageLightingUtils'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
-/** Helper: create a minimal GraphNode with optional testCoverage */
-function makeNode(id: string, testCoverage?: number, nested = false): GraphNode {
-  const metadata: Record<string, unknown> = {}
-  if (testCoverage !== undefined) {
-    if (nested) {
-      metadata.properties = { testCoverage }
-    } else {
-      metadata.testCoverage = testCoverage
-    }
-  }
+/** Helper: create a minimal IVMNode with optional testCoverage in metadata.properties */
+function makeNode(id: string, testCoverage?: number): IVMNode {
   return {
     id,
     type: 'class',
-    label: id,
-    metadata,
+    metadata: {
+      label: id,
+      path: `src/${id}.ts`,
+      properties: testCoverage !== undefined ? { testCoverage } : {},
+    },
     lod: 1,
+    position: { x: 0, y: 0, z: 0 },
   }
 }
 
@@ -38,14 +34,9 @@ describe('CoverageLighting', () => {
 
   // ── getTestCoverage ─────────────────────────────────────────────
   describe('getTestCoverage', () => {
-    it('returns testCoverage from direct metadata', () => {
+    it('returns testCoverage from metadata.properties', () => {
       const node = makeNode('a', 85)
       expect(getTestCoverage(node)).toBe(85)
-    })
-
-    it('returns testCoverage from nested metadata.properties', () => {
-      const node = makeNode('a', 60, true)
-      expect(getTestCoverage(node)).toBe(60)
     })
 
     it('returns null when metadata has no testCoverage (AC-5)', () => {
@@ -53,13 +44,13 @@ describe('CoverageLighting', () => {
       expect(getTestCoverage(node)).toBeNull()
     })
 
-    it('returns null when metadata is empty object', () => {
-      const node: GraphNode = {
+    it('returns null when metadata.properties is empty', () => {
+      const node: IVMNode = {
         id: 'x',
         type: 'file',
-        label: 'x',
-        metadata: {},
+        metadata: { label: 'x', path: 'x.ts', properties: {} },
         lod: 1,
+        position: { x: 0, y: 0, z: 0 },
       }
       expect(getTestCoverage(node)).toBeNull()
     })

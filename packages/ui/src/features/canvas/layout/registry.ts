@@ -1,4 +1,4 @@
-import type { Graph } from '../../../shared/types'
+import type { IVMGraph } from '../../../shared/types'
 import type { LayoutEngine } from './types'
 
 /**
@@ -35,7 +35,7 @@ export class LayoutRegistry {
    * Auto-select a layout engine based on graph characteristics.
    * Returns the first engine whose `canHandle` returns true.
    */
-  autoSelect(graph: Graph): LayoutEngine | undefined {
+  autoSelect(graph: IVMGraph): LayoutEngine | undefined {
     for (const engine of this.engines.values()) {
       if (engine.canHandle(graph)) {
         return engine

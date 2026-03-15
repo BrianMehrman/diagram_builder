@@ -108,7 +108,7 @@ export function ExportDialog({
         {/* Header */}
         <div className="border-b border-gray-200 p-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-900">Export Graph</h2>
+            <h2 className="text-lg font-bold text-gray-900">Export IVMGraph</h2>
             <button
               onClick={handleClose}
               className="p-1.5 text-gray-400 hover:text-gray-600 rounded transition-colors"

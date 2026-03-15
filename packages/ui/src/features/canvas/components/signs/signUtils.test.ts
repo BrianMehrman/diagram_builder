@@ -4,143 +4,131 @@
 
 import { describe, it, expect } from 'vitest'
 import { getSignType, getSignVisibility } from './signUtils'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
-function makeNode(overrides: Partial<GraphNode> & { type: GraphNode['type'] }): GraphNode {
+function makeNode(
+  type: IVMNode['type'],
+  properties: Record<string, unknown> = {}
+): IVMNode {
   return {
     id: 'test-1',
-    label: 'TestNode',
-    metadata: {},
+    type,
+    metadata: { label: 'TestNode', path: 'test.ts', properties },
     lod: 1,
-    ...overrides,
+    position: { x: 0, y: 0, z: 0 },
   }
 }
 
 describe('getSignType', () => {
   describe('priority 1: deprecated', () => {
     it('returns construction for deprecated nodes', () => {
-      const node = makeNode({ type: 'class', metadata: { isDeprecated: true } })
+      const node = makeNode('class', { isDeprecated: true })
       expect(getSignType(node)).toBe('construction')
     })
 
     it('deprecated takes priority over exported', () => {
-      const node = makeNode({
-        type: 'class',
-        metadata: { isDeprecated: true, isExported: true },
-      })
+      const node = makeNode('class', { isDeprecated: true, isExported: true })
       expect(getSignType(node)).toBe('construction')
     })
 
     it('deprecated takes priority over visibility', () => {
-      const node = makeNode({
-        type: 'class',
-        metadata: { isDeprecated: true, visibility: 'public' },
-      })
+      const node = makeNode('class', { isDeprecated: true, visibility: 'public' })
       expect(getSignType(node)).toBe('construction')
     })
   })
 
   describe('priority 2: exported', () => {
     it('returns marquee for exported nodes', () => {
-      const node = makeNode({ type: 'function', metadata: { isExported: true } })
+      const node = makeNode('function', { isExported: true })
       expect(getSignType(node)).toBe('marquee')
     })
 
     it('exported takes priority over visibility', () => {
-      const node = makeNode({
-        type: 'function',
-        metadata: { isExported: true, visibility: 'public' },
-      })
+      const node = makeNode('function', { isExported: true, visibility: 'public' })
       expect(getSignType(node)).toBe('marquee')
     })
 
     it('exported takes priority over node type', () => {
-      const node = makeNode({
-        type: 'variable',
-        metadata: { isExported: true },
-      })
+      const node = makeNode('variable', { isExported: true })
       expect(getSignType(node)).toBe('marquee')
     })
   })
 
   describe('priority 3-4: access visibility', () => {
     it('returns brass for private visibility', () => {
-      const node = makeNode({ type: 'function', metadata: { visibility: 'private' } })
+      const node = makeNode('function', { visibility: 'private' })
       expect(getSignType(node)).toBe('brass')
     })
 
     it('returns neon for public visibility', () => {
-      const node = makeNode({ type: 'function', metadata: { visibility: 'public' } })
+      const node = makeNode('function', { visibility: 'public' })
       expect(getSignType(node)).toBe('neon')
     })
 
     it('private takes priority over public (private checked first)', () => {
       // Should not happen in practice, but verifies order
-      const node = makeNode({
-        type: 'function',
-        metadata: { visibility: 'private' },
-      })
+      const node = makeNode('function', { visibility: 'private' })
       expect(getSignType(node)).toBe('brass')
     })
 
     it('visibility takes priority over node type', () => {
-      const node = makeNode({ type: 'class', metadata: { visibility: 'public' } })
+      const node = makeNode('class', { visibility: 'public' })
       expect(getSignType(node)).toBe('neon')
     })
   })
 
   describe('priority 5-7: node type based', () => {
     it('returns hanging for class nodes', () => {
-      const node = makeNode({ type: 'class' })
+      const node = makeNode('class')
       expect(getSignType(node)).toBe('hanging')
     })
 
-    it('returns hanging for abstract_class nodes', () => {
-      const node = makeNode({ type: 'abstract_class' })
+    it('returns hanging for abstract class nodes (isAbstract: true)', () => {
+      const node = makeNode('class', { isAbstract: true })
       expect(getSignType(node)).toBe('hanging')
     })
 
     it('returns highway for file nodes', () => {
-      const node = makeNode({ type: 'file' })
+      const node = makeNode('file')
       expect(getSignType(node)).toBe('highway')
     })
 
     it('returns labelTape for variable nodes', () => {
-      const node = makeNode({ type: 'variable' })
+      const node = makeNode('variable')
       expect(getSignType(node)).toBe('labelTape')
     })
   })
 
   describe('fallback', () => {
     it('returns highway for function nodes without metadata', () => {
-      const node = makeNode({ type: 'function' })
+      const node = makeNode('function')
       expect(getSignType(node)).toBe('highway')
     })
 
     it('returns highway for method nodes without metadata', () => {
-      const node = makeNode({ type: 'method' })
+      const node = makeNode('method')
       expect(getSignType(node)).toBe('highway')
     })
 
     it('returns highway for interface nodes without metadata', () => {
-      const node = makeNode({ type: 'interface' })
+      const node = makeNode('interface')
       expect(getSignType(node)).toBe('highway')
     })
 
     it('returns highway for enum nodes without metadata', () => {
-      const node = makeNode({ type: 'enum' })
+      const node = makeNode('enum')
       expect(getSignType(node)).toBe('highway')
     })
   })
 
   describe('missing metadata', () => {
-    it('handles empty metadata gracefully', () => {
-      const node = makeNode({ type: 'file', metadata: {} })
+    it('handles empty properties gracefully', () => {
+      const node = makeNode('file')
       expect(getSignType(node)).toBe('highway')
     })
 
     it('handles metadata with unrelated fields', () => {
-      const node = makeNode({ type: 'class', metadata: { path: '/src/foo.ts' } })
+      const node = makeNode('class')
       expect(getSignType(node)).toBe('hanging')
     })
   })

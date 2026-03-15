@@ -1,16 +1,16 @@
 /**
- * Graph Types Tests
+ * IVMGraph Types Tests
  *
- * Validates GraphNode, GraphEdge, and Graph type usage
+ * Validates IVMNode, IVMEdge, and IVMGraph type usage
  * including new city-to-cell layout fields (depth, isExternal, parentId)
  */
 
 import { describe, it, expect } from 'vitest'
-import type { GraphNode, GraphEdge, Graph } from './graph'
+import type { IVMNode, IVMEdge, IVMGraph } from './graph'
 
-describe('GraphNode type', () => {
+describe('IVMNode type', () => {
   it('creates a node with all fields including new layout fields', () => {
-    const node: GraphNode = {
+    const node: IVMNode = {
       id: 'file-1',
       type: 'file',
       label: 'index.ts',
@@ -29,7 +29,7 @@ describe('GraphNode type', () => {
   })
 
   it('creates a node without new fields (backward compatibility)', () => {
-    const node: GraphNode = {
+    const node: IVMNode = {
       id: 'func-1',
       type: 'function',
       label: 'handleClick',
@@ -44,7 +44,7 @@ describe('GraphNode type', () => {
   })
 
   it('creates an external library node', () => {
-    const node: GraphNode = {
+    const node: IVMNode = {
       id: 'ext-react',
       type: 'file',
       label: 'react',
@@ -58,7 +58,7 @@ describe('GraphNode type', () => {
   })
 
   it('creates a deeply nested node with parent', () => {
-    const parentNode: GraphNode = {
+    const parentNode: IVMNode = {
       id: 'class-1',
       type: 'class',
       label: 'UserService',
@@ -67,7 +67,7 @@ describe('GraphNode type', () => {
       depth: 1,
     }
 
-    const childNode: GraphNode = {
+    const childNode: IVMNode = {
       id: 'method-1',
       type: 'method',
       label: 'getUser',
@@ -82,7 +82,7 @@ describe('GraphNode type', () => {
   })
 
   it('supports all node types including new Epic 9-B types', () => {
-    const types: GraphNode['type'][] = [
+    const types: IVMNode['type'][] = [
       'file',
       'class',
       'function',
@@ -93,13 +93,13 @@ describe('GraphNode type', () => {
       'abstract_class',
     ]
     types.forEach((type) => {
-      const node: GraphNode = { id: `${type}-1`, type, label: type, metadata: {}, lod: 1 }
+      const node: IVMNode = { id: `${type}-1`, type, label: type, metadata: {}, lod: 1 }
       expect(node.type).toBe(type)
     })
   })
 
   it('creates an interface node', () => {
-    const node: GraphNode = {
+    const node: IVMNode = {
       id: 'iface-1',
       type: 'interface',
       label: 'UserRepository',
@@ -113,7 +113,7 @@ describe('GraphNode type', () => {
   })
 
   it('creates an enum node', () => {
-    const node: GraphNode = {
+    const node: IVMNode = {
       id: 'enum-1',
       type: 'enum',
       label: 'Status',
@@ -125,7 +125,7 @@ describe('GraphNode type', () => {
   })
 
   it('creates an abstract class node with shape metadata', () => {
-    const node: GraphNode = {
+    const node: IVMNode = {
       id: 'abs-1',
       type: 'abstract_class',
       label: 'BaseService',
@@ -143,7 +143,7 @@ describe('GraphNode type', () => {
   })
 
   it('shape metadata fields are optional (backward compatibility)', () => {
-    const node: GraphNode = {
+    const node: IVMNode = {
       id: 'class-1',
       type: 'class',
       label: 'UserService',
@@ -157,7 +157,7 @@ describe('GraphNode type', () => {
   })
 
   it('creates a node with sign metadata fields', () => {
-    const node: GraphNode = {
+    const node: IVMNode = {
       id: 'func-1',
       type: 'function',
       label: 'getUser',
@@ -174,9 +174,9 @@ describe('GraphNode type', () => {
   })
 
   it('supports all visibility values', () => {
-    const visibilities: GraphNode['visibility'][] = ['public', 'protected', 'private', 'static']
+    const visibilities: IVMNode['visibility'][] = ['public', 'protected', 'private', 'static']
     visibilities.forEach((vis) => {
-      const node: GraphNode = {
+      const node: IVMNode = {
         id: `vis-${vis}`,
         type: 'function',
         label: 'test',
@@ -189,7 +189,7 @@ describe('GraphNode type', () => {
   })
 
   it('creates a deprecated node', () => {
-    const node: GraphNode = {
+    const node: IVMNode = {
       id: 'dep-1',
       type: 'function',
       label: 'oldMethod',
@@ -202,7 +202,7 @@ describe('GraphNode type', () => {
   })
 
   it('sign metadata fields are optional (backward compatibility)', () => {
-    const node: GraphNode = {
+    const node: IVMNode = {
       id: 'class-2',
       type: 'class',
       label: 'Service',
@@ -216,11 +216,11 @@ describe('GraphNode type', () => {
   })
 })
 
-describe('GraphEdge type', () => {
+describe('IVMEdge type', () => {
   it('creates an edge with all types', () => {
-    const types: GraphEdge['type'][] = ['contains', 'depends_on', 'calls', 'inherits', 'imports']
+    const types: IVMEdge['type'][] = ['contains', 'depends_on', 'calls', 'inherits', 'imports']
     types.forEach((type) => {
-      const edge: GraphEdge = { id: `edge-${type}`, source: 'a', target: 'b', type, metadata: {} }
+      const edge: IVMEdge = { id: `edge-${type}`, source: 'a', target: 'b', type, metadata: {} }
       expect(edge.type).toBe(type)
     })
   })
@@ -228,7 +228,7 @@ describe('GraphEdge type', () => {
 
 describe('Graph type', () => {
   it('creates a graph with nodes containing new fields', () => {
-    const graph: Graph = {
+    const graph: IVMGraph = {
       nodes: [
         { id: 'f1', type: 'file', label: 'index.ts', metadata: {}, lod: 1, depth: 0 },
         { id: 'c1', type: 'class', label: 'App', metadata: {}, lod: 2, depth: 1, parentId: 'f1' },

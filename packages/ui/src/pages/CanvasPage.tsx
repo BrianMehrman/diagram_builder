@@ -11,7 +11,7 @@ import { MiniMap } from '../features/minimap'
 import { Navigation } from '../features/navigation'
 import { ExportButton } from '../features/export'
 import { HUD } from '../features/navigation/HUD'
-import type { GraphNode } from '../shared/types'
+import type { IVMNode } from '../shared/types'
 
 export function CanvasPage() {
   // Panel states
@@ -19,7 +19,7 @@ export function CanvasPage() {
   const [hudCollapsed, setHudCollapsed] = useState(false)
 
   // Mock nodes for components that need them
-  const nodes: GraphNode[] = []
+  const nodes: IVMNode[] = []
 
   return (
     <div className="h-screen flex flex-col bg-gray-900">

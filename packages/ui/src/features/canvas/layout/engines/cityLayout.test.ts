@@ -1,33 +1,41 @@
 import { describe, it, expect } from 'vitest'
-import type { Graph, GraphNode } from '../../../../shared/types'
+import type { IVMGraph, IVMNode } from '../../../../shared/types'
 import { CityLayoutEngine } from './cityLayout'
 
 function makeFileNode(
   id: string,
   label: string,
   opts: { depth?: number; isExternal?: boolean; path?: string } = {}
-): GraphNode {
+): IVMNode {
   return {
     id,
     type: 'file',
-    label,
-    metadata: { path: opts.path ?? label },
+    metadata: {
+      label,
+      path: opts.path ?? label,
+      properties: {
+        depth: opts.depth ?? 0,
+        isExternal: opts.isExternal ?? false,
+      },
+    },
     lod: 0,
-    depth: opts.depth ?? 0,
-    isExternal: opts.isExternal ?? false,
+    position: { x: 0, y: 0, z: 0 },
   }
 }
 
-function makeGraph(nodes: GraphNode[]): Graph {
+function makeGraph(nodes: IVMNode[]): IVMGraph {
   return {
     nodes,
     edges: [],
     metadata: {
-      repositoryId: 'test',
       name: 'Test',
-      totalNodes: nodes.length,
-      totalEdges: 0,
+      schemaVersion: '1.0.0',
+      generatedAt: new Date().toISOString(),
+      rootPath: 'src/',
+      stats: { totalNodes: nodes.length, totalEdges: 0, nodesByType: {} as never, edgesByType: {} as never },
+      languages: [],
     },
+    bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
   }
 }
 
@@ -47,7 +55,7 @@ describe('CityLayoutEngine', () => {
     })
 
     it('should return false when graph has no file nodes', () => {
-      const graph = makeGraph([{ id: '1', type: 'class', label: 'Foo', metadata: {}, lod: 0 }])
+      const graph = makeGraph([{ id: '1', type: 'class', metadata: { label: 'Foo', path: 'src/Foo.ts' }, lod: 0, position: { x: 0, y: 0, z: 0 } }])
       expect(engine.canHandle(graph)).toBe(false)
     })
 
@@ -83,8 +91,7 @@ describe('CityLayoutEngine', () => {
     })
 
     it('should handle undefined depth as 0', () => {
-      const node = makeFileNode('f1', 'src/app.ts')
-      delete (node as Partial<GraphNode>).depth
+      const node = makeFileNode('f1', 'src/app.ts') // no depth in opts → defaults to 0
       const graph = makeGraph([node])
 
       const result = engine.layout(graph, {})
@@ -186,7 +193,7 @@ describe('CityLayoutEngine', () => {
     })
 
     it('should only layout file-type nodes, ignoring class/function nodes', () => {
-      const graph: Graph = {
+      const graph: IVMGraph = {
         nodes: [
           makeFileNode('f1', 'src/app.ts'),
           { id: 'c1', type: 'class', label: 'App', metadata: {}, lod: 0 },

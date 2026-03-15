@@ -6,11 +6,11 @@
  */
 
 import { useCanvasStore } from '../canvas/store'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
 interface BreadcrumbsProps {
-  selectedNode?: GraphNode | null
-  nodes?: GraphNode[]
+  selectedNode?: IVMNode | null
+  nodes?: IVMNode[]
   onNodeClick?: (nodeId: string) => void
   className?: string
 }
@@ -18,24 +18,24 @@ interface BreadcrumbsProps {
 /**
  * Build breadcrumb path from selected node
  */
-function buildBreadcrumbPath(selectedNode: GraphNode, nodes: GraphNode[]): GraphNode[] {
-  const path: GraphNode[] = [selectedNode]
+function buildBreadcrumbPath(selectedNode: IVMNode, nodes: IVMNode[]): IVMNode[] {
+  const path: IVMNode[] = [selectedNode]
 
   // Simple hierarchy: method -> class -> file
   let current = selectedNode
 
-  // If it's a method, find its class
-  if (current.type === 'method' && current.metadata.class) {
-    const classNode = nodes.find((n) => n.id === current.metadata.class)
+  // If it's a method, find its class via parentId
+  if (current.type === 'method' && current.parentId) {
+    const classNode = nodes.find((n) => n.id === current.parentId)
     if (classNode) {
       path.unshift(classNode)
       current = classNode
     }
   }
 
-  // If it's a class or we found a class, find its file
-  if ((current.type === 'class' || current.type === 'method') && current.metadata.file) {
-    const fileNode = nodes.find((n) => n.id === current.metadata.file)
+  // If it's a class or we found a class, find its file via parentId
+  if ((current.type === 'class' || current.type === 'method') && current.parentId) {
+    const fileNode = nodes.find((n) => n.id === current.parentId && n.type === 'file')
     if (fileNode) {
       path.unshift(fileNode)
     }
@@ -117,7 +117,7 @@ export function Breadcrumbs({
                   : 'text-primary-600 hover:text-primary-700'
             }`}
           >
-            {node.label}
+            {node.metadata.label}
           </button>
         </div>
       ))}

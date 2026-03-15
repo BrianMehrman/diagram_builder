@@ -10,7 +10,7 @@
 
 import { useMemo } from 'react'
 import { Text } from '@react-three/drei'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 import { collectNestingTiers, countOverflowChildren } from './nestedTypeUtils'
 
 /** Scale factors for each tier relative to parent width */
@@ -27,13 +27,13 @@ const TIER_COLORS = ['#60a5fa', '#a78bfa', '#f472b6']
 
 interface RooftopGardenProps {
   /** The parent node whose children are shown */
-  parentNode: GraphNode
+  parentNode: IVMNode
   /** Width of the parent building */
   parentWidth: number
   /** Height of the parent building (rooftop starts here) */
   parentHeight: number
   /** Nested type map from buildNestedTypeMap */
-  nestedMap: Map<string, GraphNode[]>
+  nestedMap: Map<string, IVMNode[]>
 }
 
 export function RooftopGarden({

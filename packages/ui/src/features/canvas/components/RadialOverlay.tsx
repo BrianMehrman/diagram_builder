@@ -13,7 +13,7 @@ import { useMemo } from 'react'
 import type React from 'react'
 import { useCanvasStore } from '../store'
 import { useFocusedConnections } from '../hooks/useFocusedConnections'
-import type { Graph, GraphNode } from '../../../shared/types'
+import type { IVMGraph, IVMNode } from '../../../shared/types'
 
 // Edge type → color (matches 3D scene colors)
 const EDGE_COLORS: Record<string, string> = {
@@ -36,9 +36,9 @@ const CENTER_R = 30
 const NODE_R = 20
 const SECOND_NODE_R = 14
 
-function shortLabel(node: GraphNode | undefined): string {
+function shortLabel(node: IVMNode | undefined): string {
   if (!node) return '?'
-  const label = node.label ?? node.id
+  const label = node.metadata.label ?? node.id
   return label.split('/').pop() ?? label
 }
 
@@ -64,7 +64,7 @@ function arrowHead(
 }
 
 interface RadialOverlayProps {
-  graph: Graph
+  graph: IVMGraph
 }
 
 export function RadialOverlay({ graph }: RadialOverlayProps) {
@@ -75,7 +75,7 @@ export function RadialOverlay({ graph }: RadialOverlayProps) {
   const { directEdges, secondHopEdges, directNodeIds } = useFocusedConnections(graph)
 
   const nodeMap = useMemo(() => {
-    const m = new Map<string, GraphNode>()
+    const m = new Map<string, IVMNode>()
     for (const n of graph.nodes) m.set(n.id, n)
     return m
   }, [graph.nodes])

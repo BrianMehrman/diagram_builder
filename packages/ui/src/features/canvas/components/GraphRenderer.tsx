@@ -8,10 +8,10 @@ import { useMemo } from 'react'
 import { NodeRenderer } from './NodeRenderer'
 import { EdgeRenderer } from './EdgeRenderer'
 import { useCanvasStore } from '../store'
-import type { Graph } from '../../../shared/types'
+import type { IVMGraph } from '../../../shared/types'
 
 interface GraphRendererProps {
-  graph: Graph
+  graph: IVMGraph
 }
 
 /**

@@ -10,10 +10,10 @@ import type { ViewMode } from '../store'
 import { CityView } from '../layouts/city/CityView'
 import { BuildingView } from './BuildingView'
 import { CellView } from './CellView'
-import type { Graph } from '../../../shared/types'
+import type { IVMGraph } from '../../../shared/types'
 
 interface ViewModeRendererProps {
-  graph: Graph
+  graph: IVMGraph
 }
 
 interface ViewProps {

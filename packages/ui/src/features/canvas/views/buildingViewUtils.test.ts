@@ -5,23 +5,23 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import type { Graph, GraphNode, GraphEdge } from '../../../shared/types'
+import type { IVMGraph, IVMNode, IVMEdge } from '../../../shared/types'
 import { extractBuildingSubgraph, getRoomColor, ROOM_COLORS } from './buildingViewUtils'
 
 function makeNode(
   id: string,
-  type: GraphNode['type'],
+  type: IVMNode['type'],
   label: string,
   opts: { parentId?: string } = {}
-): GraphNode {
+): IVMNode {
   return { id, type, label, metadata: {}, lod: 0, parentId: opts.parentId }
 }
 
-function makeEdge(source: string, target: string, type: GraphEdge['type'] = 'calls'): GraphEdge {
+function makeEdge(source: string, target: string, type: IVMEdge['type'] = 'calls'): IVMEdge {
   return { id: `${source}-${target}`, source, target, type, metadata: {} }
 }
 
-function makeGraph(nodes: GraphNode[], edges: GraphEdge[] = []): Graph {
+function makeGraph(nodes: IVMNode[], edges: IVMEdge[] = []): IVMGraph {
   return {
     nodes,
     edges,

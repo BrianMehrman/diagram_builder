@@ -26,10 +26,10 @@ import { getBuildingConfig } from '../../components/buildingGeometry'
 import { useCanvasStore } from '../../store'
 import { useCityLayout } from './useCityLayout'
 import { useCityFiltering } from './useCityFiltering'
-import type { Graph, GraphNode } from '../../../../shared/types'
+import type { IVMGraph, IVMNode } from '../../../../shared/types'
 
 interface CityAtmosphereProps {
-  graph: Graph
+  graph: IVMGraph
 }
 
 /** Node types that represent buildings (cranes, lighting, deprecated apply to these) */
@@ -53,9 +53,9 @@ export function CityAtmosphere({ graph }: CityAtmosphereProps) {
   )
 
   const districtNodeMap = useMemo(() => {
-    const map = new Map<string, GraphNode[]>()
+    const map = new Map<string, IVMNode[]>()
     for (const [dir, nodeIds] of districtGroups) {
-      const nodes = nodeIds.map((id) => nodeMap.get(id)).filter((n): n is GraphNode => n != null)
+      const nodes = nodeIds.map((id) => nodeMap.get(id)).filter((n): n is IVMNode => n != null)
       if (nodes.length > 0) {
         map.set(dir, nodes)
       }

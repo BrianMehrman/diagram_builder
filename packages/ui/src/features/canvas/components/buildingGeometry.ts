@@ -1,12 +1,12 @@
 /**
  * Building Geometry Factory
  *
- * Pure utility that maps GraphNode types to geometry and material
+ * Pure utility that maps IVMNode types to geometry and material
  * configurations. Components consume these descriptions to create
  * actual Three.js geometry (story 9-9).
  */
 
-import type { GraphNode } from '../../../shared/types'
+import type { IVMNode } from '../../../shared/types'
 import {
   CLASS_WIDTH,
   CLASS_DEPTH,
@@ -76,7 +76,7 @@ export interface BuildingConfig {
  * stone-profile configuration for base class visual differentiation (Story 11-6).
  */
 export function getBuildingConfig(
-  node: GraphNode,
+  node: IVMNode,
   encodingOptions?: EncodedHeightOptions,
   isBaseClass?: boolean
 ): BuildingConfig {
@@ -90,11 +90,30 @@ export function getBuildingConfig(
   // For non-class types, use the legacy height calculation
   const legacyHeight = encodingOptions
     ? getEncodedHeight(node, encodingOptions, resolvedMethodCount)
-    : getMethodBasedHeight(resolvedMethodCount || undefined, node.depth)
+    : getMethodBasedHeight(resolvedMethodCount || undefined, (node.metadata.properties?.depth as number | undefined))
 
   switch (node.type) {
     case 'class': {
+      const isAbstract = node.metadata.properties?.isAbstract === true
       const baseMultiplier = isBaseClass ? BASE_CLASS_FOOTPRINT_MULTIPLIER : 1.0
+      if (isAbstract) {
+        return {
+          geometry: {
+            shape: 'cone',
+            width: CLASS_WIDTH * footprintScale,
+            height: containmentHeight,
+            depth: CLASS_DEPTH * footprintScale,
+          },
+          material: {
+            opacity: ABSTRACT_OPACITY,
+            transparent: true,
+            wireframe: false,
+            roughness: 0.5,
+            metalness: 0.3,
+            dashed: true,
+          },
+        }
+      }
       return {
         geometry: {
           shape: 'box',
@@ -165,24 +184,6 @@ export function getBuildingConfig(
           roughness: 0.2,
           metalness: 0.6,
           dashed: false,
-        },
-      }
-
-    case 'abstract_class':
-      return {
-        geometry: {
-          shape: 'cone',
-          width: CLASS_WIDTH * footprintScale,
-          height: containmentHeight,
-          depth: CLASS_DEPTH * footprintScale,
-        },
-        material: {
-          opacity: ABSTRACT_OPACITY,
-          transparent: true,
-          wireframe: false,
-          roughness: 0.5,
-          metalness: 0.3,
-          dashed: true,
         },
       }
 

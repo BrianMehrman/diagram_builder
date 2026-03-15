@@ -23,10 +23,10 @@ import { useCameraTiltAssist } from '../../hooks/useCameraTiltAssist'
 import { useFocusEscape } from '../../hooks/useFocusEscape'
 import { computeGroundOpacity } from '../../undergroundUtils'
 import { computeUndergroundGroundOpacity } from '../../views/heightUtils'
-import type { Graph } from '../../../../shared/types'
+import type { IVMGraph } from '../../../../shared/types'
 
 interface CityViewProps {
-  graph: Graph
+  graph: IVMGraph
 }
 
 export function CityView({ graph }: CityViewProps) {

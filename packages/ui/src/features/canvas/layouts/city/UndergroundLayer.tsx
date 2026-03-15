@@ -14,10 +14,10 @@ import { TunnelJunction } from '../../views/TunnelJunction'
 import { filterImportEdges } from '../../undergroundUtils'
 import { countTunnelsPerNode } from '../../tunnelEnhancedUtils'
 import type { DependencyType } from '../../tunnelEnhancedUtils'
-import type { Graph, GraphEdge, Position3D } from '../../../../shared/types'
+import type { IVMGraph, IVMEdge, Position3D } from '../../../../shared/types'
 
 interface UndergroundLayerProps {
-  graph: Graph
+  graph: IVMGraph
   positions: Map<string, Position3D>
 }
 
@@ -25,10 +25,9 @@ interface UndergroundLayerProps {
  * Derive dependency type from edge metadata.
  * Falls back to 'production' when metadata doesn't specify.
  */
-function deriveDependencyType(edge: GraphEdge): DependencyType {
-  const meta = edge.metadata
-  if (meta?.dependencyType && typeof meta.dependencyType === 'string') {
-    const dt = meta.dependencyType
+function deriveDependencyType(edge: IVMEdge): DependencyType {
+  const dt = edge.metadata?.properties?.dependencyType
+  if (dt && typeof dt === 'string') {
     if (dt === 'dev' || dt === 'peer' || dt === 'type') return dt
     return 'production'
   }
@@ -43,7 +42,7 @@ export function UndergroundLayer({ graph, positions }: UndergroundLayerProps) {
   const externalNodeIds = useMemo(() => {
     const ids = new Set<string>()
     for (const node of graph.nodes) {
-      if (node.isExternal) {
+      if ((node.metadata.properties?.isExternal as boolean | undefined)) {
         ids.add(node.id)
       }
     }
@@ -76,7 +75,7 @@ export function UndergroundLayer({ graph, positions }: UndergroundLayerProps) {
         const targetPos = positions.get(edge.target)
         if (!sourcePos || !targetPos) return null
 
-        const importCount = (edge.metadata?.importCount as number) ?? 1
+        const importCount = (edge.metadata?.properties?.importCount as number | undefined) ?? 1
         const isExternal = externalNodeIds.has(edge.source) || externalNodeIds.has(edge.target)
         const dependencyType = deriveDependencyType(edge)
 

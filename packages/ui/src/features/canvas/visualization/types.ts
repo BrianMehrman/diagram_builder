@@ -1,5 +1,5 @@
 import type React from 'react'
-import type { Graph, Position3D } from '../../../shared/types'
+import type { IVMGraph, Position3D } from '../../../shared/types'
 import type { LayoutEngine, LayoutResult, HierarchicalLayoutResult } from '../layout/types'
 
 /**
@@ -32,7 +32,7 @@ export interface VisualizationSettings {
  * Context passed to every VisualizationRenderer.render() call.
  */
 export interface RenderContext {
-  graph: Graph
+  graph: IVMGraph
   positions: Map<string, Position3D>
   layoutResult: LayoutResult | HierarchicalLayoutResult
   lodLevel: number

@@ -149,7 +149,7 @@ export interface UpdateViewpointRequest {
 }
 
 /**
- * Graph/Parse types
+ * IVMGraph/Parse types
  */
 export interface ParseRequest {
   source: string

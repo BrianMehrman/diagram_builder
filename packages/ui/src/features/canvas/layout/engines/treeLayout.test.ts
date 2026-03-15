@@ -1,20 +1,23 @@
 import { describe, it, expect } from 'vitest'
 import { TreeLayoutEngine } from './treeLayout'
-import type { Graph } from '../../../../shared/types'
+import type { IVMGraph } from '../../../../shared/types'
 
-const graph: Graph = {
+const graph: IVMGraph = {
   nodes: [
-    { id: 'root', type: 'file', label: 'root.ts', depth: 0, lod: 1, metadata: {} },
-    { id: 'child1', type: 'class', label: 'A', depth: 1, parentId: 'root', lod: 1, metadata: {} },
-    { id: 'child2', type: 'class', label: 'B', depth: 1, parentId: 'root', lod: 1, metadata: {} },
+    { id: 'root', type: 'file', lod: 1, metadata: { label: 'root.ts', path: 'root.ts', properties: { depth: 0 } }, position: { x: 0, y: 0, z: 0 } },
+    { id: 'child1', type: 'class', lod: 1, parentId: 'root', metadata: { label: 'A', path: 'A.ts', properties: { depth: 1 } }, position: { x: 0, y: 0, z: 0 } },
+    { id: 'child2', type: 'class', lod: 1, parentId: 'root', metadata: { label: 'B', path: 'B.ts', properties: { depth: 1 } }, position: { x: 0, y: 0, z: 0 } },
   ],
   edges: [],
   metadata: {
-    repositoryId: 'test-repo',
     name: 'test',
-    totalNodes: 3,
-    totalEdges: 0,
+    schemaVersion: '1.0.0',
+    generatedAt: new Date().toISOString(),
+    rootPath: 'src/',
+    stats: { totalNodes: 3, totalEdges: 0, nodesByType: {} as never, edgesByType: {} as never },
+    languages: [],
   },
+  bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
 }
 
 describe('TreeLayoutEngine', () => {

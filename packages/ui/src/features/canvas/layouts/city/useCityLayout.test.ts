@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useCityLayout } from './useCityLayout'
 import { useCanvasStore } from '../../store'
-import type { Graph, GraphNode } from '../../../../shared/types'
+import type { IVMGraph, IVMNode } from '../../../../shared/types'
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -60,7 +60,7 @@ vi.mock('../../layout/engines/radialCityLayout', () => ({
 // Helpers
 // ---------------------------------------------------------------------------
 
-function createNode(id: string, type: GraphNode['type'] = 'file'): GraphNode {
+function createNode(id: string, type: IVMNode['type'] = 'file'): IVMNode {
   return {
     id,
     type,
@@ -72,8 +72,8 @@ function createNode(id: string, type: GraphNode['type'] = 'file'): GraphNode {
   }
 }
 
-function createGraph(nodeCount = 3): Graph {
-  const nodes: GraphNode[] = []
+function createGraph(nodeCount = 3): IVMGraph {
+  const nodes: IVMNode[] = []
   for (let i = 0; i < nodeCount; i++) {
     nodes.push(createNode(`node-${i}`))
   }

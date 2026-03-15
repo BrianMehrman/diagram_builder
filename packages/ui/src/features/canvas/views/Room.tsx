@@ -8,11 +8,11 @@
 import { useState } from 'react'
 import { Text } from '@react-three/drei'
 import { useCanvasStore } from '../store'
-import type { GraphNode, Position3D } from '../../../shared/types'
+import type { IVMNode, Position3D } from '../../../shared/types'
 import { getRoomColor } from './buildingViewUtils'
 
 interface RoomProps {
-  node: GraphNode
+  node: IVMNode
   position: Position3D
 }
 
@@ -68,7 +68,7 @@ export function Room({ node, position }: RoomProps) {
         outlineWidth={0.015}
         outlineColor="#000000"
       >
-        {node.label ?? ''}
+        {node.metadata.label ?? ''}
       </Text>
     </group>
   )

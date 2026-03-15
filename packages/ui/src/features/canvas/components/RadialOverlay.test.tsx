@@ -9,19 +9,27 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { RadialOverlay } from './RadialOverlay'
 import { useCanvasStore } from '../store'
-import type { Graph } from '../../../shared/types'
+import type { IVMGraph } from '../../../shared/types'
 
-const graph: Graph = {
+const graph: IVMGraph = {
   nodes: [
-    { id: 'A', type: 'file', label: 'src/A.ts', metadata: {}, lod: 1, depth: 1, isExternal: false },
-    { id: 'B', type: 'file', label: 'src/B.ts', metadata: {}, lod: 1, depth: 1, isExternal: false },
-    { id: 'C', type: 'file', label: 'src/C.ts', metadata: {}, lod: 1, depth: 1, isExternal: false },
+    { id: 'A', type: 'file', metadata: { label: 'src/A.ts', path: 'src/A.ts', properties: { depth: 1, isExternal: false } }, lod: 1, position: { x: 0, y: 0, z: 0 } },
+    { id: 'B', type: 'file', metadata: { label: 'src/B.ts', path: 'src/B.ts', properties: { depth: 1, isExternal: false } }, lod: 1, position: { x: 0, y: 0, z: 0 } },
+    { id: 'C', type: 'file', metadata: { label: 'src/C.ts', path: 'src/C.ts', properties: { depth: 1, isExternal: false } }, lod: 1, position: { x: 0, y: 0, z: 0 } },
   ],
   edges: [
-    { id: 'A-imports-B', source: 'A', target: 'B', type: 'imports', metadata: {} },
-    { id: 'B-calls-C', source: 'B', target: 'C', type: 'calls', metadata: {} },
+    { id: 'A-imports-B', source: 'A', target: 'B', type: 'imports', metadata: {}, lod: 0 },
+    { id: 'B-calls-C', source: 'B', target: 'C', type: 'calls', metadata: {}, lod: 0 },
   ],
-  metadata: { repositoryId: 'test', name: 'test', totalNodes: 3, totalEdges: 2 },
+  metadata: {
+    name: 'test',
+    schemaVersion: '1.0.0',
+    generatedAt: new Date().toISOString(),
+    rootPath: 'src/',
+    stats: { totalNodes: 3, totalEdges: 2, nodesByType: {} as never, edgesByType: {} as never },
+    languages: [],
+  },
+  bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
 }
 
 beforeEach(() => {

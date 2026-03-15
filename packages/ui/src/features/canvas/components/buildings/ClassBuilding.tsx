@@ -43,9 +43,9 @@ export function ClassBuilding({
   const isSelected = selectedNodeId === node.id
   const config = useMemo(() => getBuildingConfig(node, encodingOptions), [node, encodingOptions])
   const { width, height, depth } = config.geometry
-  const directory = getDirectoryFromLabel(node.label)
+  const directory = getDirectoryFromLabel(node.metadata.label)
   const color = getDirectoryColor(directory)
-  const fileName = (node.label ?? node.id).split('/').pop() ?? node.id
+  const fileName = (node.metadata.label ?? node.id).split('/').pop() ?? node.id
 
   // Sort methods by visibility: public (bottom) → protected → private (top)
   const sortedMethods = useMemo(
@@ -59,12 +59,12 @@ export function ClassBuilding({
   const geometry = useMemo(() => {
     const geo = new THREE.BoxGeometry(width, height, depth, 1, floorCount, 1)
 
-    // Apply floor band colors when method count is known (from sorted methods array or node.methodCount)
+    // Apply floor band colors when method count is known (from sorted methods array or (node.metadata.properties?.methodCount as number | undefined))
     // Default to "public" coloring when individual method visibility data is unavailable (AC-4)
     if (methodCount > 0) {
       const visibilities: Array<string | undefined> =
         sortedMethods && sortedMethods.length > 0
-          ? (sortedMethods.map((m) => m.visibility) as Array<string | undefined>)
+          ? (sortedMethods.map((m) => m.metadata?.properties?.visibility as string | undefined) as Array<string | undefined>)
           : ([] as Array<string | undefined>).concat(
               Array.from({ length: floorCount }, () => undefined)
             )

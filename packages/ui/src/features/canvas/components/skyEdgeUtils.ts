@@ -5,7 +5,7 @@
  * tier classification, height, color, visibility, and dash style.
  */
 
-import type { GraphEdge } from '../../../shared/types'
+import type { IVMEdge } from '../../../shared/types'
 import type { EdgeTierVisibility } from '../store'
 
 /**
@@ -20,13 +20,13 @@ import type { EdgeTierVisibility } from '../store'
 export type SkyEdgeTier = 'crossDistrict'
 
 /**
- * Map a GraphEdge type to its sky-edge tier.
+ * Map a IVMEdge type to its sky-edge tier.
  * Returns null for edge types that are not rendered as sky edges.
  *
  * After Story 11-9: only 'calls' edges arc overhead.
  * Imports/inherits route underground and are excluded here.
  */
-export function getSkyEdgeTier(edgeType: GraphEdge['type']): SkyEdgeTier | null {
+export function getSkyEdgeTier(edgeType: IVMEdge['type']): SkyEdgeTier | null {
   switch (edgeType) {
     case 'calls':
       return 'crossDistrict'
@@ -39,7 +39,7 @@ export function getSkyEdgeTier(edgeType: GraphEdge['type']): SkyEdgeTier | null 
  * Type-based Y-height for the bezier arc peak.
  * Method-call edges arc at Y=40.
  */
-export function getSkyEdgeHeight(edgeType: GraphEdge['type']): number {
+export function getSkyEdgeHeight(edgeType: IVMEdge['type']): number {
   switch (edgeType) {
     case 'calls':
       return 40
@@ -49,7 +49,7 @@ export function getSkyEdgeHeight(edgeType: GraphEdge['type']): number {
 }
 
 /** Edge color by type. Method calls = green. */
-export function getSkyEdgeColor(edgeType: GraphEdge['type']): string {
+export function getSkyEdgeColor(edgeType: IVMEdge['type']): string {
   switch (edgeType) {
     case 'calls':
       return '#34d399'
@@ -67,7 +67,7 @@ export function getSkyEdgeColor(edgeType: GraphEdge['type']): string {
  * - The matching tier toggle must be enabled
  */
 export function isSkyEdgeVisible(
-  edgeType: GraphEdge['type'],
+  edgeType: IVMEdge['type'],
   lodLevel: number,
   edgeTierVisibility: EdgeTierVisibility
 ): boolean {
@@ -80,6 +80,6 @@ export function isSkyEdgeVisible(
 }
 
 /** Whether the edge should render as a dashed line. None currently. */
-export function isSkyEdgeDashed(_edgeType: GraphEdge['type']): boolean {
+export function isSkyEdgeDashed(_edgeType: IVMEdge['type']): boolean {
   return false
 }

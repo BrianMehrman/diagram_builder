@@ -7,14 +7,14 @@
 
 import { useMemo } from 'react'
 import { BoxGeometry, DoubleSide, EdgesGeometry } from 'three'
-import type { GraphNode, Position3D } from '../../../shared/types'
+import type { IVMNode, Position3D } from '../../../shared/types'
 import { getBuildingHeight, BUILDING_WIDTH, BUILDING_DEPTH } from './heightUtils'
 
 interface XRayBuildingProps {
-  node: GraphNode
+  node: IVMNode
   position: Position3D
   /** Child nodes inside this file (classes, methods, etc.) */
-  children: GraphNode[]
+  children: IVMNode[]
   /** Wall opacity in x-ray mode */
   xrayOpacity: number
   /** Whether to show internal detail (distance-based) */
@@ -30,7 +30,7 @@ export function XRayBuilding({
   xrayOpacity,
   showDetail,
 }: XRayBuildingProps) {
-  const buildingHeight = getBuildingHeight(node.depth)
+  const buildingHeight = getBuildingHeight((node.metadata.properties?.depth as number | undefined))
 
   const classes = useMemo(() => children.filter((n) => n.type === 'class'), [children])
 

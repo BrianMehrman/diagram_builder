@@ -10,7 +10,7 @@ import { FileTreeView } from './FileTreeView'
 import { SpatialOverview } from './SpatialOverview'
 import { useCanvasStore } from '../canvas/store'
 import { useCameraFlight } from '../navigation/useCameraFlight'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
 const STORAGE_KEY = 'minimap-collapsed'
 
@@ -23,7 +23,7 @@ function readCollapsedState(): boolean {
 }
 
 interface MiniMapProps {
-  nodes?: GraphNode[]
+  nodes?: IVMNode[]
   className?: string
 }
 

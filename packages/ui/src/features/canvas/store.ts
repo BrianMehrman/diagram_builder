@@ -7,7 +7,7 @@
 import { create } from 'zustand'
 import { createViewResolver } from '@diagram-builder/core'
 import type { ParseResult, ViewResolver } from '@diagram-builder/core'
-import type { Position3D, GraphNode } from '../../shared/types'
+import type { Position3D, IVMNode } from '../../shared/types'
 
 /**
  * Camera state
@@ -153,7 +153,7 @@ interface CanvasState {
   focusedNodeId: string | null
   focusHistory: string[]
   setViewMode: (mode: ViewMode, focusedNodeId?: string) => void
-  enterNode: (nodeId: string, nodeType: GraphNode['type']) => void
+  enterNode: (nodeId: string, nodeType: IVMNode['type']) => void
   exitToParent: () => void
   resetToCity: () => void
 

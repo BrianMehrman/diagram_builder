@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type { Graph } from '../../../shared/types'
+import type { IVMGraph } from '../../../shared/types'
 import type { LayoutEngine, LayoutConfig, LayoutResult } from './types'
 import { LayoutRegistry } from './registry'
 
 // Mock graph for testing
-const mockGraph: Graph = {
+const mockGraph: IVMGraph = {
   nodes: [{ id: '1', type: 'file', label: 'index.ts', metadata: {}, lod: 0 }],
   edges: [],
   metadata: {
@@ -19,7 +19,7 @@ const mockGraph: Graph = {
 function createMockEngine(type: string, canHandleResult: boolean = true): LayoutEngine {
   return {
     type,
-    layout(_graph: Graph, _config: LayoutConfig): LayoutResult {
+    layout(_graph: IVMGraph, _config: LayoutConfig): LayoutResult {
       return {
         positions: new Map(),
         bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },

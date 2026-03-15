@@ -12,7 +12,7 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { useCanvasStore } from '../../store'
-import type { GraphNode, Position3D } from '../../../../shared/types'
+import type { IVMNode, Position3D } from '../../../../shared/types'
 import {
   DEPRECATED_COLOR,
   DEPRECATED_STRIPE_COLOR,
@@ -21,7 +21,7 @@ import {
 } from './deprecatedUtils'
 
 export interface DeprecatedOverlayProps {
-  node: GraphNode
+  node: IVMNode
   position: Position3D
   buildingWidth: number
   buildingDepth: number

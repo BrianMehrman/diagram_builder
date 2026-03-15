@@ -13,9 +13,9 @@ import {
   isSkyEdgeVisible,
   isSkyEdgeDashed,
 } from './skyEdgeUtils'
-import type { GraphEdge } from '../../../shared/types'
+import type { IVMEdge } from '../../../shared/types'
 
-type EdgeType = GraphEdge['type']
+type EdgeType = IVMEdge['type']
 
 describe('skyEdgeUtils', () => {
   // ── getSkyEdgeTier ─────────────────────────────────────────────

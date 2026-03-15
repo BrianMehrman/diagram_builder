@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type React from 'react'
 import type { VisualizationRenderer, RenderContext, VisualizationStyle } from './types'
-import type { Graph } from '../../../shared/types'
+import type { IVMGraph } from '../../../shared/types'
 import type { LayoutEngine, LayoutResult } from '../layout/types'
 
 const STUB_RENDERER_TYPE = 'stub' as const

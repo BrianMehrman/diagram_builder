@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { classifyEdgeRouting } from '../views/cityViewUtils'
 import { useCanvasStore } from '../store'
 
-/** All GraphEdge types in the UI type system */
+/** All IVMEdge types in the UI type system */
 const ALL_EDGE_TYPES = ['contains', 'depends_on', 'calls', 'inherits', 'imports'] as const
 
 describe('CityUnderground — edge routing behaviour (Story 11-9)', () => {

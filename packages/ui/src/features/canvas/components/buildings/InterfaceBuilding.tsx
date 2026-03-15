@@ -48,9 +48,9 @@ export function InterfaceBuilding({
   const isSelected = selectedNodeId === node.id
   const config = useMemo(() => getBuildingConfig(node, encodingOptions), [node, encodingOptions])
   const { width, height } = config.geometry
-  const directory = getDirectoryFromLabel(node.label)
+  const directory = getDirectoryFromLabel(node.metadata.label)
   const color = getDirectoryColor(directory)
-  const fileName = (node.label ?? node.id).split('/').pop() ?? node.id
+  const fileName = (node.metadata.label ?? node.id).split('/').pop() ?? node.id
 
   // Sort methods by visibility: public (bottom) → protected → private (top)
   const sortedMethods = useMemo(
@@ -67,7 +67,7 @@ export function InterfaceBuilding({
     if (methodCount > 0) {
       const visibilities: Array<string | undefined> =
         sortedMethods && sortedMethods.length > 0
-          ? (sortedMethods.map((m) => m.visibility) as Array<string | undefined>)
+          ? (sortedMethods.map((m) => m.metadata?.properties?.visibility as string | undefined) as Array<string | undefined>)
           : ([] as Array<string | undefined>).concat(
               Array.from({ length: floorCount }, () => undefined)
             )

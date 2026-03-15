@@ -1,4 +1,4 @@
-import type { GraphEdge } from '../../../../shared/types'
+import type { IVMEdge } from '../../../../shared/types'
 import type { BlockLayout } from '../types'
 
 /**
@@ -41,7 +41,7 @@ export function createSeededRng(seed: number): () => number {
  */
 export function refineDistrictProximity(
   blocks: BlockLayout[],
-  edges: GraphEdge[],
+  edges: IVMEdge[],
   seed: number,
   maxIterations = 100
 ): BlockLayout[] {

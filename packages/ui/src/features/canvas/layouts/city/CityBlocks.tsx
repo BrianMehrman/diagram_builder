@@ -28,11 +28,11 @@ import { useCityLayout } from './useCityLayout'
 import { useCityFiltering } from './useCityFiltering'
 import { useDistrictMap } from '../../hooks/useDistrictMap'
 import { computeXRayWallOpacity, shouldShowXRayDetail } from '../../xrayUtils'
-import type { Graph, Position3D } from '../../../../shared/types'
+import type { IVMGraph, Position3D } from '../../../../shared/types'
 import type { EncodedHeightOptions } from '../../views/heightUtils'
 
 interface CityBlocksProps {
-  graph: Graph
+  graph: IVMGraph
 }
 
 /** Distance threshold for showing x-ray internal detail */
@@ -139,7 +139,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
                     const signType = getSignType(node)
                     const signVisible = getSignVisibility(signType, lodLevel)
                     const config = getBuildingConfig(node, nodeEncoding)
-                    const signLabel = (node.label ?? node.id).split('/').pop() ?? node.id
+                    const signLabel = (node.metadata.label ?? node.id).split('/').pop() ?? node.id
 
                     return (
                       <group key={node.id}>
@@ -221,7 +221,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
               const signType = getSignType(node)
               const signVisible = getSignVisibility(signType, lodLevel)
               const config = getBuildingConfig(node, nodeEncoding)
-              const signLabel = (node.label ?? node.id).split('/').pop() ?? node.id
+              const signLabel = (node.metadata.label ?? node.id).split('/').pop() ?? node.id
 
               return (
                 <group key={node.id}>

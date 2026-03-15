@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import type { Graph, GraphNode, GraphEdge } from '../../../shared/types'
+import type { IVMGraph, IVMNode, IVMEdge } from '../../../shared/types'
 import {
   getOrganelleColor,
   getOrganelleShape,
@@ -16,34 +16,37 @@ import {
 
 function makeNode(
   id: string,
-  type: GraphNode['type'],
+  type: IVMNode['type'],
   label: string,
-  opts: { parentId?: string; metadata?: Record<string, unknown> } = {}
-): GraphNode {
+  opts: { parentId?: string; properties?: Record<string, unknown> } = {}
+): IVMNode {
   return {
     id,
     type,
-    label,
-    metadata: opts.metadata ?? {},
+    metadata: { label, path: `src/${id}.ts`, properties: opts.properties },
     lod: 0,
+    position: { x: 0, y: 0, z: 0 },
     parentId: opts.parentId,
   }
 }
 
-function makeEdge(source: string, target: string, type: GraphEdge['type'] = 'calls'): GraphEdge {
-  return { id: `${source}-${target}`, source, target, type, metadata: {} }
+function makeEdge(source: string, target: string, type: IVMEdge['type'] = 'calls'): IVMEdge {
+  return { id: `${source}-${target}`, source, target, type, metadata: {}, lod: 0 }
 }
 
-function makeGraph(nodes: GraphNode[], edges: GraphEdge[] = []): Graph {
+function makeGraph(nodes: IVMNode[], edges: IVMEdge[] = []): IVMGraph {
   return {
     nodes,
     edges,
     metadata: {
-      repositoryId: 'test',
       name: 'Test',
-      totalNodes: nodes.length,
-      totalEdges: edges.length,
+      schemaVersion: '1.0.0',
+      generatedAt: new Date().toISOString(),
+      rootPath: 'src/',
+      stats: { totalNodes: nodes.length, totalEdges: edges.length, nodesByType: {} as never, edgesByType: {} as never },
+      languages: [],
     },
+    bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
   }
 }
 
@@ -87,23 +90,23 @@ describe('cellViewUtils', () => {
 
   describe('getOrganelleSize', () => {
     it('should return base size for no metadata', () => {
-      const size = getOrganelleSize({})
+      const size = getOrganelleSize({ label: '', path: '' })
       expect(size).toBeGreaterThan(0)
     })
 
     it('should return larger size for higher line count', () => {
-      const small = getOrganelleSize({ lineCount: 5 })
-      const large = getOrganelleSize({ lineCount: 100 })
+      const small = getOrganelleSize({ label: '', path: '', properties: { lineCount: 5 } })
+      const large = getOrganelleSize({ label: '', path: '', properties: { lineCount: 100 } })
       expect(large).toBeGreaterThan(small)
     })
 
     it('should handle zero line count', () => {
-      const size = getOrganelleSize({ lineCount: 0 })
+      const size = getOrganelleSize({ label: '', path: '', properties: { lineCount: 0 } })
       expect(size).toBeGreaterThan(0)
     })
 
     it('should handle missing lineCount', () => {
-      const size = getOrganelleSize({ someOtherField: true })
+      const size = getOrganelleSize({ label: '', path: '', properties: { someOtherField: true } })
       expect(size).toBeGreaterThan(0)
     })
   })

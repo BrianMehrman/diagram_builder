@@ -57,9 +57,9 @@ describe('getLodTransition', () => {
 
 describe('getFootprintScale', () => {
   it('returns 1.0 for zero value', () => {
-    expect(getFootprintScale({ methodCount: 0 }, { encoding: 'methodCount' })).toBe(1.0)
+    expect(getFootprintScale({ metadata: { label: 'x', path: 'x.ts', properties: { methodCount: 0 } } }, { encoding: 'methodCount' })).toBe(1.0)
   })
   it('returns > 1.0 for positive value', () => {
-    expect(getFootprintScale({ methodCount: 10 }, { encoding: 'methodCount' })).toBeGreaterThan(1.0)
+    expect(getFootprintScale({ metadata: { label: 'x', path: 'x.ts', properties: { methodCount: 10 } } }, { encoding: 'methodCount' })).toBeGreaterThan(1.0)
   })
 })

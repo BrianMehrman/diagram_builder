@@ -5,28 +5,19 @@
  * Deprecated buildings get a darker, striped "boarded-up" appearance.
  */
 
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
 /**
  * Check if a node is deprecated.
- * Checks both `node.isDeprecated` and `metadata.isDeprecated`.
+ * Checks both `(node.metadata.properties?.isDeprecated as boolean | undefined)` and `(metadata.metadata.properties?.isDeprecated as boolean | undefined)`.
  * Returns false if absent — satisfies AC-4 (graceful when no flag).
  */
-export function isDeprecated(node: GraphNode): boolean {
-  // Direct field on GraphNode
-  if (node.isDeprecated === true) return true
-
-  // Fallback: check metadata
-  const meta = node.metadata
-  if (meta == null) return false
-
-  if (meta.isDeprecated === true) return true
-
-  // Nested under properties (parser output format)
-  const props = meta.properties
+export function isDeprecated(node: IVMNode): boolean {
+  // Check metadata.properties (IVM format)
+  const props = node.metadata?.properties
   if (props != null && typeof props === 'object' && !Array.isArray(props)) {
     const nested = (props as Record<string, unknown>).isDeprecated
-    if (nested === true) return nested
+    if (nested === true) return true
   }
 
   return false

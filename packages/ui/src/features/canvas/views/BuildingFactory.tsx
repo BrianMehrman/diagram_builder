@@ -1,7 +1,7 @@
 /**
  * BuildingFactory
  *
- * Provides factory functions that map a GraphNode's type to the appropriate
+ * Provides factory functions that map a IVMNode's type to the appropriate
  * typed building component. Extracted from CityBlocks to eliminate the
  * duplicated switch(node.type) pattern.
  *
@@ -21,11 +21,11 @@ import {
 } from '../components/buildings'
 import { getBuildingConfig } from '../components/buildingGeometry'
 import { Building } from './Building'
-import type { Graph, GraphNode } from '../../../shared/types'
+import type { IVMGraph, IVMNode } from '../../../shared/types'
 import type { EncodedHeightOptions } from './heightUtils'
 
 /** Types that can contain nested type definitions */
-const CONTAINER_TYPES = new Set(['class', 'abstract_class', 'file'])
+const CONTAINER_TYPES = new Set(['class', 'file'])
 
 /**
  * Renders just the building mesh at origin (used inside a positioned group
@@ -33,10 +33,10 @@ const CONTAINER_TYPES = new Set(['class', 'abstract_class', 'file'])
  * from CityBlocks.tsx.
  */
 export function createBuildingElementAtOrigin(
-  node: GraphNode,
-  methodsByClass: Map<string, GraphNode[]>,
+  node: IVMNode,
+  methodsByClass: Map<string, IVMNode[]>,
   lodLevel: number,
-  graph: Graph,
+  graph: IVMGraph,
   encodingOptions?: EncodedHeightOptions,
   baseClassIds?: Set<string>
 ): React.JSX.Element {
@@ -48,15 +48,15 @@ export function createBuildingElementAtOrigin(
   const methodProps = classMethods
     ? { methods: classMethods, lodLevel, isBaseClass: nodeIsBase, ...classExtras }
     : { lodLevel, isBaseClass: nodeIsBase, ...classExtras }
+  const isAbstract = node.metadata.properties?.isAbstract === true
   switch (node.type) {
     case 'class':
+      if (isAbstract) return <AbstractBuilding {...props} {...methodProps} graph={graph} />
       return nodeIsBase ? (
         <BaseClassBuilding {...props} {...methodProps} graph={graph} />
       ) : (
         <ClassBuilding {...props} {...methodProps} graph={graph} />
       )
-    case 'abstract_class':
-      return <AbstractBuilding {...props} {...methodProps} graph={graph} />
     default:
       return (
         <Building
@@ -79,12 +79,12 @@ export function createBuildingElementAtOrigin(
  * Mirrors the logic of renderTypedBuilding from CityBlocks.tsx.
  */
 export function createBuildingElement(
-  node: GraphNode,
+  node: IVMNode,
   position: { x: number; y: number; z: number },
-  nestedMap: Map<string, GraphNode[]>,
-  methodsByClass: Map<string, GraphNode[]>,
+  nestedMap: Map<string, IVMNode[]>,
+  methodsByClass: Map<string, IVMNode[]>,
   lodLevel: number,
-  graph: Graph,
+  graph: IVMGraph,
   encodingOptions?: EncodedHeightOptions,
   baseClassIds?: Set<string>
 ): React.JSX.Element {
@@ -97,23 +97,25 @@ export function createBuildingElement(
     ? { methods: classMethods, lodLevel, isBaseClass: nodeIsBase, ...classExtras }
     : { lodLevel, isBaseClass: nodeIsBase, ...classExtras }
 
+  const isAbstractNode = node.metadata.properties?.isAbstract === true
   let building: React.JSX.Element
   switch (node.type) {
     case 'class':
-      building = nodeIsBase ? (
-        <BaseClassBuilding {...props} {...methodProps} graph={graph} />
-      ) : (
-        <ClassBuilding {...props} {...methodProps} graph={graph} />
-      )
+      if (isAbstractNode) {
+        building = <AbstractBuilding {...props} {...methodProps} graph={graph} />
+      } else {
+        building = nodeIsBase ? (
+          <BaseClassBuilding {...props} {...methodProps} graph={graph} />
+        ) : (
+          <ClassBuilding {...props} {...methodProps} graph={graph} />
+        )
+      }
       break
     case 'function':
       building = <FunctionShop {...props} {...classExtras} graph={graph} />
       break
     case 'interface':
       building = <InterfaceBuilding {...props} {...methodProps} graph={graph} />
-      break
-    case 'abstract_class':
-      building = <AbstractBuilding {...props} {...methodProps} graph={graph} />
       break
     case 'variable':
       building = <VariableCrate {...props} graph={graph} />

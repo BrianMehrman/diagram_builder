@@ -5,14 +5,14 @@
  * Smog marks districts above the 75th percentile by average complexity.
  */
 
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
 /**
  * Extract complexity from node metadata.
  * Checks both `metadata.complexity` and `metadata.properties.complexity`.
  * Returns 0 if absent — satisfies AC-4 (graceful when data absent).
  */
-export function getComplexity(node: GraphNode): number {
+export function getComplexity(node: IVMNode): number {
   const meta = node.metadata
   if (meta == null) return 0
 
@@ -33,7 +33,7 @@ export function getComplexity(node: GraphNode): number {
  * Calculate average complexity for a set of nodes.
  * Returns 0 if no nodes have complexity data.
  */
-export function getAverageComplexity(nodes: GraphNode[]): number {
+export function getAverageComplexity(nodes: IVMNode[]): number {
   if (nodes.length === 0) return 0
 
   const complexities = nodes.map(getComplexity)

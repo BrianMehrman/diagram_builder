@@ -24,7 +24,7 @@ export function WaterTower({ node, position }: InfrastructureProps) {
   const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode)
 
   const isSelected = selectedNodeId === node.id
-  const label = (node.label ?? node.id).split('/').pop() ?? node.id
+  const label = (node.metadata.label ?? node.id).split('/').pop() ?? node.id
   const tankY = STILT_H + TANK_H / 2
 
   return (

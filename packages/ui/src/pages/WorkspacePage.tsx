@@ -23,12 +23,12 @@ import { useGlobalSearchShortcut, useGlobalKeyboardShortcuts } from '../shared/h
 import { useUIStore } from '../shared/stores/uiStore'
 import { useExportStore } from '../features/export/store'
 import { workspaces, codebases, graph } from '../shared/api/endpoints'
-import type { Workspace, Graph, Position3D } from '../shared/types'
+import type { Workspace, IVMGraph, Position3D } from '../shared/types'
 
 export function WorkspacePage() {
   const { id } = useParams<{ id: string }>()
   const [workspace, setWorkspace] = useState<Workspace | null>(null)
-  const [graphData, setGraphData] = useState<Graph | null>(null)
+  const [graphData, setGraphData] = useState<IVMGraph | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [processingStatus, setProcessingStatus] = useState<
@@ -242,7 +242,7 @@ export function WorkspacePage() {
         // Fetch the graph data for this repository
         console.log('[WorkspacePage] Loading graph for repository:', completedCodebase.repositoryId)
         const graphResponse = await graph.getFullGraph(completedCodebase.repositoryId)
-        console.log('[WorkspacePage] Graph loaded:', {
+        console.log('[WorkspacePage] IVMGraph loaded:', {
           nodes: graphResponse.nodes?.length || 0,
           edges: graphResponse.edges?.length || 0,
         })
@@ -401,7 +401,7 @@ export function WorkspacePage() {
         {/* Success Notification */}
         {showSuccess && graphData && (
           <SuccessNotification
-            message={`Graph loaded with ${graphData.nodes?.length || 0} nodes`}
+            message={`IVMGraph loaded with ${graphData.nodes?.length || 0} nodes`}
             onDismiss={() => setShowSuccess(false)}
           />
         )}
@@ -433,7 +433,7 @@ export function WorkspacePage() {
         <nav
           id="search"
           className="absolute top-4 left-1/2 -translate-x-1/2 z-20 max-w-md"
-          aria-label="Graph navigation"
+          aria-label="IVMGraph navigation"
         >
           <Navigation nodes={graphData?.nodes || []} onNodeSelect={handleSearchNodeSelect} />
         </nav>

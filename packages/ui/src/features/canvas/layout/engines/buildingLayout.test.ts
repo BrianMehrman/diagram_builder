@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import type { Graph, GraphNode } from '../../../../shared/types'
+import type { IVMGraph, IVMNode } from '../../../../shared/types'
 import { BuildingLayoutEngine } from './buildingLayout'
 
 function makeNode(
   id: string,
-  type: GraphNode['type'],
+  type: IVMNode['type'],
   label: string,
   opts: { parentId?: string; position?: { x: number; y: number; z: number } } = {}
-): GraphNode {
+): IVMNode {
   return {
     id,
     type,
@@ -19,7 +19,7 @@ function makeNode(
   }
 }
 
-function makeGraph(nodes: GraphNode[]): Graph {
+function makeGraph(nodes: IVMNode[]): IVMGraph {
   return {
     nodes,
     edges: [],

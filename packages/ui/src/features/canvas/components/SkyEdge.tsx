@@ -8,7 +8,7 @@
 
 import { useMemo } from 'react'
 import * as THREE from 'three'
-import type { GraphEdge, Position3D } from '../../../shared/types'
+import type { IVMEdge, Position3D } from '../../../shared/types'
 import { useCanvasStore } from '../store'
 import {
   getSkyEdgeColor,
@@ -18,7 +18,7 @@ import {
 } from './skyEdgeUtils'
 
 export interface SkyEdgeProps {
-  edge: GraphEdge
+  edge: IVMEdge
   sourcePosition: Position3D
   targetPosition: Position3D
 }

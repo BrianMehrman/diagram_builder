@@ -9,7 +9,7 @@ import { useSearchStore } from '../../features/navigation/searchStore'
 import { useCanvasStore } from '../../features/canvas/store'
 import { useUIStore } from '../stores/uiStore'
 import { useToastStore } from '../../features/feedback/toastStore'
-import type { GraphNode } from '../types'
+import type { IVMNode } from '../types'
 
 // Mock clipboard
 const mockClipboard = {
@@ -36,7 +36,7 @@ afterEach(() => {
 })
 
 // Sample nodes
-const mockNodes: GraphNode[] = [
+const mockNodes: IVMNode[] = [
   {
     id: 'file-1',
     type: 'file',
@@ -171,7 +171,7 @@ describe('useGlobalKeyboardShortcuts', () => {
 
     it('prefers file nodes as root', () => {
       const onFlyToNode = vi.fn()
-      const nodesWithClassFirst: GraphNode[] = [
+      const nodesWithClassFirst: IVMNode[] = [
         mockNodes[1]!, // class
         mockNodes[0]!, // file
       ]

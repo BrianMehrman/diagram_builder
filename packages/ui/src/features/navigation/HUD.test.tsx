@@ -7,40 +7,38 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { act } from 'react'
 import { HUD } from './HUD'
 import { useCanvasStore } from '../canvas/store'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
-const mockNodes: GraphNode[] = [
+const mockNodes: IVMNode[] = [
   {
     id: 'file-1',
     type: 'file',
-    label: 'app.ts',
-    metadata: {},
+    metadata: { label: 'app.ts', path: 'src/app.ts' },
     position: { x: 0, y: 0, z: 0 },
     lod: 0,
   },
   {
     id: 'file-2',
     type: 'file',
-    label: 'utils.ts',
-    metadata: {},
+    metadata: { label: 'utils.ts', path: 'src/utils.ts' },
     position: { x: 3, y: 0, z: 0 },
     lod: 0,
   },
   {
     id: 'class-1',
     type: 'class',
-    label: 'Application',
-    metadata: { file: 'file-1' },
+    metadata: { label: 'Application', path: 'src/Application.ts' },
     position: { x: 1, y: 1, z: 1 },
     lod: 1,
+    parentId: 'file-1',
   },
   {
     id: 'method-1',
     type: 'method',
-    label: 'initialize',
-    metadata: { class: 'class-1', file: 'file-1' },
+    metadata: { label: 'initialize', path: 'src/Application.ts' },
     position: { x: 1.5, y: 1.5, z: 1.5 },
     lod: 2,
+    parentId: 'class-1',
   },
 ]
 

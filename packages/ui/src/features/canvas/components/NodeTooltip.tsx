@@ -6,17 +6,17 @@
  */
 
 import { useCanvasStore } from '../store'
-import type { GraphNode } from '../../../shared/types'
+import type { IVMNode } from '../../../shared/types'
 
 interface NodeTooltipProps {
-  nodes: GraphNode[]
+  nodes: IVMNode[]
   className?: string
 }
 
 /**
  * Get a human-readable type label
  */
-function getTypeLabel(type: GraphNode['type']): string {
+function getTypeLabel(type: IVMNode['type']): string {
   switch (type) {
     case 'file':
       return 'File'
@@ -36,7 +36,7 @@ function getTypeLabel(type: GraphNode['type']): string {
 /**
  * Get icon for node type
  */
-function getTypeIcon(type: GraphNode['type']): string {
+function getTypeIcon(type: IVMNode['type']): string {
   switch (type) {
     case 'file':
       return '📄'
@@ -90,7 +90,7 @@ export function NodeTooltip({ nodes, className = '' }: NodeTooltipProps) {
             <div className="text-xs text-gray-400 uppercase tracking-wider">
               {getTypeLabel(highlightedNode.type)}
             </div>
-            <div className="font-semibold text-white truncate">{highlightedNode.label}</div>
+            <div className="font-semibold text-white truncate">{highlightedNode.metadata.label}</div>
           </div>
         </div>
 

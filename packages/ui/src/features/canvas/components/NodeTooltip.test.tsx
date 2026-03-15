@@ -6,36 +6,38 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { NodeTooltip } from './NodeTooltip'
 import { useCanvasStore } from '../store'
-import type { GraphNode } from '../../../shared/types'
+import type { IVMNode } from '../../../shared/types'
 
-const mockNodes: GraphNode[] = [
+const mockNodes: IVMNode[] = [
   {
     id: 'file-1',
     type: 'file',
-    label: 'index.ts',
     lod: 1,
     metadata: {
+      label: 'index.ts',
       path: 'src/index.ts',
       language: 'TypeScript',
       loc: 150,
     },
+    position: { x: 0, y: 0, z: 0 },
   },
   {
     id: 'class-1',
     type: 'class',
-    label: 'UserService',
     lod: 2,
     metadata: {
+      label: 'UserService',
       path: 'src/services/UserService.ts',
       complexity: 5,
     },
+    position: { x: 0, y: 0, z: 0 },
   },
   {
     id: 'function-1',
     type: 'function',
-    label: 'calculateTotal',
     lod: 3,
-    metadata: {},
+    metadata: { label: 'calculateTotal', path: 'src/calculateTotal.ts' },
+    position: { x: 0, y: 0, z: 0 },
   },
 ]
 

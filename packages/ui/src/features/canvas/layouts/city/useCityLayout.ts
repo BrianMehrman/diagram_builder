@@ -11,7 +11,7 @@ import { useMemo, useEffect } from 'react'
 import { RadialCityLayoutEngine } from '../../layout/engines/radialCityLayout'
 import { flattenHierarchicalLayout } from '../../layout/hierarchicalUtils'
 import { useCanvasStore } from '../../store'
-import type { Graph, Position3D } from '../../../../shared/types'
+import type { IVMGraph, Position3D } from '../../../../shared/types'
 import type { DistrictArcMetadata } from '../../layout/engines/radialCityLayout'
 import type { BoundingBox, DistrictLayout, ExternalZoneLayout } from '../../layout/types'
 
@@ -41,7 +41,7 @@ export interface CityLayoutResult {
  * Uses flattenHierarchicalLayout() to produce a flat position map from
  * the two-phase hierarchical result.
  */
-export function useCityLayout(graph: Graph): CityLayoutResult {
+export function useCityLayout(graph: IVMGraph): CityLayoutResult {
   const layoutDensity = useCanvasStore((s) => s.layoutDensity)
   const setLayoutPositions = useCanvasStore((s) => s.setLayoutPositions)
 

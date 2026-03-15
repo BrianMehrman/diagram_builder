@@ -12,9 +12,9 @@ import {
   buildMethodChildMap,
 } from './floorBandUtils'
 import { FLOOR_HEIGHT } from '../../views/cityViewUtils'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
-function makeNode(overrides: Partial<GraphNode> & { type: GraphNode['type'] }): GraphNode {
+function makeNode(overrides: Partial<IVMNode> & { type: IVMNode['type'] }): IVMNode {
   return {
     id: 'n-1',
     label: 'Test',

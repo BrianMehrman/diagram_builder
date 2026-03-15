@@ -3,7 +3,7 @@ import type React from 'react'
 import { RendererRegistry, VisualizationStyleRegistry } from './registry'
 import type { VisualizationRenderer, RenderContext, VisualizationStyle } from './types'
 import type { LayoutEngine, LayoutResult } from '../layout/types'
-import type { Graph } from '../../../shared/types'
+import type { IVMGraph } from '../../../shared/types'
 
 function makeRenderer(type: string, handles: string[]): VisualizationRenderer {
   return {

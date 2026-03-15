@@ -4,16 +4,19 @@
 
 import { describe, it, expect } from 'vitest'
 import { buildNestedTypeMap, collectNestingTiers, countOverflowChildren } from './nestedTypeUtils'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
 function makeNode(
-  overrides: Partial<GraphNode> & { id: string; type: GraphNode['type'] }
-): GraphNode {
+  overrides: Partial<IVMNode> & { id: string; type: IVMNode['type'] }
+): IVMNode {
+  const { id, type, ...rest } = overrides
   return {
-    label: overrides.id,
-    metadata: {},
+    id,
+    type,
+    metadata: { label: id, path: `src/${id}.ts` },
     lod: 1,
-    ...overrides,
+    position: { x: 0, y: 0, z: 0 },
+    ...rest,
   }
 }
 
@@ -45,11 +48,11 @@ describe('buildNestedTypeMap', () => {
     expect(map.size).toBe(0)
   })
 
-  it('includes interface and abstract_class as nested types', () => {
+  it('includes interface and class (with isAbstract) as nested types', () => {
     const nodes = [
       makeNode({ id: 'parent', type: 'class' }),
       makeNode({ id: 'iface', type: 'interface', parentId: 'parent' }),
-      makeNode({ id: 'abs', type: 'abstract_class', parentId: 'parent' }),
+      makeNode({ id: 'abs', type: 'class', parentId: 'parent' }),
     ]
     const map = buildNestedTypeMap(nodes)
     expect(map.get('parent')?.length).toBe(2)
@@ -62,14 +65,14 @@ describe('buildNestedTypeMap', () => {
 
 describe('collectNestingTiers', () => {
   it('returns empty array when node has no children', () => {
-    const map = new Map<string, GraphNode[]>()
+    const map = new Map<string, IVMNode[]>()
     const tiers = collectNestingTiers('parent', map)
     expect(tiers).toEqual([])
   })
 
   it('returns one tier for direct children', () => {
     const child = makeNode({ id: 'child', type: 'class', parentId: 'parent' })
-    const map = new Map<string, GraphNode[]>([['parent', [child]]])
+    const map = new Map<string, IVMNode[]>([['parent', [child]]])
     const tiers = collectNestingTiers('parent', map)
     expect(tiers.length).toBe(1)
     expect(tiers[0]?.length).toBe(1)
@@ -79,7 +82,7 @@ describe('collectNestingTiers', () => {
   it('returns multiple tiers for deep nesting', () => {
     const child = makeNode({ id: 'child', type: 'class', parentId: 'parent' })
     const grandchild = makeNode({ id: 'grandchild', type: 'enum', parentId: 'child' })
-    const map = new Map<string, GraphNode[]>([
+    const map = new Map<string, IVMNode[]>([
       ['parent', [child]],
       ['child', [grandchild]],
     ])
@@ -94,7 +97,7 @@ describe('collectNestingTiers', () => {
     const t2 = makeNode({ id: 't2', type: 'class', parentId: 't1' })
     const t3 = makeNode({ id: 't3', type: 'class', parentId: 't2' })
     const t4 = makeNode({ id: 't4', type: 'class', parentId: 't3' })
-    const map = new Map<string, GraphNode[]>([
+    const map = new Map<string, IVMNode[]>([
       ['root', [t1]],
       ['t1', [t2]],
       ['t2', [t3]],
@@ -108,7 +111,7 @@ describe('collectNestingTiers', () => {
   it('handles multiple children per tier', () => {
     const c1 = makeNode({ id: 'c1', type: 'class', parentId: 'root' })
     const c2 = makeNode({ id: 'c2', type: 'enum', parentId: 'root' })
-    const map = new Map<string, GraphNode[]>([['root', [c1, c2]]])
+    const map = new Map<string, IVMNode[]>([['root', [c1, c2]]])
     const tiers = collectNestingTiers('root', map)
     expect(tiers.length).toBe(1)
     expect(tiers[0]?.length).toBe(2)
@@ -117,20 +120,20 @@ describe('collectNestingTiers', () => {
 
 describe('countOverflowChildren', () => {
   it('returns 0 when no children beyond last tier', () => {
-    const map = new Map<string, GraphNode[]>()
+    const map = new Map<string, IVMNode[]>()
     expect(countOverflowChildren(['t3'], map)).toBe(0)
   })
 
   it('counts direct overflow children', () => {
     const overflow = makeNode({ id: 'o1', type: 'class', parentId: 't3' })
-    const map = new Map<string, GraphNode[]>([['t3', [overflow]]])
+    const map = new Map<string, IVMNode[]>([['t3', [overflow]]])
     expect(countOverflowChildren(['t3'], map)).toBe(1)
   })
 
   it('counts deeply nested overflow children', () => {
     const o1 = makeNode({ id: 'o1', type: 'class', parentId: 't3' })
     const o2 = makeNode({ id: 'o2', type: 'class', parentId: 'o1' })
-    const map = new Map<string, GraphNode[]>([
+    const map = new Map<string, IVMNode[]>([
       ['t3', [o1]],
       ['o1', [o2]],
     ])
@@ -140,7 +143,7 @@ describe('countOverflowChildren', () => {
   it('counts across multiple last-tier nodes', () => {
     const o1 = makeNode({ id: 'o1', type: 'class', parentId: 'a' })
     const o2 = makeNode({ id: 'o2', type: 'class', parentId: 'b' })
-    const map = new Map<string, GraphNode[]>([
+    const map = new Map<string, IVMNode[]>([
       ['a', [o1]],
       ['b', [o2]],
     ])

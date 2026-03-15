@@ -24,7 +24,7 @@ export function VariableCrate({ node, position, graph: _graph }: TypedBuildingPr
   const isSelected = selectedNodeId === node.id
   const config = useMemo(() => getBuildingConfig(node), [node])
   const { width } = config.geometry
-  const fileName = (node.label ?? node.id).split('/').pop() ?? node.id
+  const fileName = (node.metadata.label ?? node.id).split('/').pop() ?? node.id
 
   return (
     <group position={[position.x, position.y, position.z]}>

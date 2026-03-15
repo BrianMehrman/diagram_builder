@@ -50,7 +50,7 @@ export const parsing = {
 }
 
 /**
- * Graph query endpoints
+ * IVMGraph query endpoints
  */
 export const graph = {
   getFullGraph: (repoId: string) => apiClient.get<IVMGraph>(`/api/graph/${repoId}`),

@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
+import type { IVMNode } from '../../../shared/types'
 import {
   getDirectoryColor,
   getBuildingHeight,
@@ -32,6 +33,16 @@ import {
   SURFACE_GROUND_OPACITY,
   resetDirectoryColors,
 } from './cityViewUtils'
+
+function makeMethodNode(id: string, visibility: string | undefined): IVMNode {
+  return {
+    id,
+    type: 'method',
+    metadata: { label: id, path: `src/${id}.ts`, properties: { visibility } },
+    lod: 0,
+    position: { x: 0, y: 0, z: 0 },
+  }
+}
 
 describe('cityViewUtils', () => {
   beforeEach(() => {
@@ -172,39 +183,39 @@ describe('cityViewUtils', () => {
 
   describe('getFootprintScale', () => {
     it('returns 1.0 when no metric data is available', () => {
-      const node = { methodCount: 0, depth: 0, metadata: {} }
+      const node = { metadata: { properties: {} } }
       expect(getFootprintScale(node, { encoding: 'loc' })).toBe(1.0)
     })
 
     it('returns 1.0 for methodCount encoding with zero methods', () => {
-      const node = { methodCount: 0, depth: 0, metadata: {} }
+      const node = { metadata: { properties: { methodCount: 0 } } }
       expect(getFootprintScale(node, { encoding: 'methodCount' })).toBe(1.0)
     })
 
     it('returns > 1.0 for positive metric values', () => {
-      const node = { methodCount: 10, depth: 0, metadata: {} }
+      const node = { metadata: { properties: { methodCount: 10 } } }
       expect(getFootprintScale(node, { encoding: 'methodCount' })).toBeGreaterThan(1.0)
     })
 
     it('is capped at 2.0', () => {
-      const node = { methodCount: 10000, depth: 0, metadata: { loc: 100000, complexity: 10000 } }
+      const node = { metadata: { loc: 100000, complexity: 10000, properties: {} } }
       expect(getFootprintScale(node, { encoding: 'loc' })).toBeLessThanOrEqual(2.0)
     })
 
     it('uses incomingEdgeCount for dependencies encoding', () => {
-      const node = { methodCount: 0, depth: 0, metadata: {} }
+      const node = { metadata: { properties: {} } }
       const scale = getFootprintScale(node, { encoding: 'dependencies', incomingEdgeCount: 20 })
       expect(scale).toBeGreaterThan(1.0)
     })
 
     it('uses complexity metadata', () => {
-      const node = { methodCount: 0, depth: 0, metadata: { complexity: 15 } }
+      const node = { metadata: { complexity: 15, properties: {} } }
       const scale = getFootprintScale(node, { encoding: 'complexity' })
       expect(scale).toBeGreaterThan(1.0)
     })
 
     it('uses churn metadata', () => {
-      const node = { methodCount: 0, depth: 0, metadata: { churn: 30 } }
+      const node = { metadata: { churn: 30, properties: {} } }
       const scale = getFootprintScale(node, { encoding: 'churn' })
       expect(scale).toBeGreaterThan(1.0)
     })
@@ -217,7 +228,7 @@ describe('cityViewUtils', () => {
   })
 
   describe('getEncodedHeight', () => {
-    const baseNode = { methodCount: 5, depth: 2, metadata: {} }
+    const baseNode = { metadata: { properties: { methodCount: 5, depth: 2 } } }
 
     it('delegates to getMethodBasedHeight for methodCount encoding', () => {
       const h = getEncodedHeight(baseNode, { encoding: 'methodCount' })
@@ -240,7 +251,7 @@ describe('cityViewUtils', () => {
     })
 
     it('uses loc metadata for loc encoding', () => {
-      const node = { ...baseNode, metadata: { loc: 500 } }
+      const node = { metadata: { loc: 500, properties: { methodCount: 5, depth: 2 } } }
       const h = getEncodedHeight(node, { encoding: 'loc' })
       expect(h).toBeCloseTo(Math.log2(500 / 50 + 1) * FLOOR_HEIGHT)
     })
@@ -251,7 +262,7 @@ describe('cityViewUtils', () => {
     })
 
     it('uses complexity metadata for complexity encoding', () => {
-      const node = { ...baseNode, metadata: { complexity: 15 } }
+      const node = { metadata: { complexity: 15, properties: { methodCount: 5, depth: 2 } } }
       const h = getEncodedHeight(node, { encoding: 'complexity' })
       expect(h).toBeCloseTo(Math.log2(16) * FLOOR_HEIGHT)
     })
@@ -262,7 +273,7 @@ describe('cityViewUtils', () => {
     })
 
     it('uses churn metadata for churn encoding', () => {
-      const node = { ...baseNode, metadata: { churn: 20 } }
+      const node = { metadata: { churn: 20, properties: { methodCount: 5, depth: 2 } } }
       const h = getEncodedHeight(node, { encoding: 'churn' })
       expect(h).toBeCloseTo(Math.log2(21) * FLOOR_HEIGHT)
     })
@@ -286,76 +297,76 @@ describe('cityViewUtils', () => {
   describe('sortMethodsByVisibility', () => {
     it('sorts public before protected before private', () => {
       const methods = [
-        { name: 'c', visibility: 'private' },
-        { name: 'b', visibility: 'protected' },
-        { name: 'a', visibility: 'public' },
+        makeMethodNode('c', 'private'),
+        makeMethodNode('b', 'protected'),
+        makeMethodNode('a', 'public'),
       ]
       const sorted = sortMethodsByVisibility(methods)
-      expect(sorted[0]!.visibility).toBe('public')
-      expect(sorted[1]!.visibility).toBe('protected')
-      expect(sorted[2]!.visibility).toBe('private')
+      expect(sorted[0]!.metadata.properties?.visibility).toBe('public')
+      expect(sorted[1]!.metadata.properties?.visibility).toBe('protected')
+      expect(sorted[2]!.metadata.properties?.visibility).toBe('private')
     })
 
     it('preserves source order within the same visibility tier', () => {
       const methods = [
-        { name: 'first', visibility: 'public' },
-        { name: 'second', visibility: 'public' },
-        { name: 'third', visibility: 'public' },
+        makeMethodNode('first', 'public'),
+        makeMethodNode('second', 'public'),
+        makeMethodNode('third', 'public'),
       ]
       const sorted = sortMethodsByVisibility(methods)
-      expect(sorted[0]!.name).toBe('first')
-      expect(sorted[1]!.name).toBe('second')
-      expect(sorted[2]!.name).toBe('third')
+      expect(sorted[0]!.id).toBe('first')
+      expect(sorted[1]!.id).toBe('second')
+      expect(sorted[2]!.id).toBe('third')
     })
 
     it('treats undefined visibility as public', () => {
       const methods = [
-        { name: 'private-one', visibility: 'private' as string | undefined },
-        { name: 'no-vis', visibility: undefined },
+        makeMethodNode('private-one', 'private'),
+        makeMethodNode('no-vis', undefined),
       ]
       const sorted = sortMethodsByVisibility(methods)
-      expect(sorted[0]!.name).toBe('no-vis')
-      expect(sorted[1]!.name).toBe('private-one')
+      expect(sorted[0]!.id).toBe('no-vis')
+      expect(sorted[1]!.id).toBe('private-one')
     })
 
     it('handles all-public methods without reordering', () => {
       const methods = [
-        { name: 'a', visibility: 'public' },
-        { name: 'b', visibility: 'public' },
+        makeMethodNode('a', 'public'),
+        makeMethodNode('b', 'public'),
       ]
       const sorted = sortMethodsByVisibility(methods)
-      expect(sorted.map((m) => m.name)).toEqual(['a', 'b'])
+      expect(sorted.map((m) => m.id)).toEqual(['a', 'b'])
     })
 
     it('does not mutate the input array', () => {
       const methods = [
-        { name: 'z', visibility: 'private' },
-        { name: 'a', visibility: 'public' },
+        makeMethodNode('z', 'private'),
+        makeMethodNode('a', 'public'),
       ]
       const original = [...methods]
       sortMethodsByVisibility(methods)
-      expect(methods[0]!.name).toBe(original[0]!.name)
-      expect(methods[1]!.name).toBe(original[1]!.name)
+      expect(methods[0]!.id).toBe(original[0]!.id)
+      expect(methods[1]!.id).toBe(original[1]!.id)
     })
 
     it('handles mixed visibility with multiple per tier', () => {
       const methods = [
-        { name: 'pub1', visibility: 'public' },
-        { name: 'priv1', visibility: 'private' },
-        { name: 'prot1', visibility: 'protected' },
-        { name: 'pub2', visibility: 'public' },
-        { name: 'priv2', visibility: 'private' },
+        makeMethodNode('pub1', 'public'),
+        makeMethodNode('priv1', 'private'),
+        makeMethodNode('prot1', 'protected'),
+        makeMethodNode('pub2', 'public'),
+        makeMethodNode('priv2', 'private'),
       ]
       const sorted = sortMethodsByVisibility(methods)
-      const names = sorted.map((m) => m.name)
+      const ids = sorted.map((m) => m.id)
       // Publics first, in original order
-      expect(names[0]).toBe('pub1')
-      expect(names[1]).toBe('pub2')
+      expect(ids[0]).toBe('pub1')
+      expect(ids[1]).toBe('pub2')
       // Protected next
-      expect(names[2]).toBe('prot1')
+      expect(ids[2]).toBe('prot1')
       // Privates last, in original order
-      expect(names[3]).toBe('priv1')
-      expect(names[4]).toBe('priv2')
+      expect(ids[3]).toBe('priv1')
+      expect(ids[4]).toBe('priv2')
     })
 
     it('returns empty array for empty input', () => {

@@ -16,10 +16,10 @@ import {
   shouldShowSmog,
   computeSmogOpacity,
 } from './smogUtils'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
-/** Helper: create a minimal GraphNode with optional complexity */
-function makeNode(id: string, complexity?: number, nested = false): GraphNode {
+/** Helper: create a minimal IVMNode with optional complexity */
+function makeNode(id: string, complexity?: number, nested = false): IVMNode {
   const metadata: Record<string, unknown> = {}
   if (complexity !== undefined) {
     if (nested) {
@@ -60,7 +60,7 @@ describe('SmogOverlay', () => {
     })
 
     it('returns 0 when metadata is empty object', () => {
-      const node: GraphNode = {
+      const node: IVMNode = {
         id: 'x',
         type: 'file',
         label: 'x',

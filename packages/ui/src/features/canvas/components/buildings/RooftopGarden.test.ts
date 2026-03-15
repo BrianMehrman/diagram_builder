@@ -10,14 +10,14 @@ import { ROOFTOP_GAP } from './RooftopGarden'
 import { getLogScaledHeight } from './floorBandUtils'
 import { FLOOR_HEIGHT, getBuildingHeight } from '../../views/cityViewUtils'
 import { collectNestingTiers } from './nestedTypeUtils'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
 /** Mirrors the constants in RooftopGarden.tsx */
 const TIER_HEIGHT = 0.8
 
 function makeNode(
-  overrides: Partial<GraphNode> & { id: string; type: GraphNode['type'] }
-): GraphNode {
+  overrides: Partial<IVMNode> & { id: string; type: IVMNode['type'] }
+): IVMNode {
   return {
     label: 'Test',
     metadata: {},
@@ -100,7 +100,7 @@ describe('RooftopGarden Y-offset', () => {
 
   describe('nesting tier collection', () => {
     it('collects tiers from nested type map', () => {
-      const nestedMap = new Map<string, GraphNode[]>()
+      const nestedMap = new Map<string, IVMNode[]>()
       nestedMap.set('parent', [
         makeNode({ id: 'child1', type: 'class', parentId: 'parent' }),
         makeNode({ id: 'child2', type: 'enum', parentId: 'parent' }),
@@ -116,7 +116,7 @@ describe('RooftopGarden Y-offset', () => {
     })
 
     it('returns empty array when no nested types', () => {
-      const nestedMap = new Map<string, GraphNode[]>()
+      const nestedMap = new Map<string, IVMNode[]>()
       const tiers = collectNestingTiers('no-children', nestedMap, 3)
       expect(tiers).toHaveLength(0)
     })

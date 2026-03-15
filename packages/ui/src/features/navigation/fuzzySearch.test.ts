@@ -6,10 +6,10 @@
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import { initializeSearchIndex, searchNodes, clearSearchIndex } from './fuzzySearch'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
 describe('fuzzySearch', () => {
-  const mockNodes: GraphNode[] = [
+  const mockNodes: IVMNode[] = [
     {
       id: 'node-1',
       type: 'file',
@@ -153,7 +153,7 @@ describe('fuzzySearch', () => {
   describe('result limits', () => {
     it('returns maximum 10 results', () => {
       // Create many nodes
-      const manyNodes: GraphNode[] = Array.from({ length: 50 }, (_, i) => ({
+      const manyNodes: IVMNode[] = Array.from({ length: 50 }, (_, i) => ({
         id: `test-node-${i}`,
         type: 'file' as const,
         label: `TestFile${i}.ts`,
@@ -201,9 +201,9 @@ describe('fuzzySearch', () => {
   describe('performance', () => {
     it('completes search in less than 100ms for 1000 nodes', () => {
       // Create 1000 nodes
-      const largeNodeSet: GraphNode[] = Array.from({ length: 1000 }, (_, i) => ({
+      const largeNodeSet: IVMNode[] = Array.from({ length: 1000 }, (_, i) => ({
         id: `perf-node-${i}`,
-        type: ['file', 'class', 'function', 'method', 'variable'][i % 5] as GraphNode['type'],
+        type: ['file', 'class', 'function', 'method', 'variable'][i % 5] as IVMNode['type'],
         label: `TestNode${i}_${['Service', 'Controller', 'Utils', 'Helper', 'Module'][i % 5]}.ts`,
         metadata: { path: `src/path/to/TestNode${i}.ts` },
         lod: (i % 4) + 1,
