@@ -5,8 +5,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useCityLayout } from './useCityLayout'
-import { useCanvasStore } from '../store'
-import type { Graph, GraphNode } from '../../../shared/types'
+import { useCanvasStore } from '../../store'
+import type { Graph, GraphNode } from '../../../../shared/types'
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -39,7 +39,7 @@ const mockExternalZones: Array<{
   nodes: Array<{ nodeId: string; position: { x: number; y: number; z: number } }>
 }> = []
 
-vi.mock('../layout/engines/radialCityLayout', () => ({
+vi.mock('../../layout/engines/radialCityLayout', () => ({
   RadialCityLayoutEngine: class MockRadialCityLayoutEngine {
     layout() {
       return {

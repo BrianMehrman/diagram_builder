@@ -1,5 +1,5 @@
 import React from 'react'
-import { CityView } from '../../../views/CityView'
+import { CityView } from '../../../layouts/city/CityView'
 import type { VisualizationRenderer, RenderContext } from '../../types'
 
 /**

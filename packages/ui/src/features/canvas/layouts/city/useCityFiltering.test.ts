@@ -5,14 +5,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useCityFiltering } from './useCityFiltering'
-import { useCanvasStore } from '../store'
-import type { Graph, GraphNode, GraphEdge, Position3D } from '../../../shared/types'
+import { useCanvasStore } from '../../store'
+import type { Graph, GraphNode, GraphEdge, Position3D } from '../../../../shared/types'
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock('../layout/engines/clusterUtils', () => ({
+vi.mock('../../layout/engines/clusterUtils', () => ({
   shouldCluster: (count: number, threshold: number) => count > threshold,
   createClusterMetadata: (
     districtId: string,

@@ -14,14 +14,14 @@
 
 import { Html } from '@react-three/drei'
 import { CityEdge } from './CityEdge'
-import { OverheadWire } from '../components/OverheadWire'
-import { GroundShadow } from '../components/GroundShadow'
-import { useCityLayout } from '../hooks/useCityLayout'
-import { useCityFiltering } from '../hooks/useCityFiltering'
-import { useCanvasStore } from '../store'
-import { classifyEdgeRouting } from './wireUtils'
-import { getContainmentHeight, getBuildingHeight, KIOSK_HEIGHT } from './heightUtils'
-import type { Graph, GraphNode } from '../../../shared/types'
+import { OverheadWire } from '../../components/OverheadWire'
+import { GroundShadow } from '../../components/GroundShadow'
+import { useCityLayout } from './useCityLayout'
+import { useCityFiltering } from './useCityFiltering'
+import { useCanvasStore } from '../../store'
+import { classifyEdgeRouting } from '../../views/wireUtils'
+import { getContainmentHeight, getBuildingHeight, KIOSK_HEIGHT } from '../../views/heightUtils'
+import type { Graph, GraphNode } from '../../../../shared/types'
 
 /** Compute rooftop Y for a node so OverheadWire arcs start/end at the correct height. */
 function getNodeRooftopY(node: GraphNode | undefined): number {

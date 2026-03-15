@@ -15,18 +15,18 @@
  */
 
 import { useMemo } from 'react'
-import { ConstructionCrane } from '../components/atmosphere/ConstructionCrane'
-import { CoverageLighting } from '../components/atmosphere/CoverageLighting'
-import { SmogOverlay } from '../components/atmosphere/SmogOverlay'
-import { DeprecatedOverlay } from '../components/atmosphere/DeprecatedOverlay'
-import { shouldShowCrane, computeCraneThreshold } from '../components/atmosphere/craneUtils'
-import { getTestCoverage } from '../components/atmosphere/coverageLightingUtils'
-import { isDeprecated } from '../components/atmosphere/deprecatedUtils'
-import { getBuildingConfig } from '../components/buildingGeometry'
-import { useCanvasStore } from '../store'
-import { useCityLayout } from '../hooks/useCityLayout'
-import { useCityFiltering } from '../hooks/useCityFiltering'
-import type { Graph, GraphNode } from '../../../shared/types'
+import { ConstructionCrane } from '../../components/atmosphere/ConstructionCrane'
+import { CoverageLighting } from '../../components/atmosphere/CoverageLighting'
+import { SmogOverlay } from '../../components/atmosphere/SmogOverlay'
+import { DeprecatedOverlay } from '../../components/atmosphere/DeprecatedOverlay'
+import { shouldShowCrane, computeCraneThreshold } from '../../components/atmosphere/craneUtils'
+import { getTestCoverage } from '../../components/atmosphere/coverageLightingUtils'
+import { isDeprecated } from '../../components/atmosphere/deprecatedUtils'
+import { getBuildingConfig } from '../../components/buildingGeometry'
+import { useCanvasStore } from '../../store'
+import { useCityLayout } from './useCityLayout'
+import { useCityFiltering } from './useCityFiltering'
+import type { Graph, GraphNode } from '../../../../shared/types'
 
 interface CityAtmosphereProps {
   graph: Graph

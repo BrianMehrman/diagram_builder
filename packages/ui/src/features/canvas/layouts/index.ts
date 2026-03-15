@@ -3,8 +3,7 @@ import { useCanvasStore } from '../store'
 import { Basic3DView } from './basic3d/Basic3DView'
 import type { UILayoutEngine, ActiveLayoutResult } from './types'
 
-// Temporary path — Task 7 moves CityView to './city/CityView'
-import { CityView } from '../views/CityView'
+import { CityView } from './city/CityView'
 
 const cityEngine: UILayoutEngine = {
   id: 'city',

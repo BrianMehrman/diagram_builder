@@ -8,12 +8,12 @@
  */
 
 import { useMemo, useEffect } from 'react'
-import { RadialCityLayoutEngine } from '../layout/engines/radialCityLayout'
-import { flattenHierarchicalLayout } from '../layout/hierarchicalUtils'
-import { useCanvasStore } from '../store'
-import type { Graph, Position3D } from '../../../shared/types'
-import type { DistrictArcMetadata } from '../layout/engines/radialCityLayout'
-import type { BoundingBox, DistrictLayout, ExternalZoneLayout } from '../layout/types'
+import { RadialCityLayoutEngine } from '../../layout/engines/radialCityLayout'
+import { flattenHierarchicalLayout } from '../../layout/hierarchicalUtils'
+import { useCanvasStore } from '../../store'
+import type { Graph, Position3D } from '../../../../shared/types'
+import type { DistrictArcMetadata } from '../../layout/engines/radialCityLayout'
+import type { BoundingBox, DistrictLayout, ExternalZoneLayout } from '../../layout/types'
 
 export interface CityLayoutResult {
   /** Computed position for each node by ID (flattened from hierarchical result) */

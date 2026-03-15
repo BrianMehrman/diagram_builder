@@ -9,8 +9,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
 import { CityView } from './CityView'
-import { useCanvasStore } from '../store'
-import type { Graph, GraphNode, GraphEdge } from '../../../shared/types'
+import { useCanvasStore } from '../../store'
+import type { Graph, GraphNode, GraphEdge } from '../../../../shared/types'
 
 // ---------------------------------------------------------------------------
 // Mocks — R3F primitives, child components, layout engine
@@ -31,6 +31,8 @@ vi.mock('@react-three/drei', () => ({
   Text: (props: Record<string, unknown>) => <div data-testid="drei-text" {...props} />,
   Billboard: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Html: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Grid: () => <div data-testid="drei-grid" />,
+  Line: () => <div data-testid="drei-line" />,
 }))
 
 // Track which child components are rendered and with what props
@@ -45,20 +47,20 @@ const mockDistrictGroundCalls: Array<Record<string, unknown>>[] = []
 const mockCityEdgeCalls: Array<Record<string, unknown>>[] = []
 const mockClusterBuildingCalls: Array<Record<string, unknown>>[] = []
 
-vi.mock('./Building', () => ({
+vi.mock('../../views/Building', () => ({
   Building: (props: { node: GraphNode }) => {
     mockBuildingCalls.push({ node: props.node })
     return <div data-testid={`building-${props.node.id}`} />
   },
 }))
 
-vi.mock('./ExternalBuilding', () => ({
+vi.mock('../../views/ExternalBuilding', () => ({
   ExternalBuilding: (props: { node: GraphNode }) => (
     <div data-testid={`external-building-${props.node.id}`} />
   ),
 }))
 
-vi.mock('./XRayBuilding', () => ({
+vi.mock('../../views/XRayBuilding', () => ({
   XRayBuilding: (props: { node: GraphNode }) => (
     <div data-testid={`xray-building-${props.node.id}`} />
   ),
@@ -71,7 +73,7 @@ vi.mock('./CityEdge', () => ({
   },
 }))
 
-vi.mock('./GroundPlane', () => ({
+vi.mock('../../views/GroundPlane', () => ({
   GroundPlane: () => <div data-testid="ground-plane" />,
 }))
 
@@ -79,25 +81,25 @@ vi.mock('./UndergroundLayer', () => ({
   UndergroundLayer: () => <div data-testid="underground-layer" />,
 }))
 
-vi.mock('../components/DistrictGround', () => ({
+vi.mock('../../components/DistrictGround', () => ({
   DistrictGround: (props: Record<string, unknown>) => {
     ;(mockDistrictGroundCalls as unknown as Array<Record<string, unknown>>).push(props)
     return <div data-testid={`district-ground-${props.label}`} />
   },
 }))
 
-vi.mock('../components/ClusterBuilding', () => ({
+vi.mock('../../components/ClusterBuilding', () => ({
   ClusterBuilding: (props: Record<string, unknown>) => {
     ;(mockClusterBuildingCalls as unknown as Array<Record<string, unknown>>).push(props)
     return <div data-testid={`cluster-building-${props.districtName}`} />
   },
 }))
 
-vi.mock('../components/LodController', () => ({
+vi.mock('../../components/LodController', () => ({
   LodController: () => <div data-testid="lod-controller" />,
 }))
 
-vi.mock('../components/buildings', () => ({
+vi.mock('../../components/buildings', () => ({
   ClassBuilding: (props: { node: GraphNode }) => {
     mockClassBuildingCalls.push({ node: props.node })
     return <div data-testid={`class-building-${props.node.id}`} />
@@ -126,18 +128,18 @@ vi.mock('../components/buildings', () => ({
   buildNestedTypeMap: (_nodes: GraphNode[]) => new Map<string, GraphNode[]>(),
 }))
 
-vi.mock('../components/buildingGeometry', () => ({
+vi.mock('../../components/buildingGeometry', () => ({
   getBuildingConfig: () => ({
     geometry: { width: 2, height: 3, depth: 2 },
     material: { color: '#888' },
   }),
 }))
 
-vi.mock('../components/districtGroundUtils', () => ({
+vi.mock('../../components/districtGroundUtils', () => ({
   getDistrictColor: (_id: string, index: number) => `#color-${index}`,
 }))
 
-vi.mock('../components/signs', () => ({
+vi.mock('../../components/signs', () => ({
   getSignType: () => 'nameplate',
   getSignVisibility: () => true,
   renderSign: (props: Record<string, unknown>) => (
@@ -145,7 +147,7 @@ vi.mock('../components/signs', () => ({
   ),
 }))
 
-vi.mock('../components/infrastructure', () => ({
+vi.mock('../../components/infrastructure', () => ({
   PowerStation: (props: { node: GraphNode }) => (
     <div data-testid={`power-station-${props.node.id}`} />
   ),
@@ -158,12 +160,12 @@ vi.mock('../components/infrastructure', () => ({
   CityGate: (props: { node: GraphNode }) => <div data-testid={`city-gate-${props.node.id}`} />,
 }))
 
-vi.mock('../xrayUtils', () => ({
+vi.mock('../../xrayUtils', () => ({
   computeXRayWallOpacity: () => 0.05,
   shouldShowXRayDetail: () => false,
 }))
 
-vi.mock('../undergroundUtils', () => ({
+vi.mock('../../undergroundUtils', () => ({
   computeGroundOpacity: () => 1.0,
 }))
 
@@ -190,7 +192,7 @@ const mockDistrictArcs = [
   },
 ]
 
-vi.mock('../layout/engines/radialCityLayout', () => ({
+vi.mock('../../layout/engines/radialCityLayout', () => ({
   RadialCityLayoutEngine: class MockRadialCityLayoutEngine {
     layout() {
       return {
@@ -207,7 +209,7 @@ vi.mock('../layout/engines/radialCityLayout', () => ({
   },
 }))
 
-vi.mock('../layout/engines/clusterUtils', () => ({
+vi.mock('../../layout/engines/clusterUtils', () => ({
   shouldCluster: (count: number, threshold: number) => count > threshold,
   createClusterMetadata: (
     districtId: string,

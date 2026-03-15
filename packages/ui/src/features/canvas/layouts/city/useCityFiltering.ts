@@ -8,11 +8,11 @@
  */
 
 import { useMemo } from 'react'
-import { shouldCluster, createClusterMetadata } from '../layout/engines/clusterUtils'
-import { buildMethodChildMap } from '../components/buildings/floorBandUtils'
-import { useCanvasStore } from '../store'
-import type { Graph, GraphNode, Position3D } from '../../../shared/types'
-import type { ClusterMetadata } from '../layout/engines/clusterUtils'
+import { shouldCluster, createClusterMetadata } from '../../layout/engines/clusterUtils'
+import { buildMethodChildMap } from '../../components/buildings/floorBandUtils'
+import { useCanvasStore } from '../../store'
+import type { Graph, GraphNode, Position3D } from '../../../../shared/types'
+import type { ClusterMetadata } from '../../layout/engines/clusterUtils'
 
 /** Default threshold for clustering — districts with more nodes collapse at LOD 1 */
 const DEFAULT_CLUSTER_THRESHOLD = 20

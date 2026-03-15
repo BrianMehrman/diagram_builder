@@ -8,13 +8,13 @@
  */
 
 import { useMemo } from 'react'
-import { useCanvasStore } from '../store'
-import { DependencyTunnel } from './DependencyTunnel'
-import { TunnelJunction } from './TunnelJunction'
-import { filterImportEdges } from '../undergroundUtils'
-import { countTunnelsPerNode } from '../tunnelEnhancedUtils'
-import type { DependencyType } from '../tunnelEnhancedUtils'
-import type { Graph, GraphEdge, Position3D } from '../../../shared/types'
+import { useCanvasStore } from '../../store'
+import { DependencyTunnel } from '../../views/DependencyTunnel'
+import { TunnelJunction } from '../../views/TunnelJunction'
+import { filterImportEdges } from '../../undergroundUtils'
+import { countTunnelsPerNode } from '../../tunnelEnhancedUtils'
+import type { DependencyType } from '../../tunnelEnhancedUtils'
+import type { Graph, GraphEdge, Position3D } from '../../../../shared/types'
 
 interface UndergroundLayerProps {
   graph: Graph

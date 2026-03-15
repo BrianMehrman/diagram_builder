@@ -7,7 +7,7 @@
 
 import { useCanvasStore } from '../store'
 import type { ViewMode } from '../store'
-import { CityView } from './CityView'
+import { CityView } from '../layouts/city/CityView'
 import { BuildingView } from './BuildingView'
 import { CellView } from './CellView'
 import type { Graph } from '../../../shared/types'
