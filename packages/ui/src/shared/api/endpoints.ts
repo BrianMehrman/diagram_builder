@@ -20,7 +20,7 @@ import type {
   CreateCodebaseRequest,
   CodebasesListResponse,
 } from '../types/api'
-import type { Graph } from '../types'
+import type { ParseResult, IVMGraph, SemanticTier } from '@diagram-builder/core'
 import type { Viewpoint, Workspace } from '../types'
 
 /**
@@ -53,7 +53,13 @@ export const parsing = {
  * Graph query endpoints
  */
 export const graph = {
-  getFullGraph: (repoId: string) => apiClient.get<Graph>(`/api/graph/${repoId}`),
+  getFullGraph: (repoId: string) => apiClient.get<IVMGraph>(`/api/graph/${repoId}`),
+
+  getParseResult: (repoId: string) =>
+    apiClient.get<ParseResult>(`/api/graph/${repoId}/parse-result`),
+
+  getTier: (repoId: string, tier: SemanticTier) =>
+    apiClient.get<IVMGraph>(`/api/graph/${repoId}/tier/${tier}`),
 
   query: (request: GraphQueryRequest) =>
     apiClient.post<GraphQueryResponse>('/api/graph/query', request),
