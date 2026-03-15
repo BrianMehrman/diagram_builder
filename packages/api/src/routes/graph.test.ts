@@ -45,6 +45,8 @@ const mockNodes = [
     complexity: 5,
     dependencyCount: 2,
     dependentCount: 1,
+    visibility: 'public',
+    methodCount: 5,
   },
   {
     id: 'node-789',
@@ -244,6 +246,20 @@ describe('Graph Query Endpoints', () => {
       expect(response.status).toBe(404)
       expect(response.body.type).toContain('not-found')
       expect(response.body.title).toBe('Repository not found')
+    })
+
+    it('puts visual rendering fields in metadata.properties, not top-level', async () => {
+      const res = await request(app)
+        .get(`/api/graph/${mockRepoId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+
+      expect(res.status).toBe(200)
+      const node = res.body.nodes[0]
+      expect(node.metadata.properties).toBeDefined()
+      expect(node.metadata.properties.methodCount).toBeDefined()
+      expect(node.metadata.properties.visibility).toBeDefined()
+      expect(node.methodCount).toBeUndefined()
+      expect(node.visibility).toBeUndefined()
     })
 
     it('should cache graph results', async () => {
