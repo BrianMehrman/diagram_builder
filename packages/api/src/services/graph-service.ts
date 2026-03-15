@@ -8,6 +8,7 @@
 import { runQuery } from '../database/query-utils'
 import { buildCacheKey } from '../cache/cache-keys'
 import * as cache from '../cache/cache-utils'
+import { buildParseResult } from '@diagram-builder/parser'
 import type {
   IVMGraph,
   IVMNode,
@@ -17,6 +18,7 @@ import type {
   EdgeType,
   LODLevel,
   BoundingBox,
+  ParseResult,
 } from '@diagram-builder/core'
 
 /**
@@ -232,6 +234,25 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
   await cache.set(cacheKey, graph)
 
   return graph
+}
+
+/**
+ * Get ParseResult for a repository — full graph + GroupHierarchy + pre-computed tiers
+ *
+ * @param repoId - Repository ID
+ * @returns ParseResult with graph, hierarchy, and tiers, or null if not found
+ */
+export async function getParseResult(repoId: string): Promise<ParseResult | null> {
+  const cacheKey = buildCacheKey('parse-result', repoId)
+  const cached = await cache.get<ParseResult>(cacheKey)
+  if (cached) return cached
+
+  const graph = await getFullGraph(repoId)
+  if (!graph) return null
+
+  const result = buildParseResult(graph)
+  await cache.set(cacheKey, result)
+  return result
 }
 
 /**
