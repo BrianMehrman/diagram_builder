@@ -64,6 +64,19 @@ const mockNodes = [
     startLine: 10,
     endLine: 30,
   },
+  {
+    id: 'node-abstract-1',
+    type: 'abstract_class' as NodeType,
+    label: 'AbstractBase',
+    path: '/test/repo/AbstractBase.ts',
+    x: 2,
+    y: 2,
+    z: 2,
+    lod: 3 as LODLevel,
+    language: 'typescript',
+    loc: 50,
+    complexity: 4,
+  },
 ]
 
 const mockEdges = [
@@ -103,8 +116,8 @@ vi.mock('../database/query-utils', () => {
         return []
       }
 
-      // Mock edges query
-      if (query.includes('MATCH (source)-[e]->(target)')) {
+      // Mock edges query (full graph: returns edges with source.id as source)
+      if (query.includes('MATCH (source)-[e]->(target)') && query.includes('source.id as source')) {
         if (params.repoId === mockRepoId) {
           return mockEdges
         }
@@ -119,8 +132,8 @@ vi.mock('../database/query-utils', () => {
         return []
       }
 
-      // Mock dependencies query
-      if (query.includes('MATCH (source)-[e]->(target)') && query.includes('WHERE type(e) IN')) {
+      // Mock dependencies query (node deps: returns DISTINCT target.id)
+      if (query.includes('MATCH (source)-[e]->(target)') && query.includes('DISTINCT target.id')) {
         if (params.nodeId === mockNodeId) {
           return [mockNodes[1]]
         }
@@ -148,6 +161,29 @@ vi.mock('../cache/cache-utils', () => ({
   invalidatePattern: vi.fn().mockResolvedValue(undefined),
   DEFAULT_CACHE_TTL: 300,
 }))
+
+vi.mock('@diagram-builder/parser', () => {
+  const emptyGraph = { nodes: [], edges: [], metadata: { name: 'test', schemaVersion: '1.0.0', generatedAt: '', rootPath: '/', stats: { totalNodes: 0, totalEdges: 0, nodesByType: {}, edgesByType: {} }, languages: [] }, bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } } }
+  return {
+    buildParseResult: vi.fn().mockReturnValue({
+      graph: emptyGraph,
+      hierarchy: { root: { id: 'root', nodeIds: [], children: [] } },
+      tiers: { 0: emptyGraph, 1: emptyGraph, 2: emptyGraph, 3: emptyGraph, 4: emptyGraph, 5: emptyGraph },
+    }),
+  }
+})
+
+vi.mock('@diagram-builder/core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@diagram-builder/core')>()
+  const emptyGraph = { nodes: [], edges: [], metadata: { name: 'test', schemaVersion: '1.0.0', generatedAt: '', rootPath: '/', stats: { totalNodes: 0, totalEdges: 0, nodesByType: {}, edgesByType: {} }, languages: [] }, bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } } }
+  return {
+    ...actual,
+    createViewResolver: vi.fn().mockReturnValue({
+      getTier: vi.fn().mockReturnValue(emptyGraph),
+      getView: vi.fn(),
+    }),
+  }
+})
 
 describe('Graph Query Endpoints', () => {
   let app: Express
@@ -260,6 +296,18 @@ describe('Graph Query Endpoints', () => {
       expect(node.metadata.properties.visibility).toBeDefined()
       expect(node.methodCount).toBeUndefined()
       expect(node.visibility).toBeUndefined()
+    })
+
+    it('coerces abstract_class type to class with isAbstract in metadata.properties', async () => {
+      const res = await request(app)
+        .get(`/api/graph/${mockRepoId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+
+      expect(res.status).toBe(200)
+      const abstractNode = res.body.nodes.find((n: any) => n.metadata.properties?.isAbstract === true)
+      expect(abstractNode).toBeDefined()
+      expect(abstractNode.type).toBe('class')
+      expect((abstractNode as any).abstractClass).toBeUndefined()
     })
 
     it('should cache graph results', async () => {
@@ -492,6 +540,53 @@ describe('Graph Query Endpoints', () => {
 
       expect(response.status).toBe(200)
       expect(response.body.metadata.name).toBe('cached-repo')
+    })
+  })
+
+  describe('GET /:repoId/parse-result', () => {
+    it('returns 200 with ParseResult shape', async () => {
+      const res = await request(app)
+        .get(`/api/graph/${mockRepoId}/parse-result`)
+        .set('Authorization', `Bearer ${authToken}`)
+
+      expect(res.status).toBe(200)
+      expect(res.body).toHaveProperty('graph')
+      expect(res.body).toHaveProperty('hierarchy')
+      expect(res.body).toHaveProperty('tiers')
+      expect(res.body.graph.nodes).toBeInstanceOf(Array)
+    })
+
+    it('returns 404 for unknown repository', async () => {
+      const res = await request(app)
+        .get('/api/graph/nonexistent/parse-result')
+        .set('Authorization', `Bearer ${authToken}`)
+
+      expect(res.status).toBe(404)
+    })
+
+    it('requires authentication', async () => {
+      const res = await request(app).get(`/api/graph/${mockRepoId}/parse-result`)
+      expect(res.status).toBe(401)
+    })
+  })
+
+  describe('GET /:repoId/tier/:tier', () => {
+    it('returns 200 with IVMGraph for a valid tier (0-5)', async () => {
+      const res = await request(app)
+        .get(`/api/graph/${mockRepoId}/tier/3`)
+        .set('Authorization', `Bearer ${authToken}`)
+
+      expect(res.status).toBe(200)
+      expect(res.body).toHaveProperty('nodes')
+      expect(res.body).toHaveProperty('edges')
+    })
+
+    it('returns 400 for an invalid tier value', async () => {
+      const res = await request(app)
+        .get(`/api/graph/${mockRepoId}/tier/99`)
+        .set('Authorization', `Bearer ${authToken}`)
+
+      expect(res.status).toBe(400)
     })
   })
 })

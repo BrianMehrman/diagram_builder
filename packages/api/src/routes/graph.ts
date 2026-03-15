@@ -15,10 +15,13 @@ import {
   getNodeDetails,
   getNodeDependencies,
   executeCustomQuery,
+  getParseResult,
 } from '../services/graph-service'
 import { customQuerySchema } from '../validation/graph-schemas'
 import { ValidationError, NotFoundError } from '../errors'
 import { asyncHandler } from '../utils/async-handler'
+import { createViewResolver } from '@diagram-builder/core'
+import type { SemanticTier } from '@diagram-builder/core'
 
 const graphRouter = Router()
 
@@ -141,6 +144,50 @@ graphRouter.post(
       }
       throw error
     }
+  })
+)
+
+/**
+ * GET /api/graph/:repoId/parse-result
+ * Get ParseResult (graph + hierarchy + pre-computed tiers)
+ */
+graphRouter.get(
+  '/:repoId/parse-result',
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { repoId } = req.params
+    if (!repoId) throw new ValidationError('Invalid request', 'Repository ID is required')
+
+    const result = await getParseResult(repoId)
+    if (!result) throw new NotFoundError('Repository not found', `No graph data for ${repoId}`)
+
+    res.json(result)
+  })
+)
+
+/**
+ * GET /api/graph/:repoId/tier/:tier
+ * Get a single pre-computed tier view (0-5)
+ */
+graphRouter.get(
+  '/:repoId/tier/:tier',
+  authenticate,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { repoId, tier } = req.params
+    const tierNum = Number(tier)
+
+    if (!repoId) throw new ValidationError('Invalid request', 'Repository ID is required')
+    if (isNaN(tierNum) || tierNum < 0 || tierNum > 5) {
+      throw new ValidationError('Invalid tier', 'Tier must be an integer between 0 and 5')
+    }
+
+    const result = await getParseResult(repoId)
+    if (!result) throw new NotFoundError('Repository not found', `No graph data for ${repoId}`)
+
+    const resolver = createViewResolver(result)
+    const tierGraph = resolver.getTier(tierNum as SemanticTier)
+
+    res.json(tierGraph)
   })
 )
 
