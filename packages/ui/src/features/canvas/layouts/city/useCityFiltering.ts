@@ -8,11 +8,19 @@
  */
 
 import { useMemo } from 'react'
+import { SemanticTier } from '@diagram-builder/core'
+import type { GroupNode } from '@diagram-builder/core'
 import { shouldCluster, createClusterMetadata } from '../../layout/engines/clusterUtils'
 import { buildMethodChildMap } from '../../components/buildings/floorBandUtils'
 import { useCanvasStore } from '../../store'
 import type { IVMGraph, IVMNode, Position3D } from '../../../../shared/types'
 import type { ClusterMetadata } from '../../layout/engines/clusterUtils'
+
+/** Recursively collect all Module-tier groups from the hierarchy root */
+function getModuleGroups(root: GroupNode): GroupNode[] {
+  if (root.tier === SemanticTier.Module) return [root]
+  return root.children.flatMap(getModuleGroups)
+}
 
 /** Default threshold for clustering — districts with more nodes collapse at LOD 1 */
 const DEFAULT_CLUSTER_THRESHOLD = 20
@@ -51,6 +59,7 @@ export function useCityFiltering(
   const lodLevel = useCanvasStore((s) => s.lodLevel)
   const isXRayMode = useCanvasStore((s) => s.isXRayMode)
   const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion)
+  const parseResult = useCanvasStore((s) => s.parseResult)
 
   // Separate internal and external nodes
   const internalNodes = useMemo(() => graph.nodes.filter((n) => !(n.metadata.properties?.isExternal as boolean | undefined)), [graph.nodes])
@@ -60,42 +69,26 @@ export function useCityFiltering(
     [graph.nodes]
   )
 
-  // Group ALL internal nodes by directory — used for cross-district edge detection
-  // and district-level data (CityAtmosphere). Includes files, classes, methods, etc.
-  const districtGroups = useMemo(() => {
-    const groups = new Map<string, string[]>()
-    for (const node of internalNodes) {
-      const filePath = (node.metadata?.path as string) ?? node.metadata.label ?? ''
-      const lastSlash = filePath.lastIndexOf('/')
-      const dir = lastSlash >= 0 ? filePath.substring(0, lastSlash) : 'root'
-      const existing = groups.get(dir)
-      if (existing) {
-        existing.push(node.id)
-      } else {
-        groups.set(dir, [node.id])
-      }
+  // Group nodes by GroupHierarchy Module-tier groups — used for cross-district edge
+  // detection and district-level data (CityAtmosphere).
+  const { districtGroups, fileDistrictGroups } = useMemo(() => {
+    const empty = {
+      districtGroups: new Map<string, string[]>(),
+      fileDistrictGroups: new Map<string, string[]>(),
     }
-    return groups
-  }, [internalNodes])
-
-  // Group only FILE nodes by directory for clustering — mirrors radialCityLayout's
-  // district grouping so cluster counts and centroids match the visible scene.
-  const fileDistrictGroups = useMemo(() => {
-    const groups = new Map<string, string[]>()
-    for (const node of internalNodes) {
-      if (node.type !== 'file') continue
-      const filePath = (node.metadata?.path as string) ?? node.metadata.label ?? ''
-      const lastSlash = filePath.lastIndexOf('/')
-      const dir = lastSlash >= 0 ? filePath.substring(0, lastSlash) : 'root'
-      const existingFile = groups.get(dir)
-      if (existingFile) {
-        existingFile.push(node.id)
-      } else {
-        groups.set(dir, [node.id])
-      }
+    if (!parseResult) return empty
+    const moduleGroups = getModuleGroups(parseResult.hierarchy.root)
+    const nodeMap = new Map(graph.nodes.map((n) => [n.id, n]))
+    return {
+      districtGroups: new Map(moduleGroups.map((g) => [g.id, g.nodeIds])),
+      fileDistrictGroups: new Map(
+        moduleGroups.map((g) => [
+          g.id,
+          g.nodeIds.filter((id) => nodeMap.get(id)?.type === 'file'),
+        ])
+      ),
     }
-    return groups
-  }, [internalNodes])
+  }, [parseResult, graph.nodes])
 
   // Reverse lookup: nodeId → district path (for cross-district edge detection)
   const nodeDistrict = useMemo(() => {
