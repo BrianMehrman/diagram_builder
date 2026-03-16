@@ -7,12 +7,12 @@
  * Extracted from CityView to enable sharing across sub-orchestrators.
  */
 
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useRef } from 'react'
 import { RadialCityLayoutEngine } from '../../layout/engines/radialCityLayout'
 import { flattenHierarchicalLayout } from '../../layout/hierarchicalUtils'
 import { useCanvasStore } from '../../store'
 import { SemanticTier } from '@diagram-builder/core'
-import type { NodeType, EdgeType } from '@diagram-builder/core'
+import type { GroupNode, NodeType, EdgeType } from '@diagram-builder/core'
 import type { IVMGraph, Position3D } from '../../../../shared/types'
 import type { DistrictArcMetadata } from '../../layout/engines/radialCityLayout'
 import type { BoundingBox, DistrictLayout, ExternalZoneLayout } from '../../layout/types'
@@ -54,11 +54,23 @@ export function useCityLayout(): CityLayoutResult & { graph: IVMGraph } {
   const resolver = useCanvasStore((s) => s.resolver)
   const layoutDensity = useCanvasStore((s) => s.layoutDensity)
   const setLayoutPositions = useCanvasStore((s) => s.setLayoutPositions)
+  const lodLevel = useCanvasStore((s) => s.lodLevel)
+  const focusedGroupId = useCanvasStore((s) => s.focusedGroupId)
+  const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
 
   const graph = useMemo(() => {
     if (!resolver) return EMPTY_GRAPH
-    return resolver.getTier(SemanticTier.File)
-  }, [resolver])
+
+    if (lodLevel <= 1) return resolver.getTier(SemanticTier.Module)
+    if (lodLevel === 2) return resolver.getTier(SemanticTier.File)
+    if (lodLevel === 3) {
+      if (!focusedGroupId) return resolver.getTier(SemanticTier.File)
+      return resolver.getView({ baseTier: SemanticTier.File, expand: [focusedGroupId] }).graph
+    }
+    // lodLevel === 4
+    if (!selectedNodeId) return resolver.getTier(SemanticTier.Symbol)
+    return resolver.getView({ baseTier: SemanticTier.Symbol, focalNodeId: selectedNodeId }).graph
+  }, [resolver, lodLevel, focusedGroupId, selectedNodeId])
 
   const layout = useMemo(() => {
     const engine = new RadialCityLayoutEngine()
@@ -71,6 +83,55 @@ export function useCityLayout(): CityLayoutResult & { graph: IVMGraph } {
   useEffect(() => {
     setLayoutPositions(layout.flatPositions)
   }, [layout.flatPositions, setLayoutPositions])
+
+  // Centroid computation: determine closest module group to camera and set focusedGroupId
+  const setFocusedGroupId = useCanvasStore((s) => s.setFocusedGroupId)
+  const parseResult = useCanvasStore((s) => s.parseResult)
+  const cameraPosition = useCanvasStore((s) => s.camera.position)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (!parseResult || !layout.flatPositions.size) return
+
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      function getModuleGroups(root: GroupNode): GroupNode[] {
+        if (root.tier === SemanticTier.Module) return [root]
+        return root.children.flatMap(getModuleGroups)
+      }
+
+      const moduleGroups = getModuleGroups(parseResult.hierarchy.root)
+      let closestId: string | null = null
+      let closestDist = Infinity
+
+      for (const group of moduleGroups) {
+        const groupPositions = group.nodeIds
+          .map((id) => layout.flatPositions.get(id))
+          .filter(Boolean) as { x: number; y: number; z: number }[]
+        if (!groupPositions.length) continue
+
+        const cx = groupPositions.reduce((s, p) => s + p.x, 0) / groupPositions.length
+        const cy = groupPositions.reduce((s, p) => s + p.y, 0) / groupPositions.length
+        const cz = groupPositions.reduce((s, p) => s + p.z, 0) / groupPositions.length
+
+        const dx = cameraPosition.x - cx
+        const dy = cameraPosition.y - cy
+        const dz = cameraPosition.z - cz
+        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz)
+
+        if (dist < closestDist) {
+          closestDist = dist
+          closestId = group.id
+        }
+      }
+
+      setFocusedGroupId(closestId)
+    }, 300)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [layout.flatPositions, parseResult, cameraPosition, setFocusedGroupId])
 
   const groundWidth = layout.bounds.max.x - layout.bounds.min.x
   const groundDepth = layout.bounds.max.z - layout.bounds.min.z

@@ -255,3 +255,165 @@ describe('useCityLayout resolver integration', () => {
     expect(result.current.positions.size).toBe(0)
   })
 })
+
+// ---------------------------------------------------------------------------
+// LOD → ViewResolver dispatch tests
+// ---------------------------------------------------------------------------
+
+const emptyGraph: IVMGraph = {
+  nodes: [],
+  edges: [],
+  metadata: {
+    name: '',
+    schemaVersion: '1.0.0',
+    generatedAt: '',
+    rootPath: '',
+    languages: [],
+    stats: { totalNodes: 0, totalEdges: 0, nodesByType: {} as Record<string, number>, edgesByType: {} as Record<string, number> },
+  },
+  bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
+}
+
+const mockResolver = {
+  getTier: vi.fn((_tier: SemanticTier) => emptyGraph),
+  getView: vi.fn((_config: unknown) => ({ graph: emptyGraph })),
+}
+
+describe('useCityLayout LOD dispatch', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    useCanvasStore.getState().reset()
+    mockPositions.clear()
+  })
+
+  it('uses getTier(SemanticTier.Module) at lodLevel 1', () => {
+    useCanvasStore.setState({ resolver: mockResolver as any, lodLevel: 1 })
+    renderHook(() => useCityLayout())
+    expect(mockResolver.getTier).toHaveBeenCalledWith(SemanticTier.Module)
+  })
+
+  it('uses getTier(SemanticTier.File) at lodLevel 2', () => {
+    useCanvasStore.setState({ resolver: mockResolver as any, lodLevel: 2 })
+    renderHook(() => useCityLayout())
+    expect(mockResolver.getTier).toHaveBeenCalledWith(SemanticTier.File)
+  })
+
+  it('uses getView with expand when lodLevel is 3 and focusedGroupId is set', () => {
+    useCanvasStore.setState({ resolver: mockResolver as any, lodLevel: 3, focusedGroupId: 'group:mod1' })
+    renderHook(() => useCityLayout())
+    expect(mockResolver.getView).toHaveBeenCalledWith({
+      baseTier: SemanticTier.File,
+      expand: ['group:mod1'],
+    })
+  })
+
+  it('falls back to getTier(SemanticTier.File) when lodLevel is 3 but focusedGroupId is null', () => {
+    useCanvasStore.setState({ resolver: mockResolver as any, lodLevel: 3, focusedGroupId: null })
+    renderHook(() => useCityLayout())
+    expect(mockResolver.getTier).toHaveBeenCalledWith(SemanticTier.File)
+    expect(mockResolver.getView).not.toHaveBeenCalled()
+  })
+
+  it('uses getView({ baseTier: SemanticTier.Symbol, focalNodeId }) at lodLevel 4 when selectedNodeId is set', () => {
+    useCanvasStore.setState({ resolver: mockResolver as any, lodLevel: 4, selectedNodeId: 'node-x' })
+    renderHook(() => useCityLayout())
+    expect(mockResolver.getView).toHaveBeenCalledWith({
+      baseTier: SemanticTier.Symbol,
+      focalNodeId: 'node-x',
+    })
+  })
+
+  it('falls back to getTier(SemanticTier.Symbol) at lodLevel 4 when selectedNodeId is null', () => {
+    useCanvasStore.setState({ resolver: mockResolver as any, lodLevel: 4, selectedNodeId: null })
+    renderHook(() => useCityLayout())
+    expect(mockResolver.getTier).toHaveBeenCalledWith(SemanticTier.Symbol)
+    expect(mockResolver.getView).not.toHaveBeenCalled()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// focusedGroupId centroid computation tests
+// ---------------------------------------------------------------------------
+
+function buildCentroidTestParseResult(): ParseResult {
+  const fileNodeA: IVMNode = {
+    id: 'file:a',
+    type: 'file',
+    lod: SemanticTier.File,
+    position: { x: 0, y: 0, z: 0 },
+    metadata: { label: 'a.ts', path: 'a.ts', properties: {} },
+  }
+  const graph: IVMGraph = {
+    nodes: [fileNodeA],
+    edges: [],
+    metadata: {
+      name: 'test',
+      schemaVersion: '1.0.0',
+      generatedAt: '',
+      rootPath: '',
+      languages: [],
+      stats: {
+        totalNodes: 1,
+        totalEdges: 0,
+        nodesByType: {} as Record<string, number>,
+        edgesByType: {} as Record<string, number>,
+      },
+    },
+    bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
+  }
+  return {
+    graph,
+    hierarchy: {
+      root: {
+        id: 'group:root',
+        label: 'root',
+        tier: SemanticTier.Repository,
+        nodeIds: [],
+        children: [
+          {
+            id: 'group:mod1',
+            label: 'mod1',
+            tier: SemanticTier.Module,
+            nodeIds: ['file:a'],
+            children: [],
+          },
+        ],
+      },
+      tierCount: {} as any,
+      edgesByTier: {} as any,
+    },
+    tiers: { 0: graph, 1: graph, 2: graph, 3: graph, 4: graph, 5: graph } as any,
+  }
+}
+
+describe('focusedGroupId centroid computation', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    useCanvasStore.getState().reset()
+    mockPositions.clear()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('calls setFocusedGroupId after debounce when positions are available', async () => {
+    const parseResult = buildCentroidTestParseResult()
+    const realResolver = createViewResolver(parseResult)
+
+    // Seed the mock layout with a position for file:a
+    mockPositions.set('file:a', { x: 10, y: 0, z: 10 })
+
+    useCanvasStore.setState({
+      resolver: realResolver,
+      parseResult,
+      camera: { position: { x: 0, y: 0, z: 0 }, target: { x: 0, y: 0, z: 0 }, zoom: 1 },
+    })
+
+    renderHook(() => useCityLayout())
+    vi.advanceTimersByTime(350)
+
+    const focusedGroupId = useCanvasStore.getState().focusedGroupId
+    expect(focusedGroupId).toBe('group:mod1')
+  })
+})
