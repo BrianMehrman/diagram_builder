@@ -13,13 +13,13 @@ A four-agent development team for the diagram_builder project. Agents work auton
 
 ## Artifact Structure
 
-All project artifacts live under `docs/` in the repository. Existing `specs/` and `plans/` directories are preserved unchanged. New directories:
+Everything lives under `docs/` in the repository. Existing `specs/` and `plans/` directories are preserved. New directories:
 
 ```
 docs/
   epics/            E{N}.md — epic definitions
-  stories/          {epic}-{story}-{slug}.md — story files
-  sprints/          sprint-{N}.md — sprint files
+  stories/          {epic}-{N}-{slug}.md — story files
+  sprints/          sprint-{N}.md, current.md (plain file with active sprint ID)
   specs/            design specs (existing)
   plans/            implementation plans (existing)
   agents/
@@ -31,19 +31,18 @@ docs/
 
 ### Story Frontmatter Schema
 
-All story files use YAML frontmatter so agents can query state via grep/glob:
-
 ```yaml
 ---
 id: "{epic}-{N}"
 epic: "E{N}"
 title: "Short imperative title"
-status: pending       # pending | in-progress | review | done | blocked
-assigned-to: dev      # dev | ops | architect | manager
+type: code           # code | docs — docs stories skip ops validation
+status: pending      # pending | in-progress | review | done | blocked
+assigned-to: unassigned  # unassigned | dev | ops | architect | manager
 sprint: S{N}
-priority: high        # critical | high | medium | low
-blocked-by: []        # list of story IDs blocking this one
-tags: []
+priority: high       # critical | high | medium | low
+blocked-by: []       # story IDs that must be done before this one can start
+tags: []             # optional: [api, canvas, ui, parser, infra, ...]
 ---
 ```
 
@@ -53,7 +52,7 @@ tags: []
 ---
 id: "E{N}"
 title: "Epic title"
-status: active        # active | complete | planned
+status: active       # active | complete | planned | blocked
 phase: "Phase N"
 goal: "One-line goal"
 ---
@@ -64,16 +63,19 @@ goal: "One-line goal"
 ```yaml
 ---
 id: "S{N}"
-status: active        # active | planned | complete
+status: active       # active | planned | complete
 start: YYYY-MM-DD
 end: YYYY-MM-DD
 goal: "Sprint goal"
+stories: []          # convenience index — canonical membership is the story's own sprint: field
 ---
 ```
 
+`docs/sprints/current.md` is a plain text file containing only the active sprint ID (e.g., `S3`). Not a symlink — symlinks have git portability issues. Manager updates this file when opening or closing a sprint.
+
 ### Agent Memory
 
-Each agent owns a directory at `docs/agents/{agent-name}/`. Files are free-form markdown — no schema enforced. Agents create whatever files they need: per-task scratchpads, running notes, working hypotheses, partial findings. All files are committed to git so state survives session restarts.
+Each agent owns `docs/agents/{agent-name}/`. Files are free-form markdown — no schema enforced. Agents create whatever files they need: per-task scratchpads, running notes, working hypotheses. All files are committed to git so state survives session restarts. Agents should periodically archive old working files by moving them to `docs/agents/{agent-name}/archive/`.
 
 ---
 
@@ -81,15 +83,15 @@ Each agent owns a directory at `docs/agents/{agent-name}/`. Files are free-form 
 
 ### Developer (`dev`)
 
-**Purpose:** Implement stories.
+**Purpose:** Implement code stories.
 
 **Workflow:**
-1. Reads assigned story from `docs/stories/`
-2. Checks `blocked-by` — stops if any blocker is not `done`
-3. Implements code using TDD (superpowers:test-driven-development)
-4. Updates story frontmatter: `pending → in-progress → review`
-5. Commits code with story ID in commit message
-6. Creates task breakdowns in `docs/agents/dev/` when needed
+1. Reads assigned story (provided by manager in dispatch prompt — not self-assigned)
+2. Checks `blocked-by` — stops and writes blocker report if any blocker is not `done`
+3. Sets story `status: in-progress` in frontmatter (manager already set this on dispatch — dev confirms)
+4. Implements code using TDD
+5. Updates story `status: review`, commits code with story ID in commit message
+6. Creates task breakdowns in `docs/agents/dev/` when a story is too large for one pass
 
 **Outputs:** Working code, passing tests, story at `review` status.
 
@@ -97,55 +99,79 @@ Each agent owns a directory at `docs/agents/{agent-name}/`. Files are free-form 
 
 ### Operations (`ops`)
 
-**Purpose:** Validate completed work — testing, debugging, runtime verification.
+**Purpose:** Validate completed code stories — testing, debugging, runtime verification.
 
 **Workflow:**
-1. Picks up stories at `review` status
-2. Runs test suite for affected packages
-3. Starts dev server, checks for runtime errors
-4. Verifies acceptance criteria from the story
-5. Updates story: `review → done` (pass) or `review → in-progress` (fail, with findings)
-6. Writes findings to `docs/agents/ops/`
+1. Reads assigned story (provided by manager — not self-assigned)
+2. Runs test suite for affected packages: `cd packages/{pkg} && npx vitest run`
+3. Starts dev server, verifies process doesn't crash within 10 seconds (startup check only)
+4. If story acceptance criteria require UI verification, uses Playwright for browser-level checks
+5. Verifies each acceptance criterion from the story is met
+6. Updates story: `review → done` (all AC met, tests pass) or `review → in-progress` (failed, with findings)
+7. Writes findings to `docs/agents/ops/{story-id}-report.md`
 
-**Outputs:** Validated stories, test reports, runtime error findings.
+**Note:** `type: docs` stories skip ops entirely — manager routes them directly to `done` after architect review.
+
+**Outputs:** Validated stories, test/runtime reports in ops agent memory.
 
 ---
 
 ### Architect (`architect`)
 
-**Purpose:** Design, plan, and maintain project documentation.
+**Purpose:** Design, plan, and maintain project documentation and the story backlog.
 
-**Workflow:**
-1. Creates and maintains epics (`docs/epics/`), design specs (`docs/specs/`), and implementation plans (`docs/plans/`)
-2. Reviews completed epics for stale or missing documentation
-3. Audits `_bmad-output/` — migrates relevant artifacts into `docs/`, marks others archived
-4. Writes new phase designs using brainstorming + writing-plans workflow
-5. Ensures plans and specs stay aligned as implementation progresses
+**Task priority order (manager dispatches with a specific task type):**
+1. **Write stories** for a specified epic — highest priority when dev backlog is empty
+2. **Write spec + plan** for a new phase — triggered when current epic nears completion
+3. **Audit docs** — review completed epics for stale artifacts, clean up `_bmad-output/` migration
+4. **Review alignment** — verify existing plans/specs match current implementation
 
-**Outputs:** Epics, specs, plans, story definitions, doc audit results.
+**Workflow (per task type):**
+- *Write stories:* Creates story files in `docs/stories/` with full acceptance criteria and task breakdowns
+- *Write spec + plan:* Follows brainstorming → spec → plan workflow; writes to `docs/specs/` and `docs/plans/`
+- *Audit docs:* Scans `_bmad-output/` and `docs/`; migrates, archives, or flags stale content
+- *Review alignment:* Reads recent commits + current specs; flags drift in `docs/agents/architect/`
+
+**Outputs:** Story files, epics, specs, plans, audit reports.
 
 ---
 
 ### Manager (`manager`)
 
-**Purpose:** Coordinate and sequence the other agents. Surface blockers to Brian.
+**Purpose:** Coordinate and sequence agents. Surface blockers to Brian.
 
 **Workflow:**
-1. Scans `docs/stories/` frontmatter to build current sprint state
-2. Identifies ready work (status: `pending`, no unresolved `blocked-by`)
-3. Identifies blockers (status: `blocked`) — surfaces to Brian before dispatching
-4. Dispatches dev/ops/architect subagents with precise task context
-5. Updates `docs/sprints/current.md` with progress
-6. Creates/closes sprints as needed
-7. Writes coordination decisions to `docs/agents/manager/`
+1. Reads `docs/sprints/current.md` to get the active sprint ID
+2. Scans `docs/stories/` frontmatter for all stories in the active sprint
+3. **Surfaces blockers first** — reports any `status: blocked` stories to Brian before dispatching
+4. Identifies ready stories: `status: pending`, all `blocked-by` entries are `done`
+5. Sets `status: in-progress` and `assigned-to: {agent}` in story frontmatter before dispatching
+6. Dispatches agents as subagents with full task context (see Dispatch Mechanism below)
+7. After dispatch completes, re-scans sprint state and updates `docs/agents/manager/sprint-log.md`
+8. Creates/closes sprints as needed
 
 **Parallelism rules:**
-- Dev and Architect can run in parallel (independent concerns)
+- Dev and Architect run in parallel (independent concerns, different files)
+- Multiple Dev agents run in parallel on independent stories
 - Ops runs after Dev (needs completed code)
-- Multiple Dev agents can run in parallel on independent stories
-- Manager dispatches and moves on — does not wait synchronously
+- Manager sets `in-progress` before dispatching — this is the only write to `pending` stories, preventing race conditions
 
-**Outputs:** Sprint state, dispatch decisions, blocker reports.
+**Unblock flow:**
+When a story is `blocked`, the manager writes a blocker report and surfaces it to Brian. Brian resolves the blocker and tells the manager. Manager clears `blocked-by`, resets `status` to either `pending` (not yet started) or `in-progress` (was mid-implementation), and resumes dispatch.
+
+**Outputs:** Sprint state, dispatch decisions, blocker reports in `docs/agents/manager/`.
+
+---
+
+## Dispatch Mechanism
+
+The manager dispatches agents as Claude Code subagents. Each dispatch prompt includes:
+- The full path to the story file
+- Relevant file paths (from the story's task list)
+- The agent's working memory directory path (`docs/agents/{agent}/`)
+- The sprint ID and any relevant context from the manager's working memory
+
+The manager does NOT pass its own session history — context is constructed fresh from artifact files each time.
 
 ---
 
@@ -153,51 +179,55 @@ Each agent owns a directory at `docs/agents/{agent-name}/`. Files are free-form 
 
 ```
 pending
-  └─► in-progress   (dev picks up, begins implementation)
-        └─► review  (dev commits, ready for ops validation)
-              ├─► done     (ops validates — AC met, tests pass)
-              └─► in-progress  (ops rejects — with findings written to ops memory)
+  └─► in-progress   (manager sets before dispatch; dev confirms)
+        └─► review  (dev commits, updates frontmatter)
+              ├─► done        (ops validates — AC met, tests pass)
+              │               (docs stories: manager sets done directly)
+              └─► in-progress (ops rejects — findings in ops memory)
 
-Any status → blocked  (agent sets blocked-by + reason in agent memory)
-                └─► manager surfaces to Brian on next invocation
+Any status → blocked
+  ├── agent sets blocked-by + reason in agent memory
+  ├── manager surfaces to Brian on next invocation
+  └── Brian resolves → manager clears blocked-by
+        ├── was pending     → reset to pending
+        └── was in-progress → reset to in-progress
 ```
 
 ---
 
 ## Coordination Flow
 
-Brian invokes the manager. Manager reads sprint state and decides what runs next.
-
 ```
 Brian → Manager
-         ├── scan docs/stories/ frontmatter
-         ├── surface any blocked stories to Brian first
-         ├── identify ready stories (pending, unblocked)
-         ├── dispatch dev / ops / architect as needed
-         └── update docs/agents/manager/ with decisions
+         ├── read current sprint ID
+         ├── scan story frontmatter for sprint stories
+         ├── surface blocked stories to Brian (stop if any)
+         ├── set in-progress + assigned-to on ready stories
+         ├── dispatch dev / ops / architect as subagents
+         └── update docs/agents/manager/sprint-log.md
 ```
 
-Agents never invoke each other directly. All coordination flows through shared artifact state (story frontmatter) and the manager.
+Agents never invoke each other directly. All coordination flows through shared artifact state (frontmatter) and the manager.
 
 ---
 
 ## Sprint Cadence
 
 1. Manager creates `docs/sprints/sprint-{N}.md` with goal and story list
-2. Updates `docs/sprints/current.md` as a pointer to the active sprint
-3. Architect populates backlog stories from epics in priority order
-4. Manager closes sprint when all stories reach `done` or `blocked`
-5. Retrospective notes written to sprint file before closing
+2. Writes sprint ID to `docs/sprints/current.md`
+3. Architect populates stories from epics in priority order — sprint can start before all stories are written (architect adds stories mid-sprint with the correct sprint ID)
+4. Manager closes sprint when all stories are `done` or `blocked` (blocked ones carry to next sprint)
+5. Manager writes retrospective notes to sprint file before closing
 
 ---
 
 ## Migration from `_bmad-output/`
 
-The existing `_bmad-output/` artifacts use a compatible story format. The Architect agent is responsible for:
+The existing BMAD artifacts use a structurally similar but syntactically different format — fields are inline markdown (`**ID:** 5-1`) rather than YAML frontmatter. Migration requires extracting inline fields and rewriting them as YAML. The Architect agent is responsible:
 
-1. Auditing all files in `_bmad-output/implementation-artifacts/`
-2. Stories that are `done` or `complete` → archive in place (add `archived: true` to frontmatter)
-3. Stories still relevant → migrate to `docs/stories/` with updated frontmatter schema
+1. Scan `_bmad-output/implementation-artifacts/` for all story files
+2. Stories with `Status: complete` or `Status: done` → add `archived: true` to frontmatter, leave in place
+3. Stories still relevant (pending, in-progress, review) → migrate to `docs/stories/` with YAML frontmatter schema above
 4. Epic files → migrate to `docs/epics/`
 5. PRD, architecture, UX docs → copy to `docs/specs/` if not already present
 
@@ -205,6 +235,4 @@ The existing `_bmad-output/` artifacts use a compatible story format. The Archit
 
 ## Open Questions
 
-- Should `docs/sprints/current.md` be a symlink or a file containing the sprint ID?
-- How should the manager handle a sprint where the architect is still writing stories — partial sprint start?
-- Should ops have access to a running dev server, or test only via `vitest`?
+None — all resolved in this spec.
