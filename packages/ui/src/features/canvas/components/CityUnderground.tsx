@@ -32,7 +32,7 @@ export function CityUnderground({ graph }: CityUndergroundProps) {
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
   const isFocusMode = selectedNodeId !== null
 
-  const { positions } = useCityLayout(graph)
+  const { positions } = useCityLayout()
   const { visibleEdges } = useCityFiltering(graph, positions)
 
   // Build a set of external node IDs for O(1) lookup

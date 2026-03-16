@@ -23,19 +23,13 @@ import { useCameraTiltAssist } from '../../hooks/useCameraTiltAssist'
 import { useFocusEscape } from '../../hooks/useFocusEscape'
 import { computeGroundOpacity } from '../../undergroundUtils'
 import { computeUndergroundGroundOpacity } from '../../views/heightUtils'
-import type { IVMGraph } from '../../../../shared/types'
-
-interface CityViewProps {
-  graph: IVMGraph
-}
-
-export function CityView({ graph }: CityViewProps) {
+export function CityView() {
   const isUndergroundMode = useCanvasStore((s) => s.isUndergroundMode)
   const visibleLayers = useCanvasStore((s) => s.visibleLayers)
   const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion)
   const undergroundVisible = useCanvasStore((s) => s.citySettings.undergroundVisible)
 
-  const { positions, groundWidth, groundDepth } = useCityLayout(graph)
+  const { positions, groundWidth, groundDepth, graph } = useCityLayout()
 
   // Tilt camera upward on node selection to reveal sky edges
   useCameraTiltAssist()

@@ -46,7 +46,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
   const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion)
   const heightEncoding = useCanvasStore((s) => s.citySettings.heightEncoding)
 
-  const { positions, districtArcs, districts } = useCityLayout(graph)
+  const { positions, districtArcs, districts } = useCityLayout()
   const { internalNodes, externalNodes, childrenByFile, methodsByClass, nodeMap } =
     useCityFiltering(graph, positions)
   const { nestedTypeMap } = useDistrictMap(graph.nodes)

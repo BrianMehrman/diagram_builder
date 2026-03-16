@@ -6,7 +6,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useCityLayout } from './useCityLayout'
 import { useCanvasStore } from '../../store'
-import type { IVMGraph, IVMNode } from '../../../../shared/types'
+import { SemanticTier } from '@diagram-builder/core'
+import { createViewResolver } from '@diagram-builder/core'
+import type { IVMNode, IVMGraph, ParseResult } from '@diagram-builder/core'
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -84,6 +86,30 @@ function createGraph(nodeCount = 3): IVMGraph {
   }
 }
 
+function buildMinimalIVMGraph(nodeOverrides: Pick<IVMNode, 'id' | 'type' | 'lod'>[]): IVMGraph {
+  const nodes: IVMNode[] = nodeOverrides.map((o) => ({
+    id: o.id,
+    type: o.type,
+    lod: o.lod,
+    position: { x: 0, y: 0, z: 0 },
+    metadata: { label: o.id, path: o.id, properties: {} },
+  }))
+  return {
+    nodes,
+    edges: [],
+    metadata: { name: 'test', schemaVersion: '1.0.0', generatedAt: '', rootPath: '', languages: [], stats: { totalNodes: nodes.length, totalEdges: 0, nodesByType: {} as Record<string, number>, edgesByType: {} as Record<string, number> } },
+    bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
+  }
+}
+
+function buildMockParseResult(graph: IVMGraph): ParseResult {
+  return {
+    graph,
+    hierarchy: { root: { id: 'group:root', label: 'root', tier: SemanticTier.Repository, nodeIds: [], children: [] }, tierCount: {} as any, edgesByTier: {} as any },
+    tiers: { 0: graph, 1: graph, 2: graph, 3: graph, 4: graph, 5: graph } as any,
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -92,6 +118,11 @@ describe('useCityLayout', () => {
   beforeEach(() => {
     useCanvasStore.getState().reset()
     mockPositions.clear()
+    // Set up a resolver so useCityLayout can read a graph from the store
+    const graph = createGraph(3)
+    const parseResult = buildMockParseResult(graph)
+    const resolver = createViewResolver(parseResult)
+    useCanvasStore.setState({ parseResult, resolver })
   })
 
   it('returns positions for all nodes', () => {
@@ -100,7 +131,7 @@ describe('useCityLayout', () => {
       mockPositions.set(n.id, { x: i * 5, y: 0, z: i * 3 })
     })
 
-    const { result } = renderHook(() => useCityLayout(graph))
+    const { result } = renderHook(() => useCityLayout())
 
     expect(result.current.positions.size).toBe(3)
     expect(result.current.positions.get('node-0')).toEqual({ x: 0, y: 0, z: 0 })
@@ -112,7 +143,7 @@ describe('useCityLayout', () => {
       mockPositions.set(n.id, { x: i, y: 0, z: i })
     })
 
-    const { result } = renderHook(() => useCityLayout(graph))
+    const { result } = renderHook(() => useCityLayout())
 
     expect(result.current.districtArcs).toHaveLength(1)
     expect(result.current.districtArcs[0]!.id).toBe('src/features')
@@ -122,7 +153,7 @@ describe('useCityLayout', () => {
     const graph = createGraph(1)
     mockPositions.set('node-0', { x: 0, y: 0, z: 0 })
 
-    const { result } = renderHook(() => useCityLayout(graph))
+    const { result } = renderHook(() => useCityLayout())
 
     // bounds: min(-50,0,-50) max(50,20,50)
     expect(result.current.groundWidth).toBe(100)
@@ -135,7 +166,7 @@ describe('useCityLayout', () => {
       mockPositions.set(n.id, { x: i, y: 0, z: i })
     })
 
-    renderHook(() => useCityLayout(graph))
+    renderHook(() => useCityLayout())
 
     const storePositions = useCanvasStore.getState().layoutPositions
     expect(storePositions.size).toBe(2)
@@ -147,7 +178,7 @@ describe('useCityLayout', () => {
       mockPositions.set(n.id, { x: i, y: 0, z: i })
     })
 
-    const { result, rerender } = renderHook(() => useCityLayout(graph))
+    const { result, rerender } = renderHook(() => useCityLayout())
     const firstPositions = result.current.positions
 
     rerender()
@@ -162,7 +193,7 @@ describe('useCityLayout', () => {
     const graph = createGraph(1)
     mockPositions.set('node-0', { x: 0, y: 0, z: 0 })
 
-    const { result } = renderHook(() => useCityLayout(graph))
+    const { result } = renderHook(() => useCityLayout())
 
     expect(result.current.districtArcs).toEqual([])
 
@@ -176,7 +207,7 @@ describe('useCityLayout', () => {
       mockPositions.set(n.id, { x: i, y: 0, z: i })
     })
 
-    const { result } = renderHook(() => useCityLayout(graph))
+    const { result } = renderHook(() => useCityLayout())
 
     expect(result.current.districts).toBeDefined()
     expect(Array.isArray(result.current.districts)).toBe(true)
@@ -186,9 +217,41 @@ describe('useCityLayout', () => {
     const graph = createGraph(1)
     mockPositions.set('node-0', { x: 0, y: 0, z: 0 })
 
-    const { result } = renderHook(() => useCityLayout(graph))
+    const { result } = renderHook(() => useCityLayout())
 
     expect(result.current.externalZones).toBeDefined()
     expect(Array.isArray(result.current.externalZones)).toBe(true)
+  })
+})
+
+describe('useCityLayout resolver integration', () => {
+  beforeEach(() => {
+    useCanvasStore.getState().reset()
+    mockPositions.clear()
+  })
+
+  it('uses resolver.getTier(SemanticTier.File) for layout when resolver is set', () => {
+    const fileTierGraph = buildMinimalIVMGraph([
+      { id: 'file:a', type: 'file', lod: SemanticTier.File },
+      { id: 'file:b', type: 'file', lod: SemanticTier.File },
+    ])
+    const mockParseResult = buildMockParseResult(fileTierGraph)
+    const resolver = createViewResolver(mockParseResult)
+
+    useCanvasStore.setState({ parseResult: mockParseResult, resolver })
+
+    fileTierGraph.nodes.forEach((n, i) => {
+      mockPositions.set(n.id, { x: i * 5, y: 0, z: i * 3 })
+    })
+
+    const { result } = renderHook(() => useCityLayout())
+
+    expect(result.current.positions.size).toBe(2)
+  })
+
+  it('returns empty layout when resolver is null', () => {
+    useCanvasStore.setState({ resolver: null })
+    const { result } = renderHook(() => useCityLayout())
+    expect(result.current.positions.size).toBe(0)
   })
 })

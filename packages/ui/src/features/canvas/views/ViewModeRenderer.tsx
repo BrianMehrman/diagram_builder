@@ -48,6 +48,6 @@ export function ViewModeRenderer({ graph }: ViewModeRendererProps) {
       return <CellView graph={graph} focusedNodeId={nodeId ?? ''} />
     case 'city':
     default:
-      return <CityView graph={graph} />
+      return <CityView />
   }
 }

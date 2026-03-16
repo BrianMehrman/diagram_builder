@@ -40,7 +40,7 @@ interface CitySkyProps {
 }
 
 export function CitySky({ graph }: CitySkyProps) {
-  const { positions } = useCityLayout(graph)
+  const { positions } = useCityLayout()
   const { visibleEdges, nodeMap } = useCityFiltering(graph, positions)
   const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion)
   const edgeTierVisibility = useCanvasStore((s) => s.citySettings.edgeTierVisibility)

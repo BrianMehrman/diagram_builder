@@ -39,7 +39,7 @@ export function CityAtmosphere({ graph }: CityAtmosphereProps) {
   const overlays = useCanvasStore((s) => s.citySettings.atmosphereOverlays)
   const lodLevel = useCanvasStore((s) => s.lodLevel)
 
-  const { positions, districtArcs } = useCityLayout(graph)
+  const { positions, districtArcs } = useCityLayout()
   const { internalNodes, districtGroups, nodeMap } = useCityFiltering(graph, positions)
 
   // All hooks must be called unconditionally (React rules of hooks)

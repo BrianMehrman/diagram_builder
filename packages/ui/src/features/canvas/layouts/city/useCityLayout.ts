@@ -11,9 +11,18 @@ import { useMemo, useEffect } from 'react'
 import { RadialCityLayoutEngine } from '../../layout/engines/radialCityLayout'
 import { flattenHierarchicalLayout } from '../../layout/hierarchicalUtils'
 import { useCanvasStore } from '../../store'
+import { SemanticTier } from '@diagram-builder/core'
+import type { NodeType, EdgeType } from '@diagram-builder/core'
 import type { IVMGraph, Position3D } from '../../../../shared/types'
 import type { DistrictArcMetadata } from '../../layout/engines/radialCityLayout'
 import type { BoundingBox, DistrictLayout, ExternalZoneLayout } from '../../layout/types'
+
+const EMPTY_GRAPH: IVMGraph = {
+  nodes: [],
+  edges: [],
+  metadata: { name: '', schemaVersion: '1.0.0', generatedAt: '', rootPath: '', languages: [], stats: { totalNodes: 0, totalEdges: 0, nodesByType: {} as Record<NodeType, number>, edgesByType: {} as Record<EdgeType, number> } },
+  bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
+}
 
 export interface CityLayoutResult {
   /** Computed position for each node by ID (flattened from hierarchical result) */
@@ -41,9 +50,15 @@ export interface CityLayoutResult {
  * Uses flattenHierarchicalLayout() to produce a flat position map from
  * the two-phase hierarchical result.
  */
-export function useCityLayout(graph: IVMGraph): CityLayoutResult {
+export function useCityLayout(): CityLayoutResult & { graph: IVMGraph } {
+  const resolver = useCanvasStore((s) => s.resolver)
   const layoutDensity = useCanvasStore((s) => s.layoutDensity)
   const setLayoutPositions = useCanvasStore((s) => s.setLayoutPositions)
+
+  const graph = useMemo(() => {
+    if (!resolver) return EMPTY_GRAPH
+    return resolver.getTier(SemanticTier.File)
+  }, [resolver])
 
   const layout = useMemo(() => {
     const engine = new RadialCityLayoutEngine()
@@ -69,5 +84,6 @@ export function useCityLayout(graph: IVMGraph): CityLayoutResult {
     groundDepth,
     districts: layout.districts,
     externalZones: layout.externalZones,
+    graph,
   }
 }
