@@ -23,12 +23,11 @@ import { useGlobalSearchShortcut, useGlobalKeyboardShortcuts } from '../shared/h
 import { useUIStore } from '../shared/stores/uiStore'
 import { useExportStore } from '../features/export/store'
 import { workspaces, codebases, graph } from '../shared/api/endpoints'
-import type { Workspace, IVMGraph, Position3D } from '../shared/types'
+import type { Workspace, Position3D } from '../shared/types'
 
 export function WorkspacePage() {
   const { id } = useParams<{ id: string }>()
   const [workspace, setWorkspace] = useState<Workspace | null>(null)
-  const [graphData, setGraphData] = useState<IVMGraph | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [processingStatus, setProcessingStatus] = useState<
@@ -38,6 +37,10 @@ export function WorkspacePage() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [selectedCodebaseId, setSelectedCodebaseId] = useState<string | null>(null)
   const [listRefreshTrigger, setListRefreshTrigger] = useState(0)
+
+  // ParseResult state (from canvas store)
+  const setParseResult = useCanvasStore((s) => s.setParseResult)
+  const parseResult = useCanvasStore((s) => s.parseResult)
 
   // Sync active repository to export store
   const setExportRepositoryId = useExportStore((state) => state.setRepositoryId)
@@ -50,7 +53,7 @@ export function WorkspacePage() {
   const openLeftPanel = useUIStore((state) => state.openLeftPanel)
   const [miniMapCollapsed, setMiniMapCollapsed] = useState(false)
 
-  // Track if we've loaded graph data for completed status
+  // Track if we've loaded parse result for completed status
   const loadedForCompletedRef = useRef(false)
 
   // Track if camera should fly to root after import completes
@@ -64,7 +67,7 @@ export function WorkspacePage() {
 
   // Global keyboard shortcuts (ESC, Home, C, ?, Ctrl+Shift+S)
   useGlobalKeyboardShortcuts({
-    nodes: graphData?.nodes || [],
+    nodes: parseResult?.graph.nodes ?? [],
     onFlyToNode: flyToNode,
   })
 
@@ -100,22 +103,21 @@ export function WorkspacePage() {
     setPendingCameraFlight(true)
   }, [])
 
-  // Debug: Log graphData changes
+  // Debug: Log parseResult changes
   useEffect(() => {
-    console.log('[WorkspacePage] graphData state changed:', {
-      hasData: !!graphData,
-      nodeCount: graphData?.nodes?.length || 0,
-      actualNodes: graphData?.nodes || 'undefined',
-      graphDataKeys: graphData ? Object.keys(graphData) : 'null',
+    console.log('[WorkspacePage] parseResult state changed:', {
+      hasData: !!parseResult,
+      nodeCount: parseResult?.graph.nodes.length ?? 0,
     })
-  }, [graphData])
+  }, [parseResult])
 
   // Effect: Trigger camera flight to root node after import completes
   useEffect(() => {
-    if (pendingCameraFlight && graphData?.nodes && graphData.nodes.length > 0) {
+    if (pendingCameraFlight && parseResult?.graph.nodes && parseResult.graph.nodes.length > 0) {
       // Find the root node - use the first file node as the entry point
       // Files are the top-level containers in the graph structure
-      const rootNode = graphData.nodes.find((node) => node.type === 'file') || graphData.nodes[0]
+      const rootNode =
+        parseResult.graph.nodes.find((node) => node.type === 'file') || parseResult.graph.nodes[0]
 
       if (rootNode) {
         console.log('[WorkspacePage] Flying camera to root node after import:', rootNode.id)
@@ -131,7 +133,7 @@ export function WorkspacePage() {
       // Clear the flag
       setPendingCameraFlight(false)
     }
-  }, [pendingCameraFlight, graphData, flyToNode])
+  }, [pendingCameraFlight, parseResult, flyToNode])
 
   useEffect(() => {
     console.log('[WorkspacePage] Mount effect - workspace ID:', id)
@@ -144,11 +146,11 @@ export function WorkspacePage() {
   useEffect(() => {
     if (!id) return
 
-    // If status just became 'completed' and we haven't loaded yet, load graph data
+    // If status just became 'completed' and we haven't loaded yet, load parse result
     if (processingStatus === 'completed' && !loadedForCompletedRef.current) {
-      console.log('[WorkspacePage] Status completed, loading graph data...')
+      console.log('[WorkspacePage] Status completed, loading parse result...')
       loadedForCompletedRef.current = true
-      void loadGraphData(id)
+      void loadParseResult(id)
       return
     }
 
@@ -166,14 +168,14 @@ export function WorkspacePage() {
     console.log('[WorkspacePage] Starting poll interval for status:', processingStatus)
     const pollInterval = setInterval(() => {
       console.log('[WorkspacePage] Polling for codebase status...')
-      void loadGraphData(id)
+      void loadParseResult(id)
     }, 2000)
 
     return () => {
       console.log('[WorkspacePage] Clearing poll interval')
       clearInterval(pollInterval)
     }
-  }, [id, processingStatus]) // Intentionally excluding loadGraphData to prevent loops
+  }, [id, processingStatus]) // Intentionally excluding loadParseResult to prevent loops
 
   const loadWorkspace = async (workspaceId: string) => {
     try {
@@ -181,8 +183,8 @@ export function WorkspacePage() {
       const data = await workspaces.get(workspaceId)
       setWorkspace(data)
 
-      // Load graph data from codebases
-      await loadGraphData(workspaceId)
+      // Load parse result from codebases
+      await loadParseResult(workspaceId)
     } catch (err) {
       setError('Failed to load workspace')
       console.error(err)
@@ -194,12 +196,12 @@ export function WorkspacePage() {
   const handleCodebaseSelected = async (codebaseId: string) => {
     console.log('[WorkspacePage] Codebase selected:', codebaseId)
     if (workspace?.id) {
-      await loadGraphData(workspace.id, codebaseId)
+      await loadParseResult(workspace.id, codebaseId)
     }
   }
 
-  const loadGraphData = useCallback(async (workspaceId: string, codebaseId?: string) => {
-    console.log('[WorkspacePage] ========== loadGraphData called ==========')
+  const loadParseResult = useCallback(async (workspaceId: string, codebaseId?: string) => {
+    console.log('[WorkspacePage] ========== loadParseResult called ==========')
     console.log('[WorkspacePage] Workspace ID:', workspaceId, 'Codebase ID:', codebaseId)
     try {
       // Get codebases for this workspace
@@ -239,20 +241,19 @@ export function WorkspacePage() {
       }
 
       if (completedCodebase?.repositoryId) {
-        // Fetch the graph data for this repository
-        console.log('[WorkspacePage] Loading graph for repository:', completedCodebase.repositoryId)
-        const graphResponse = await graph.getFullGraph(completedCodebase.repositoryId)
-        console.log('[WorkspacePage] IVMGraph loaded:', {
-          nodes: graphResponse.nodes?.length || 0,
-          edges: graphResponse.edges?.length || 0,
-        })
+        // Fetch the parse result for this repository
         console.log(
-          '[WorkspacePage] Calling setGraphData with:',
-          graphResponse ? 'valid data' : 'null'
+          '[WorkspacePage] Loading parse result for repository:',
+          completedCodebase.repositoryId
         )
-        setGraphData(graphResponse)
+        const result = await graph.getParseResult(completedCodebase.repositoryId)
+        console.log('[WorkspacePage] ParseResult loaded:', {
+          nodes: result.graph.nodes.length,
+          edges: result.graph.edges.length,
+        })
+        setParseResult(result)
         setExportRepositoryId(completedCodebase.repositoryId)
-        console.log('[WorkspacePage] setGraphData called')
+        console.log('[WorkspacePage] setParseResult called')
         setProcessingStatus('completed')
         setImportError(null)
         // Show success notification
@@ -377,11 +378,11 @@ export function WorkspacePage() {
       {/* Main Content */}
       <main id="main-content" className="flex-1 relative overflow-hidden" role="main">
         {/* 3D Canvas or Empty State */}
-        {graphData ? <Canvas3D graph={graphData} /> : <EmptyState onImportClick={openLeftPanel} />}
+        {parseResult ? <Canvas3D /> : <EmptyState onImportClick={openLeftPanel} />}
 
         {/* Status/Notification Region */}
         <div role="status" aria-live="polite" aria-atomic="true">
-          {/* Processing Status Indicator */}
+          {/* Processing Status Indicator — show while pending/processing */}
           {processingStatus &&
             processingStatus !== 'completed' &&
             processingStatus !== 'failed' && <CodebaseStatusIndicator status={processingStatus} />}
@@ -399,9 +400,9 @@ export function WorkspacePage() {
         )}
 
         {/* Success Notification */}
-        {showSuccess && graphData && (
+        {showSuccess && parseResult && (
           <SuccessNotification
-            message={`IVMGraph loaded with ${graphData.nodes?.length || 0} nodes`}
+            message={`Graph loaded with ${parseResult?.graph.nodes.length ?? 0} nodes`}
             onDismiss={() => setShowSuccess(false)}
           />
         )}
@@ -424,10 +425,10 @@ export function WorkspacePage() {
         <RightPanel />
 
         {/* HUD (Top Left) */}
-        <HUD nodes={graphData?.nodes || []} className="z-20" />
+        <HUD nodes={parseResult?.graph.nodes ?? []} className="z-20" />
 
         {/* Node Details Panel (Top Right) */}
-        <NodeDetails nodes={graphData?.nodes || []} className="z-20" />
+        <NodeDetails nodes={parseResult?.graph.nodes ?? []} className="z-20" />
 
         {/* Navigation Panel (Top Center) */}
         <nav
@@ -435,7 +436,7 @@ export function WorkspacePage() {
           className="absolute top-4 left-1/2 -translate-x-1/2 z-20 max-w-md"
           aria-label="IVMGraph navigation"
         >
-          <Navigation nodes={graphData?.nodes || []} onNodeSelect={handleSearchNodeSelect} />
+          <Navigation nodes={parseResult?.graph.nodes ?? []} onNodeSelect={handleSearchNodeSelect} />
         </nav>
 
         {/* Collapsible MiniMap (Bottom Right) */}
@@ -464,7 +465,7 @@ export function WorkspacePage() {
             </button>
             {!miniMapCollapsed && (
               <div className="w-64 h-64">
-                <MiniMap nodes={graphData?.nodes || []} />
+                <MiniMap nodes={parseResult?.graph.nodes ?? []} />
               </div>
             )}
           </div>
@@ -481,7 +482,7 @@ export function WorkspacePage() {
       </main>
 
       {/* Global Search Modal (⌘K) */}
-      <SearchBarModal nodes={graphData?.nodes || []} onNodeSelect={handleSearchNodeSelect} />
+      <SearchBarModal nodes={parseResult?.graph.nodes ?? []} onNodeSelect={handleSearchNodeSelect} />
     </div>
   )
 }

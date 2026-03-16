@@ -7,14 +7,9 @@
 
 import { useCanvasStore } from '../store'
 import type { ViewMode } from '../store'
-import { CityView } from '../layouts/city/CityView'
+import { useLayout } from '../layouts'
 import { BuildingView } from './BuildingView'
 import { CellView } from './CellView'
-import type { IVMGraph } from '../../../shared/types'
-
-interface ViewModeRendererProps {
-  graph: IVMGraph
-}
 
 interface ViewProps {
   view: 'city' | 'building' | 'cell'
@@ -35,19 +30,21 @@ export function selectViewProps(viewMode: ViewMode, focusedNodeId: string | null
   return { view: 'city', focusedNodeId: null }
 }
 
-export function ViewModeRenderer({ graph }: ViewModeRendererProps) {
+export function ViewModeRenderer() {
   const viewMode = useCanvasStore((s) => s.viewMode)
   const focusedNodeId = useCanvasStore((s) => s.focusedNodeId)
+  const parseResult = useCanvasStore((s) => s.parseResult)
+  const { engine } = useLayout()
 
   const { view, focusedNodeId: nodeId } = selectViewProps(viewMode, focusedNodeId)
 
-  switch (view) {
-    case 'building':
-      return <BuildingView graph={graph} focusedNodeId={nodeId ?? ''} />
-    case 'cell':
-      return <CellView graph={graph} focusedNodeId={nodeId ?? ''} />
-    case 'city':
-    default:
-      return <CityView />
+  if (view === 'building' && parseResult) {
+    return <BuildingView graph={parseResult.graph} focusedNodeId={nodeId ?? ''} />
   }
+  if (view === 'cell' && parseResult) {
+    return <CellView graph={parseResult.graph} focusedNodeId={nodeId ?? ''} />
+  }
+
+  const LayoutView = engine.component
+  return <LayoutView />
 }
