@@ -305,7 +305,7 @@ export function createViewResolver(parseResult: ParseResult): ViewResolver {
         pruningReport = mergePruningReports(pruningReport, pruned.report)
       }
 
-      const result: ViewResult = { graph, pruningReport }
+      const result: ViewResult = pruningReport ? { graph, pruningReport } : { graph }
       cache.set(cacheKey, result)
       return result
     },

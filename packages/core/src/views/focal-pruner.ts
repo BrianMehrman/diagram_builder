@@ -5,7 +5,7 @@
  * progressively shrinking when edge budgets are exceeded.
  */
 
-import type { IVMGraph, IVMEdge, IVMNode, EdgeType } from '../ivm/types.js'
+import type { IVMGraph, IVMEdge, EdgeType } from '../ivm/types.js'
 import type { ViewConstraints, PruningReport } from './types.js'
 import { calculateBounds, calculateStats } from '../ivm/builder.js'
 

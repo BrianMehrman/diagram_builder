@@ -9,7 +9,6 @@
 import type { IVMGraph, IVMNode, IVMEdge, NodeType, EdgeType } from '../../../core/src/ivm/types.js'
 import {
   SemanticTier,
-  NODE_TYPE_TO_TIER,
 } from '../../../core/src/ivm/semantic-tier.js'
 import type { GroupNode, GroupHierarchy, AggregatedEdge } from '../../../core/src/ivm/semantic-tier.js'
 import {

@@ -14,35 +14,6 @@ import {
 import type { GroupNode, AggregatedEdge, GroupHierarchy } from '../../../core/src/ivm/semantic-tier.js'
 
 // =============================================================================
-// Group ID Generation
-// =============================================================================
-
-/**
- * Generates a group ID for a node based on its tier and context.
- */
-function getGroupId(node: IVMNode, tier: SemanticTier): string {
-  const nodeTier = NODE_TYPE_TO_TIER[node.type]
-
-  // If the node is at or above the requested tier, it IS the group
-  if (nodeTier <= tier) {
-    return node.id
-  }
-
-  // Otherwise, we need to find what group this node belongs to at the given tier
-  // This is resolved during tree building via parent traversal
-  return node.id
-}
-
-/**
- * Extracts the directory path from a file node's metadata path.
- */
-function getDirectoryFromPath(filePath: string): string {
-  const lastSlash = filePath.lastIndexOf('/')
-  if (lastSlash === -1) return '.'
-  return filePath.substring(0, lastSlash)
-}
-
-// =============================================================================
 // Tree Building
 // =============================================================================
 
@@ -55,7 +26,6 @@ function getDirectoryFromPath(filePath: string): string {
  * 3. Ensure every IVM node appears in exactly one GroupNode's nodeIds
  */
 function buildGroupTree(graph: IVMGraph): GroupNode {
-  const nodeMap = new Map<string, IVMNode>(graph.nodes.map((n) => [n.id, n]))
   const nodesByTier = new Map<SemanticTier, IVMNode[]>()
 
   // Classify nodes by tier
@@ -103,8 +73,9 @@ function buildGroupTree(graph: IVMGraph): GroupNode {
   const rootNodes = graph.nodes.filter((n) => !n.parentId)
 
   // If there's exactly one root and it's a repository node, use it
-  if (rootNodes.length === 1 && NODE_TYPE_TO_TIER[rootNodes[0].type] === SemanticTier.Repository) {
-    return groupNodes.get(rootNodes[0].id)!
+  const firstRoot = rootNodes[0]
+  if (rootNodes.length === 1 && firstRoot && NODE_TYPE_TO_TIER[firstRoot.type] === SemanticTier.Repository) {
+    return groupNodes.get(firstRoot.id)!
   }
 
   // Otherwise, create a synthetic repository root
@@ -213,7 +184,9 @@ function aggregateEdgesAtTier(
   // Convert to AggregatedEdge array
   const result: AggregatedEdge[] = []
   for (const [key, breakdown] of edgeMap) {
-    const [sourceGroupId, targetGroupId] = key.split('->')
+    const parts = key.split('->')
+    const sourceGroupId = parts[0] ?? ''
+    const targetGroupId = parts[1] ?? ''
     const breakdownObj: Partial<Record<EdgeType, number>> = {}
     let totalWeight = 0
 
