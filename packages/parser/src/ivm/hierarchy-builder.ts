@@ -31,10 +31,9 @@ function buildGroupTree(graph: IVMGraph): GroupNode {
   // Classify nodes by tier
   for (const node of graph.nodes) {
     const tier = NODE_TYPE_TO_TIER[node.type]
-    if (!nodesByTier.has(tier)) {
-      nodesByTier.set(tier, [])
-    }
-    nodesByTier.get(tier)!.push(node)
+    const tierNodes = nodesByTier.get(tier) ?? []
+    tierNodes.push(node)
+    nodesByTier.set(tier, tierNodes)
   }
 
   // Build a parent lookup from IVM parentId
@@ -63,9 +62,11 @@ function buildGroupTree(graph: IVMGraph): GroupNode {
   // Nodes with parentId become children of their parent's group
   for (const node of graph.nodes) {
     if (node.parentId && groupNodes.has(node.parentId)) {
-      const parentGroup = groupNodes.get(node.parentId)!
-      const childGroup = groupNodes.get(node.id)!
-      parentGroup.children.push(childGroup)
+      const parentGroup = groupNodes.get(node.parentId)
+      const childGroup = groupNodes.get(node.id)
+      if (parentGroup && childGroup) {
+        parentGroup.children.push(childGroup)
+      }
     }
   }
 
@@ -75,7 +76,8 @@ function buildGroupTree(graph: IVMGraph): GroupNode {
   // If there's exactly one root and it's a repository node, use it
   const firstRoot = rootNodes[0]
   if (rootNodes.length === 1 && firstRoot && NODE_TYPE_TO_TIER[firstRoot.type] === SemanticTier.Repository) {
-    return groupNodes.get(firstRoot.id)!
+    const rootGroup = groupNodes.get(firstRoot.id)
+    if (rootGroup) return rootGroup
   }
 
   // Otherwise, create a synthetic repository root
@@ -84,7 +86,7 @@ function buildGroupTree(graph: IVMGraph): GroupNode {
     label: graph.metadata.name,
     tier: SemanticTier.Repository,
     nodeIds: [],
-    children: rootNodes.map((n) => groupNodes.get(n.id)!),
+    children: rootNodes.flatMap((n) => { const g = groupNodes.get(n.id); return g ? [g] : [] }),
   }
 
   return root
@@ -107,8 +109,9 @@ function buildNodeToGroupMapping(
 
   function findGroupAtTier(nodeId: string): string {
     // Check cache
-    if (mapping.has(nodeId)) {
-      return mapping.get(nodeId)!
+    const cached = mapping.get(nodeId)
+    if (cached !== undefined) {
+      return cached
     }
 
     const node = nodeMap.get(nodeId)
@@ -177,8 +180,9 @@ function aggregateEdgesAtTier(
       edgeMap.set(key, new Map())
     }
 
-    const breakdown = edgeMap.get(key)!
+    const breakdown = edgeMap.get(key) ?? new Map<EdgeType, number>()
     breakdown.set(edge.type, (breakdown.get(edge.type) || 0) + 1)
+    edgeMap.set(key, breakdown)
   }
 
   // Convert to AggregatedEdge array

@@ -124,7 +124,7 @@ export class CityLayoutEngine implements LayoutEngine {
     const groups = new Map<string, IVMNode[]>()
 
     for (const node of nodes) {
-      const filePath = (node.metadata?.path as string) ?? node.metadata.label ?? ''
+      const filePath = (node.metadata?.path) ?? node.metadata.label ?? ''
       const dir = this.extractDirectory(filePath)
 
       if (!groups.has(dir)) groups.set(dir, [])

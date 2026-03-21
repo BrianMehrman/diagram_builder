@@ -304,10 +304,10 @@ describe('Graph Query Endpoints', () => {
         .set('Authorization', `Bearer ${authToken}`)
 
       expect(res.status).toBe(200)
-      const abstractNode = res.body.nodes.find((n: any) => n.metadata.properties?.isAbstract === true)
+      const abstractNode = (res.body.nodes as Array<{ type: string; metadata: { properties?: Record<string, unknown> }; abstractClass?: unknown }>).find((n) => n.metadata.properties?.isAbstract === true)
       expect(abstractNode).toBeDefined()
-      expect(abstractNode.type).toBe('class')
-      expect((abstractNode as any).abstractClass).toBeUndefined()
+      expect(abstractNode?.type).toBe('class')
+      expect(abstractNode?.abstractClass).toBeUndefined()
     })
 
     it('should cache graph results', async () => {

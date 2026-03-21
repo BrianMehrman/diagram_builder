@@ -67,7 +67,7 @@ export function AbstractBuilding({
     if (methodCount > 0) {
       const visibilities: Array<string | undefined> =
         sortedMethods && sortedMethods.length > 0
-          ? (sortedMethods.map((m) => m.metadata?.properties?.visibility as string | undefined) as Array<string | undefined>)
+          ? (sortedMethods.map((m) => m.metadata?.properties?.visibility as string | undefined))
           : ([] as Array<string | undefined>).concat(
               Array.from({ length: floorCount }, () => undefined)
             )

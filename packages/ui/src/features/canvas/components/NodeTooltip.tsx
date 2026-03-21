@@ -70,9 +70,9 @@ export function NodeTooltip({ nodes, className = '' }: NodeTooltipProps) {
 
   // Extract metadata for display
   const path = highlightedNode.metadata.path as string | undefined
-  const language = highlightedNode.metadata.language as string | undefined
-  const loc = highlightedNode.metadata.loc as number | undefined
-  const complexity = highlightedNode.metadata.complexity as number | undefined
+  const language = highlightedNode.metadata.language
+  const loc = highlightedNode.metadata.loc
+  const complexity = highlightedNode.metadata.complexity
 
   return (
     <div

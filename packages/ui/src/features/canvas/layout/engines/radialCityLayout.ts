@@ -131,7 +131,10 @@ export class RadialCityLayoutEngine implements LayoutEngine {
     const nonFileNodes = internalNodes.filter((n) => n.type !== 'file')
 
     // === Compute effective depth for file nodes ===
-    const hasAnyDepth = fileNodes.some((n) => (n.metadata.properties?.depth as number | undefined) !== undefined && (n.metadata.properties?.depth as number | undefined)! > 0)
+    const hasAnyDepth = fileNodes.some((n) => {
+      const depth = n.metadata.properties?.depth as number | undefined
+      return depth !== undefined && depth > 0
+    })
     const effectiveDepths = new Map<string, number>()
 
     if (hasAnyDepth) {
@@ -140,7 +143,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       }
     } else {
       const paths = fileNodes.map((n) => {
-        const p = (n.metadata?.path as string) ?? n.metadata.label ?? ''
+        const p = (n.metadata?.path) ?? n.metadata.label ?? ''
         return { id: n.id, segments: p.split('/').filter(Boolean) }
       })
       if (paths.length > 0) {
@@ -342,7 +345,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
         // Filter to orphans that belong to this district (by directory)
         const districtDir = assignment.districtId
         const districtOrphanNodes = unassignedOrphans.filter((o) => {
-          const path = (o.metadata?.path as string) ?? o.metadata.label ?? ''
+          const path = (o.metadata?.path) ?? o.metadata.label ?? ''
           const dir = extractDirectory(path)
           return dir === districtDir
         })
@@ -570,7 +573,7 @@ function groupByDirectory(nodes: IVMNode[]): Map<string, IVMNode[]> {
   const groups = new Map<string, IVMNode[]>()
 
   for (const node of nodes) {
-    const filePath = (node.metadata?.path as string) ?? node.metadata.label ?? ''
+    const filePath = (node.metadata?.path) ?? node.metadata.label ?? ''
     const dir = extractDirectory(filePath)
 
     if (!groups.has(dir)) groups.set(dir, [])

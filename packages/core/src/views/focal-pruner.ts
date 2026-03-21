@@ -36,7 +36,9 @@ export function applyFocalPruning(
   hopDistance.set(focalNodeId, 0)
 
   while (queue.length > 0) {
-    const [nodeId, dist] = queue.shift()!
+    const entry = queue.shift()
+    if (!entry) break
+    const [nodeId, dist] = entry
     const neighbors = adjacency.get(nodeId) || new Set()
     for (const neighbor of neighbors) {
       if (!hopDistance.has(neighbor)) {
@@ -129,7 +131,7 @@ export function applyFocalPruning(
 }
 
 function getEdgeWeight(edge: IVMEdge): number {
-  const props = edge.metadata.properties as Record<string, unknown> | undefined
+  const props = edge.metadata.properties
   if (props && typeof props.totalWeight === 'number') {
     return props.totalWeight
   }

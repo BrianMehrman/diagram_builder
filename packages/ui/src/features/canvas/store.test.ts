@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest'
 import { act } from '@testing-library/react'
+import type { ParseResult } from '@diagram-builder/core'
 import { useCanvasStore, initialState } from './store'
 
 describe('useCanvasStore', () => {
@@ -403,10 +404,10 @@ describe('canvas store — ParseResult', () => {
   })
 
   it('setParseResult stores result and creates resolver', () => {
-    const mockResult = {
-      graph: { nodes: [], edges: [], metadata: {} as any, bounds: {} as any },
-      hierarchy: { root: { id: 'r', label: 'r', tier: 0, nodeIds: [], children: [] }, tierCount: {} as any, edgesByTier: {} as any },
-      tiers: {} as any,
+    const mockResult: ParseResult = {
+      graph: { nodes: [], edges: [], metadata: {} as unknown as ParseResult['graph']['metadata'], bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } } },
+      hierarchy: { root: { id: 'r', label: 'r', tier: 0, nodeIds: [], children: [] }, tierCount: {} as unknown as ParseResult['hierarchy']['tierCount'], edgesByTier: {} as unknown as ParseResult['hierarchy']['edgesByTier'] },
+      tiers: {} as unknown as ParseResult['tiers'],
     }
     act(() => useCanvasStore.getState().setParseResult(mockResult))
     const { parseResult, resolver } = useCanvasStore.getState()

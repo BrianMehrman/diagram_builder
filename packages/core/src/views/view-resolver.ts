@@ -55,7 +55,7 @@ function filterNodeTypes(graph: IVMGraph, allowedTypes: NodeType[]): IVMGraph {
 // =============================================================================
 
 function getEdgeWeight(edge: IVMEdge): number {
-  const props = edge.metadata.properties as Record<string, unknown> | undefined
+  const props = edge.metadata.properties
   if (props && typeof props.totalWeight === 'number') {
     return props.totalWeight
   }
@@ -247,7 +247,8 @@ export function createViewResolver(parseResult: ParseResult): ViewResolver {
 
     getView(config: ViewConfig): ViewResult {
       const cacheKey = JSON.stringify(config)
-      if (cache.has(cacheKey)) return cache.get(cacheKey)!
+      const cached = cache.get(cacheKey)
+      if (cached) return cached
 
       let graph = parseResult.tiers[config.baseTier]
       let pruningReport: PruningReport | undefined

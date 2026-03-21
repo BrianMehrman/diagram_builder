@@ -12,7 +12,7 @@ import { createViewResolver } from './view-resolver.js'
 
 export function exportWithView(
   parseResult: ParseResult,
-  exporter: Exporter<any>,
+  exporter: Exporter<BaseExportOptions>,
   options?: {
     tier?: SemanticTier
     viewConfig?: ViewConfig

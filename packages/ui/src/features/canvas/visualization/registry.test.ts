@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import type React from 'react'
 import { RendererRegistry, VisualizationStyleRegistry } from './registry'
 import type { VisualizationRenderer, RenderContext, VisualizationStyle } from './types'
-import type { LayoutEngine, LayoutResult } from '../layout/types'
 import type { IVMGraph } from '../../../shared/types'
+import type { LayoutEngine, LayoutResult } from '../layout/types'
 
 function makeRenderer(type: string, handles: string[]): VisualizationRenderer {
   return {
@@ -16,7 +16,7 @@ function makeRenderer(type: string, handles: string[]): VisualizationRenderer {
 function makeEngine(type: string): LayoutEngine {
   return {
     type,
-    layout: (_g: Graph) =>
+    layout: (_g: IVMGraph) =>
       ({
         positions: new Map(),
         bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },

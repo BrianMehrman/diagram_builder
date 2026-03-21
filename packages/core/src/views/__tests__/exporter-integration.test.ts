@@ -10,7 +10,7 @@ import type { IVMGraph, IVMNode, IVMEdge, GraphMetadata } from '../../ivm/types.
 import { IVM_SCHEMA_VERSION } from '../../ivm/types.js'
 import type { ParseResult, GroupHierarchy, GroupNode } from '../../ivm/semantic-tier.js'
 import { SemanticTier } from '../../ivm/semantic-tier.js'
-import type { ExportResult, Exporter } from '../../exporters/types.js'
+import type { ExportResult, Exporter, BaseExportOptions } from '../../exporters/types.js'
 import { MermaidExporter } from '../../exporters/mermaid.js'
 import { PlantUMLExporter } from '../../exporters/plantuml.js'
 import { DrawioExporter } from '../../exporters/drawio.js'
@@ -119,8 +119,8 @@ function buildTestGraph(): IVMGraph {
     stats: {
       totalNodes: nodes.length,
       totalEdges: edges.length,
-      nodesByType: {} as any,
-      edgesByType: {} as any,
+      nodesByType: {} as Record<string, number>,
+      edgesByType: {} as Record<string, number>,
     },
   }
 
@@ -188,7 +188,7 @@ function buildParseResult(): ParseResult {
 
 interface ExporterSpec {
   name: string
-  exporter: Exporter<any>
+  exporter: Exporter<BaseExportOptions>
   mimeType: string
   extension: string
 }

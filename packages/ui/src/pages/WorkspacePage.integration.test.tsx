@@ -142,9 +142,9 @@ describe('WorkspacePage integration', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(endpoints.workspaces.get).mockResolvedValue({ id: 'ws-1', name: 'Test WS' } as any)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(endpoints.codebases.list).mockResolvedValue({
       codebases: [{ codebaseId: 'cb-1', repositoryId: 'repo-1', status: 'completed' }],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -84,13 +84,13 @@ export function getFootprintScale(
       rawValue = incomingEdgeCount ?? 0
       break
     case 'loc':
-      rawValue = (node.metadata?.loc as number | undefined) ?? 0
+      rawValue = (node.metadata?.loc) ?? 0
       break
     case 'complexity':
-      rawValue = (node.metadata?.complexity as number | undefined) ?? 0
+      rawValue = (node.metadata?.complexity) ?? 0
       break
     case 'churn':
-      rawValue = (node.metadata?.churn as number | undefined) ?? 0
+      rawValue = (node.metadata?.churn) ?? 0
       break
   }
   if (rawValue <= 0) return 1.0
@@ -114,19 +114,19 @@ export function getEncodedHeight(
         : getMethodBasedHeight(mc, (node.metadata.properties?.depth as number | undefined))
     }
     case 'loc': {
-      const loc = (node.metadata?.loc as number | undefined) ?? 0
+      const loc = (node.metadata?.loc) ?? 0
       return loc > 0
         ? Math.max(Math.log2(loc / 50 + 1), 1) * FLOOR_HEIGHT
         : getMethodBasedHeight(mc, (node.metadata.properties?.depth as number | undefined))
     }
     case 'complexity': {
-      const complexity = (node.metadata?.complexity as number | undefined) ?? 0
+      const complexity = (node.metadata?.complexity) ?? 0
       return complexity > 0
         ? Math.max(Math.log2(complexity + 1), 1) * FLOOR_HEIGHT
         : getMethodBasedHeight(mc, (node.metadata.properties?.depth as number | undefined))
     }
     case 'churn': {
-      const churn = (node.metadata?.churn as number | undefined) ?? 0
+      const churn = (node.metadata?.churn) ?? 0
       return churn > 0
         ? Math.max(Math.log2(churn + 1), 1) * FLOOR_HEIGHT
         : getMethodBasedHeight(mc, (node.metadata.properties?.depth as number | undefined))

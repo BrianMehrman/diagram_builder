@@ -22,7 +22,7 @@ describe('VisualizationRenderer contract', () => {
   it('VisualizationStyle bundles a layout engine and renderer', () => {
     const stubEngine: LayoutEngine = {
       type: STUB_ENGINE_TYPE,
-      layout: (_graph: Graph) =>
+      layout: (_graph: IVMGraph) =>
         ({
           positions: new Map(),
           bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },

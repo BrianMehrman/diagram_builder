@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { createViewResolver } from './view-resolver'
 import { SemanticTier } from '../ivm/semantic-tier'
 import { buildGraph } from '../ivm/builder'
-import type { ParseResult } from '../ivm/semantic-tier'
+import type { ParseResult, AggregatedEdge } from '../ivm/semantic-tier'
 import type { IVMGraph } from '../ivm/types'
 
 function createMockParseResult(): ParseResult {
@@ -85,7 +85,7 @@ function createMockParseResult(): ParseResult {
         ],
       },
       tierCount: { 0: 0, 1: 0, 2: 0, 3: 2, 4: 1, 5: 0 } as Record<SemanticTier, number>,
-      edgesByTier: { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] } as Record<SemanticTier, any[]>,
+      edgesByTier: { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] } as Record<SemanticTier, AggregatedEdge[]>,
     },
     tiers,
   }

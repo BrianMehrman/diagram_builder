@@ -46,7 +46,7 @@ function buildTree(nodes: IVMNode[]): TreeNode[] {
 
   // Extract a human-readable label: prefer metadata.label (IVM format), then top-level label, then id
   function getDisplayLabel(node: IVMNode): string {
-    const raw = (node.metadata?.label as string) || node.metadata.label || node.id
+    const raw = node.metadata?.label || node.id
     return raw.includes('/') ? (raw.split('/').pop() ?? raw) : raw
   }
 

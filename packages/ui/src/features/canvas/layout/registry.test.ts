@@ -25,7 +25,7 @@ function createMockEngine(type: string, canHandleResult: boolean = true): Layout
         bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
       }
     },
-    canHandle(_graph: Graph): boolean {
+    canHandle(_graph: IVMGraph): boolean {
       return canHandleResult
     },
   }

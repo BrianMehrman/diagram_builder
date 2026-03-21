@@ -53,7 +53,7 @@ function MiniNode({
   }
 
   // Prefer metadata.label (IVM format from API), then top-level label, then extract from id
-  const rawLabel = (node.metadata?.label as string) || node.metadata.label || node.id
+  const rawLabel = node.metadata?.label || node.id
   const displayLabel = rawLabel.includes('/') ? (rawLabel.split('/').pop() ?? rawLabel) : rawLabel
 
   return (
