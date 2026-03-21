@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { Graph, GraphNode } from '../../../../shared/types'
+import type { IVMGraph, IVMNode } from '../../../../shared/types'
 import { RadialCityLayoutEngine } from './radialCityLayout'
 import type { RadialCityLayoutConfig, InfrastructureZoneMetadata } from './radialCityLayout'
 import type { HierarchicalLayoutResult } from '../types'
@@ -8,32 +8,41 @@ function makeFileNode(
   id: string,
   label: string,
   opts: { depth?: number; isExternal?: boolean; path?: string; infrastructureType?: string } = {}
-): GraphNode {
-  const metadata: Record<string, unknown> = { path: opts.path ?? label }
+): IVMNode {
+  const properties: Record<string, unknown> = {
+    depth: opts.depth ?? 0,
+    isExternal: opts.isExternal ?? false,
+  }
   if (opts.infrastructureType) {
-    metadata.infrastructureType = opts.infrastructureType
+    properties.infrastructureType = opts.infrastructureType
   }
   return {
     id,
     type: 'file',
-    label,
-    metadata,
+    metadata: { label, path: opts.path ?? label, properties },
     lod: 0,
-    depth: opts.depth ?? 0,
-    isExternal: opts.isExternal ?? false,
+    position: { x: 0, y: 0, z: 0 },
   }
 }
 
-function makeGraph(nodes: GraphNode[]): Graph {
+function makeGraph(nodes: IVMNode[]): IVMGraph {
   return {
     nodes,
     edges: [],
     metadata: {
-      repositoryId: 'test',
       name: 'Test',
-      totalNodes: nodes.length,
-      totalEdges: 0,
+      schemaVersion: '1.0.0',
+      generatedAt: new Date().toISOString(),
+      rootPath: 'src/',
+      stats: {
+        totalNodes: nodes.length,
+        totalEdges: 0,
+        nodesByType: {} as never,
+        edgesByType: {} as never,
+      },
+      languages: [],
     },
+    bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
   }
 }
 
@@ -207,7 +216,7 @@ describe('RadialCityLayoutEngine', () => {
     })
 
     it('should layout all non-external node types', () => {
-      const graph: Graph = {
+      const graph: IVMGraph = {
         nodes: [
           makeFileNode('f1', 'src/app.ts', { depth: 0, path: 'src/app.ts' }),
           { id: 'c1', type: 'class', label: 'App', metadata: {}, lod: 0 },
@@ -491,7 +500,7 @@ describe('RadialCityLayoutEngine', () => {
     })
 
     it('should place child nodes inside file blocks', () => {
-      const graph: Graph = {
+      const graph: IVMGraph = {
         nodes: [
           makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
           makeFileNode('f2', 'src/a/app.ts', { depth: 1, path: 'src/a/app.ts' }),
@@ -548,7 +557,7 @@ describe('RadialCityLayoutEngine', () => {
     })
 
     it('should handle orphan nodes without parentId', () => {
-      const graph: Graph = {
+      const graph: IVMGraph = {
         nodes: [
           makeFileNode('f1', 'src/app.ts', { depth: 0, path: 'src/app.ts' }),
           {
@@ -570,7 +579,7 @@ describe('RadialCityLayoutEngine', () => {
     })
 
     it('should handle cycles in parentId chains', () => {
-      const graph: Graph = {
+      const graph: IVMGraph = {
         nodes: [
           makeFileNode('f1', 'src/app.ts', { depth: 0, path: 'src/app.ts' }),
           {
@@ -619,7 +628,7 @@ describe('RadialCityLayoutEngine', () => {
 
   describe('performance', () => {
     it('should layout 1000 nodes in under 50ms', () => {
-      const nodes: GraphNode[] = []
+      const nodes: IVMNode[] = []
       // Create 200 file nodes across 10 directories
       for (let d = 0; d < 10; d++) {
         for (let f = 0; f < 20; f++) {
@@ -659,7 +668,7 @@ describe('RadialCityLayoutEngine', () => {
 
   describe('determinism (hierarchical)', () => {
     it('should produce identical hierarchical output across 10 runs', () => {
-      const graph: Graph = {
+      const graph: IVMGraph = {
         nodes: [
           makeFileNode('f1', 'src/index.ts', { depth: 0, path: 'src/index.ts' }),
           makeFileNode('f2', 'src/a/app.ts', { depth: 1, path: 'src/a/app.ts' }),

@@ -14,7 +14,7 @@
  * - construction: deprecated — warning/barricade style
  */
 
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
 /**
  * All possible sign types in the city metaphor.
@@ -56,32 +56,33 @@ const LOD_VISIBILITY: Record<number, Set<SignType>> = {
  * 7. node type: variable → labelTape
  * 8. fallback → highway
  *
- * @param node - Graph node to determine sign type for
+ * @param node - IVMGraph node to determine sign type for
  * @returns The sign type to render
  */
-export function getSignType(node: GraphNode): SignType {
-  const meta = node.metadata ?? {}
+export function getSignType(node: IVMNode): SignType {
+  const props = node.metadata?.properties ?? {}
 
   // Priority 1: deprecated
-  if (meta.isDeprecated === true) {
+  if (props.isDeprecated === true) {
     return 'construction'
   }
 
   // Priority 2: exported
-  if (meta.isExported === true) {
+  if (props.isExported === true) {
     return 'marquee'
   }
 
   // Priority 3-4: access level visibility
-  if (meta.visibility === 'private') {
+  if (props.visibility === 'private') {
     return 'brass'
   }
-  if (meta.visibility === 'public') {
+  if (props.visibility === 'public') {
     return 'neon'
   }
 
   // Priority 5-7: node type based
-  if (node.type === 'class' || node.type === 'abstract_class') {
+  // abstract_class is coerced to class in IVM (with isAbstract: true in properties)
+  if (node.type === 'class' || props.isAbstract === true) {
     return 'hanging'
   }
   if (node.type === 'file') {

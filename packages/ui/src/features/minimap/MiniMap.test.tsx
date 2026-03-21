@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import { MiniMap } from './MiniMap'
 import { useCanvasStore } from '../canvas/store'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
 // Mock useCameraFlight
 const mockFlyToNode = vi.fn()
@@ -19,22 +19,21 @@ vi.mock('../navigation/useCameraFlight', () => ({
   }),
 }))
 
-const mockNodes: GraphNode[] = [
+const mockNodes: IVMNode[] = [
   {
     id: 'file-1',
     type: 'file',
-    label: 'app.ts',
-    metadata: {},
+    metadata: { label: 'app.ts', path: 'src/app.ts' },
     position: { x: 0, y: 0, z: 0 },
-    lodLevel: 0,
+    lod: 0,
   },
   {
     id: 'class-1',
     type: 'class',
-    label: 'Application',
-    metadata: { file: 'file-1' },
+    metadata: { label: 'Application', path: 'src/Application.ts' },
     position: { x: 1, y: 1, z: 1 },
-    lodLevel: 1,
+    lod: 1,
+    parentId: 'file-1',
   },
 ]
 
@@ -116,15 +115,15 @@ describe('MiniMap', () => {
     })
 
     it('handles nodes without position gracefully', () => {
-      const nodesWithoutPos: GraphNode[] = [
+      const nodesWithoutPos = [
         {
           id: 'no-pos',
-          type: 'file',
-          label: 'nopos.ts',
-          metadata: {},
-          lodLevel: 0,
+          type: 'file' as const,
+          metadata: { label: 'nopos.ts', path: 'src/nopos.ts', properties: {} },
+          lod: 0,
+          // Intentionally omitted: position — testing graceful no-position handling
         },
-      ]
+      ] as unknown as IVMNode[]
 
       render(<MiniMap nodes={nodesWithoutPos} />)
 

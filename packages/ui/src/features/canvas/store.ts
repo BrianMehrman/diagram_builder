@@ -5,7 +5,9 @@
  */
 
 import { create } from 'zustand'
-import type { Position3D, GraphNode } from '../../shared/types'
+import { createViewResolver } from '@diagram-builder/core'
+import type { ParseResult, ViewResolver } from '@diagram-builder/core'
+import type { Position3D, IVMNode } from '../../shared/types'
 
 /**
  * Camera state
@@ -94,6 +96,16 @@ export type AtmosphereOverlayKey = keyof AtmosphereOverlays
 export type EdgeTierKey = keyof EdgeTierVisibility
 
 /**
+ * Initial ParseResult-related state (exported for tests)
+ */
+export const initialState = {
+  parseResult: null as ParseResult | null,
+  resolver: null as ViewResolver | null,
+  activeLayout: 'city' as 'city' | 'basic3d',
+  focusedGroupId: null as string | null,
+}
+
+/**
  * Canvas store state
  */
 interface CanvasState {
@@ -141,7 +153,7 @@ interface CanvasState {
   focusedNodeId: string | null
   focusHistory: string[]
   setViewMode: (mode: ViewMode, focusedNodeId?: string) => void
-  enterNode: (nodeId: string, nodeType: GraphNode['type']) => void
+  enterNode: (nodeId: string, nodeType: IVMNode['type']) => void
   exitToParent: () => void
   resetToCity: () => void
 
@@ -186,6 +198,16 @@ interface CanvasState {
   toggleUndergroundVisible: () => void
   /** Toggle external dependency pipes on/off (Story 11-10) */
   toggleExternalPipes: () => void
+
+  // ParseResult + ViewResolver
+  parseResult: ParseResult | null
+  resolver: ViewResolver | null
+  activeLayout: 'city' | 'basic3d'
+  focusedGroupId: string | null
+
+  setParseResult: (result: ParseResult) => void
+  setActiveLayout: (layout: 'city' | 'basic3d') => void
+  setFocusedGroupId: (id: string | null) => void
 
   // Reset to defaults
   reset: () => void
@@ -430,6 +452,15 @@ export const useCanvasStore = create<CanvasState>((set) => ({
         externalPipesVisible: !state.citySettings.externalPipesVisible,
       },
     })),
+
+  // ParseResult + ViewResolver
+  parseResult: null,
+  resolver: null,
+  activeLayout: 'city',
+  focusedGroupId: null,
+  setParseResult: (result) => set({ parseResult: result, resolver: createViewResolver(result) }),
+  setActiveLayout: (layout) => set({ activeLayout: layout }),
+  setFocusedGroupId: (id) => set({ focusedGroupId: id }),
 
   // Reset
   reset: () =>

@@ -57,7 +57,7 @@ export function FunctionShop({ node, position, encodingOptions, graph }: Functio
   // Awning sits just above the kiosk body (~80% up the wall)
   const awningY = height * 0.8 + KIOSK_AWNING_THICKNESS / 2
 
-  const fileName = (node.label ?? node.id).split('/').pop() ?? node.id
+  const fileName = (node.metadata.label ?? node.id).split('/').pop() ?? node.id
 
   return (
     <group position={[position.x, position.y, position.z]}>

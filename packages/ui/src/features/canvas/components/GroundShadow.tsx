@@ -10,12 +10,12 @@
 
 import { useMemo } from 'react'
 import * as THREE from 'three'
-import type { GraphEdge, Position3D } from '../../../shared/types'
+import type { IVMEdge, Position3D } from '../../../shared/types'
 import { useCanvasStore } from '../store'
 import { getSkyEdgeColor, getSkyEdgeHeight, isSkyEdgeVisible } from './skyEdgeUtils'
 
 export interface GroundShadowProps {
-  edge: GraphEdge
+  edge: IVMEdge
   sourcePosition: Position3D
   targetPosition: Position3D
 }

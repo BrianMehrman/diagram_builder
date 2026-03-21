@@ -7,7 +7,7 @@
 
 import * as THREE from 'three'
 import { FLOOR_HEIGHT, getBuildingHeight } from '../../views/heightUtils'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
 /**
  * RGB triplets for method visibility floor bands.
@@ -80,14 +80,15 @@ export function applyFloorBandColors(
 }
 
 /**
- * Extract method count from a GraphNode.
+ * Extract method count from a IVMNode.
  *
  * Checks (in order): explicit methodCount field, metadata.methods (number or array length).
  * Returns 0 when no method data is available.
  */
-export function getMethodCount(node: GraphNode): number {
-  if (node.methodCount !== undefined && node.methodCount > 0) return node.methodCount
-  const metaMethods = node.metadata?.methods
+export function getMethodCount(node: IVMNode): number {
+  const mc = node.metadata.properties?.methodCount
+  if (typeof mc === 'number' && mc > 0) return mc
+  const metaMethods = node.metadata.properties?.methods
   if (typeof metaMethods === 'number') return metaMethods
   if (Array.isArray(metaMethods)) return metaMethods.length
   return 0
@@ -96,8 +97,8 @@ export function getMethodCount(node: GraphNode): number {
 /**
  * Build a map from parent class ID to child method nodes.
  */
-export function buildMethodChildMap(nodes: GraphNode[]): Map<string, GraphNode[]> {
-  const map = new Map<string, GraphNode[]>()
+export function buildMethodChildMap(nodes: IVMNode[]): Map<string, IVMNode[]> {
+  const map = new Map<string, IVMNode[]>()
   for (const node of nodes) {
     if (node.type === 'method' && node.parentId) {
       const existing = map.get(node.parentId)

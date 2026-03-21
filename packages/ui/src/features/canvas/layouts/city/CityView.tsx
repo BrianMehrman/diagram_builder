@@ -13,29 +13,23 @@
 import { CityBlocks } from './CityBlocks'
 import { CitySky } from './CitySky'
 import { CityAtmosphere } from './CityAtmosphere'
-import { GroundPlane } from './GroundPlane'
+import { GroundPlane } from '../../views/GroundPlane'
 import { UndergroundLayer } from './UndergroundLayer'
-import { CityUnderground } from '../components/CityUnderground'
-import { LodController } from '../components/LodController'
-import { useCanvasStore } from '../store'
-import { useCityLayout } from '../hooks/useCityLayout'
-import { useCameraTiltAssist } from '../hooks/useCameraTiltAssist'
-import { useFocusEscape } from '../hooks/useFocusEscape'
-import { computeGroundOpacity } from '../undergroundUtils'
-import { computeUndergroundGroundOpacity } from './heightUtils'
-import type { Graph } from '../../../shared/types'
-
-interface CityViewProps {
-  graph: Graph
-}
-
-export function CityView({ graph }: CityViewProps) {
+import { CityUnderground } from '../../components/CityUnderground'
+import { LodController } from '../../components/LodController'
+import { useCanvasStore } from '../../store'
+import { useCityLayout } from './useCityLayout'
+import { useCameraTiltAssist } from '../../hooks/useCameraTiltAssist'
+import { useFocusEscape } from '../../hooks/useFocusEscape'
+import { computeGroundOpacity } from '../../undergroundUtils'
+import { computeUndergroundGroundOpacity } from '../../views/heightUtils'
+export function CityView() {
   const isUndergroundMode = useCanvasStore((s) => s.isUndergroundMode)
   const visibleLayers = useCanvasStore((s) => s.visibleLayers)
   const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion)
   const undergroundVisible = useCanvasStore((s) => s.citySettings.undergroundVisible)
 
-  const { positions, groundWidth, groundDepth } = useCityLayout(graph)
+  const { positions, groundWidth, groundDepth, graph } = useCityLayout()
 
   // Tilt camera upward on node selection to reveal sky edges
   useCameraTiltAssist()

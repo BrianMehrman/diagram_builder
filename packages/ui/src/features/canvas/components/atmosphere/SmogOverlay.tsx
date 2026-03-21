@@ -12,7 +12,7 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { useCanvasStore } from '../../store'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 import type { DistrictArcMetadata } from '../../layout/engines/radialCityLayout'
 import {
   getAverageComplexity,
@@ -24,7 +24,7 @@ import {
 export interface SmogOverlayProps {
   districts: DistrictArcMetadata[]
   /** Map from district id to nodes in that district */
-  districtNodeMap: Map<string, GraphNode[]>
+  districtNodeMap: Map<string, IVMNode[]>
 }
 
 /** Smog color — gray-brown haze */

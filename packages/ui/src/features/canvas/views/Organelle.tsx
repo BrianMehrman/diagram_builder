@@ -7,11 +7,11 @@
 
 import { useState } from 'react'
 import { useCanvasStore } from '../store'
-import type { GraphNode, Position3D } from '../../../shared/types'
+import type { IVMNode, Position3D } from '../../../shared/types'
 import { getOrganelleColor, getOrganelleShape, getOrganelleSize } from './cellViewUtils'
 
 interface OrganelleProps {
-  node: GraphNode
+  node: IVMNode
   position: Position3D
 }
 
@@ -65,7 +65,7 @@ export function Organelle({ node, position }: OrganelleProps) {
 
       {/* Label plane */}
       <mesh position={[0, size + 0.3, 0]}>
-        <planeGeometry args={[(node.label ?? '').length * 0.15, 0.3]} />
+        <planeGeometry args={[(node.metadata.label ?? '').length * 0.15, 0.3]} />
         <meshBasicMaterial color="#000000" transparent opacity={0.6} />
       </mesh>
     </group>

@@ -26,7 +26,7 @@ export function CityGate({ node, position }: InfrastructureProps) {
   const requestFlyToNode = useCanvasStore((s) => s.requestFlyToNode)
 
   const isSelected = selectedNodeId === node.id
-  const label = (node.label ?? node.id).split('/').pop() ?? node.id
+  const label = (node.metadata.label ?? node.id).split('/').pop() ?? node.id
 
   return (
     <group position={[position.x, position.y, position.z]}>

@@ -22,6 +22,7 @@ import {
   IVM_SCHEMA_VERSION,
   DEFAULT_LOD,
 } from './types.js'
+import { NODE_TYPE_TO_TIER } from './semantic-tier.js'
 
 // =============================================================================
 // ID Generation
@@ -45,30 +46,14 @@ export function generateId(prefix: string = 'node'): string {
 // LOD Assignment
 // =============================================================================
 
-/**
- * Default LOD levels for different node types
- */
-const NODE_TYPE_LOD: Record<NodeType, LODLevel> = {
-  repository: 0,
-  package: 1,
-  namespace: 1,
-  directory: 2,
-  module: 2,
-  file: 3,
-  class: 4,
-  interface: 4,
-  enum: 4,
-  function: 4,
-  type: 5,
-  method: 5,
-  variable: 5,
-}
+/** @deprecated Use NODE_TYPE_TO_TIER instead */
+export const NODE_TYPE_LOD = NODE_TYPE_TO_TIER
 
 /**
  * Assigns LOD level based on node type
  */
 export function assignLOD(nodeType: NodeType): LODLevel {
-  return NODE_TYPE_LOD[nodeType] ?? DEFAULT_LOD
+  return NODE_TYPE_TO_TIER[nodeType] ?? DEFAULT_LOD
 }
 
 /**

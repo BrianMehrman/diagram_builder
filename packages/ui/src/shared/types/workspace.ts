@@ -44,6 +44,29 @@ export interface Workspace {
 }
 
 /**
+ * Viewpoint — saved camera position and filter state
+ */
+export interface Viewpoint {
+  id: string
+  name: string
+  description?: string
+  cameraPosition: { x: number; y: number; z: number }
+  cameraTarget: { x: number; y: number; z: number }
+  filters?: {
+    lodLevel?: number
+    nodeTypes?: string[]
+    edgeTypes?: string[]
+  }
+  annotations?: Array<{
+    nodeId: string
+    text: string
+  }>
+  createdAt: string
+  updatedAt: string
+  shareToken?: string
+}
+
+/**
  * Repository metadata
  */
 export interface Repository {

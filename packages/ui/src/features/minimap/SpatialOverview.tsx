@@ -7,12 +7,12 @@
 import { useState, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrthographicCamera, Html, Line } from '@react-three/drei'
-import type { GraphNode, Position3D } from '../../shared/types'
+import type { IVMNode, Position3D } from '../../shared/types'
 import { useCanvasStore } from '../canvas/store'
 import { calculateFovCorners } from './fovIndicator'
 
 interface SpatialOverviewProps {
-  nodes: GraphNode[]
+  nodes: IVMNode[]
   selectedNodeId?: string | null
   cameraPosition?: { x: number; y: number; z: number }
   cameraTarget?: { x: number; y: number; z: number }
@@ -28,14 +28,14 @@ function MiniNode({
   isSelected,
   onClick,
 }: {
-  node: GraphNode
+  node: IVMNode
   position: Position3D
   isSelected: boolean
   onClick?: ((nodeId: string) => void) | undefined
 }) {
   const [hovered, setHovered] = useState(false)
 
-  const getColor = (type: GraphNode['type']): string => {
+  const getColor = (type: IVMNode['type']): string => {
     switch (type) {
       case 'file':
         return '#0ea5e9'
@@ -53,7 +53,7 @@ function MiniNode({
   }
 
   // Prefer metadata.label (IVM format from API), then top-level label, then extract from id
-  const rawLabel = (node.metadata?.label as string) || node.label || node.id
+  const rawLabel = node.metadata?.label || node.id
   const displayLabel = rawLabel.includes('/') ? (rawLabel.split('/').pop() ?? rawLabel) : rawLabel
 
   return (
@@ -143,7 +143,7 @@ function MiniNodes({
   selectedNodeId,
   onNodeClick,
 }: {
-  nodes: GraphNode[]
+  nodes: IVMNode[]
   selectedNodeId: string | null | undefined
   onNodeClick: ((nodeId: string) => void) | undefined
 }) {
@@ -156,7 +156,7 @@ function MiniNodes({
         const pos = layoutPositions.get(node.id) ?? node.position
         return pos ? { node, position: pos } : null
       })
-      .filter((entry): entry is { node: GraphNode; position: Position3D } => entry !== null)
+      .filter((entry): entry is { node: IVMNode; position: Position3D } => entry !== null)
   }, [nodes, layoutPositions])
 
   return (

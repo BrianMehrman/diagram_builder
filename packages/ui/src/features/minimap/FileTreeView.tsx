@@ -5,10 +5,10 @@
  */
 
 import { useState } from 'react'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
 interface FileTreeViewProps {
-  nodes: GraphNode[]
+  nodes: IVMNode[]
   onNodeClick?: (nodeId: string) => void
   selectedNodeId?: string | null
 }
@@ -16,7 +16,7 @@ interface FileTreeViewProps {
 interface TreeNode {
   id: string
   label: string
-  type: GraphNode['type']
+  type: IVMNode['type']
   children: TreeNode[]
 }
 
@@ -25,19 +25,15 @@ interface TreeNode {
  * Falls back to metadata.file / metadata.class if parentId is not set.
  * Nodes without a parent are placed at the root level.
  */
-function buildTree(nodes: GraphNode[]): TreeNode[] {
+function buildTree(nodes: IVMNode[]): TreeNode[] {
   // Build a map of parentId -> children
-  const childrenMap = new Map<string, GraphNode[]>()
-  const rootNodes: GraphNode[] = []
+  const childrenMap = new Map<string, IVMNode[]>()
+  const rootNodes: IVMNode[] = []
   const nodeIds = new Set(nodes.map((n) => n.id))
 
   for (const node of nodes) {
-    // Determine parent: prefer parentId, fall back to metadata.file or metadata.class
-    const parentId =
-      node.parentId ??
-      (node.metadata.file as string | undefined) ??
-      (node.metadata.class as string | undefined) ??
-      null
+    // Determine parent: use parentId (IVM standard)
+    const parentId = node.parentId ?? null
 
     if (parentId && nodeIds.has(parentId)) {
       const siblings = childrenMap.get(parentId) ?? []
@@ -49,13 +45,13 @@ function buildTree(nodes: GraphNode[]): TreeNode[] {
   }
 
   // Extract a human-readable label: prefer metadata.label (IVM format), then top-level label, then id
-  function getDisplayLabel(node: GraphNode): string {
-    const raw = (node.metadata?.label as string) || node.label || node.id
+  function getDisplayLabel(node: IVMNode): string {
+    const raw = node.metadata?.label || node.id
     return raw.includes('/') ? (raw.split('/').pop() ?? raw) : raw
   }
 
   // Recursively convert to TreeNode
-  function toTreeNode(node: GraphNode): TreeNode {
+  function toTreeNode(node: IVMNode): TreeNode {
     const children = childrenMap.get(node.id) ?? []
     return {
       id: node.id,
@@ -69,7 +65,7 @@ function buildTree(nodes: GraphNode[]): TreeNode[] {
   rootNodes.sort((a, b) => {
     if (a.type === 'file' && b.type !== 'file') return -1
     if (a.type !== 'file' && b.type === 'file') return 1
-    return (a.label ?? '').localeCompare(b.label ?? '')
+    return (a.metadata.label ?? '').localeCompare(b.metadata.label ?? '')
   })
 
   return rootNodes.map(toTreeNode)
@@ -102,7 +98,7 @@ function TreeNodeComponent({
     }
   }
 
-  const getIcon = (type: GraphNode['type']) => {
+  const getIcon = (type: IVMNode['type']) => {
     switch (type) {
       case 'file':
         return '📄'

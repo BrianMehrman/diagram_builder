@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { createBuildingElement, createBuildingElementAtOrigin } from './BuildingFactory'
-import type { GraphNode } from '../../../shared/types'
+import type { IVMNode } from '../../../shared/types'
 
 vi.mock('../components/buildings', () => ({
   ClassBuilding: () => null,
@@ -14,7 +14,7 @@ vi.mock('../components/buildings', () => ({
 }))
 vi.mock('./Building', () => ({ Building: () => null }))
 
-function makeNode(type: GraphNode['type'], id = 'n1'): GraphNode {
+function makeNode(type: IVMNode['type'], id = 'n1'): IVMNode {
   return { id, type, label: id, lod: 1, metadata: {} }
 }
 

@@ -1,4 +1,4 @@
-import type { Graph, Position3D } from '../../../../shared/types'
+import type { IVMGraph, Position3D } from '../../../../shared/types'
 import type { LayoutEngine, LayoutResult, LayoutConfig, BoundingBox } from '../types'
 
 const VERTICAL_SPACING = 8
@@ -14,13 +14,13 @@ const HORIZONTAL_SPACING = 6
 export class TreeLayoutEngine implements LayoutEngine {
   readonly type = 'tree'
 
-  layout(graph: Graph, _config: LayoutConfig): LayoutResult {
+  layout(graph: IVMGraph, _config: LayoutConfig): LayoutResult {
     const positions = new Map<string, Position3D>()
 
     // Group nodes by depth
     const byDepth = new Map<number, string[]>()
     for (const node of graph.nodes) {
-      const d = node.depth ?? 0
+      const d = (node.metadata.properties?.depth as number | undefined) ?? 0
       if (!byDepth.has(d)) byDepth.set(d, [])
       const ids = byDepth.get(d)
       if (ids) ids.push(node.id)
@@ -51,7 +51,7 @@ export class TreeLayoutEngine implements LayoutEngine {
     return { positions, bounds }
   }
 
-  canHandle(_graph: Graph): boolean {
+  canHandle(_graph: IVMGraph): boolean {
     return true
   }
 }

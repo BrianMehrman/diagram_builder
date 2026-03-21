@@ -8,10 +8,10 @@ import { useMemo } from 'react'
 import { NodeRenderer } from './NodeRenderer'
 import { EdgeRenderer } from './EdgeRenderer'
 import { useCanvasStore } from '../store'
-import type { Graph } from '../../../shared/types'
+import type { IVMGraph } from '../../../shared/types'
 
 interface GraphRendererProps {
-  graph: Graph
+  graph: IVMGraph
 }
 
 /**
@@ -22,7 +22,7 @@ export function GraphRenderer({ graph }: GraphRendererProps) {
 
   // Filter nodes by LOD level
   const visibleNodes = useMemo(() => {
-    return graph.nodes.filter((node) => node.lod <= lodLevel)
+    return graph.nodes.filter((node) => (node.lod as number) <= lodLevel)
   }, [graph.nodes, lodLevel])
 
   // Filter edges - only show edges where both nodes are visible

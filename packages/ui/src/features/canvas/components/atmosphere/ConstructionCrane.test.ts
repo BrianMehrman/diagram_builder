@@ -10,24 +10,20 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useCanvasStore } from '../../store'
 import { getChangeCount, computeCraneThreshold, shouldShowCrane } from './craneUtils'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
-/** Helper: create a minimal GraphNode with optional changeCount */
-function makeNode(id: string, changeCount?: number, nested = false): GraphNode {
-  const metadata: Record<string, unknown> = {}
-  if (changeCount !== undefined) {
-    if (nested) {
-      metadata.properties = { changeCount }
-    } else {
-      metadata.changeCount = changeCount
-    }
-  }
+/** Helper: create a minimal IVMNode with optional changeCount in metadata.properties */
+function makeNode(id: string, changeCount?: number): IVMNode {
   return {
     id,
     type: 'class',
-    label: id,
-    metadata,
+    metadata: {
+      label: id,
+      path: `src/${id}.ts`,
+      properties: changeCount !== undefined ? { changeCount } : {},
+    },
     lod: 1,
+    position: { x: 0, y: 0, z: 0 },
   }
 }
 
@@ -38,14 +34,9 @@ describe('ConstructionCrane', () => {
 
   // ── getChangeCount ──────────────────────────────────────────────
   describe('getChangeCount', () => {
-    it('returns changeCount from direct metadata', () => {
+    it('returns changeCount from metadata.properties', () => {
       const node = makeNode('a', 42)
       expect(getChangeCount(node)).toBe(42)
-    })
-
-    it('returns changeCount from nested metadata.properties', () => {
-      const node = makeNode('a', 10, true)
-      expect(getChangeCount(node)).toBe(10)
     })
 
     it('returns 0 when metadata has no changeCount (AC-4)', () => {
@@ -53,13 +44,13 @@ describe('ConstructionCrane', () => {
       expect(getChangeCount(node)).toBe(0)
     })
 
-    it('returns 0 when metadata is empty object', () => {
-      const node: GraphNode = {
+    it('returns 0 when metadata.properties is empty', () => {
+      const node: IVMNode = {
         id: 'x',
         type: 'file',
-        label: 'x',
-        metadata: {},
+        metadata: { label: 'x', path: 'x.ts', properties: {} },
         lod: 1,
+        position: { x: 0, y: 0, z: 0 },
       }
       expect(getChangeCount(node)).toBe(0)
     })

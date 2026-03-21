@@ -5,7 +5,7 @@
  * Extracted for testability without React Three Fiber dependencies.
  */
 
-import type { Graph, GraphNode } from '../../../shared/types'
+import type { IVMGraph, IVMNode, NodeMetadata } from '../../../shared/types'
 
 /**
  * Organelle color palette by node type.
@@ -19,7 +19,7 @@ export const ORGANELLE_COLORS: Record<string, string> = {
 /**
  * Get color for an organelle based on its node type.
  */
-export function getOrganelleColor(nodeType: GraphNode['type']): string {
+export function getOrganelleColor(nodeType: IVMNode['type']): string {
   return ORGANELLE_COLORS[nodeType] ?? '#6b7280'
 }
 
@@ -31,7 +31,7 @@ export type OrganelleShape = 'sphere' | 'cube'
 /**
  * Get the 3D shape for an organelle based on its node type.
  */
-export function getOrganelleShape(nodeType: GraphNode['type']): OrganelleShape {
+export function getOrganelleShape(nodeType: IVMNode['type']): OrganelleShape {
   switch (nodeType) {
     case 'variable':
       return 'cube'
@@ -51,8 +51,8 @@ const BASE_SIZE = 0.5
  * Calculate organelle size based on metadata (line count / complexity).
  * Larger methods get larger organelles via logarithmic scaling.
  */
-export function getOrganelleSize(metadata: Record<string, unknown>): number {
-  const lineCount = (metadata.lineCount as number) ?? 10
+export function getOrganelleSize(metadata: NodeMetadata): number {
+  const lineCount = (metadata.properties?.lineCount as number | undefined) ?? 10
   const clamped = Math.max(1, lineCount)
   return BASE_SIZE * (1 + Math.log10(clamped) * 0.3)
 }
@@ -61,9 +61,9 @@ export function getOrganelleSize(metadata: Record<string, unknown>): number {
  * Extract a subgraph containing only the focused class and its children (organelles).
  */
 export function extractCellSubgraph(
-  graph: Graph,
+  graph: IVMGraph,
   focusedNodeId: string
-): { nodes: GraphNode[]; edges: Graph['edges'] } | null {
+): { nodes: IVMNode[]; edges: IVMGraph['edges'] } | null {
   const cellNode = graph.nodes.find((n) => n.id === focusedNodeId)
   if (!cellNode) return null
 

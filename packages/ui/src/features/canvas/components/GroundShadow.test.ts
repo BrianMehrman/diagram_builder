@@ -16,7 +16,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import * as THREE from 'three'
 import { useCanvasStore } from '../store'
 import { isSkyEdgeVisible, getSkyEdgeHeight, getSkyEdgeColor } from './skyEdgeUtils'
-import type { GraphEdge } from '../../../shared/types'
+import type { IVMEdge } from '../../../shared/types'
 
 const CURVE_SEGMENTS = 32
 const GROUND_Y = 0.01
@@ -25,7 +25,7 @@ const TRANSIT_MAP_OPACITY = 1.0
 
 /** Helper: build the same projected line the component would build */
 function buildGroundLine(
-  edgeType: GraphEdge['type'],
+  edgeType: IVMEdge['type'],
   srcX: number,
   srcZ: number,
   tgtX: number,
@@ -163,7 +163,7 @@ describe('GroundShadow', () => {
     it('non-sky edge types still produce valid geometry via helper (informational)', () => {
       // These types now route underground — the helper still produces valid
       // geometry/material, but the component never renders them as ground shadows.
-      const types: GraphEdge['type'][] = ['imports', 'depends_on', 'inherits']
+      const types: IVMEdge['type'][] = ['imports', 'depends_on', 'inherits']
       for (const t of types) {
         const line = buildGroundLine(t, 0, 0, 10, 10, false)
         const mat = line.material as THREE.LineBasicMaterial

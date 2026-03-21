@@ -5,24 +5,21 @@
  * point-light intensity and color values.
  */
 
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
 /**
  * Extract testCoverage (0-100) from node metadata.
  * Checks both `metadata.testCoverage` and `metadata.properties.testCoverage`.
  * Returns null if absent — distinguishes "untested" (0%) from "no data" (null).
  */
-export function getTestCoverage(node: GraphNode): number | null {
+export function getTestCoverage(node: IVMNode): number | null {
   const meta = node.metadata
   if (meta == null) return null
-
-  // Direct property
-  if (typeof meta.testCoverage === 'number') return meta.testCoverage
 
   // Nested under properties (parser output format)
   const props = meta.properties
   if (props != null && typeof props === 'object' && !Array.isArray(props)) {
-    const nested = (props as Record<string, unknown>).testCoverage
+    const nested = props.testCoverage
     if (typeof nested === 'number') return nested
   }
 

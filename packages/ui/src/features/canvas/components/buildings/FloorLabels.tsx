@@ -6,10 +6,10 @@
  */
 
 import { Text } from '@react-three/drei'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
 interface FloorLabelsProps {
-  methods: GraphNode[]
+  methods: IVMNode[]
   totalHeight: number
   buildingWidth: number
   lodLevel: number
@@ -25,7 +25,8 @@ export function FloorLabels({ methods, totalHeight, buildingWidth, lodLevel }: F
     <>
       {methods.map((method, index) => {
         const y = floorHeight * (index + 0.5)
-        const label = (method.label ?? method.id).split('/').pop()?.split('.').pop() ?? method.id
+        const label =
+          (method.metadata.label ?? method.id).split('/').pop()?.split('.').pop() ?? method.id
 
         return (
           <Text

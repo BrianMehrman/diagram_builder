@@ -1,5 +1,5 @@
 import React from 'react'
-import { CityView } from '../../../views/CityView'
+import { CityView } from '../../../layouts/city/CityView'
 import type { VisualizationRenderer, RenderContext } from '../../types'
 
 /**
@@ -11,8 +11,8 @@ import type { VisualizationRenderer, RenderContext } from '../../types'
 const cityRenderer: VisualizationRenderer = {
   type: 'radial-city',
 
-  render(ctx: RenderContext): React.JSX.Element {
-    return <CityView graph={ctx.graph} />
+  render(_ctx: RenderContext): React.JSX.Element {
+    return <CityView />
   },
 
   canRender(layoutType: string): boolean {

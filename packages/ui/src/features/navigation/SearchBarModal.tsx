@@ -10,20 +10,20 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { useSearchStore } from './searchStore'
 import { searchNodes, initializeSearchIndex } from './fuzzySearch'
 import { useDebounce } from '../../shared/hooks'
-import type { GraphNode, Position3D } from '../../shared/types'
+import type { IVMNode, Position3D } from '../../shared/types'
 
 /**
  * Props for SearchBarModal
  */
 interface SearchBarModalProps {
-  nodes: GraphNode[]
+  nodes: IVMNode[]
   onNodeSelect: (nodeId: string, position?: Position3D) => void
 }
 
 /**
  * Get icon for node type
  */
-function getNodeIcon(type: GraphNode['type']): string {
+function getNodeIcon(type: IVMNode['type']): string {
   switch (type) {
     case 'file':
       return '📄'
@@ -90,7 +90,7 @@ export function SearchBarModal({
 
   // Handle node selection
   const handleNodeSelect = useCallback(
-    (node: GraphNode) => {
+    (node: IVMNode) => {
       if (query.trim()) {
         addToHistory(query)
       }
@@ -148,7 +148,7 @@ export function SearchBarModal({
 
   // Handle result click
   const handleResultClick = useCallback(
-    (node: GraphNode) => {
+    (node: IVMNode) => {
       handleNodeSelect(node)
     },
     [handleNodeSelect]
@@ -280,7 +280,7 @@ export function SearchBarModal({
                     <span className="text-xl flex-shrink-0">{getNodeIcon(node.type)}</span>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-gray-900 dark:text-white truncate">
-                        {node.label}
+                        {node.metadata.label}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
                         <span className="capitalize">{node.type}</span>

@@ -6,7 +6,7 @@ import type {
   DistrictLayout,
   ExternalZoneLayout,
 } from '../types'
-import type { Graph, GraphNode, Position3D } from '../../../../shared/types'
+import type { IVMGraph, IVMNode, Position3D } from '../../../../shared/types'
 import { boundsFromPositions } from '../bounds'
 import {
   calculateRingRadius,
@@ -108,7 +108,7 @@ export interface RadialCityLayoutConfig extends LayoutConfig {
 export class RadialCityLayoutEngine implements LayoutEngine {
   readonly type = 'radial-city'
 
-  layout(graph: Graph, config: RadialCityLayoutConfig = {}): HierarchicalLayoutResult {
+  layout(graph: IVMGraph, config: RadialCityLayoutConfig = {}): HierarchicalLayoutResult {
     const {
       ringSpacing = 20,
       arcPadding = 0.05,
@@ -125,22 +125,29 @@ export class RadialCityLayoutEngine implements LayoutEngine {
     const positions = new Map<string, Position3D>()
 
     // === Separate nodes by role ===
-    const internalNodes = graph.nodes.filter((n) => !n.isExternal)
-    const externalNodes = graph.nodes.filter((n) => n.isExternal === true)
+    const internalNodes = graph.nodes.filter(
+      (n) => !(n.metadata.properties?.isExternal as boolean | undefined)
+    )
+    const externalNodes = graph.nodes.filter(
+      (n) => (n.metadata.properties?.isExternal as boolean | undefined) === true
+    )
     const fileNodes = internalNodes.filter((n) => n.type === 'file')
     const nonFileNodes = internalNodes.filter((n) => n.type !== 'file')
 
     // === Compute effective depth for file nodes ===
-    const hasAnyDepth = fileNodes.some((n) => n.depth !== undefined && n.depth > 0)
+    const hasAnyDepth = fileNodes.some((n) => {
+      const depth = n.metadata.properties?.depth as number | undefined
+      return depth !== undefined && depth > 0
+    })
     const effectiveDepths = new Map<string, number>()
 
     if (hasAnyDepth) {
       for (const n of fileNodes) {
-        effectiveDepths.set(n.id, n.depth ?? 0)
+        effectiveDepths.set(n.id, (n.metadata.properties?.depth as number | undefined) ?? 0)
       }
     } else {
       const paths = fileNodes.map((n) => {
-        const p = (n.metadata?.path as string) ?? n.label ?? ''
+        const p = n.metadata?.path ?? n.metadata.label ?? ''
         return { id: n.id, segments: p.split('/').filter(Boolean) }
       })
       if (paths.length > 0) {
@@ -250,7 +257,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
           // Create compound block for small districts
           const districtFileNodes = assignment.nodeIds
             .map((id) => graph.nodes.find((n) => n.id === id))
-            .filter((n): n is GraphNode => n !== undefined)
+            .filter((n): n is IVMNode => n !== undefined)
 
           const compoundPos: Position3D = {
             x: Math.cos((arc.arcStart + arc.arcEnd) / 2) * radius,
@@ -342,7 +349,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
         // Filter to orphans that belong to this district (by directory)
         const districtDir = assignment.districtId
         const districtOrphanNodes = unassignedOrphans.filter((o) => {
-          const path = (o.metadata?.path as string) ?? o.label ?? ''
+          const path = o.metadata?.path ?? o.metadata.label ?? ''
           const dir = extractDirectory(path)
           return dir === districtDir
         })
@@ -459,15 +466,16 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       const externalRadius = Math.max(baseExternalRadius, minExternalRadius)
 
       // Group external nodes by infrastructure type
-      const zoneGroups = new Map<string, GraphNode[]>()
+      const zoneGroups = new Map<string, IVMNode[]>()
       for (const node of externalNodes) {
-        const infraType = (node.metadata?.infrastructureType as string) ?? 'general'
+        const infraType =
+          (node.metadata?.properties?.infrastructureType as string | undefined) ?? 'general'
         if (!zoneGroups.has(infraType)) zoneGroups.set(infraType, [])
         zoneGroups.get(infraType)?.push(node)
       }
 
       // Build ordered zone list
-      const orderedZones: Array<{ type: string; nodes: GraphNode[] }> = []
+      const orderedZones: Array<{ type: string; nodes: IVMNode[] }> = []
       for (const zoneType of ZONE_ORDER) {
         const nodes = zoneGroups.get(zoneType)
         if (nodes && nodes.length > 0) {
@@ -491,7 +499,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       let currentAngle = 0
       for (const zone of orderedZones) {
         const sortedNodes = [...zone.nodes].sort((a, b) =>
-          (a.label ?? '').localeCompare(b.label ?? '')
+          (a.metadata.label ?? '').localeCompare(b.metadata.label ?? '')
         )
 
         const proportion = sortedNodes.length / totalExternalNodes
@@ -557,7 +565,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
     }
   }
 
-  canHandle(graph: Graph): boolean {
+  canHandle(graph: IVMGraph): boolean {
     return graph.nodes.length > 0
   }
 }
@@ -566,11 +574,11 @@ export class RadialCityLayoutEngine implements LayoutEngine {
  * Groups nodes by their containing directory.
  * Sorted alphabetically for deterministic output.
  */
-function groupByDirectory(nodes: GraphNode[]): Map<string, GraphNode[]> {
-  const groups = new Map<string, GraphNode[]>()
+function groupByDirectory(nodes: IVMNode[]): Map<string, IVMNode[]> {
+  const groups = new Map<string, IVMNode[]>()
 
   for (const node of nodes) {
-    const filePath = (node.metadata?.path as string) ?? node.label ?? ''
+    const filePath = node.metadata?.path ?? node.metadata.label ?? ''
     const dir = extractDirectory(filePath)
 
     if (!groups.has(dir)) groups.set(dir, [])

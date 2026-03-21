@@ -15,3 +15,6 @@ export * from './layout/index.js'
 
 // Exporter exports
 export * from './exporters/index.js'
+
+// View exports
+export * from './views/index.js'

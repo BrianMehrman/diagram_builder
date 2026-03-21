@@ -7,32 +7,31 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Breadcrumbs } from './Breadcrumbs'
 import { useCanvasStore } from '../canvas/store'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
-const mockNodes: GraphNode[] = [
+const mockNodes: IVMNode[] = [
   {
     id: 'file-1',
     type: 'file',
-    label: 'app.ts',
-    metadata: {},
+    metadata: { label: 'app.ts', path: 'src/app.ts' },
     position: { x: 0, y: 0, z: 0 },
     lod: 0,
   },
   {
     id: 'class-1',
     type: 'class',
-    label: 'Application',
-    metadata: { file: 'file-1' },
+    metadata: { label: 'Application', path: 'src/Application.ts' },
     position: { x: 1, y: 1, z: 1 },
     lod: 1,
+    parentId: 'file-1',
   },
   {
     id: 'method-1',
     type: 'method',
-    label: 'initialize',
-    metadata: { class: 'class-1', file: 'file-1' },
+    metadata: { label: 'initialize', path: 'src/Application.ts' },
     position: { x: 1.5, y: 1.5, z: 1.5 },
     lod: 2,
+    parentId: 'class-1',
   },
 ]
 
@@ -124,13 +123,13 @@ describe('Breadcrumbs', () => {
   })
 
   it('handles method without class gracefully', () => {
-    const orphanMethod: GraphNode = {
+    const orphanMethod: IVMNode = {
       id: 'method-orphan',
       type: 'method',
-      label: 'orphan',
-      metadata: { file: 'file-1' },
+      metadata: { label: 'orphan', path: 'src/orphan.ts' },
       position: { x: 2, y: 2, z: 2 },
       lod: 2,
+      parentId: 'file-1',
     }
 
     render(
@@ -148,11 +147,10 @@ describe('Breadcrumbs', () => {
   })
 
   it('handles class without file gracefully', () => {
-    const orphanClass: GraphNode = {
+    const orphanClass: IVMNode = {
       id: 'class-orphan',
       type: 'class',
-      label: 'OrphanClass',
-      metadata: {},
+      metadata: { label: 'OrphanClass', path: 'src/OrphanClass.ts' },
       position: { x: 3, y: 3, z: 3 },
       lod: 1,
     }

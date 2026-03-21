@@ -33,7 +33,7 @@ export interface ExportOptions {
 }
 
 /**
- * Graph filters for export
+ * IVMGraph filters for export
  */
 export interface GraphFilters {
   nodeTypes?: string[]

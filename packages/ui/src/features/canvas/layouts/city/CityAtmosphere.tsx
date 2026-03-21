@@ -15,21 +15,21 @@
  */
 
 import { useMemo } from 'react'
-import { ConstructionCrane } from '../components/atmosphere/ConstructionCrane'
-import { CoverageLighting } from '../components/atmosphere/CoverageLighting'
-import { SmogOverlay } from '../components/atmosphere/SmogOverlay'
-import { DeprecatedOverlay } from '../components/atmosphere/DeprecatedOverlay'
-import { shouldShowCrane, computeCraneThreshold } from '../components/atmosphere/craneUtils'
-import { getTestCoverage } from '../components/atmosphere/coverageLightingUtils'
-import { isDeprecated } from '../components/atmosphere/deprecatedUtils'
-import { getBuildingConfig } from '../components/buildingGeometry'
-import { useCanvasStore } from '../store'
-import { useCityLayout } from '../hooks/useCityLayout'
-import { useCityFiltering } from '../hooks/useCityFiltering'
-import type { Graph, GraphNode } from '../../../shared/types'
+import { ConstructionCrane } from '../../components/atmosphere/ConstructionCrane'
+import { CoverageLighting } from '../../components/atmosphere/CoverageLighting'
+import { SmogOverlay } from '../../components/atmosphere/SmogOverlay'
+import { DeprecatedOverlay } from '../../components/atmosphere/DeprecatedOverlay'
+import { shouldShowCrane, computeCraneThreshold } from '../../components/atmosphere/craneUtils'
+import { getTestCoverage } from '../../components/atmosphere/coverageLightingUtils'
+import { isDeprecated } from '../../components/atmosphere/deprecatedUtils'
+import { getBuildingConfig } from '../../components/buildingGeometry'
+import { useCanvasStore } from '../../store'
+import { useCityLayout } from './useCityLayout'
+import { useCityFiltering } from './useCityFiltering'
+import type { IVMGraph, IVMNode } from '../../../../shared/types'
 
 interface CityAtmosphereProps {
-  graph: Graph
+  graph: IVMGraph
 }
 
 /** Node types that represent buildings (cranes, lighting, deprecated apply to these) */
@@ -39,7 +39,7 @@ export function CityAtmosphere({ graph }: CityAtmosphereProps) {
   const overlays = useCanvasStore((s) => s.citySettings.atmosphereOverlays)
   const lodLevel = useCanvasStore((s) => s.lodLevel)
 
-  const { positions, districtArcs } = useCityLayout(graph)
+  const { positions, districtArcs } = useCityLayout()
   const { internalNodes, districtGroups, nodeMap } = useCityFiltering(graph, positions)
 
   // All hooks must be called unconditionally (React rules of hooks)
@@ -53,9 +53,9 @@ export function CityAtmosphere({ graph }: CityAtmosphereProps) {
   )
 
   const districtNodeMap = useMemo(() => {
-    const map = new Map<string, GraphNode[]>()
+    const map = new Map<string, IVMNode[]>()
     for (const [dir, nodeIds] of districtGroups) {
-      const nodes = nodeIds.map((id) => nodeMap.get(id)).filter((n): n is GraphNode => n != null)
+      const nodes = nodeIds.map((id) => nodeMap.get(id)).filter((n): n is IVMNode => n != null)
       if (nodes.length > 0) {
         map.set(dir, nodes)
       }

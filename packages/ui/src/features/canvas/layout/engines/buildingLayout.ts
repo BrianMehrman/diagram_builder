@@ -1,5 +1,5 @@
 import type { LayoutEngine, LayoutConfig, LayoutResult, BoundingBox } from '../types'
-import type { Graph, GraphNode, Position3D } from '../../../../shared/types'
+import type { IVMGraph, IVMNode, Position3D } from '../../../../shared/types'
 
 /**
  * Building layout configuration
@@ -27,12 +27,14 @@ export interface BuildingLayoutConfig extends LayoutConfig {
 export class BuildingLayoutEngine implements LayoutEngine {
   readonly type = 'building'
 
-  layout(graph: Graph, config: BuildingLayoutConfig = {}): LayoutResult {
+  layout(graph: IVMGraph, config: BuildingLayoutConfig = {}): LayoutResult {
     const positions = new Map<string, Position3D>()
     const { floorHeight = 4, roomSize = 2, roomSpacing = 1, wallPadding = 2 } = config
 
     // Find the file node (building)
-    const fileNode = graph.nodes.find((n) => n.type === 'file' && !n.isExternal)
+    const fileNode = graph.nodes.find(
+      (n) => n.type === 'file' && !(n.metadata.properties?.isExternal as boolean | undefined)
+    )
     if (!fileNode) {
       return {
         positions,
@@ -48,10 +50,10 @@ export class BuildingLayoutEngine implements LayoutEngine {
     const children = graph.nodes.filter((n) => n.parentId === fileNode.id)
     const classes = children
       .filter((n) => n.type === 'class')
-      .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''))
+      .sort((a, b) => (a.metadata.label ?? '').localeCompare(b.metadata.label ?? ''))
     const fileLevelItems = children
       .filter((n) => n.type !== 'class')
-      .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''))
+      .sort((a, b) => (a.metadata.label ?? '').localeCompare(b.metadata.label ?? ''))
 
     let currentFloor = 0
     let maxWidth = 0
@@ -88,7 +90,7 @@ export class BuildingLayoutEngine implements LayoutEngine {
       // Layout class children (methods) as rooms on this floor
       const classChildren = graph.nodes
         .filter((n) => n.parentId === classNode.id)
-        .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''))
+        .sort((a, b) => (a.metadata.label ?? '').localeCompare(b.metadata.label ?? ''))
 
       if (classChildren.length > 0) {
         const floorResult = this.layoutFloor(classChildren, origin, floorY, roomSize, roomSpacing)
@@ -135,7 +137,7 @@ export class BuildingLayoutEngine implements LayoutEngine {
     }
   }
 
-  canHandle(graph: Graph): boolean {
+  canHandle(graph: IVMGraph): boolean {
     return graph.nodes.some(
       (n) => n.parentId !== undefined && (n.type === 'class' || n.type === 'function')
     )
@@ -145,7 +147,7 @@ export class BuildingLayoutEngine implements LayoutEngine {
    * Lays out nodes in a grid on a single floor.
    */
   private layoutFloor(
-    nodes: GraphNode[],
+    nodes: IVMNode[],
     origin: Position3D,
     floorY: number,
     roomSize: number,

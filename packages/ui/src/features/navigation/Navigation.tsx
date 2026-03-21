@@ -1,9 +1,9 @@
 import { SearchBar } from './SearchBar'
 import { Breadcrumbs } from './Breadcrumbs'
-import type { GraphNode, Position3D } from '../../shared/types'
+import type { IVMNode, Position3D } from '../../shared/types'
 
 interface NavigationProps {
-  nodes?: GraphNode[]
+  nodes?: IVMNode[]
   onNodeSelect?: (nodeId: string, position?: Position3D) => void
 }
 

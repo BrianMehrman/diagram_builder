@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useDistrictMap } from './useDistrictMap'
-import type { GraphNode } from '../../../shared/types'
+import type { IVMNode } from '../../../shared/types'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -13,9 +13,9 @@ import type { GraphNode } from '../../../shared/types'
 
 function createNode(
   id: string,
-  type: GraphNode['type'] = 'file',
-  overrides: Partial<GraphNode> = {}
-): GraphNode {
+  type: IVMNode['type'] = 'file',
+  overrides: Partial<IVMNode> = {}
+): IVMNode {
   return {
     id,
     type,

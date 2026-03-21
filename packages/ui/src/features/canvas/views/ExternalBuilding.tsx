@@ -9,11 +9,11 @@ import { useState } from 'react'
 import { Text } from '@react-three/drei'
 import { useCanvasStore } from '../store'
 import { useTransitMapStyle } from '../hooks/useTransitMapStyle'
-import type { GraphNode, Position3D } from '../../../shared/types'
+import type { IVMNode, Position3D } from '../../../shared/types'
 import { EXTERNAL_COLOR } from './colorUtils'
 
 interface ExternalBuildingProps {
-  node: GraphNode
+  node: IVMNode
   position: Position3D
 }
 
@@ -28,7 +28,7 @@ export function ExternalBuilding({ node, position }: ExternalBuildingProps) {
   const transitStyle = useTransitMapStyle()
 
   const isSelected = selectedNodeId === node.id
-  const label = node.label ?? ''
+  const label = node.metadata.label ?? ''
   const packageName = label.split('/').pop() ?? label
 
   const handleClick = (e: { stopPropagation: () => void }) => {

@@ -8,20 +8,28 @@
  */
 
 import { useMemo } from 'react'
-import { shouldCluster, createClusterMetadata } from '../layout/engines/clusterUtils'
-import { buildMethodChildMap } from '../components/buildings/floorBandUtils'
-import { useCanvasStore } from '../store'
-import type { Graph, GraphNode, Position3D } from '../../../shared/types'
-import type { ClusterMetadata } from '../layout/engines/clusterUtils'
+import { SemanticTier } from '@diagram-builder/core'
+import type { GroupNode } from '@diagram-builder/core'
+import { shouldCluster, createClusterMetadata } from '../../layout/engines/clusterUtils'
+import { buildMethodChildMap } from '../../components/buildings/floorBandUtils'
+import { useCanvasStore } from '../../store'
+import type { IVMGraph, IVMNode, Position3D } from '../../../../shared/types'
+import type { ClusterMetadata } from '../../layout/engines/clusterUtils'
+
+/** Recursively collect all Module-tier groups from the hierarchy root */
+function getModuleGroups(root: GroupNode): GroupNode[] {
+  if (root.tier === SemanticTier.Module) return [root]
+  return root.children.flatMap(getModuleGroups)
+}
 
 /** Default threshold for clustering — districts with more nodes collapse at LOD 1 */
 const DEFAULT_CLUSTER_THRESHOLD = 20
 
 export interface CityFilteringResult {
   /** Nodes that are not external libraries */
-  internalNodes: GraphNode[]
+  internalNodes: IVMNode[]
   /** External library nodes */
-  externalNodes: GraphNode[]
+  externalNodes: IVMNode[]
   /** Directory path → list of node IDs */
   districtGroups: Map<string, string[]>
   /** Cluster metadata for districts exceeding the threshold at LOD 1 */
@@ -29,13 +37,13 @@ export interface CityFilteringResult {
   /** Set of node IDs that are collapsed into clusters */
   clusteredNodeIds: Set<string>
   /** Parent ID → child nodes for x-ray mode */
-  childrenByFile: Map<string, GraphNode[]>
+  childrenByFile: Map<string, IVMNode[]>
   /** Class ID → method child nodes (always computed for floor bands) */
-  methodsByClass: Map<string, GraphNode[]>
+  methodsByClass: Map<string, IVMNode[]>
   /** Node ID → node lookup */
-  nodeMap: Map<string, GraphNode>
+  nodeMap: Map<string, IVMNode>
   /** Edges with both endpoints positioned and matching allowed types */
-  visibleEdges: Graph['edges']
+  visibleEdges: IVMGraph['edges']
 }
 
 /**
@@ -45,57 +53,45 @@ export interface CityFilteringResult {
  * @param positions - Layout positions from useCityLayout
  */
 export function useCityFiltering(
-  graph: Graph,
+  graph: IVMGraph,
   positions: Map<string, Position3D>
 ): CityFilteringResult {
   const lodLevel = useCanvasStore((s) => s.lodLevel)
   const isXRayMode = useCanvasStore((s) => s.isXRayMode)
   const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion)
+  const parseResult = useCanvasStore((s) => s.parseResult)
 
   // Separate internal and external nodes
-  const internalNodes = useMemo(() => graph.nodes.filter((n) => !n.isExternal), [graph.nodes])
-
-  const externalNodes = useMemo(
-    () => graph.nodes.filter((n) => n.isExternal === true),
+  const internalNodes = useMemo(
+    () => graph.nodes.filter((n) => !(n.metadata.properties?.isExternal as boolean | undefined)),
     [graph.nodes]
   )
 
-  // Group ALL internal nodes by directory — used for cross-district edge detection
-  // and district-level data (CityAtmosphere). Includes files, classes, methods, etc.
-  const districtGroups = useMemo(() => {
-    const groups = new Map<string, string[]>()
-    for (const node of internalNodes) {
-      const filePath = (node.metadata?.path as string) ?? node.label ?? ''
-      const lastSlash = filePath.lastIndexOf('/')
-      const dir = lastSlash >= 0 ? filePath.substring(0, lastSlash) : 'root'
-      const existing = groups.get(dir)
-      if (existing) {
-        existing.push(node.id)
-      } else {
-        groups.set(dir, [node.id])
-      }
-    }
-    return groups
-  }, [internalNodes])
+  const externalNodes = useMemo(
+    () =>
+      graph.nodes.filter(
+        (n) => (n.metadata.properties?.isExternal as boolean | undefined) === true
+      ),
+    [graph.nodes]
+  )
 
-  // Group only FILE nodes by directory for clustering — mirrors radialCityLayout's
-  // district grouping so cluster counts and centroids match the visible scene.
-  const fileDistrictGroups = useMemo(() => {
-    const groups = new Map<string, string[]>()
-    for (const node of internalNodes) {
-      if (node.type !== 'file') continue
-      const filePath = (node.metadata?.path as string) ?? node.label ?? ''
-      const lastSlash = filePath.lastIndexOf('/')
-      const dir = lastSlash >= 0 ? filePath.substring(0, lastSlash) : 'root'
-      const existingFile = groups.get(dir)
-      if (existingFile) {
-        existingFile.push(node.id)
-      } else {
-        groups.set(dir, [node.id])
-      }
+  // Group nodes by GroupHierarchy Module-tier groups — used for cross-district edge
+  // detection and district-level data (CityAtmosphere).
+  const { districtGroups, fileDistrictGroups } = useMemo(() => {
+    const empty = {
+      districtGroups: new Map<string, string[]>(),
+      fileDistrictGroups: new Map<string, string[]>(),
     }
-    return groups
-  }, [internalNodes])
+    if (!parseResult) return empty
+    const moduleGroups = getModuleGroups(parseResult.hierarchy.root)
+    const nodeMap = new Map(graph.nodes.map((n) => [n.id, n]))
+    return {
+      districtGroups: new Map(moduleGroups.map((g) => [g.id, g.nodeIds])),
+      fileDistrictGroups: new Map(
+        moduleGroups.map((g) => [g.id, g.nodeIds.filter((id) => nodeMap.get(id)?.type === 'file')])
+      ),
+    }
+  }, [parseResult, graph.nodes])
 
   // Reverse lookup: nodeId → district path (for cross-district edge detection)
   const nodeDistrict = useMemo(() => {
@@ -147,8 +143,8 @@ export function useCityFiltering(
 
   // Build a map of file id -> child nodes for x-ray mode
   const childrenByFile = useMemo(() => {
-    if (!isXRayMode) return new Map<string, GraphNode[]>()
-    const map = new Map<string, GraphNode[]>()
+    if (!isXRayMode) return new Map<string, IVMNode[]>()
+    const map = new Map<string, IVMNode[]>()
     for (const node of graph.nodes) {
       if (node.type === 'class' || node.type === 'method' || node.type === 'function') {
         const parentId = node.parentId
@@ -164,7 +160,7 @@ export function useCityFiltering(
 
   // Build node lookup for edge rendering
   const nodeMap = useMemo(() => {
-    const map = new Map<string, GraphNode>()
+    const map = new Map<string, IVMNode>()
     for (const node of graph.nodes) {
       map.set(node.id, node)
     }
@@ -180,7 +176,7 @@ export function useCityFiltering(
         e.type !== 'imports' &&
         e.type !== 'depends_on' &&
         e.type !== 'calls' &&
-        e.type !== 'inherits'
+        e.type !== 'extends'
       ) {
         return false
       }

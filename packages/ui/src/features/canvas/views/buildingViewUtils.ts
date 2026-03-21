@@ -5,7 +5,7 @@
  * Extracted for testability without React Three Fiber dependencies.
  */
 
-import type { Graph, GraphNode } from '../../../shared/types'
+import type { IVMGraph, IVMNode } from '../../../shared/types'
 
 /**
  * Room color palette by node type.
@@ -19,7 +19,7 @@ export const ROOM_COLORS: Record<string, string> = {
 /**
  * Get color for a room based on its node type.
  */
-export function getRoomColor(nodeType: GraphNode['type']): string {
+export function getRoomColor(nodeType: IVMNode['type']): string {
   return ROOM_COLORS[nodeType] ?? '#6b7280'
 }
 
@@ -28,9 +28,9 @@ export function getRoomColor(nodeType: GraphNode['type']): string {
  * Includes direct children (classes, file-level functions) and grandchildren (methods).
  */
 export function extractBuildingSubgraph(
-  graph: Graph,
+  graph: IVMGraph,
   focusedNodeId: string
-): { nodes: GraphNode[]; edges: Graph['edges'] } | null {
+): { nodes: IVMNode[]; edges: IVMGraph['edges'] } | null {
   const fileNode = graph.nodes.find((n) => n.id === focusedNodeId)
   if (!fileNode) return null
 

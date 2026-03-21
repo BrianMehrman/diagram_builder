@@ -9,16 +9,16 @@ import { useRef, useState, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Mesh } from 'three'
 import { useCanvasStore } from '../store'
-import type { GraphNode } from '../../../shared/types'
+import type { IVMNode } from '../../../shared/types'
 
 interface NodeRendererProps {
-  node: GraphNode
+  node: IVMNode
 }
 
 /**
  * Get node color based on type
  */
-function getNodeColor(type: GraphNode['type']): string {
+function getNodeColor(type: IVMNode['type']): string {
   switch (type) {
     case 'file':
       return '#0ea5e9' // Blue
@@ -38,7 +38,7 @@ function getNodeColor(type: GraphNode['type']): string {
 /**
  * Get node size based on type
  */
-function getNodeSize(type: GraphNode['type']): number {
+function getNodeSize(type: IVMNode['type']): number {
   switch (type) {
     case 'file':
       return 0.8

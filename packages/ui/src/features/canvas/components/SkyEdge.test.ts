@@ -13,9 +13,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useCanvasStore } from '../store'
 import { isSkyEdgeVisible } from './skyEdgeUtils'
-import type { GraphEdge } from '../../../shared/types'
+import type { IVMEdge } from '../../../shared/types'
 
-const makeEdge = (type: GraphEdge['type']): GraphEdge => ({
+const makeEdge = (type: IVMEdge['type']): IVMEdge => ({
   id: `edge-${type}`,
   source: 'src-node',
   target: 'tgt-node',
@@ -71,7 +71,7 @@ describe('SkyEdge visibility (store integration)', () => {
   })
 
   it('all edge types supported by makeEdge helper', () => {
-    const types: GraphEdge['type'][] = ['imports', 'depends_on', 'calls', 'inherits', 'contains']
+    const types: IVMEdge['type'][] = ['imports', 'depends_on', 'calls', 'inherits', 'contains']
     for (const t of types) {
       const edge = makeEdge(t)
       expect(edge.type).toBe(t)

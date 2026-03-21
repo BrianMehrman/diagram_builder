@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type React from 'react'
 import type { VisualizationRenderer, RenderContext, VisualizationStyle } from './types'
-import type { Graph } from '../../../shared/types'
+import type { IVMGraph } from '../../../shared/types'
 import type { LayoutEngine, LayoutResult } from '../layout/types'
 
 const STUB_RENDERER_TYPE = 'stub' as const
@@ -22,7 +22,7 @@ describe('VisualizationRenderer contract', () => {
   it('VisualizationStyle bundles a layout engine and renderer', () => {
     const stubEngine: LayoutEngine = {
       type: STUB_ENGINE_TYPE,
-      layout: (_graph: Graph) =>
+      layout: (_graph: IVMGraph) =>
         ({
           positions: new Map(),
           bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },

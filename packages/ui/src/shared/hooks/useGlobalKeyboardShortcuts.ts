@@ -17,7 +17,7 @@ import { useSearchStore } from '../../features/navigation/searchStore'
 import { useCanvasStore } from '../../features/canvas/store'
 import { useUIStore } from '../stores/uiStore'
 import { useToastStore } from '../../features/feedback/toastStore'
-import type { GraphNode, Position3D } from '../types'
+import type { IVMNode, Position3D } from '../types'
 
 /**
  * Callback for flying to a node
@@ -29,7 +29,7 @@ type FlyToNodeCallback = (nodeId: string, position: Position3D) => void
  */
 interface UseGlobalKeyboardShortcutsOptions {
   /** All graph nodes (for finding root node) */
-  nodes?: GraphNode[]
+  nodes?: IVMNode[]
   /** Callback to fly camera to a node */
   onFlyToNode?: FlyToNodeCallback
   /** Whether shortcuts are enabled (default: true) */
@@ -132,7 +132,7 @@ export function useGlobalKeyboardShortcuts(options: UseGlobalKeyboardShortcutsOp
   /**
    * Find root node (first file-level node, or first node)
    */
-  const findRootNode = useCallback((): GraphNode | null => {
+  const findRootNode = useCallback((): IVMNode | null => {
     if (nodes.length === 0) return null
 
     // Prefer file-type nodes as root

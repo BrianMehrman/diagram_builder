@@ -10,7 +10,7 @@ import { Text } from '@react-three/drei'
 import { useCanvasStore } from '../store'
 import { useTransitMapStyle } from '../hooks/useTransitMapStyle'
 import { useFocusedConnections } from '../hooks/useFocusedConnections'
-import type { GraphNode, Position3D, Graph } from '../../../shared/types'
+import type { IVMNode, Position3D, IVMGraph } from '../../../shared/types'
 import { getDirectoryColor, getDirectoryFromLabel } from './colorUtils'
 import { BUILDING_WIDTH, BUILDING_DEPTH } from './heightUtils'
 import { getNodeFocusOpacity } from './focusUtils'
@@ -18,10 +18,10 @@ import { getBuildingConfig } from '../components/buildingGeometry'
 import type { EncodedHeightOptions } from './heightUtils'
 
 interface BuildingProps {
-  node: GraphNode
+  node: IVMNode
   position: Position3D
   encodingOptions?: EncodedHeightOptions
-  graph: Graph
+  graph: IVMGraph
 }
 
 export function Building({ node, position, encodingOptions, graph }: BuildingProps) {
@@ -38,9 +38,9 @@ export function Building({ node, position, encodingOptions, graph }: BuildingPro
   const focusOpacity = getNodeFocusOpacity(node.id, selectedNodeId, directNodeIds, secondHopNodeIds)
   const config = getBuildingConfig(node, encodingOptions)
   const buildingHeight = config.geometry.height
-  const directory = getDirectoryFromLabel(node.label)
+  const directory = getDirectoryFromLabel(node.metadata.label)
   const color = getDirectoryColor(directory)
-  const label = node.label ?? ''
+  const label = node.metadata.label ?? ''
   const fileName = label.split('/').pop() ?? label
 
   const emissiveColor = useMemo(() => {

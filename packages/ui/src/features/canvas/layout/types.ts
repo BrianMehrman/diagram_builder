@@ -1,4 +1,4 @@
-import type { Graph, Position3D } from '../../../shared/types'
+import type { IVMGraph, Position3D } from '../../../shared/types'
 import type { DistrictArcMetadata, InfrastructureZoneMetadata } from './engines/radialCityLayout'
 
 /**
@@ -55,7 +55,7 @@ export interface LayoutEngine {
    * @param config - Layout configuration
    * @returns Layout result with positions and bounds
    */
-  layout(graph: Graph, config: LayoutConfig): LayoutResult
+  layout(graph: IVMGraph, config: LayoutConfig): LayoutResult
 
   /**
    * Determine whether this engine can handle the given graph.
@@ -64,7 +64,7 @@ export interface LayoutEngine {
    * @param graph - The graph to evaluate
    * @returns True if this engine is suitable
    */
-  canHandle(graph: Graph): boolean
+  canHandle(graph: IVMGraph): boolean
 }
 
 /** Layout of a single file block within a district */

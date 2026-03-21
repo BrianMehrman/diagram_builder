@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 import {
   calculateBlockFootprint,
   placeChildrenInGrid,
@@ -13,22 +13,18 @@ import { BUILDING_Y_OFFSET } from '../../views/cityViewUtils'
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeNode(
-  id: string,
-  type: GraphNode['type'],
-  opts: { parentId?: string } = {}
-): GraphNode {
+function makeNode(id: string, type: IVMNode['type'], opts: { parentId?: string } = {}): IVMNode {
   return {
     id,
     type,
-    label: id,
-    metadata: {},
+    metadata: { label: id, path: `src/${id}.ts` },
     lod: 0,
+    position: { x: 0, y: 0, z: 0 },
     parentId: opts.parentId,
   }
 }
 
-function makeFileNode(id: string, opts: { parentId?: string } = {}): GraphNode {
+function makeFileNode(id: string, opts: { parentId?: string } = {}): IVMNode {
   return makeNode(id, 'file', opts)
 }
 
@@ -63,14 +59,14 @@ describe('calculateBlockFootprint', () => {
     expect(fp.width).toBe(6)
   })
 
-  it('weights abstract_class at 1.5x', () => {
-    const fp = calculateBlockFootprint(1, ['abstract_class'])
+  it('weights class (incl. abstract) at 1.5x', () => {
+    const fp = calculateBlockFootprint(1, ['class'])
     // 1.5 weighted → ceil(sqrt(1.5))*2+2 = ceil(1.22)*2+2 = 2*2+2 = 6
     expect(fp.width).toBe(6)
   })
 
   it('clamps to maximum 20x20', () => {
-    const types: GraphNode['type'][] = Array(200).fill('class')
+    const types: IVMNode['type'][] = Array(200).fill('class')
     const fp = calculateBlockFootprint(200, types)
     expect(fp.width).toBe(20)
     expect(fp.depth).toBe(20)
@@ -161,7 +157,7 @@ describe('placeChildrenInGrid', () => {
 
 describe('buildFileBlockHierarchy', () => {
   it('assigns children to their parent file', () => {
-    const nodes: GraphNode[] = [
+    const nodes: IVMNode[] = [
       makeFileNode('f1'),
       makeNode('c1', 'class', { parentId: 'f1' }),
       makeNode('m1', 'method', { parentId: 'c1' }),
@@ -175,7 +171,7 @@ describe('buildFileBlockHierarchy', () => {
   })
 
   it('walks parentId chain to find owning file', () => {
-    const nodes: GraphNode[] = [
+    const nodes: IVMNode[] = [
       makeFileNode('f1'),
       makeNode('c1', 'class', { parentId: 'f1' }),
       makeNode('m1', 'method', { parentId: 'c1' }),
@@ -189,7 +185,7 @@ describe('buildFileBlockHierarchy', () => {
   })
 
   it('collects orphans with missing parentId', () => {
-    const nodes: GraphNode[] = [makeFileNode('f1'), makeNode('orphan', 'function')]
+    const nodes: IVMNode[] = [makeFileNode('f1'), makeNode('orphan', 'function')]
 
     const result = buildFileBlockHierarchy(nodes)
 
@@ -198,7 +194,7 @@ describe('buildFileBlockHierarchy', () => {
   })
 
   it('collects orphans whose parentId references a non-existent node', () => {
-    const nodes: GraphNode[] = [
+    const nodes: IVMNode[] = [
       makeFileNode('f1'),
       makeNode('orphan', 'function', { parentId: 'missing' }),
     ]
@@ -211,7 +207,7 @@ describe('buildFileBlockHierarchy', () => {
 
   it('detects cycles and breaks them', () => {
     // Create a cycle: c1 -> c2 -> c1
-    const nodes: GraphNode[] = [
+    const nodes: IVMNode[] = [
       makeFileNode('f1'),
       { ...makeNode('c1', 'class', { parentId: 'c2' }) },
       { ...makeNode('c2', 'class', { parentId: 'c1' }) },
@@ -233,7 +229,7 @@ describe('buildFileBlockHierarchy', () => {
   })
 
   it('handles file-only input with no children', () => {
-    const nodes: GraphNode[] = [makeFileNode('f1'), makeFileNode('f2')]
+    const nodes: IVMNode[] = [makeFileNode('f1'), makeFileNode('f2')]
 
     const result = buildFileBlockHierarchy(nodes)
 
@@ -243,7 +239,7 @@ describe('buildFileBlockHierarchy', () => {
   })
 
   it('assigns children to correct files when multiple files exist', () => {
-    const nodes: GraphNode[] = [
+    const nodes: IVMNode[] = [
       makeFileNode('f1'),
       makeFileNode('f2'),
       makeNode('c1', 'class', { parentId: 'f1' }),
@@ -264,7 +260,7 @@ describe('buildFileBlockHierarchy', () => {
 describe('createCompoundBlock', () => {
   it('merges children from multiple files', () => {
     const files = [makeFileNode('f1'), makeFileNode('f2')]
-    const childrenByFile = new Map<string, GraphNode[]>([
+    const childrenByFile = new Map<string, IVMNode[]>([
       ['f1', [makeNode('c1', 'class')]],
       ['f2', [makeNode('c2', 'function')]],
     ])
@@ -279,7 +275,7 @@ describe('createCompoundBlock', () => {
 
   it('creates deterministic fileId from sorted file IDs', () => {
     const files = [makeFileNode('f2'), makeFileNode('f1')]
-    const childrenByFile = new Map<string, GraphNode[]>()
+    const childrenByFile = new Map<string, IVMNode[]>()
 
     const block = createCompoundBlock(files, childrenByFile, { x: 0, y: 0, z: 0 })
 
@@ -288,7 +284,7 @@ describe('createCompoundBlock', () => {
 
   it('handles files with no children', () => {
     const files = [makeFileNode('f1')]
-    const childrenByFile = new Map<string, GraphNode[]>()
+    const childrenByFile = new Map<string, IVMNode[]>()
     const pos = { x: 0, y: 0, z: 0 }
 
     const block = createCompoundBlock(files, childrenByFile, pos)

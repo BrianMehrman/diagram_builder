@@ -9,10 +9,10 @@ import { useState } from 'react'
 import { DoubleSide } from 'three'
 import { Text } from '@react-three/drei'
 import { useCanvasStore } from '../store'
-import type { GraphNode, Position3D } from '../../../shared/types'
+import type { IVMNode, Position3D } from '../../../shared/types'
 
 interface FloorProps {
-  classNode: GraphNode
+  classNode: IVMNode
   y: number
   width: number
   depth: number
@@ -56,7 +56,7 @@ export function Floor({ classNode, y, width, depth, origin }: FloorProps) {
         outlineWidth={0.02}
         outlineColor="#000000"
       >
-        {classNode.label}
+        {classNode.metadata.label}
       </Text>
     </group>
   )

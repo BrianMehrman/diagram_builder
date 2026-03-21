@@ -15,14 +15,14 @@
 
 import { useMemo } from 'react'
 import { UndergroundPipe } from './UndergroundPipe'
-import { useCityLayout } from '../hooks/useCityLayout'
-import { useCityFiltering } from '../hooks/useCityFiltering'
+import { useCityLayout } from '../layouts/city/useCityLayout'
+import { useCityFiltering } from '../layouts/city/useCityFiltering'
 import { classifyEdgeRouting } from '../views/wireUtils'
 import { useCanvasStore } from '../store'
-import type { Graph } from '../../../shared/types'
+import type { IVMGraph } from '../../../shared/types'
 
 interface CityUndergroundProps {
-  graph: Graph
+  graph: IVMGraph
 }
 
 export function CityUnderground({ graph }: CityUndergroundProps) {
@@ -32,14 +32,14 @@ export function CityUnderground({ graph }: CityUndergroundProps) {
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
   const isFocusMode = selectedNodeId !== null
 
-  const { positions } = useCityLayout(graph)
+  const { positions } = useCityLayout()
   const { visibleEdges } = useCityFiltering(graph, positions)
 
   // Build a set of external node IDs for O(1) lookup
   const externalNodeIds = useMemo(() => {
     const ids = new Set<string>()
     for (const node of graph.nodes) {
-      if (node.isExternal) ids.add(node.id)
+      if (node.metadata.properties?.isExternal as boolean | undefined) ids.add(node.id)
     }
     return ids
   }, [graph.nodes])

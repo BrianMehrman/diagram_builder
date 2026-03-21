@@ -9,10 +9,10 @@
 
 import { useEffect, useState } from 'react'
 import { useCanvasStore } from '../canvas/store'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
 interface HUDProps {
-  nodes?: GraphNode[]
+  nodes?: IVMNode[]
   className?: string
 }
 
@@ -114,7 +114,9 @@ export function HUD({ nodes = [], className = '' }: HUDProps) {
         <div className="border-t border-gray-600 mt-2 pt-2 space-y-1">
           <div className="flex justify-between gap-2">
             <span className="text-gray-400">Selected:</span>
-            <span className="font-semibold truncate max-w-[120px]">{selectedNode.label}</span>
+            <span className="font-semibold truncate max-w-[120px]">
+              {selectedNode.metadata.label}
+            </span>
           </div>
           <div className="flex justify-between gap-2">
             <span className="text-gray-400">Type:</span>
@@ -140,7 +142,9 @@ export function HUD({ nodes = [], className = '' }: HUDProps) {
         >
           <div className="flex justify-between gap-2">
             <span className="text-gray-400">Hover:</span>
-            <span className="font-semibold truncate max-w-[120px]">{hoveredNode.label}</span>
+            <span className="font-semibold truncate max-w-[120px]">
+              {hoveredNode.metadata.label}
+            </span>
           </div>
           <div className="flex justify-between gap-2">
             <span className="text-gray-400">Type:</span>

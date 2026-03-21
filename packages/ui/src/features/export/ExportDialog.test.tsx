@@ -35,7 +35,7 @@ describe('ExportDialog', () => {
   it('renders with title', () => {
     render(<ExportDialog repositoryId="repo-123" />)
 
-    expect(screen.getByText('Export Graph')).toBeDefined()
+    expect(screen.getByText('Export IVMGraph')).toBeDefined()
   })
 
   it('displays all export formats', () => {

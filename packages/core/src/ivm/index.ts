@@ -76,3 +76,6 @@ export {
 } from './validator.js'
 
 export type { ValidationError, ValidationResult } from './validator.js'
+
+// Semantic Tier
+export * from './semantic-tier.js'

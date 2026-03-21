@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
 import { NodeRenderer } from './NodeRenderer'
 import { useCanvasStore } from '../store'
-import type { GraphNode } from '../../../shared/types'
+import type { IVMNode } from '../../../shared/types'
 
 // Mock Canvas for tests
 vi.mock('@react-three/fiber', () => ({
@@ -14,7 +14,7 @@ vi.mock('@react-three/fiber', () => ({
   useFrame: vi.fn(),
 }))
 
-const mockNode: GraphNode = {
+const mockNode: IVMNode = {
   id: 'test-node',
   type: 'class',
   label: 'TestClass',
@@ -40,7 +40,7 @@ describe('NodeRenderer', () => {
   })
 
   it('uses box geometry for file nodes', () => {
-    const fileNode: GraphNode = {
+    const fileNode: IVMNode = {
       ...mockNode,
       type: 'file',
     }
@@ -60,7 +60,7 @@ describe('NodeRenderer', () => {
   })
 
   it('uses default position when not provided', () => {
-    const nodeWithoutPosition: GraphNode = {
+    const nodeWithoutPosition: IVMNode = {
       ...mockNode,
       position: undefined,
     }

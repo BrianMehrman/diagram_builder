@@ -5,7 +5,7 @@
  */
 
 import Fuse, { type IFuseOptions } from 'fuse.js'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
 /**
  * Fuse.js configuration
@@ -16,9 +16,9 @@ import type { GraphNode } from '../../shared/types'
  * - minMatchCharLength: Minimum query length to start matching
  * - includeScore: For ranking results
  */
-const fuseOptions: IFuseOptions<GraphNode> = {
+const fuseOptions: IFuseOptions<IVMNode> = {
   keys: [
-    { name: 'label', weight: 0.4 }, // Primary match (node name)
+    { name: 'metadata.label', weight: 0.4 }, // Primary match (node name)
     { name: 'id', weight: 0.3 }, // Secondary match (node ID)
     { name: 'type', weight: 0.2 }, // Tertiary match (node type)
     { name: 'metadata.path', weight: 0.1 }, // File path (if available)
@@ -34,7 +34,7 @@ const fuseOptions: IFuseOptions<GraphNode> = {
 /**
  * Search index - initialized once with graph nodes
  */
-let fuseIndex: Fuse<GraphNode> | null = null
+let fuseIndex: Fuse<IVMNode> | null = null
 
 /**
  * Initialize the search index with graph nodes
@@ -44,7 +44,7 @@ let fuseIndex: Fuse<GraphNode> | null = null
  *
  * @param nodes - Array of graph nodes to index
  */
-export function initializeSearchIndex(nodes: GraphNode[]): void {
+export function initializeSearchIndex(nodes: IVMNode[]): void {
   fuseIndex = new Fuse(nodes, fuseOptions)
 }
 
@@ -54,7 +54,7 @@ export function initializeSearchIndex(nodes: GraphNode[]): void {
  * @param query - Search query string
  * @returns Array of matching graph nodes (max 10), sorted by relevance
  */
-export function searchNodes(query: string): GraphNode[] {
+export function searchNodes(query: string): IVMNode[] {
   // Return empty for empty/whitespace query
   if (!query.trim()) {
     return []

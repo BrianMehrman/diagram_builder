@@ -14,33 +14,37 @@
 
 import { Html } from '@react-three/drei'
 import { CityEdge } from './CityEdge'
-import { OverheadWire } from '../components/OverheadWire'
-import { GroundShadow } from '../components/GroundShadow'
-import { useCityLayout } from '../hooks/useCityLayout'
-import { useCityFiltering } from '../hooks/useCityFiltering'
-import { useCanvasStore } from '../store'
-import { classifyEdgeRouting } from './wireUtils'
-import { getContainmentHeight, getBuildingHeight, KIOSK_HEIGHT } from './heightUtils'
-import type { Graph, GraphNode } from '../../../shared/types'
+import { OverheadWire } from '../../components/OverheadWire'
+import { GroundShadow } from '../../components/GroundShadow'
+import { useCityLayout } from './useCityLayout'
+import { useCityFiltering } from './useCityFiltering'
+import { useCanvasStore } from '../../store'
+import { classifyEdgeRouting } from '../../views/wireUtils'
+import { getContainmentHeight, getBuildingHeight, KIOSK_HEIGHT } from '../../views/heightUtils'
+import type { IVMGraph, IVMNode } from '../../../../shared/types'
 
 /** Compute rooftop Y for a node so OverheadWire arcs start/end at the correct height. */
-function getNodeRooftopY(node: GraphNode | undefined): number {
+function getNodeRooftopY(node: IVMNode | undefined): number {
   if (!node) return 0
-  if (node.type === 'class' || node.type === 'abstract_class' || node.type === 'interface') {
-    return getContainmentHeight(node.methodCount ?? 0)
+  if (
+    node.type === 'class' ||
+    (node.metadata.properties?.isAbstract as boolean | undefined) ||
+    node.type === 'interface'
+  ) {
+    return getContainmentHeight((node.metadata.properties?.methodCount as number | undefined) ?? 0)
   }
   if (node.type === 'function') {
     return KIOSK_HEIGHT
   }
-  return getBuildingHeight(node.depth)
+  return getBuildingHeight(node.metadata.properties?.depth as number | undefined)
 }
 
 interface CitySkyProps {
-  graph: Graph
+  graph: IVMGraph
 }
 
 export function CitySky({ graph }: CitySkyProps) {
-  const { positions } = useCityLayout(graph)
+  const { positions } = useCityLayout()
   const { visibleEdges, nodeMap } = useCityFiltering(graph, positions)
   const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion)
   const edgeTierVisibility = useCanvasStore((s) => s.citySettings.edgeTierVisibility)
@@ -115,8 +119,8 @@ export function CitySky({ graph }: CitySkyProps) {
             edge={edge}
             sourcePosition={srcPos}
             targetPosition={tgtPos}
-            sourceDepth={srcNode?.depth}
-            targetDepth={tgtNode?.depth}
+            sourceDepth={srcNode?.metadata.properties?.depth as number | undefined}
+            targetDepth={tgtNode?.metadata.properties?.depth as number | undefined}
           />
         )
       })}

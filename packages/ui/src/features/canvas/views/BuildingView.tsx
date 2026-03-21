@@ -12,10 +12,10 @@ import { Floor } from './Floor'
 import { Room } from './Room'
 import { BuildingLayoutEngine } from '../layout/engines/buildingLayout'
 import { extractBuildingSubgraph } from './buildingViewUtils'
-import type { Graph } from '../../../shared/types'
+import type { IVMGraph } from '../../../shared/types'
 
 interface BuildingViewProps {
-  graph: Graph
+  graph: IVMGraph
   focusedNodeId: string
 }
 
@@ -50,6 +50,7 @@ export function BuildingView({ graph, focusedNodeId }: BuildingViewProps) {
         nodes: subgraph.nodes,
         edges: subgraph.edges,
         metadata: graph.metadata,
+        bounds: graph.bounds,
       },
       {}
     )

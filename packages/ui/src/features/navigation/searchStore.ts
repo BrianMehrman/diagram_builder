@@ -5,7 +5,7 @@
  */
 
 import { create } from 'zustand'
-import type { GraphNode } from '../../shared/types'
+import type { IVMNode } from '../../shared/types'
 
 /**
  * Search store state and actions
@@ -14,7 +14,7 @@ interface SearchStore {
   // State
   isOpen: boolean
   query: string
-  results: GraphNode[]
+  results: IVMNode[]
   selectedIndex: number
   searchHistory: string[]
 
@@ -22,7 +22,7 @@ interface SearchStore {
   openSearch: () => void
   closeSearch: () => void
   setQuery: (query: string) => void
-  setResults: (results: GraphNode[]) => void
+  setResults: (results: IVMNode[]) => void
   selectNext: () => void
   selectPrevious: () => void
   selectFirst: () => void

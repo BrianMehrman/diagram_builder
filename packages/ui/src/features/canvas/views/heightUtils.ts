@@ -27,6 +27,22 @@ export interface EncodedHeightOptions {
   incomingEdgeCount?: number
 }
 
+/** Minimal node shape accepted by height/footprint utility functions */
+export interface NodeWithMetadata {
+  metadata: {
+    loc?: number
+    complexity?: number
+    churn?: number
+    properties?: Record<string, unknown>
+    label?: string
+    path?: string
+    language?: string
+    location?: unknown
+    dependencyCount?: number
+    dependentCount?: number
+  }
+}
+
 export const METHOD_ROOM_COLORS = {
   public: '#60a5fa',
   protected: '#f59e0b',
@@ -54,27 +70,24 @@ export function getContainmentHeight(methodCount: number): number {
   return Math.max(methodCount, 1) * METHOD_ROOM_HEIGHT + BUILDING_PADDING
 }
 
-export function getFootprintScale(
-  node: { methodCount?: number; depth?: number; metadata?: Record<string, unknown> },
-  options: EncodedHeightOptions
-): number {
+export function getFootprintScale(node: NodeWithMetadata, options: EncodedHeightOptions): number {
   const { encoding, incomingEdgeCount } = options
   let rawValue = 0
   switch (encoding) {
     case 'methodCount':
-      rawValue = node.methodCount ?? 0
+      rawValue = (node.metadata.properties?.methodCount as number | undefined) ?? 0
       break
     case 'dependencies':
       rawValue = incomingEdgeCount ?? 0
       break
     case 'loc':
-      rawValue = (node.metadata?.loc as number | undefined) ?? 0
+      rawValue = node.metadata?.loc ?? 0
       break
     case 'complexity':
-      rawValue = (node.metadata?.complexity as number | undefined) ?? 0
+      rawValue = node.metadata?.complexity ?? 0
       break
     case 'churn':
-      rawValue = (node.metadata?.churn as number | undefined) ?? 0
+      rawValue = node.metadata?.churn ?? 0
       break
   }
   if (rawValue <= 0) return 1.0
@@ -82,41 +95,41 @@ export function getFootprintScale(
 }
 
 export function getEncodedHeight(
-  node: { methodCount?: number; depth?: number; metadata?: Record<string, unknown> },
+  node: NodeWithMetadata,
   options: EncodedHeightOptions,
   resolvedMethodCount?: number
 ): number {
   const { encoding, incomingEdgeCount } = options
-  const mc = resolvedMethodCount ?? node.methodCount
+  const mc = resolvedMethodCount ?? (node.metadata.properties?.methodCount as number | undefined)
   switch (encoding) {
     case 'methodCount':
-      return getMethodBasedHeight(mc, node.depth)
+      return getMethodBasedHeight(mc, node.metadata.properties?.depth as number | undefined)
     case 'dependencies': {
       const count = incomingEdgeCount ?? 0
       return count > 0
         ? Math.max(Math.log2(count + 1), 1) * FLOOR_HEIGHT
-        : getMethodBasedHeight(mc, node.depth)
+        : getMethodBasedHeight(mc, node.metadata.properties?.depth as number | undefined)
     }
     case 'loc': {
-      const loc = (node.metadata?.loc as number | undefined) ?? 0
+      const loc = node.metadata?.loc ?? 0
       return loc > 0
         ? Math.max(Math.log2(loc / 50 + 1), 1) * FLOOR_HEIGHT
-        : getMethodBasedHeight(mc, node.depth)
+        : getMethodBasedHeight(mc, node.metadata.properties?.depth as number | undefined)
     }
     case 'complexity': {
-      const complexity = (node.metadata?.complexity as number | undefined) ?? 0
+      const complexity = node.metadata?.complexity ?? 0
       return complexity > 0
         ? Math.max(Math.log2(complexity + 1), 1) * FLOOR_HEIGHT
-        : getMethodBasedHeight(mc, node.depth)
+        : getMethodBasedHeight(mc, node.metadata.properties?.depth as number | undefined)
     }
     case 'churn': {
-      const churn = (node.metadata?.churn as number | undefined) ?? 0
+      const churn = node.metadata?.churn ?? 0
       return churn > 0
         ? Math.max(Math.log2(churn + 1), 1) * FLOOR_HEIGHT
-        : getMethodBasedHeight(mc, node.depth)
+        : getMethodBasedHeight(mc, node.metadata.properties?.depth as number | undefined)
     }
     default:
-      return getMethodBasedHeight(mc, node.depth)
+      return getMethodBasedHeight(mc, node.metadata.properties?.depth as number | undefined)
   }
 }
 

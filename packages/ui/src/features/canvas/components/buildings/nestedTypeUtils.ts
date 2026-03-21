@@ -6,15 +6,10 @@
  * containment analyzer.
  */
 
-import type { GraphNode } from '../../../../shared/types'
+import type { IVMNode } from '../../../../shared/types'
 
 /** Node types that represent nested type definitions */
-const NESTED_TYPE_KINDS = new Set<GraphNode['type']>([
-  'class',
-  'interface',
-  'enum',
-  'abstract_class',
-])
+const NESTED_TYPE_KINDS = new Set<IVMNode['type']>(['class', 'interface', 'enum'])
 
 /**
  * Build a lookup map of parentId → child nodes for nested types.
@@ -25,8 +20,8 @@ const NESTED_TYPE_KINDS = new Set<GraphNode['type']>([
  *
  * Returns an empty map if no parentId relationships exist in the graph.
  */
-export function buildNestedTypeMap(nodes: GraphNode[]): Map<string, GraphNode[]> {
-  const map = new Map<string, GraphNode[]>()
+export function buildNestedTypeMap(nodes: IVMNode[]): Map<string, IVMNode[]> {
+  const map = new Map<string, IVMNode[]>()
 
   for (const node of nodes) {
     if (!node.parentId) continue
@@ -56,14 +51,14 @@ export function buildNestedTypeMap(nodes: GraphNode[]): Map<string, GraphNode[]>
  */
 export function collectNestingTiers(
   nodeId: string,
-  nestedMap: Map<string, GraphNode[]>,
+  nestedMap: Map<string, IVMNode[]>,
   maxTiers: number = 3
-): GraphNode[][] {
-  const tiers: GraphNode[][] = []
+): IVMNode[][] {
+  const tiers: IVMNode[][] = []
   let currentParentIds = [nodeId]
 
   for (let tier = 0; tier < maxTiers; tier++) {
-    const tierNodes: GraphNode[] = []
+    const tierNodes: IVMNode[] = []
     const nextParentIds: string[] = []
 
     for (const parentId of currentParentIds) {
@@ -88,7 +83,7 @@ export function collectNestingTiers(
  */
 export function countOverflowChildren(
   lastTierNodeIds: string[],
-  nestedMap: Map<string, GraphNode[]>
+  nestedMap: Map<string, IVMNode[]>
 ): number {
   let count = 0
   let currentIds = lastTierNodeIds

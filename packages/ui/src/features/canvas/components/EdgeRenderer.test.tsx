@@ -8,7 +8,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
 import { EdgeRenderer } from './EdgeRenderer'
 import { useCanvasStore } from '../store'
-import type { GraphEdge, GraphNode } from '../../../shared/types'
+import type { IVMEdge, IVMNode } from '../../../shared/types'
 
 // Mock react-three-fiber
 const mockUseFrame = vi.fn()
@@ -72,7 +72,7 @@ vi.mock('three', async () => {
   }
 })
 
-const createNode = (id: string, x = 0, y = 0, z = 0): GraphNode => ({
+const createNode = (id: string, x = 0, y = 0, z = 0): IVMNode => ({
   id,
   label: id,
   type: 'file',
@@ -80,7 +80,7 @@ const createNode = (id: string, x = 0, y = 0, z = 0): GraphNode => ({
   metadata: {},
 })
 
-const createEdge = (id: string, source: string, target: string): GraphEdge => ({
+const createEdge = (id: string, source: string, target: string): IVMEdge => ({
   id,
   source,
   target,
@@ -89,7 +89,7 @@ const createEdge = (id: string, source: string, target: string): GraphEdge => ({
 })
 
 describe('EdgeRenderer', () => {
-  const nodes: GraphNode[] = [
+  const nodes: IVMNode[] = [
     createNode('node-a', 0, 0, 0),
     createNode('node-b', 5, 5, 5),
     createNode('node-c', 10, 0, 0),

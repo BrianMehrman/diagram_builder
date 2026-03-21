@@ -444,7 +444,7 @@ export class PlantUMLExporter implements Exporter<PlantUMLExportOptions> {
     let nodes = graph.nodes
     let edges = graph.edges
 
-    if (opts.lodLevel !== undefined && opts.lodLevel < 5) {
+    if (opts.lodLevel !== undefined && (opts.lodLevel as number) < 5) {
       const filtered = filterGraphByLOD(graph, {
         currentLevel: opts.lodLevel,
         includeAncestors: true,
@@ -530,7 +530,7 @@ export class PlantUMLExporter implements Exporter<PlantUMLExportOptions> {
     const errors: string[] = []
 
     if (options?.lodLevel !== undefined) {
-      if (options.lodLevel < 0 || options.lodLevel > 5) {
+      if ((options.lodLevel as number) < 0 || (options.lodLevel as number) > 5) {
         errors.push('lodLevel must be between 0 and 5')
       }
     }

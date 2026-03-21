@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { createInfrastructureElement } from './InfrastructureFactory'
-import type { GraphNode } from '../../../shared/types'
+import type { IVMNode } from '../../../shared/types'
 
 vi.mock('../components/infrastructure', () => ({
   Harbor: () => null,
@@ -13,14 +13,17 @@ vi.mock('../components/infrastructure', () => ({
 
 const pos = { x: 0, y: 0, z: 0 }
 
-function makeExternal(infraType: string): GraphNode {
+function makeExternal(infraType: string): IVMNode {
   return {
     id: 'ext1',
     type: 'file',
-    label: 'ext1',
     lod: 1,
-    isExternal: true,
-    metadata: { infrastructureType: infraType },
+    metadata: {
+      label: 'ext1',
+      path: 'ext1',
+      properties: { isExternal: true, infrastructureType: infraType },
+    },
+    position: { x: 0, y: 0, z: 0 },
   }
 }
 
@@ -30,7 +33,16 @@ describe('createInfrastructureElement', () => {
   })
   it('returns null when no metadata', () => {
     expect(
-      createInfrastructureElement({ id: 'x', type: 'file', label: 'x', lod: 1, metadata: {} }, pos)
+      createInfrastructureElement(
+        {
+          id: 'x',
+          type: 'file',
+          lod: 1,
+          metadata: { label: 'x', path: 'x' },
+          position: { x: 0, y: 0, z: 0 },
+        },
+        pos
+      )
     ).toBeNull()
   })
   it('returns element for database', () => {

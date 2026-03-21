@@ -13,10 +13,10 @@ import { Organelle } from './Organelle'
 import { OrganelleConnection } from './OrganelleConnection'
 import { CellLayoutEngine } from '../layout/engines/cellLayout'
 import { extractCellSubgraph } from './cellViewUtils'
-import type { Graph, Position3D } from '../../../shared/types'
+import type { IVMGraph, Position3D } from '../../../shared/types'
 
 interface CellViewProps {
-  graph: Graph
+  graph: IVMGraph
   focusedNodeId: string
 }
 
@@ -33,6 +33,7 @@ export function CellView({ graph, focusedNodeId }: CellViewProps) {
         nodes: subgraph.nodes,
         edges: subgraph.edges,
         metadata: graph.metadata,
+        bounds: graph.bounds,
       },
       {}
     )

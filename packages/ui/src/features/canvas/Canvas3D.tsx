@@ -14,25 +14,24 @@ import { DependencyLegend } from './components/DependencyLegend'
 import { FocusToggleButton } from './components/FocusToggleButton'
 import { RadialOverlay } from './components/RadialOverlay'
 import { useUIStore } from '../../shared/stores/uiStore'
-import type { Graph } from '../../shared/types'
 import './visualization/setup' // register built-in visualization styles
 
 interface Canvas3DProps {
   className?: string
-  graph?: Graph
 }
 
 /**
  * Camera controller
  * Syncs Three.js camera with Zustand store
  */
-function CameraController({ graph }: { graph?: Graph | undefined }) {
+function CameraController() {
   const camera = useCanvasStore((state) => state.camera)
   const setCamera = useCanvasStore((state) => state.setCamera)
   const setCameraTarget = useCanvasStore((state) => state.setCameraTarget)
   const setCameraPosition = useCanvasStore((state) => state.setCameraPosition)
   const controlMode = useCanvasStore((state) => state.controlMode)
   const layoutPositions = useCanvasStore((state) => state.layoutPositions)
+  const parseResult = useCanvasStore((state) => state.parseResult)
 
   // Auto-fit camera when layout positions are computed
   React.useEffect(() => {
@@ -40,7 +39,7 @@ function CameraController({ graph }: { graph?: Graph | undefined }) {
     const positions =
       layoutPositions.size > 0
         ? Array.from(layoutPositions.values())
-        : (graph?.nodes
+        : (parseResult?.graph.nodes
             ?.filter((n) => n.position != null)
             .map((n) => n.position)
             .filter((p): p is NonNullable<typeof p> => p != null) ?? [])
@@ -87,7 +86,7 @@ function CameraController({ graph }: { graph?: Graph | undefined }) {
       },
       target: { x: centerX, y: centerY, z: centerZ },
     })
-  }, [layoutPositions, graph, setCamera, setCameraTarget])
+  }, [layoutPositions, parseResult, setCamera, setCameraTarget])
 
   return (
     <>
@@ -122,7 +121,7 @@ function CameraController({ graph }: { graph?: Graph | undefined }) {
 /**
  * Scene content
  */
-function Scene({ graph }: { graph?: Graph }) {
+function Scene() {
   return (
     <>
       {/* Lighting */}
@@ -145,7 +144,7 @@ function Scene({ graph }: { graph?: Graph }) {
       />
 
       {/* View mode rendering (city/building/cell) */}
-      {graph && <ViewModeRenderer graph={graph} />}
+      <ViewModeRenderer />
       <TransitionOrchestrator />
     </>
   )
@@ -154,9 +153,10 @@ function Scene({ graph }: { graph?: Graph }) {
 /**
  * Canvas3D component
  */
-export function Canvas3D({ className = '', graph }: Canvas3DProps) {
+export function Canvas3D({ className = '' }: Canvas3DProps) {
   const toggleControlMode = useCanvasStore((state) => state.toggleControlMode)
   const closeAllPanels = useUIStore((state) => state.closeAllPanels)
+  const parseResult = useCanvasStore((state) => state.parseResult)
 
   // Keyboard shortcut to toggle control mode
   React.useEffect(() => {
@@ -187,11 +187,11 @@ export function Canvas3D({ className = '', graph }: Canvas3DProps) {
         }}
         style={{ background: '#111827' }}
       >
-        <CameraController graph={graph} />
-        {graph !== undefined ? <Scene graph={graph} /> : <Scene />}
+        <CameraController />
+        <Scene />
       </Canvas>
       <FocusToggleButton />
-      {graph !== undefined && <RadialOverlay graph={graph} />}
+      {parseResult && <RadialOverlay graph={parseResult.graph} />}
     </div>
   )
 }

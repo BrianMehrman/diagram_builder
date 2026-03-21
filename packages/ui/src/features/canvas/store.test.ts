@@ -3,7 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useCanvasStore } from './store'
+import { act } from '@testing-library/react'
+import type { ParseResult } from '@diagram-builder/core'
+import { useCanvasStore, initialState } from './store'
 
 describe('useCanvasStore', () => {
   beforeEach(() => {
@@ -387,5 +389,47 @@ describe('useCanvasStore', () => {
       useCanvasStore.getState().reset()
       expect(useCanvasStore.getState().showRadialOverlay).toBe(false)
     })
+  })
+})
+
+describe('canvas store — ParseResult', () => {
+  beforeEach(() => {
+    useCanvasStore.setState(initialState)
+  })
+
+  it('initialises parseResult and resolver as null', () => {
+    const { parseResult, resolver } = useCanvasStore.getState()
+    expect(parseResult).toBeNull()
+    expect(resolver).toBeNull()
+  })
+
+  it('setParseResult stores result and creates resolver', () => {
+    const mockResult: ParseResult = {
+      graph: {
+        nodes: [],
+        edges: [],
+        metadata: {} as unknown as ParseResult['graph']['metadata'],
+        bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
+      },
+      hierarchy: {
+        root: { id: 'r', label: 'r', tier: 0, nodeIds: [], children: [] },
+        tierCount: {} as unknown as ParseResult['hierarchy']['tierCount'],
+        edgesByTier: {} as unknown as ParseResult['hierarchy']['edgesByTier'],
+      },
+      tiers: {} as unknown as ParseResult['tiers'],
+    }
+    act(() => useCanvasStore.getState().setParseResult(mockResult))
+    const { parseResult, resolver } = useCanvasStore.getState()
+    expect(parseResult).toBe(mockResult)
+    expect(resolver).not.toBeNull()
+  })
+
+  it('initialises activeLayout as city', () => {
+    expect(useCanvasStore.getState().activeLayout).toBe('city')
+  })
+
+  it('setActiveLayout updates activeLayout', () => {
+    act(() => useCanvasStore.getState().setActiveLayout('basic3d'))
+    expect(useCanvasStore.getState().activeLayout).toBe('basic3d')
   })
 })

@@ -1,4 +1,4 @@
-import type { GraphNode, Position3D } from '../../../../shared/types'
+import type { IVMNode, Position3D } from '../../../../shared/types'
 import type { BlockLayout } from '../types'
 import { BUILDING_Y_OFFSET } from '../../views/heightUtils'
 
@@ -10,7 +10,7 @@ import { BUILDING_Y_OFFSET } from '../../views/heightUtils'
  */
 export function calculateBlockFootprint(
   childCount: number,
-  childTypes: GraphNode['type'][]
+  childTypes: IVMNode['type'][]
 ): { width: number; depth: number } {
   if (childCount === 0) {
     return { width: 4, depth: 4 }
@@ -18,7 +18,7 @@ export function calculateBlockFootprint(
 
   let weightedCount = 0
   for (const t of childTypes) {
-    weightedCount += t === 'class' || t === 'interface' || t === 'abstract_class' ? 1.5 : 1.0
+    weightedCount += t === 'class' || t === 'interface' ? 1.5 : 1.0
   }
 
   const size = Math.min(20, Math.max(4, Math.ceil(Math.sqrt(weightedCount)) * 2 + 2))
@@ -33,7 +33,7 @@ export function calculateBlockFootprint(
  * Each child's localPosition is relative to the block center, within footprint bounds.
  */
 export function placeChildrenInGrid(
-  children: GraphNode[],
+  children: IVMNode[],
   footprint: { width: number; depth: number }
 ): { nodeId: string; localPosition: Position3D }[] {
   if (children.length === 0) return []
@@ -65,17 +65,17 @@ export function placeChildrenInGrid(
  * Walks parentId chains with a visited set to detect cycles.
  * Orphans are nodes whose parentId is missing or doesn't reference a file node.
  */
-export function buildFileBlockHierarchy(nodes: GraphNode[]): {
-  fileBlocks: Map<string, GraphNode[]>
-  orphans: GraphNode[]
+export function buildFileBlockHierarchy(nodes: IVMNode[]): {
+  fileBlocks: Map<string, IVMNode[]>
+  orphans: IVMNode[]
   cycleBreaks: string[]
 } {
-  const fileBlocks = new Map<string, GraphNode[]>()
-  const orphans: GraphNode[] = []
+  const fileBlocks = new Map<string, IVMNode[]>()
+  const orphans: IVMNode[] = []
   const cycleBreaks: string[] = []
 
   // Index all nodes by ID
-  const nodeMap = new Map<string, GraphNode>()
+  const nodeMap = new Map<string, IVMNode>()
   for (const node of nodes) {
     nodeMap.set(node.id, node)
   }
@@ -144,11 +144,11 @@ export function buildFileBlockHierarchy(nodes: GraphNode[]): {
  * isMerged is set to true.
  */
 export function createCompoundBlock(
-  files: GraphNode[],
-  childrenByFile: Map<string, GraphNode[]>,
+  files: IVMNode[],
+  childrenByFile: Map<string, IVMNode[]>,
   position: Position3D
 ): BlockLayout {
-  const allChildren: GraphNode[] = []
+  const allChildren: IVMNode[] = []
   const sortedFiles = [...files].sort((a, b) => a.id.localeCompare(b.id))
 
   for (const file of sortedFiles) {

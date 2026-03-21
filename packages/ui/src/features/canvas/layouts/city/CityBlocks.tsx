@@ -13,26 +13,26 @@
  */
 
 import { useMemo } from 'react'
-import { ExternalBuilding } from './ExternalBuilding'
-import { XRayBuilding } from './XRayBuilding'
-import { DistrictGround } from '../components/DistrictGround'
-import { FileBlock } from '../components/FileBlock'
-import { getBuildingConfig } from '../components/buildingGeometry'
-import { createBuildingElement } from './BuildingFactory'
-import { createInfrastructureElement } from './InfrastructureFactory'
-import { getDistrictColor } from '../components/districtGroundUtils'
-import { getSignType, getSignVisibility, renderSign } from '../components/signs'
-import { buildIncomingEdgeCounts, detectBaseClasses } from './inheritanceUtils'
-import { useCanvasStore } from '../store'
-import { useCityLayout } from '../hooks/useCityLayout'
-import { useCityFiltering } from '../hooks/useCityFiltering'
-import { useDistrictMap } from '../hooks/useDistrictMap'
-import { computeXRayWallOpacity, shouldShowXRayDetail } from '../xrayUtils'
-import type { Graph, Position3D } from '../../../shared/types'
-import type { EncodedHeightOptions } from './heightUtils'
+import { ExternalBuilding } from '../../views/ExternalBuilding'
+import { XRayBuilding } from '../../views/XRayBuilding'
+import { DistrictGround } from '../../components/DistrictGround'
+import { FileBlock } from '../../components/FileBlock'
+import { getBuildingConfig } from '../../components/buildingGeometry'
+import { createBuildingElement } from '../../views/BuildingFactory'
+import { createInfrastructureElement } from '../../views/InfrastructureFactory'
+import { getDistrictColor } from '../../components/districtGroundUtils'
+import { getSignType, getSignVisibility, renderSign } from '../../components/signs'
+import { buildIncomingEdgeCounts, detectBaseClasses } from '../../views/inheritanceUtils'
+import { useCanvasStore } from '../../store'
+import { useCityLayout } from './useCityLayout'
+import { useCityFiltering } from './useCityFiltering'
+import { useDistrictMap } from '../../hooks/useDistrictMap'
+import { computeXRayWallOpacity, shouldShowXRayDetail } from '../../xrayUtils'
+import type { IVMGraph, Position3D } from '../../../../shared/types'
+import type { EncodedHeightOptions } from '../../views/heightUtils'
 
 interface CityBlocksProps {
-  graph: Graph
+  graph: IVMGraph
 }
 
 /** Distance threshold for showing x-ray internal detail */
@@ -46,7 +46,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
   const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion)
   const heightEncoding = useCanvasStore((s) => s.citySettings.heightEncoding)
 
-  const { positions, districtArcs, districts } = useCityLayout(graph)
+  const { positions, districtArcs, districts } = useCityLayout()
   const { internalNodes, externalNodes, childrenByFile, methodsByClass, nodeMap } =
     useCityFiltering(graph, positions)
   const { nestedTypeMap } = useDistrictMap(graph.nodes)
@@ -139,7 +139,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
                     const signType = getSignType(node)
                     const signVisible = getSignVisibility(signType, lodLevel)
                     const config = getBuildingConfig(node, nodeEncoding)
-                    const signLabel = (node.label ?? node.id).split('/').pop() ?? node.id
+                    const signLabel = (node.metadata.label ?? node.id).split('/').pop() ?? node.id
 
                     return (
                       <group key={node.id}>
@@ -189,7 +189,12 @@ export function CityBlocks({ graph }: CityBlocksProps) {
 
           {/* Internal buildings with signs — file nodes are land in v2; skip them in v1 */}
           {internalNodes
-            .filter((n) => n.type !== 'file')
+            .filter((n) => {
+              // At LOD 1-3 the active tier is File — file nodes ARE the buildings.
+              // At LOD 4 (Symbol tier) file nodes are layout containers; only symbols render.
+              if (n.type === 'file') return lodLevel <= 3
+              return true
+            })
             .map((node) => {
               const pos = positions.get(node.id)
               if (!pos) return null
@@ -221,7 +226,7 @@ export function CityBlocks({ graph }: CityBlocksProps) {
               const signType = getSignType(node)
               const signVisible = getSignVisibility(signType, lodLevel)
               const config = getBuildingConfig(node, nodeEncoding)
-              const signLabel = (node.label ?? node.id).split('/').pop() ?? node.id
+              const signLabel = (node.metadata.label ?? node.id).split('/').pop() ?? node.id
 
               return (
                 <group key={node.id}>

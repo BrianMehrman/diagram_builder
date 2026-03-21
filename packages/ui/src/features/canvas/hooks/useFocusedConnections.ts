@@ -6,7 +6,7 @@
  */
 import { useMemo } from 'react'
 import { useCanvasStore } from '../store'
-import type { Graph, GraphEdge } from '../../../shared/types'
+import type { IVMGraph, IVMEdge } from '../../../shared/types'
 
 export interface FocusedConnectionsResult {
   /** IDs of nodes directly connected to the selected node (1 hop). */
@@ -14,12 +14,12 @@ export interface FocusedConnectionsResult {
   /** IDs of nodes connected via a direct node (2 hops, excluding selected + direct). */
   secondHopNodeIds: Set<string>
   /** Edges between the selected node and direct nodes. */
-  directEdges: GraphEdge[]
+  directEdges: IVMEdge[]
   /** Edges between direct nodes and second-hop nodes. */
-  secondHopEdges: GraphEdge[]
+  secondHopEdges: IVMEdge[]
 }
 
-export function useFocusedConnections(graph: Graph): FocusedConnectionsResult {
+export function useFocusedConnections(graph: IVMGraph): FocusedConnectionsResult {
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
 
   return useMemo(() => {
@@ -27,12 +27,12 @@ export function useFocusedConnections(graph: Graph): FocusedConnectionsResult {
       return {
         directNodeIds: new Set<string>(),
         secondHopNodeIds: new Set<string>(),
-        directEdges: [] as GraphEdge[],
-        secondHopEdges: [] as GraphEdge[],
+        directEdges: [] as IVMEdge[],
+        secondHopEdges: [] as IVMEdge[],
       }
     }
 
-    const directEdges: GraphEdge[] = []
+    const directEdges: IVMEdge[] = []
     const directNodeIds = new Set<string>()
 
     for (const graphEdge of graph.edges) {
@@ -45,7 +45,7 @@ export function useFocusedConnections(graph: Graph): FocusedConnectionsResult {
       }
     }
 
-    const secondHopEdges: GraphEdge[] = []
+    const secondHopEdges: IVMEdge[] = []
     const secondHopNodeIds = new Set<string>()
 
     for (const graphEdge of graph.edges) {

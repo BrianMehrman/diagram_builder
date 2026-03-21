@@ -8,11 +8,11 @@
 
 import { useMemo } from 'react'
 import { buildNestedTypeMap } from '../components/buildings/nestedTypeUtils'
-import type { GraphNode } from '../../../shared/types'
+import type { IVMNode } from '../../../shared/types'
 
 export interface DistrictMapResult {
   /** Parent ID → nested type children for rooftop garden rendering */
-  nestedTypeMap: Map<string, GraphNode[]>
+  nestedTypeMap: Map<string, IVMNode[]>
 }
 
 /**
@@ -20,7 +20,7 @@ export interface DistrictMapResult {
  *
  * @param nodes - All graph nodes
  */
-export function useDistrictMap(nodes: GraphNode[]): DistrictMapResult {
+export function useDistrictMap(nodes: IVMNode[]): DistrictMapResult {
   const nestedTypeMap = useMemo(() => buildNestedTypeMap(nodes), [nodes])
 
   return { nestedTypeMap }

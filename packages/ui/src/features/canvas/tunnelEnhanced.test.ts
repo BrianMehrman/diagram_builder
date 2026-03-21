@@ -14,7 +14,7 @@ import {
   DEPENDENCY_COLORS,
   LEGEND_ITEMS,
 } from './tunnelEnhancedUtils'
-import type { GraphEdge } from '../../shared/types'
+import type { IVMEdge } from '../../shared/types'
 
 describe('Tunnel Enhanced - Dependency Colors', () => {
   it('should return blue for production dependencies', () => {
@@ -56,7 +56,7 @@ describe('Tunnel Enhanced - Junction Size', () => {
 })
 
 describe('Tunnel Enhanced - Tunnels Per Node', () => {
-  const edges: GraphEdge[] = [
+  const edges: IVMEdge[] = [
     { id: 'e1', source: 'a', target: 'b', type: 'imports', metadata: {} },
     { id: 'e2', source: 'a', target: 'c', type: 'imports', metadata: {} },
     { id: 'e3', source: 'b', target: 'c', type: 'depends_on', metadata: {} },

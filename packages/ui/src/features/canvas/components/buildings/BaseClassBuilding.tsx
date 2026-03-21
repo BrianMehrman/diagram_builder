@@ -50,7 +50,7 @@ export function BaseClassBuilding({
     [node, encodingOptions]
   )
   const { width, height, depth } = config.geometry
-  const fileName = (node.label ?? node.id).split('/').pop() ?? node.id
+  const fileName = (node.metadata.label ?? node.id).split('/').pop() ?? node.id
 
   // Sort methods: public (ground floor) → protected → private (top)
   const sortedMethods = useMemo(
@@ -67,7 +67,7 @@ export function BaseClassBuilding({
     if (methodCount > 0) {
       const visibilities: Array<string | undefined> =
         sortedMethods && sortedMethods.length > 0
-          ? (sortedMethods.map((m) => m.visibility) as Array<string | undefined>)
+          ? sortedMethods.map((m) => m.metadata?.properties?.visibility as string | undefined)
           : ([] as Array<string | undefined>).concat(
               Array.from({ length: floorCount }, () => undefined)
             )

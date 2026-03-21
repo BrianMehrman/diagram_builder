@@ -9,11 +9,11 @@
  */
 
 import { useCanvasStore } from '../../store'
-import type { GraphNode, Position3D } from '../../../../shared/types'
+import type { IVMNode, Position3D } from '../../../../shared/types'
 import { getTestCoverage, computeLightIntensity, computeLightColor } from './coverageLightingUtils'
 
 export interface CoverageLightingProps {
-  node: GraphNode
+  node: IVMNode
   position: Position3D
   buildingHeight: number
 }
