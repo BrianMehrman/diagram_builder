@@ -545,7 +545,7 @@ export class MermaidExporter implements Exporter<MermaidExportOptions> {
     let nodes = graph.nodes
     let edges = graph.edges
 
-    if (opts.lodLevel !== undefined && opts.lodLevel < 5) {
+    if (opts.lodLevel !== undefined && (opts.lodLevel as number) < 5) {
       const filtered = filterGraphByLOD(graph, {
         currentLevel: opts.lodLevel,
         includeAncestors: true,
@@ -629,7 +629,7 @@ export class MermaidExporter implements Exporter<MermaidExportOptions> {
     const errors: string[] = []
 
     if (options) {
-      if (options.lodLevel !== undefined && (options.lodLevel < 0 || options.lodLevel > 5)) {
+      if (options.lodLevel !== undefined && ((options.lodLevel as number) < 0 || (options.lodLevel as number) > 5)) {
         errors.push('lodLevel must be between 0 and 5')
       }
 

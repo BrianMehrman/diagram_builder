@@ -96,7 +96,7 @@ function applyLODFilter(graph: IVMGraph, lodLevel: number): IVMGraph {
   // Filter nodes based on LOD level
   const filteredNodes = graph.nodes.filter((node) => {
     const nodeLOD = node.lod
-    return nodeLOD <= lodLevel
+    return (nodeLOD as number) <= lodLevel
   })
 
   const nodeIds = new Set(filteredNodes.map((n) => n.id))
