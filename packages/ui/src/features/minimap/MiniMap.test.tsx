@@ -115,14 +115,15 @@ describe('MiniMap', () => {
     })
 
     it('handles nodes without position gracefully', () => {
-      const nodesWithoutPos: IVMNode[] = [
+      const nodesWithoutPos = [
         {
           id: 'no-pos',
-          type: 'file',
+          type: 'file' as const,
           metadata: { label: 'nopos.ts', path: 'src/nopos.ts', properties: {} },
           lod: 0,
+          // Intentionally omitted: position — testing graceful no-position handling
         },
-      ]
+      ] as unknown as IVMNode[]
 
       render(<MiniMap nodes={nodesWithoutPos} />)
 

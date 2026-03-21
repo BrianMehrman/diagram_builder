@@ -408,7 +408,7 @@ describe('CityView', () => {
       const graph = createTestGraph()
       setupPositions(graph)
 
-      const { container } = render(<CityView graph={graph} />)
+      const { container } = render(<CityView />)
       expect(container).toBeDefined()
     })
 
@@ -416,7 +416,7 @@ describe('CityView', () => {
       const graph = createTestGraph()
       setupPositions(graph)
 
-      const { getByTestId } = render(<CityView graph={graph} />)
+      const { getByTestId } = render(<CityView />)
       expect(getByTestId('ground-plane')).toBeDefined()
     })
 
@@ -424,7 +424,7 @@ describe('CityView', () => {
       const graph = createTestGraph()
       setupPositions(graph)
 
-      const { getByTestId } = render(<CityView graph={graph} />)
+      const { getByTestId } = render(<CityView />)
       expect(getByTestId('lod-controller')).toBeDefined()
     })
   })
@@ -437,7 +437,7 @@ describe('CityView', () => {
     it('setting hoveredNodeId in store reflects hover state', () => {
       const graph = createTestGraph()
       setupPositions(graph)
-      render(<CityView graph={graph} />)
+      render(<CityView />)
 
       // Simulate hover by setting store state directly
       useCanvasStore.getState().setHoveredNode('class-b')
@@ -447,7 +447,7 @@ describe('CityView', () => {
     it('clearing hoveredNodeId resets hover state', () => {
       const graph = createTestGraph()
       setupPositions(graph)
-      render(<CityView graph={graph} />)
+      render(<CityView />)
 
       useCanvasStore.getState().setHoveredNode('class-b')
       useCanvasStore.getState().setHoveredNode(null)
@@ -457,7 +457,7 @@ describe('CityView', () => {
     it('hover state is independent per node', () => {
       const graph = createTestGraph()
       setupPositions(graph)
-      render(<CityView graph={graph} />)
+      render(<CityView />)
 
       useCanvasStore.getState().setHoveredNode('file-a')
       expect(useCanvasStore.getState().hoveredNodeId).toBe('file-a')
@@ -475,7 +475,7 @@ describe('CityView', () => {
     it('selectNode sets selectedNodeId in store', () => {
       const graph = createTestGraph()
       setupPositions(graph)
-      render(<CityView graph={graph} />)
+      render(<CityView />)
 
       useCanvasStore.getState().selectNode('class-b')
       expect(useCanvasStore.getState().selectedNodeId).toBe('class-b')
@@ -484,7 +484,7 @@ describe('CityView', () => {
     it('selectNode with null deselects', () => {
       const graph = createTestGraph()
       setupPositions(graph)
-      render(<CityView graph={graph} />)
+      render(<CityView />)
 
       useCanvasStore.getState().selectNode('class-b')
       useCanvasStore.getState().selectNode(null)
@@ -494,10 +494,10 @@ describe('CityView', () => {
     it('selection persists across re-renders', () => {
       const graph = createTestGraph()
       setupPositions(graph)
-      const { rerender } = render(<CityView graph={graph} />)
+      const { rerender } = render(<CityView />)
 
       useCanvasStore.getState().selectNode('func-c')
-      rerender(<CityView graph={graph} />)
+      rerender(<CityView />)
       expect(useCanvasStore.getState().selectedNodeId).toBe('func-c')
     })
   })
@@ -510,7 +510,7 @@ describe('CityView', () => {
     it('enterNode transitions viewMode to cell for class nodes', () => {
       const graph = createTestGraph()
       setupPositions(graph)
-      render(<CityView graph={graph} />)
+      render(<CityView />)
 
       useCanvasStore.getState().enterNode('class-b', 'class')
       const state = useCanvasStore.getState()
@@ -522,7 +522,7 @@ describe('CityView', () => {
       const graph = createTestGraph()
       graph.nodes.push(createNode('file-x', 'file', 'src/features'))
       setupPositions(graph)
-      render(<CityView graph={graph} />)
+      render(<CityView />)
 
       // First enter a file node (sets focusedNodeId)
       useCanvasStore.getState().enterNode('file-x', 'file')
@@ -539,7 +539,7 @@ describe('CityView', () => {
       const graph = createTestGraph()
       graph.nodes.push(createNode('file-x', 'file', 'src/features'))
       setupPositions(graph)
-      render(<CityView graph={graph} />)
+      render(<CityView />)
 
       // Enter file first (building mode), then class (cell mode)
       useCanvasStore.getState().enterNode('file-x', 'file')
@@ -555,7 +555,7 @@ describe('CityView', () => {
     it('resetToCity returns to city view from any depth', () => {
       const graph = createTestGraph()
       setupPositions(graph)
-      render(<CityView graph={graph} />)
+      render(<CityView />)
 
       useCanvasStore.getState().enterNode('class-b', 'class')
       useCanvasStore.getState().resetToCity()
@@ -575,7 +575,7 @@ describe('CityView', () => {
       const graph = createTestGraph()
       setupPositions(graph)
 
-      const { getAllByTestId } = render(<CityView graph={graph} />)
+      const { getAllByTestId } = render(<CityView />)
       const grounds = getAllByTestId(/^district-ground-/)
       // mockDistrictArcs has 2 entries
       expect(grounds.length).toBe(2)
@@ -585,7 +585,7 @@ describe('CityView', () => {
       const graph = createTestGraph()
       setupPositions(graph)
 
-      const { getByTestId } = render(<CityView graph={graph} />)
+      const { getByTestId } = render(<CityView />)
       expect(getByTestId('district-ground-src/features')).toBeDefined()
       expect(getByTestId('district-ground-src/utils')).toBeDefined()
     })
@@ -596,7 +596,7 @@ describe('CityView', () => {
       const graph = createTestGraph()
       setupPositions(graph)
 
-      const { getAllByTestId } = render(<CityView graph={graph} />)
+      const { getAllByTestId } = render(<CityView />)
       const edges = getAllByTestId(/^city-edge-/)
       // 2 imports edges in test graph
       expect(edges.length).toBe(2)
@@ -611,7 +611,7 @@ describe('CityView', () => {
       mockPositions.set('util-d', { x: 10, y: 0, z: 10 })
       // class-b and iface-e have no positions
 
-      const { queryAllByTestId } = render(<CityView graph={graph} />)
+      const { queryAllByTestId } = render(<CityView />)
       const edges = queryAllByTestId(/^city-edge-/)
       // Only the file-a → util-d edge should render
       expect(edges.length).toBe(1)
@@ -623,7 +623,7 @@ describe('CityView', () => {
       graph.edges.push(createEdge('file-a', 'class-b', 'contains'))
       setupPositions(graph)
 
-      const { queryAllByTestId } = render(<CityView graph={graph} />)
+      const { queryAllByTestId } = render(<CityView />)
       const edges = queryAllByTestId(/^city-edge-/)
       // Only the 2 imports edges, not the contains edge
       expect(edges.length).toBe(2)
@@ -636,7 +636,7 @@ describe('CityView', () => {
       setupPositions(graph)
       useCanvasStore.getState().setLodLevel(1)
 
-      const { queryAllByTestId } = render(<CityView graph={graph} />)
+      const { queryAllByTestId } = render(<CityView />)
       const clusters = queryAllByTestId(/^cluster-building-/)
       // Cluster rendering is temporarily disabled in CityBlocks (commented out).
       // When re-enabled, big-district (25 nodes > 20 threshold) should produce >= 1 cluster.
@@ -648,7 +648,7 @@ describe('CityView', () => {
       setupPositions(graph)
       useCanvasStore.getState().setLodLevel(2)
 
-      const { queryAllByTestId } = render(<CityView graph={graph} />)
+      const { queryAllByTestId } = render(<CityView />)
       const clusters = queryAllByTestId(/^cluster-building-/)
       expect(clusters.length).toBe(0)
     })
@@ -658,7 +658,7 @@ describe('CityView', () => {
       setupPositions(graph)
       useCanvasStore.getState().setLodLevel(1)
 
-      const { queryByTestId } = render(<CityView graph={graph} />)
+      const { queryByTestId } = render(<CityView />)
       // node-0 through node-24 are in the big district (>20), should be clustered
       // They should NOT appear as individual buildings
       // However, small-1 and small-2 are in a small district, should still appear
@@ -673,7 +673,7 @@ describe('CityView', () => {
       const graph = createTestGraph()
       setupPositions(graph)
 
-      const { getByTestId } = render(<CityView graph={graph} />)
+      const { getByTestId } = render(<CityView />)
       expect(getByTestId('class-building-class-b')).toBeDefined()
     })
 
@@ -681,7 +681,7 @@ describe('CityView', () => {
       const graph = createTestGraph()
       setupPositions(graph)
 
-      const { getByTestId } = render(<CityView graph={graph} />)
+      const { getByTestId } = render(<CityView />)
       expect(getByTestId('function-shop-func-c')).toBeDefined()
     })
 
@@ -689,7 +689,7 @@ describe('CityView', () => {
       const graph = createTestGraph()
       setupPositions(graph)
 
-      const { getByTestId } = render(<CityView graph={graph} />)
+      const { getByTestId } = render(<CityView />)
       expect(getByTestId('interface-building-iface-e')).toBeDefined()
     })
 
@@ -698,7 +698,7 @@ describe('CityView', () => {
       graph.nodes.push(createNode('ext-lib', 'file', 'node_modules/lodash', { isExternal: true }))
       setupPositions(graph)
 
-      const { getByTestId } = render(<CityView graph={graph} />)
+      const { getByTestId } = render(<CityView />)
       expect(getByTestId('external-building-ext-lib')).toBeDefined()
     })
   })
@@ -717,7 +717,7 @@ describe('CityView', () => {
       const { visibleLayers } = useCanvasStore.getState()
       expect(visibleLayers.aboveGround).toBe(false)
 
-      const { queryAllByTestId } = render(<CityView graph={graph} />)
+      const { queryAllByTestId } = render(<CityView />)
       // No buildings, no edges, no district grounds when above-ground is off
       const buildings = queryAllByTestId(/^(class-building|function-shop|building)-/)
       expect(buildings.length).toBe(0)
