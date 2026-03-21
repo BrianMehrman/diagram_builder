@@ -103,14 +103,6 @@ export function WorkspacePage() {
     setPendingCameraFlight(true)
   }, [])
 
-  // Debug: Log parseResult changes
-  useEffect(() => {
-    console.log('[WorkspacePage] parseResult state changed:', {
-      hasData: !!parseResult,
-      nodeCount: parseResult?.graph.nodes.length ?? 0,
-    })
-  }, [parseResult])
-
   // Effect: Trigger camera flight to root node after import completes
   useEffect(() => {
     if (pendingCameraFlight && parseResult?.graph.nodes && parseResult.graph.nodes.length > 0) {
@@ -120,8 +112,6 @@ export function WorkspacePage() {
         parseResult.graph.nodes.find((node) => node.type === 'file') || parseResult.graph.nodes[0]
 
       if (rootNode) {
-        console.log('[WorkspacePage] Flying camera to root node after import:', rootNode.id)
-
         // Prefer layout positions (from CityView), fall back to graph node position
         const layoutPos = useCanvasStore.getState().layoutPositions.get(rootNode.id)
         const position: Position3D = layoutPos ?? rootNode.position ?? { x: 0, y: 0, z: 0 }
@@ -136,7 +126,6 @@ export function WorkspacePage() {
   }, [pendingCameraFlight, parseResult, flyToNode])
 
   useEffect(() => {
-    console.log('[WorkspacePage] Mount effect - workspace ID:', id)
     if (id) {
       void loadWorkspace(id)
     }
@@ -148,7 +137,6 @@ export function WorkspacePage() {
 
     // If status just became 'completed' and we haven't loaded yet, load parse result
     if (processingStatus === 'completed' && !loadedForCompletedRef.current) {
-      console.log('[WorkspacePage] Status completed, loading parse result...')
       loadedForCompletedRef.current = true
       void loadParseResult(id)
       return
@@ -165,14 +153,11 @@ export function WorkspacePage() {
     }
 
     // Poll every 2 seconds while processing
-    console.log('[WorkspacePage] Starting poll interval for status:', processingStatus)
     const pollInterval = setInterval(() => {
-      console.log('[WorkspacePage] Polling for codebase status...')
       void loadParseResult(id)
     }, 2000)
 
     return () => {
-      console.log('[WorkspacePage] Clearing poll interval')
       clearInterval(pollInterval)
     }
   }, [id, processingStatus]) // Intentionally excluding loadParseResult to prevent loops
@@ -194,22 +179,15 @@ export function WorkspacePage() {
   }
 
   const handleCodebaseSelected = async (codebaseId: string) => {
-    console.log('[WorkspacePage] Codebase selected:', codebaseId)
     if (workspace?.id) {
       await loadParseResult(workspace.id, codebaseId)
     }
   }
 
   const loadParseResult = useCallback(async (workspaceId: string, codebaseId?: string) => {
-    console.log('[WorkspacePage] ========== loadParseResult called ==========')
-    console.log('[WorkspacePage] Workspace ID:', workspaceId, 'Codebase ID:', codebaseId)
     try {
       // Get codebases for this workspace
-      console.log('[WorkspacePage] Fetching codebases list...')
       const codebasesList = await codebases.list(workspaceId)
-      console.log('[WorkspacePage] Codebases response:', {
-        count: codebasesList.codebases?.length || 0,
-      })
 
       // Trigger CodebaseList refresh
       setListRefreshTrigger((prev) => prev + 1)
@@ -221,44 +199,27 @@ export function WorkspacePage() {
         completedCodebase = codebasesList.codebases?.find(
           (cb) => cb.codebaseId === codebaseId && cb.status === 'completed' && cb.repositoryId
         )
-        console.log('[WorkspacePage] Requested codebase found:', !!completedCodebase)
       } else {
         // Find the first completed codebase with a repository
         completedCodebase = codebasesList.codebases?.find(
           (cb) => cb.status === 'completed' && cb.repositoryId
         )
-        console.log('[WorkspacePage] First completed codebase found:', !!completedCodebase)
       }
 
       if (completedCodebase) {
-        console.log('[WorkspacePage] Codebase details:', {
-          id: completedCodebase.codebaseId,
-          repositoryId: completedCodebase.repositoryId,
-          source: completedCodebase.source,
-        })
         // Update selected codebase ID
         setSelectedCodebaseId(completedCodebase.codebaseId)
       }
 
       if (completedCodebase?.repositoryId) {
         // Fetch the parse result for this repository
-        console.log(
-          '[WorkspacePage] Loading parse result for repository:',
-          completedCodebase.repositoryId
-        )
         const result = await graph.getParseResult(completedCodebase.repositoryId)
-        console.log('[WorkspacePage] ParseResult loaded:', {
-          nodes: result.graph.nodes.length,
-          edges: result.graph.edges.length,
-        })
         setParseResult(result)
         setExportRepositoryId(completedCodebase.repositoryId)
-        console.log('[WorkspacePage] setParseResult called')
         setProcessingStatus('completed')
         setImportError(null)
         // Show success notification
         setShowSuccess(true)
-        console.log('[WorkspacePage] All state updates queued')
       } else {
         // Check for failed codebases
         const failedCodebase = codebasesList.codebases?.find((cb) => cb.status === 'failed')
@@ -276,12 +237,10 @@ export function WorkspacePage() {
             // Update status indicator - polling will happen via useEffect
             setProcessingStatus(processingCodebase.status)
             setImportError(null)
-            console.log('[WorkspacePage] Codebase processing, status:', processingCodebase.status)
           } else {
             // No codebases at all
             setProcessingStatus(null)
             setImportError(null)
-            console.log('[WorkspacePage] No codebases found')
           }
         }
       }

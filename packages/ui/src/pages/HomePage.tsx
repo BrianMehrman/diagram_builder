@@ -33,7 +33,7 @@ export function HomePage() {
       }
     } catch (err) {
       // In dev mode without auth, we might get errors - create a default workspace anyway
-      console.log('Failed to load workspaces, creating default workspace:', err)
+      console.warn('Failed to load workspaces, creating default workspace:', err)
       await createDefaultWorkspace()
     } finally {
       setLoading(false)
