@@ -289,15 +289,16 @@ export async function getNodeDetails(repoId: string, nodeId: string): Promise<IV
 
   const node = results[0]
   if (!node) return null
+  const nodeType = node.type === 'abstract_class' ? 'class' : node.type
   const ivmNode: IVMNode = {
     id: node.id,
-    type: node.type,
+    type: nodeType,
     position: {
       x: node.x ?? 0,
       y: node.y ?? 0,
       z: node.z ?? 0,
     },
-    lod: node.lod ?? 3,
+    lod: (node.lod ?? 3) as LODLevel,
     ...(node.parentId && { parentId: node.parentId }),
     metadata: {
       label: node.label,
@@ -360,15 +361,17 @@ export async function getNodeDependencies(repoId: string, nodeId: string): Promi
   `
   const results = await runQuery<Neo4jNode>(query, { repoId, nodeId })
 
-  const dependencies: IVMNode[] = results.map((node) => ({
+  const dependencies: IVMNode[] = results.map((node) => {
+    const nodeType = node.type === 'abstract_class' ? 'class' : node.type
+    return {
     id: node.id,
-    type: node.type,
+    type: nodeType,
     position: {
       x: node.x ?? 0,
       y: node.y ?? 0,
       z: node.z ?? 0,
     },
-    lod: node.lod ?? 3,
+    lod: (node.lod ?? 3) as LODLevel,
     ...(node.parentId && { parentId: node.parentId }),
     metadata: {
       label: node.label,
@@ -389,7 +392,8 @@ export async function getNodeDependencies(repoId: string, nodeId: string): Promi
         }),
       ...(node.properties && { properties: node.properties }),
     },
-  }))
+  }
+  })
 
   // Cache the result
   await cache.set(cacheKey, dependencies)
