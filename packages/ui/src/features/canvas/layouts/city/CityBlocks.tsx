@@ -189,7 +189,12 @@ export function CityBlocks({ graph }: CityBlocksProps) {
 
           {/* Internal buildings with signs — file nodes are land in v2; skip them in v1 */}
           {internalNodes
-            .filter((n) => n.type !== 'file')
+            .filter((n) => {
+              // At LOD 1-3 the active tier is File — file nodes ARE the buildings.
+              // At LOD 4 (Symbol tier) file nodes are layout containers; only symbols render.
+              if (n.type === 'file') return lodLevel <= 3
+              return true
+            })
             .map((node) => {
               const pos = positions.get(node.id)
               if (!pos) return null

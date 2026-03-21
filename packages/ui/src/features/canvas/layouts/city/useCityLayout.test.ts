@@ -286,31 +286,33 @@ describe('useCityLayout LOD dispatch', () => {
     mockPositions.clear()
   })
 
-  it('uses getTier(SemanticTier.Module) at lodLevel 1', () => {
+  it('uses getTier(SemanticTier.Symbol) at lodLevel 1', () => {
+    // All LODs use Symbol tier so 3D buildings are visible; LOD differentiation
+    // comes from rendering detail (signs, labels) not from switching tier graphs.
     useCanvasStore.setState({ resolver: mockResolver as any, lodLevel: 1 })
     renderHook(() => useCityLayout())
-    expect(mockResolver.getTier).toHaveBeenCalledWith(SemanticTier.Module)
+    expect(mockResolver.getTier).toHaveBeenCalledWith(SemanticTier.Symbol)
   })
 
-  it('uses getTier(SemanticTier.File) at lodLevel 2', () => {
+  it('uses getTier(SemanticTier.Symbol) at lodLevel 2', () => {
     useCanvasStore.setState({ resolver: mockResolver as any, lodLevel: 2 })
     renderHook(() => useCityLayout())
-    expect(mockResolver.getTier).toHaveBeenCalledWith(SemanticTier.File)
+    expect(mockResolver.getTier).toHaveBeenCalledWith(SemanticTier.Symbol)
   })
 
   it('uses getView with expand when lodLevel is 3 and focusedGroupId is set', () => {
     useCanvasStore.setState({ resolver: mockResolver as any, lodLevel: 3, focusedGroupId: 'group:mod1' })
     renderHook(() => useCityLayout())
     expect(mockResolver.getView).toHaveBeenCalledWith({
-      baseTier: SemanticTier.File,
+      baseTier: SemanticTier.Symbol,
       expand: ['group:mod1'],
     })
   })
 
-  it('falls back to getTier(SemanticTier.File) when lodLevel is 3 but focusedGroupId is null', () => {
+  it('falls back to getTier(SemanticTier.Symbol) when lodLevel is 3 but focusedGroupId is null', () => {
     useCanvasStore.setState({ resolver: mockResolver as any, lodLevel: 3, focusedGroupId: null })
     renderHook(() => useCityLayout())
-    expect(mockResolver.getTier).toHaveBeenCalledWith(SemanticTier.File)
+    expect(mockResolver.getTier).toHaveBeenCalledWith(SemanticTier.Symbol)
     expect(mockResolver.getView).not.toHaveBeenCalled()
   })
 

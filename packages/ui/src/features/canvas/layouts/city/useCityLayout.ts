@@ -61,11 +61,18 @@ export function useCityLayout(): CityLayoutResult & { graph: IVMGraph } {
   const graph = useMemo(() => {
     if (!resolver) return EMPTY_GRAPH
 
-    if (lodLevel <= 1) return resolver.getTier(SemanticTier.Module)
-    if (lodLevel === 2) return resolver.getTier(SemanticTier.File)
+    // All LOD levels use the Symbol tier (file + class/function nodes) so that
+    // 3D buildings are always visible in V2 mode. FileBlock ground planes render
+    // for the file nodes; class/function nodes render as buildings inside them.
+    //
+    // Visual LOD differentiation comes from rendering detail (signs, labels, edge
+    // visibility), not from switching to coarser tier graphs. The File and Module
+    // tiers only produce flat FileBlock ground planes in V2 mode with no buildings,
+    // making LOD 1/2/3 appear empty.
+    if (lodLevel <= 2) return resolver.getTier(SemanticTier.Symbol)
     if (lodLevel === 3) {
-      if (!focusedGroupId) return resolver.getTier(SemanticTier.File)
-      return resolver.getView({ baseTier: SemanticTier.File, expand: [focusedGroupId] }).graph
+      if (!focusedGroupId) return resolver.getTier(SemanticTier.Symbol)
+      return resolver.getView({ baseTier: SemanticTier.Symbol, expand: [focusedGroupId] }).graph
     }
     // lodLevel === 4
     if (!selectedNodeId) return resolver.getTier(SemanticTier.Symbol)
