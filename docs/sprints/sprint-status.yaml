@@ -463,6 +463,26 @@ epics:
       - "Key implementation rules: single-mesh floor bands (vertex coloring), type-based edge heights, grid-based child placement"
       - "Deferred: edge bundling, LOD 4 interior view, underground layer"
 
+  # Epic 12: Observability & Infrastructure
+  epic-12: not-started
+  # Epic 12-A: Application Containerization
+  12-1-dockerfiles-api-ui: review  # docker/api/Dockerfile, docker/ui/Dockerfile, docker/ui/nginx.conf, .dockerignore - COMPLETE (2026-03-14)
+  12-2-docker-image-hardening: review  # Pinned base images, non-root USER, npm prune, build docs in README - trivy scan pending first build (2026-03-14)
+  # Epic 12-B: Docker Compose Full Stack with Observability
+  12-3-docker-compose-profiles: not-started
+  12-4-observability-services-docker-compose: not-started
+  # Epic 12-C: OTEL Instrumentation — API Package
+  12-5-otel-sdk-tracing: not-started
+  12-6-otel-metrics-prometheus: not-started
+  12-7-otel-log-bridge-instrumentation: not-started
+  # Epic 12-D: Helm Charts for Kubernetes
+  12-8-helm-scaffold-app-templates: not-started
+  12-9-otel-collector-helm-observability: not-started
+  12-10-kubernetes-production-readiness: not-started
+  # Epic 12-E: Developer Experience & Scripts
+  12-11-scripts-multi-mode: not-started
+  12-12-documentation-updates: not-started
+
   epic-11:
     name: "Vertical Layering — 3D Semantic City"
     description: "Use all three spatial axes meaningfully. Z-axis encodes containment hierarchy (file → class → methods). Methods render as rooms inside class buildings. Structural relationships (imports, inheritance) route underground as plumbing. Runtime relationships (method calls, composition) route overhead as wires. Base classes get distinct visual treatment."
@@ -496,4 +516,40 @@ epics:
       - "11-8 has no dependencies (pipe component, can start early)"
       - "Supersedes sections in tech-spec-city-metaphor-rethink.md and ux-3d-layout-vision.md"
       - "Key design decisions: public methods on lower floors, base class = different color + profile, external pipes toggle-able, standalone functions = kiosks"
+
+  epic-12:
+    name: "Observability & Infrastructure"
+    description: "Add full OpenTelemetry observability (traces → Jaeger, metrics → Prometheus, logs → Grafana) and support three deployment modes: local Node.js dev, full Docker Compose stack, and Kubernetes via Helm charts. Includes Dockerfiles for API and UI, Docker Compose profile restructure, OTEL SDK instrumentation, Helm chart with kube-prometheus-stack and Jaeger dependencies, and developer scripts for all modes."
+    stories:
+      # Epic 12-A: Application Containerization
+      - 12-1-dockerfiles-api-ui
+      - 12-2-docker-image-hardening
+      # Epic 12-B: Docker Compose Full Stack with Observability
+      - 12-3-docker-compose-profiles
+      - 12-4-observability-services-docker-compose
+      # Epic 12-C: OTEL Instrumentation — API Package
+      - 12-5-otel-sdk-tracing
+      - 12-6-otel-metrics-prometheus
+      - 12-7-otel-log-bridge-instrumentation
+      # Epic 12-D: Helm Charts for Kubernetes
+      - 12-8-helm-scaffold-app-templates
+      - 12-9-otel-collector-helm-observability
+      - 12-10-kubernetes-production-readiness
+      # Epic 12-E: Developer Experience & Scripts
+      - 12-11-scripts-multi-mode
+      - 12-12-documentation-updates
+    dependencies:
+      - "Epic 11: Vertical Layering (application is stable and feature-complete)"
+      - "Docker Desktop with Kubernetes enabled (external prerequisite)"
+      - "Helm 3.x (external prerequisite)"
+    notes:
+      - "5 sub-epics: 12-A (Containerization, 2 stories), 12-B (Docker Compose, 2 stories), 12-C (OTEL, 3 stories), 12-D (Helm, 3 stories), 12-E (Scripts & Docs, 2 stories)"
+      - "Critical path: 12-A → 12-B → 12-E(scripts); 12-A → 12-D; 12-C can run in parallel with 12-D"
+      - "12-A (Dockerfiles) is prerequisite for both 12-B (app profile) and 12-D (Helm image refs)"
+      - "12-C (OTEL instrumentation) is independent of 12-D (Helm) — can be developed in parallel"
+      - "12-E (scripts/docs) must come last — depends on 12-B and 12-D being complete"
+      - "Three deployment modes: local (Node.js + infra docker-compose), docker (all profiles), k8s (Helm)"
+      - "OTEL endpoint varies per mode: localhost:4318 (local), jaeger:4318 (docker), otel-collector:4317 (k8s)"
+      - "Grafana port 3001 to avoid conflict with UI dev server on port 3000"
+      - "No parser or UI changes required — all changes confined to api package, infra config, and scripts"
 
