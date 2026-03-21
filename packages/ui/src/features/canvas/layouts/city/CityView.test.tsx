@@ -192,6 +192,46 @@ const mockDistrictArcs = [
   },
 ]
 
+// Mutable graph ref so useCityLayout mock can return per-test graph
+let _mockLayoutGraph: IVMGraph = {
+  nodes: [],
+  edges: [],
+  metadata: { name: '', schemaVersion: '1.0.0', generatedAt: '', rootPath: '', languages: [], stats: { totalNodes: 0, totalEdges: 0, nodesByType: {} as never, edgesByType: {} as never } },
+  bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
+}
+
+vi.mock('./useCityLayout', () => ({
+  useCityLayout: () => ({
+    graph: _mockLayoutGraph,
+    positions: mockPositions,
+    districtArcs: mockDistrictArcs,
+    groundWidth: 100,
+    groundDepth: 100,
+    bounds: { min: { x: -50, y: 0, z: -50 }, max: { x: 50, y: 20, z: 50 } },
+    districts: [],
+    externalZones: [],
+  }),
+}))
+
+vi.mock('../../views/BuildingFactory', () => ({
+  createBuildingElement: (node: IVMNode) => {
+    const typeMap: Record<string, string> = {
+      class: `class-building-${node.id}`,
+      function: `function-shop-${node.id}`,
+      interface: `interface-building-${node.id}`,
+      variable: `variable-crate-${node.id}`,
+      enum: `enum-crate-${node.id}`,
+    }
+    const testId = typeMap[node.type] ?? `building-${node.id}`
+    return <div data-testid={testId} />
+  },
+  createBuildingElementAtOrigin: (node: IVMNode) => <div data-testid={`building-origin-${node.id}`} />,
+}))
+
+vi.mock('../../views/InfrastructureFactory', () => ({
+  createInfrastructureElement: () => null,
+}))
+
 vi.mock('../../layout/engines/radialCityLayout', () => ({
   RadialCityLayoutEngine: class MockRadialCityLayoutEngine {
     layout() {
@@ -322,6 +362,7 @@ function createLargeDistrictGraph(): IVMGraph {
 // ---------------------------------------------------------------------------
 
 function setupPositions(graph: IVMGraph) {
+  _mockLayoutGraph = graph
   mockPositions.clear()
   graph.nodes.forEach((node, i) => {
     mockPositions.set(node.id, { x: i * 5, y: 0, z: i * 3 })
@@ -350,6 +391,12 @@ describe('CityView', () => {
     ;(mockCityEdgeCalls as unknown as Array<unknown>).length = 0
     ;(mockClusterBuildingCalls as unknown as Array<unknown>).length = 0
     mockPositions.clear()
+    _mockLayoutGraph = {
+      nodes: [],
+      edges: [],
+      metadata: { name: '', schemaVersion: '1.0.0', generatedAt: '', rootPath: '', languages: [], stats: { totalNodes: 0, totalEdges: 0, nodesByType: {} as never, edgesByType: {} as never } },
+      bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
+    }
   })
 
   // =========================================================================
@@ -557,6 +604,8 @@ describe('CityView', () => {
 
     it('does not render edges without layout positions', () => {
       const graph = createTestGraph()
+      // Set graph on mock so CitySky receives it
+      _mockLayoutGraph = graph
       // Only set positions for some nodes — edges to missing nodes should be filtered
       mockPositions.set('file-a', { x: 0, y: 0, z: 0 })
       mockPositions.set('util-d', { x: 10, y: 0, z: 10 })

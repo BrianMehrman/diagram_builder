@@ -119,9 +119,8 @@ describe('MiniMap', () => {
         {
           id: 'no-pos',
           type: 'file',
-          label: 'nopos.ts',
-          metadata: {},
-          lodLevel: 0,
+          metadata: { label: 'nopos.ts', path: 'src/nopos.ts', properties: {} },
+          lod: 0,
         },
       ]
 

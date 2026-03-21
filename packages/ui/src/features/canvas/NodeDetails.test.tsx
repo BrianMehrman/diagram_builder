@@ -113,7 +113,7 @@ describe('NodeDetails', () => {
     })
     rerender(<NodeDetails nodes={mockNodes} />)
 
-    expect(screen.getByText('Application')).toBeDefined()
+    expect(screen.getAllByText('Application').length).toBeGreaterThan(0)
   })
 
   it('displays correct icon for each node type', () => {
