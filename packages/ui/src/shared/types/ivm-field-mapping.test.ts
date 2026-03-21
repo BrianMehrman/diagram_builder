@@ -24,9 +24,19 @@ describe('IVMNode field mapping', () => {
     },
   }
 
-  it('label is at metadata.label', () => { expect(node.metadata.label).toBe('MyClass') })
-  it('isExternal is at metadata.properties.isExternal', () => { expect(node.metadata.properties?.isExternal).toBe(false) })
-  it('methodCount is at metadata.properties.methodCount', () => { expect(node.metadata.properties?.methodCount).toBe(5) })
-  it('isAbstract is at metadata.properties.isAbstract', () => { expect(node.metadata.properties?.isAbstract).toBe(true) })
-  it('visibility is at metadata.properties.visibility', () => { expect(node.metadata.properties?.visibility).toBe('public') })
+  it('label is at metadata.label', () => {
+    expect(node.metadata.label).toBe('MyClass')
+  })
+  it('isExternal is at metadata.properties.isExternal', () => {
+    expect(node.metadata.properties?.isExternal).toBe(false)
+  })
+  it('methodCount is at metadata.properties.methodCount', () => {
+    expect(node.metadata.properties?.methodCount).toBe(5)
+  })
+  it('isAbstract is at metadata.properties.isAbstract', () => {
+    expect(node.metadata.properties?.isAbstract).toBe(true)
+  })
+  it('visibility is at metadata.properties.visibility', () => {
+    expect(node.metadata.properties?.visibility).toBe('public')
+  })
 })

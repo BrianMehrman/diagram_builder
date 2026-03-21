@@ -21,8 +21,18 @@ describe('buildGroupHierarchy', () => {
     const input: GraphInput = {
       nodes: [
         { id: 'file:src/a.ts', type: 'file', metadata: { label: 'a.ts', path: 'src/a.ts' } },
-        { id: 'class:A', type: 'class', parentId: 'file:src/a.ts', metadata: { label: 'A', path: 'src/a.ts#A' } },
-        { id: 'method:A.foo', type: 'method', parentId: 'class:A', metadata: { label: 'foo', path: 'src/a.ts#A.foo' } },
+        {
+          id: 'class:A',
+          type: 'class',
+          parentId: 'file:src/a.ts',
+          metadata: { label: 'A', path: 'src/a.ts#A' },
+        },
+        {
+          id: 'method:A.foo',
+          type: 'method',
+          parentId: 'class:A',
+          metadata: { label: 'foo', path: 'src/a.ts#A.foo' },
+        },
       ],
       edges: [
         { source: 'file:src/a.ts', target: 'class:A', type: 'contains' },
@@ -41,10 +51,25 @@ describe('buildGroupHierarchy', () => {
     const input: GraphInput = {
       nodes: [
         { id: 'file:src/a.ts', type: 'file', metadata: { label: 'a.ts', path: 'src/a.ts' } },
-        { id: 'class:A', type: 'class', parentId: 'file:src/a.ts', metadata: { label: 'A', path: 'src/a.ts#A' } },
-        { id: 'method:A.foo', type: 'method', parentId: 'class:A', metadata: { label: 'foo', path: 'src/a.ts#A.foo' } },
+        {
+          id: 'class:A',
+          type: 'class',
+          parentId: 'file:src/a.ts',
+          metadata: { label: 'A', path: 'src/a.ts#A' },
+        },
+        {
+          id: 'method:A.foo',
+          type: 'method',
+          parentId: 'class:A',
+          metadata: { label: 'foo', path: 'src/a.ts#A.foo' },
+        },
         { id: 'file:src/b.ts', type: 'file', metadata: { label: 'b.ts', path: 'src/b.ts' } },
-        { id: 'function:bar', type: 'function', parentId: 'file:src/b.ts', metadata: { label: 'bar', path: 'src/b.ts#bar' } },
+        {
+          id: 'function:bar',
+          type: 'function',
+          parentId: 'file:src/b.ts',
+          metadata: { label: 'bar', path: 'src/b.ts#bar' },
+        },
       ],
       edges: [
         { source: 'file:src/a.ts', target: 'class:A', type: 'contains' },
@@ -78,9 +103,24 @@ describe('buildGroupHierarchy', () => {
       nodes: [
         { id: 'file:src/a.ts', type: 'file', metadata: { label: 'a.ts', path: 'src/a.ts' } },
         { id: 'file:src/b.ts', type: 'file', metadata: { label: 'b.ts', path: 'src/b.ts' } },
-        { id: 'class:A', type: 'class', parentId: 'file:src/a.ts', metadata: { label: 'A', path: 'src/a.ts#A' } },
-        { id: 'class:B', type: 'class', parentId: 'file:src/b.ts', metadata: { label: 'B', path: 'src/b.ts#B' } },
-        { id: 'method:A.foo', type: 'method', parentId: 'class:A', metadata: { label: 'foo', path: 'src/a.ts#A.foo' } },
+        {
+          id: 'class:A',
+          type: 'class',
+          parentId: 'file:src/a.ts',
+          metadata: { label: 'A', path: 'src/a.ts#A' },
+        },
+        {
+          id: 'class:B',
+          type: 'class',
+          parentId: 'file:src/b.ts',
+          metadata: { label: 'B', path: 'src/b.ts#B' },
+        },
+        {
+          id: 'method:A.foo',
+          type: 'method',
+          parentId: 'class:A',
+          metadata: { label: 'foo', path: 'src/a.ts#A.foo' },
+        },
       ],
       edges: [
         { source: 'file:src/a.ts', target: 'class:A', type: 'contains' },
@@ -108,8 +148,18 @@ describe('buildGroupHierarchy', () => {
       nodes: [
         { id: 'file:src/a.ts', type: 'file', metadata: { label: 'a.ts', path: 'src/a.ts' } },
         { id: 'file:src/b.ts', type: 'file', metadata: { label: 'b.ts', path: 'src/b.ts' } },
-        { id: 'class:A', type: 'class', parentId: 'file:src/a.ts', metadata: { label: 'A', path: 'src/a.ts#A' } },
-        { id: 'class:B', type: 'class', parentId: 'file:src/b.ts', metadata: { label: 'B', path: 'src/b.ts#B' } },
+        {
+          id: 'class:A',
+          type: 'class',
+          parentId: 'file:src/a.ts',
+          metadata: { label: 'A', path: 'src/a.ts#A' },
+        },
+        {
+          id: 'class:B',
+          type: 'class',
+          parentId: 'file:src/b.ts',
+          metadata: { label: 'B', path: 'src/b.ts#B' },
+        },
       ],
       edges: [
         { source: 'file:src/a.ts', target: 'class:A', type: 'contains' },
@@ -140,8 +190,18 @@ describe('buildGroupHierarchy', () => {
     const input: GraphInput = {
       nodes: [
         { id: 'file:src/a.ts', type: 'file', metadata: { label: 'a.ts', path: 'src/a.ts' } },
-        { id: 'class:A', type: 'class', parentId: 'file:src/a.ts', metadata: { label: 'A', path: 'src/a.ts#A' } },
-        { id: 'method:A.foo', type: 'method', parentId: 'class:A', metadata: { label: 'foo', path: 'src/a.ts#A.foo' } },
+        {
+          id: 'class:A',
+          type: 'class',
+          parentId: 'file:src/a.ts',
+          metadata: { label: 'A', path: 'src/a.ts#A' },
+        },
+        {
+          id: 'method:A.foo',
+          type: 'method',
+          parentId: 'class:A',
+          metadata: { label: 'foo', path: 'src/a.ts#A.foo' },
+        },
       ],
       edges: [
         { source: 'file:src/a.ts', target: 'class:A', type: 'contains' },
@@ -154,7 +214,9 @@ describe('buildGroupHierarchy', () => {
     const hierarchy = buildGroupHierarchy(graph)
 
     // All tiers should have no aggregated edges (contains is excluded)
-    for (const tier of Object.values(SemanticTier).filter((v) => typeof v === 'number') as SemanticTier[]) {
+    for (const tier of Object.values(SemanticTier).filter(
+      (v) => typeof v === 'number'
+    ) as SemanticTier[]) {
       expect(hierarchy.edgesByTier[tier]).toEqual([])
     }
   })
@@ -163,8 +225,18 @@ describe('buildGroupHierarchy', () => {
     const input: GraphInput = {
       nodes: [
         { id: 'file:src/a.ts', type: 'file', metadata: { label: 'a.ts', path: 'src/a.ts' } },
-        { id: 'class:A', type: 'class', parentId: 'file:src/a.ts', metadata: { label: 'A', path: 'src/a.ts#A' } },
-        { id: 'class:B', type: 'class', parentId: 'file:src/a.ts', metadata: { label: 'B', path: 'src/a.ts#B' } },
+        {
+          id: 'class:A',
+          type: 'class',
+          parentId: 'file:src/a.ts',
+          metadata: { label: 'A', path: 'src/a.ts#A' },
+        },
+        {
+          id: 'class:B',
+          type: 'class',
+          parentId: 'file:src/a.ts',
+          metadata: { label: 'B', path: 'src/a.ts#B' },
+        },
       ],
       edges: [
         { source: 'file:src/a.ts', target: 'class:A', type: 'contains' },

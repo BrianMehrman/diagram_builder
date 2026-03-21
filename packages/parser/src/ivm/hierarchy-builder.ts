@@ -11,7 +11,11 @@ import {
   NODE_TYPE_TO_TIER,
   AGGREGATABLE_EDGE_TYPES,
 } from '../../../core/src/ivm/semantic-tier.js'
-import type { GroupNode, AggregatedEdge, GroupHierarchy } from '../../../core/src/ivm/semantic-tier.js'
+import type {
+  GroupNode,
+  AggregatedEdge,
+  GroupHierarchy,
+} from '../../../core/src/ivm/semantic-tier.js'
 
 // =============================================================================
 // Tree Building
@@ -75,7 +79,11 @@ function buildGroupTree(graph: IVMGraph): GroupNode {
 
   // If there's exactly one root and it's a repository node, use it
   const firstRoot = rootNodes[0]
-  if (rootNodes.length === 1 && firstRoot && NODE_TYPE_TO_TIER[firstRoot.type] === SemanticTier.Repository) {
+  if (
+    rootNodes.length === 1 &&
+    firstRoot &&
+    NODE_TYPE_TO_TIER[firstRoot.type] === SemanticTier.Repository
+  ) {
     const rootGroup = groupNodes.get(firstRoot.id)
     if (rootGroup) return rootGroup
   }
@@ -86,7 +94,10 @@ function buildGroupTree(graph: IVMGraph): GroupNode {
     label: graph.metadata.name,
     tier: SemanticTier.Repository,
     nodeIds: [],
-    children: rootNodes.flatMap((n) => { const g = groupNodes.get(n.id); return g ? [g] : [] }),
+    children: rootNodes.flatMap((n) => {
+      const g = groupNodes.get(n.id)
+      return g ? [g] : []
+    }),
   }
 
   return root
@@ -100,10 +111,7 @@ function buildGroupTree(graph: IVMGraph): GroupNode {
  * For a given tier level, maps every IVM node to the group it belongs to at that tier.
  * A node belongs to the nearest ancestor (or itself) whose tier <= the requested tier.
  */
-function buildNodeToGroupMapping(
-  graph: IVMGraph,
-  tier: SemanticTier
-): Map<string, string> {
+function buildNodeToGroupMapping(graph: IVMGraph, tier: SemanticTier): Map<string, string> {
   const nodeMap = new Map<string, IVMNode>(graph.nodes.map((n) => [n.id, n]))
   const mapping = new Map<string, string>()
 
@@ -153,10 +161,7 @@ function buildNodeToGroupMapping(
  * Only aggregatable edge types are included.
  * Edges within the same group are excluded (internal edges).
  */
-function aggregateEdgesAtTier(
-  graph: IVMGraph,
-  tier: SemanticTier
-): AggregatedEdge[] {
+function aggregateEdgesAtTier(graph: IVMGraph, tier: SemanticTier): AggregatedEdge[] {
   const nodeToGroup = buildNodeToGroupMapping(graph, tier)
   const aggregatableSet = new Set<EdgeType>(AGGREGATABLE_EDGE_TYPES)
 

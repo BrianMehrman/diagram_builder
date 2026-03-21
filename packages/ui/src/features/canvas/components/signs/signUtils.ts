@@ -60,7 +60,7 @@ const LOD_VISIBILITY: Record<number, Set<SignType>> = {
  * @returns The sign type to render
  */
 export function getSignType(node: IVMNode): SignType {
-  const props = (node.metadata?.properties ?? {})
+  const props = node.metadata?.properties ?? {}
 
   // Priority 1: deprecated
   if (props.isDeprecated === true) {

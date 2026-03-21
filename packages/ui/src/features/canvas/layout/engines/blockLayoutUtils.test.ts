@@ -13,11 +13,7 @@ import { BUILDING_Y_OFFSET } from '../../views/cityViewUtils'
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeNode(
-  id: string,
-  type: IVMNode['type'],
-  opts: { parentId?: string } = {}
-): IVMNode {
+function makeNode(id: string, type: IVMNode['type'], opts: { parentId?: string } = {}): IVMNode {
   return {
     id,
     type,

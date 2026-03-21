@@ -8,7 +8,13 @@ import { useCityLayout } from './useCityLayout'
 import { useCanvasStore } from '../../store'
 import { SemanticTier } from '@diagram-builder/core'
 import { createViewResolver } from '@diagram-builder/core'
-import type { IVMNode, IVMGraph, ParseResult, AggregatedEdge, ViewResolver } from '@diagram-builder/core'
+import type {
+  IVMNode,
+  IVMGraph,
+  ParseResult,
+  AggregatedEdge,
+  ViewResolver,
+} from '@diagram-builder/core'
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -97,7 +103,19 @@ function buildMinimalIVMGraph(nodeOverrides: Pick<IVMNode, 'id' | 'type' | 'lod'
   return {
     nodes,
     edges: [],
-    metadata: { name: 'test', schemaVersion: '1.0.0', generatedAt: '', rootPath: '', languages: [], stats: { totalNodes: nodes.length, totalEdges: 0, nodesByType: {} as Record<string, number>, edgesByType: {} as Record<string, number> } },
+    metadata: {
+      name: 'test',
+      schemaVersion: '1.0.0',
+      generatedAt: '',
+      rootPath: '',
+      languages: [],
+      stats: {
+        totalNodes: nodes.length,
+        totalEdges: 0,
+        nodesByType: {} as Record<string, number>,
+        edgesByType: {} as Record<string, number>,
+      },
+    },
     bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
   }
 }
@@ -105,8 +123,21 @@ function buildMinimalIVMGraph(nodeOverrides: Pick<IVMNode, 'id' | 'type' | 'lod'
 function buildMockParseResult(graph: IVMGraph): ParseResult {
   return {
     graph,
-    hierarchy: { root: { id: 'group:root', label: 'root', tier: SemanticTier.Repository, nodeIds: [], children: [] }, tierCount: {} as Record<SemanticTier, number>, edgesByTier: {} as Record<SemanticTier, AggregatedEdge[]> },
-    tiers: { 0: graph, 1: graph, 2: graph, 3: graph, 4: graph, 5: graph } as Record<SemanticTier, IVMGraph>,
+    hierarchy: {
+      root: {
+        id: 'group:root',
+        label: 'root',
+        tier: SemanticTier.Repository,
+        nodeIds: [],
+        children: [],
+      },
+      tierCount: {} as Record<SemanticTier, number>,
+      edgesByTier: {} as Record<SemanticTier, AggregatedEdge[]>,
+    },
+    tiers: { 0: graph, 1: graph, 2: graph, 3: graph, 4: graph, 5: graph } as Record<
+      SemanticTier,
+      IVMGraph
+    >,
   }
 }
 
@@ -266,7 +297,12 @@ const emptyGraph: IVMGraph = {
     generatedAt: '',
     rootPath: '',
     languages: [],
-    stats: { totalNodes: 0, totalEdges: 0, nodesByType: {} as Record<string, number>, edgesByType: {} as Record<string, number> },
+    stats: {
+      totalNodes: 0,
+      totalEdges: 0,
+      nodesByType: {} as Record<string, number>,
+      edgesByType: {} as Record<string, number>,
+    },
   },
   bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
 }
@@ -298,7 +334,11 @@ describe('useCityLayout LOD dispatch', () => {
   })
 
   it('uses getView with expand when lodLevel is 3 and focusedGroupId is set', () => {
-    useCanvasStore.setState({ resolver: mockResolver as unknown as ViewResolver, lodLevel: 3, focusedGroupId: 'group:mod1' })
+    useCanvasStore.setState({
+      resolver: mockResolver as unknown as ViewResolver,
+      lodLevel: 3,
+      focusedGroupId: 'group:mod1',
+    })
     renderHook(() => useCityLayout())
     expect(mockResolver.getView).toHaveBeenCalledWith({
       baseTier: SemanticTier.Symbol,
@@ -307,14 +347,22 @@ describe('useCityLayout LOD dispatch', () => {
   })
 
   it('falls back to getTier(SemanticTier.Symbol) when lodLevel is 3 but focusedGroupId is null', () => {
-    useCanvasStore.setState({ resolver: mockResolver as unknown as ViewResolver, lodLevel: 3, focusedGroupId: null })
+    useCanvasStore.setState({
+      resolver: mockResolver as unknown as ViewResolver,
+      lodLevel: 3,
+      focusedGroupId: null,
+    })
     renderHook(() => useCityLayout())
     expect(mockResolver.getTier).toHaveBeenCalledWith(SemanticTier.Symbol)
     expect(mockResolver.getView).not.toHaveBeenCalled()
   })
 
   it('uses getView({ baseTier: SemanticTier.Symbol, focalNodeId }) at lodLevel 4 when selectedNodeId is set', () => {
-    useCanvasStore.setState({ resolver: mockResolver as unknown as ViewResolver, lodLevel: 4, selectedNodeId: 'node-x' })
+    useCanvasStore.setState({
+      resolver: mockResolver as unknown as ViewResolver,
+      lodLevel: 4,
+      selectedNodeId: 'node-x',
+    })
     renderHook(() => useCityLayout())
     expect(mockResolver.getView).toHaveBeenCalledWith({
       baseTier: SemanticTier.Symbol,
@@ -323,7 +371,11 @@ describe('useCityLayout LOD dispatch', () => {
   })
 
   it('falls back to getTier(SemanticTier.Symbol) at lodLevel 4 when selectedNodeId is null', () => {
-    useCanvasStore.setState({ resolver: mockResolver as unknown as ViewResolver, lodLevel: 4, selectedNodeId: null })
+    useCanvasStore.setState({
+      resolver: mockResolver as unknown as ViewResolver,
+      lodLevel: 4,
+      selectedNodeId: null,
+    })
     renderHook(() => useCityLayout())
     expect(mockResolver.getTier).toHaveBeenCalledWith(SemanticTier.Symbol)
     expect(mockResolver.getView).not.toHaveBeenCalled()
@@ -381,7 +433,10 @@ function buildCentroidTestParseResult(): ParseResult {
       tierCount: {} as Record<SemanticTier, number>,
       edgesByTier: {} as Record<SemanticTier, AggregatedEdge[]>,
     },
-    tiers: { 0: graph, 1: graph, 2: graph, 3: graph, 4: graph, 5: graph } as Record<SemanticTier, IVMGraph>,
+    tiers: { 0: graph, 1: graph, 2: graph, 3: graph, 4: graph, 5: graph } as Record<
+      SemanticTier,
+      IVMGraph
+    >,
   }
 }
 

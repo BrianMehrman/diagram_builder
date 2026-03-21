@@ -39,7 +39,7 @@ export function CityUnderground({ graph }: CityUndergroundProps) {
   const externalNodeIds = useMemo(() => {
     const ids = new Set<string>()
     for (const node of graph.nodes) {
-      if ((node.metadata.properties?.isExternal as boolean | undefined)) ids.add(node.id)
+      if (node.metadata.properties?.isExternal as boolean | undefined) ids.add(node.id)
     }
     return ids
   }, [graph.nodes])

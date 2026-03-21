@@ -395,7 +395,10 @@ export function WorkspacePage() {
           className="absolute top-4 left-1/2 -translate-x-1/2 z-20 max-w-md"
           aria-label="IVMGraph navigation"
         >
-          <Navigation nodes={parseResult?.graph.nodes ?? []} onNodeSelect={handleSearchNodeSelect} />
+          <Navigation
+            nodes={parseResult?.graph.nodes ?? []}
+            onNodeSelect={handleSearchNodeSelect}
+          />
         </nav>
 
         {/* Collapsible MiniMap (Bottom Right) */}
@@ -441,7 +444,10 @@ export function WorkspacePage() {
       </main>
 
       {/* Global Search Modal (⌘K) */}
-      <SearchBarModal nodes={parseResult?.graph.nodes ?? []} onNodeSelect={handleSearchNodeSelect} />
+      <SearchBarModal
+        nodes={parseResult?.graph.nodes ?? []}
+        onNodeSelect={handleSearchNodeSelect}
+      />
     </div>
   )
 }

@@ -31,7 +31,7 @@ function getRoomColor(method: IVMNode): string {
   }
 
   // Check metadata for static flag (static is an overlay, not a visibility tier)
-  if ((method.metadata?.properties)?.isStatic === true) {
+  if (method.metadata?.properties?.isStatic === true) {
     return METHOD_ROOM_COLORS.static
   }
 

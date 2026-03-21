@@ -10,7 +10,12 @@ function createMockParseResult(): ParseResult {
     nodes: [
       { id: 'file:a.ts', type: 'file', metadata: { label: 'a.ts', path: 'a.ts' } },
       { id: 'file:b.ts', type: 'file', metadata: { label: 'b.ts', path: 'b.ts' } },
-      { id: 'class:A', type: 'class', parentId: 'file:a.ts', metadata: { label: 'A', path: 'a.ts' } },
+      {
+        id: 'class:A',
+        type: 'class',
+        parentId: 'file:a.ts',
+        metadata: { label: 'A', path: 'a.ts' },
+      },
     ],
     edges: [
       { source: 'file:a.ts', target: 'file:b.ts', type: 'imports' },
@@ -24,9 +29,7 @@ function createMockParseResult(): ParseResult {
       { id: 'file:a.ts', type: 'file', metadata: { label: 'a.ts', path: 'a.ts' } },
       { id: 'file:b.ts', type: 'file', metadata: { label: 'b.ts', path: 'b.ts' } },
     ],
-    edges: [
-      { source: 'file:a.ts', target: 'file:b.ts', type: 'imports' },
-    ],
+    edges: [{ source: 'file:a.ts', target: 'file:b.ts', type: 'imports' }],
     metadata: { name: 'test (tier 3)', rootPath: '/test' },
   })
 
@@ -85,7 +88,10 @@ function createMockParseResult(): ParseResult {
         ],
       },
       tierCount: { 0: 0, 1: 0, 2: 0, 3: 2, 4: 1, 5: 0 } as Record<SemanticTier, number>,
-      edgesByTier: { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] } as Record<SemanticTier, AggregatedEdge[]>,
+      edgesByTier: { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] } as Record<
+        SemanticTier,
+        AggregatedEdge[]
+      >,
     },
     tiers,
   }
@@ -254,9 +260,7 @@ describe('createViewResolver', () => {
     expect(collapsedNodeIds).toContain('file:b.ts')
     expect(collapsedNodeIds).not.toContain('class:A')
     // The contains edge should be gone since class:A is removed
-    const containsEdge = collapsedView.graph.edges.find(
-      (e) => e.type === 'contains'
-    )
+    const containsEdge = collapsedView.graph.edges.find((e) => e.type === 'contains')
     expect(containsEdge).toBeUndefined()
   })
 })

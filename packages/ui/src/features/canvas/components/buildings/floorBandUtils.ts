@@ -88,7 +88,7 @@ export function applyFloorBandColors(
 export function getMethodCount(node: IVMNode): number {
   const mc = node.metadata.properties?.methodCount
   if (typeof mc === 'number' && mc > 0) return mc
-  const metaMethods = (node.metadata.properties)?.methods
+  const metaMethods = node.metadata.properties?.methods
   if (typeof metaMethods === 'number') return metaMethods
   if (Array.isArray(metaMethods)) return metaMethods.length
   return 0

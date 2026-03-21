@@ -458,8 +458,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   resolver: null,
   activeLayout: 'city',
   focusedGroupId: null,
-  setParseResult: (result) =>
-    set({ parseResult: result, resolver: createViewResolver(result) }),
+  setParseResult: (result) => set({ parseResult: result, resolver: createViewResolver(result) }),
   setActiveLayout: (layout) => set({ activeLayout: layout }),
   setFocusedGroupId: (id) => set({ focusedGroupId: id }),
 

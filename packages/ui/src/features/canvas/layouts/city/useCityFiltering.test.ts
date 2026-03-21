@@ -53,11 +53,7 @@ function createNode(
   }
 }
 
-function createEdge(
-  source: string,
-  target: string,
-  type: IVMEdge['type'] = 'imports'
-): IVMEdge {
+function createEdge(source: string, target: string, type: IVMEdge['type'] = 'imports'): IVMEdge {
   return {
     id: `${source}--${type}--${target}`,
     source,
@@ -77,7 +73,12 @@ function makeGraph(nodes: IVMNode[], edges: IVMEdge[] = []): IVMGraph {
       schemaVersion: '1.0.0',
       generatedAt: new Date().toISOString(),
       rootPath: 'src/',
-      stats: { totalNodes: nodes.length, totalEdges: edges.length, nodesByType: {} as never, edgesByType: {} as never },
+      stats: {
+        totalNodes: nodes.length,
+        totalEdges: edges.length,
+        nodesByType: {} as never,
+        edgesByType: {} as never,
+      },
       languages: [],
     },
     bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
@@ -167,10 +168,14 @@ describe('useCityFiltering', () => {
         createNode('b', 'file', 'src/features'),
         createNode('c', 'file', 'src/utils'),
       ]
-      const parseResult = buildParseResult(nodes, [], [
-        { id: 'group:features', label: 'features', nodeIds: ['a', 'b'] },
-        { id: 'group:utils', label: 'utils', nodeIds: ['c'] },
-      ])
+      const parseResult = buildParseResult(
+        nodes,
+        [],
+        [
+          { id: 'group:features', label: 'features', nodeIds: ['a', 'b'] },
+          { id: 'group:utils', label: 'utils', nodeIds: ['c'] },
+        ]
+      )
       useCanvasStore.setState({ parseResult, resolver: createViewResolver(parseResult) })
       const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
@@ -193,10 +198,14 @@ describe('useCityFiltering', () => {
 
     it('district keys start with group: prefix', () => {
       const nodes = [createNode('a', 'file', 'src/features'), createNode('b', 'file', 'src/utils')]
-      const parseResult = buildParseResult(nodes, [], [
-        { id: 'group:features', label: 'features', nodeIds: ['a'] },
-        { id: 'group:utils', label: 'utils', nodeIds: ['b'] },
-      ])
+      const parseResult = buildParseResult(
+        nodes,
+        [],
+        [
+          { id: 'group:features', label: 'features', nodeIds: ['a'] },
+          { id: 'group:utils', label: 'utils', nodeIds: ['b'] },
+        ]
+      )
       useCanvasStore.setState({ parseResult, resolver: createViewResolver(parseResult) })
       const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
@@ -217,10 +226,12 @@ describe('useCityFiltering', () => {
         nodes.push(createNode(`n-${i}`, 'file', 'src/big'))
       }
       const nodeIds = nodes.map((n) => n.id)
-      const parseResult = buildParseResult(nodes, [], [
-        { id: 'group:big', label: 'big', nodeIds },
-      ])
-      useCanvasStore.setState((s) => ({ ...s, parseResult, resolver: createViewResolver(parseResult) }))
+      const parseResult = buildParseResult(nodes, [], [{ id: 'group:big', label: 'big', nodeIds }])
+      useCanvasStore.setState((s) => ({
+        ...s,
+        parseResult,
+        resolver: createViewResolver(parseResult),
+      }))
       const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
@@ -239,10 +250,12 @@ describe('useCityFiltering', () => {
         nodes.push(createNode(`n-${i}`, 'file', 'src/big'))
       }
       const nodeIds = nodes.map((n) => n.id)
-      const parseResult = buildParseResult(nodes, [], [
-        { id: 'group:big', label: 'big', nodeIds },
-      ])
-      useCanvasStore.setState((s) => ({ ...s, parseResult, resolver: createViewResolver(parseResult) }))
+      const parseResult = buildParseResult(nodes, [], [{ id: 'group:big', label: 'big', nodeIds }])
+      useCanvasStore.setState((s) => ({
+        ...s,
+        parseResult,
+        resolver: createViewResolver(parseResult),
+      }))
       const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
@@ -266,10 +279,16 @@ describe('useCityFiltering', () => {
       // Only file nodes are in the group nodeIds for fileDistrictGroups filtering
       const fileIds = nodes.filter((n) => n.type === 'file').map((n) => n.id)
       const allIds = nodes.map((n) => n.id)
-      const parseResult = buildParseResult(nodes, [], [
-        { id: 'group:big', label: 'big', nodeIds: allIds },
-      ])
-      useCanvasStore.setState((s) => ({ ...s, parseResult, resolver: createViewResolver(parseResult) }))
+      const parseResult = buildParseResult(
+        nodes,
+        [],
+        [{ id: 'group:big', label: 'big', nodeIds: allIds }]
+      )
+      useCanvasStore.setState((s) => ({
+        ...s,
+        parseResult,
+        resolver: createViewResolver(parseResult),
+      }))
       const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
@@ -300,10 +319,16 @@ describe('useCityFiltering', () => {
         nodes.push(createNode(`method-${i}`, 'method', 'src/big', { parentId: 'class-0' }))
       }
       const allIds = nodes.map((n) => n.id)
-      const parseResult = buildParseResult(nodes, [], [
-        { id: 'group:big', label: 'big', nodeIds: allIds },
-      ])
-      useCanvasStore.setState((s) => ({ ...s, parseResult, resolver: createViewResolver(parseResult) }))
+      const parseResult = buildParseResult(
+        nodes,
+        [],
+        [{ id: 'group:big', label: 'big', nodeIds: allIds }]
+      )
+      useCanvasStore.setState((s) => ({
+        ...s,
+        parseResult,
+        resolver: createViewResolver(parseResult),
+      }))
       const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
@@ -317,10 +342,16 @@ describe('useCityFiltering', () => {
       useCanvasStore.getState().setLodLevel(1)
 
       const nodes = [createNode('a', 'file', 'src/small'), createNode('b', 'file', 'src/small')]
-      const parseResult = buildParseResult(nodes, [], [
-        { id: 'group:small', label: 'small', nodeIds: ['a', 'b'] },
-      ])
-      useCanvasStore.setState((s) => ({ ...s, parseResult, resolver: createViewResolver(parseResult) }))
+      const parseResult = buildParseResult(
+        nodes,
+        [],
+        [{ id: 'group:small', label: 'small', nodeIds: ['a', 'b'] }]
+      )
+      useCanvasStore.setState((s) => ({
+        ...s,
+        parseResult,
+        resolver: createViewResolver(parseResult),
+      }))
       const graph = makeGraph(nodes)
       const positions = buildPositions(nodes)
 
@@ -412,7 +443,10 @@ describe('useCityFiltering', () => {
     it('includes depends_on and calls edges', () => {
       useCanvasStore.getState().setCityVersion('v1')
       const nodes = [createNode('a'), createNode('b'), createNode('c')]
-      const graph = makeGraph(nodes, [createEdge('a', 'b', 'depends_on'), createEdge('b', 'c', 'calls')])
+      const graph = makeGraph(nodes, [
+        createEdge('a', 'b', 'depends_on'),
+        createEdge('b', 'c', 'calls'),
+      ])
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -432,7 +466,10 @@ describe('useCityFiltering', () => {
 
     it('uses extends not inherits in edge type allowlist', () => {
       const nodes = [createNode('a', 'file', 'src/models'), createNode('b', 'file', 'src/services')]
-      const graph = makeGraph(nodes, [createEdge('a', 'b', 'extends'), createEdge('a', 'b', 'imports')])
+      const graph = makeGraph(nodes, [
+        createEdge('a', 'b', 'extends'),
+        createEdge('a', 'b', 'imports'),
+      ])
       const positions = buildPositions(nodes)
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -447,14 +484,20 @@ describe('useCityFiltering', () => {
     function buildV2ParseResult(nodeA: IVMNode, nodeB: IVMNode, sameGroup: boolean): ParseResult {
       const nodes = [nodeA, nodeB]
       if (sameGroup) {
-        return buildParseResult(nodes, [], [
-          { id: 'group:features', label: 'features', nodeIds: [nodeA.id, nodeB.id] },
-        ])
+        return buildParseResult(
+          nodes,
+          [],
+          [{ id: 'group:features', label: 'features', nodeIds: [nodeA.id, nodeB.id] }]
+        )
       }
-      return buildParseResult(nodes, [], [
-        { id: 'group:features', label: 'features', nodeIds: [nodeA.id] },
-        { id: 'group:utils', label: 'utils', nodeIds: [nodeB.id] },
-      ])
+      return buildParseResult(
+        nodes,
+        [],
+        [
+          { id: 'group:features', label: 'features', nodeIds: [nodeA.id] },
+          { id: 'group:utils', label: 'utils', nodeIds: [nodeB.id] },
+        ]
+      )
     }
 
     it('hides intra-district imports in v2 mode', () => {
@@ -464,7 +507,11 @@ describe('useCityFiltering', () => {
       const nodeA = createNode('a', 'file', 'src/features')
       const nodeB = createNode('b', 'file', 'src/features')
       const parseResult = buildV2ParseResult(nodeA, nodeB, true)
-      useCanvasStore.setState((s) => ({ ...s, parseResult, resolver: createViewResolver(parseResult) }))
+      useCanvasStore.setState((s) => ({
+        ...s,
+        parseResult,
+        resolver: createViewResolver(parseResult),
+      }))
 
       const graph = makeGraph([nodeA, nodeB], [createEdge('a', 'b', 'imports')])
       const positions = buildPositions([nodeA, nodeB])
@@ -481,7 +528,11 @@ describe('useCityFiltering', () => {
       const nodeA = createNode('a', 'file', 'src/features')
       const nodeB = createNode('b', 'file', 'src/utils')
       const parseResult = buildV2ParseResult(nodeA, nodeB, false)
-      useCanvasStore.setState((s) => ({ ...s, parseResult, resolver: createViewResolver(parseResult) }))
+      useCanvasStore.setState((s) => ({
+        ...s,
+        parseResult,
+        resolver: createViewResolver(parseResult),
+      }))
 
       const graph = makeGraph([nodeA, nodeB], [createEdge('a', 'b', 'imports')])
       const positions = buildPositions([nodeA, nodeB])
@@ -511,7 +562,11 @@ describe('useCityFiltering', () => {
       const nodeA = createNode('a', 'file', 'src/features')
       const nodeB = createNode('b', 'file', 'src/utils')
       const parseResult = buildV2ParseResult(nodeA, nodeB, false)
-      useCanvasStore.setState((s) => ({ ...s, parseResult, resolver: createViewResolver(parseResult) }))
+      useCanvasStore.setState((s) => ({
+        ...s,
+        parseResult,
+        resolver: createViewResolver(parseResult),
+      }))
 
       const graph = makeGraph([nodeA, nodeB], [createEdge('a', 'b', 'contains')])
       const positions = buildPositions([nodeA, nodeB])
@@ -527,12 +582,21 @@ describe('useCityFiltering', () => {
       const nodeA = createNode('a', 'file', 'src/features')
       const nodeB = createNode('b', 'file', 'src/features')
       const nodeC = createNode('c', 'file', 'src/features')
-      const parseResult = buildParseResult([nodeA, nodeB, nodeC], [], [
-        { id: 'group:features', label: 'features', nodeIds: ['a', 'b', 'c'] },
-      ])
-      useCanvasStore.setState((s) => ({ ...s, parseResult, resolver: createViewResolver(parseResult) }))
+      const parseResult = buildParseResult(
+        [nodeA, nodeB, nodeC],
+        [],
+        [{ id: 'group:features', label: 'features', nodeIds: ['a', 'b', 'c'] }]
+      )
+      useCanvasStore.setState((s) => ({
+        ...s,
+        parseResult,
+        resolver: createViewResolver(parseResult),
+      }))
 
-      const graph = makeGraph([nodeA, nodeB, nodeC], [createEdge('a', 'b', 'depends_on'), createEdge('b', 'c', 'calls')])
+      const graph = makeGraph(
+        [nodeA, nodeB, nodeC],
+        [createEdge('a', 'b', 'depends_on'), createEdge('b', 'c', 'calls')]
+      )
       const positions = buildPositions([nodeA, nodeB, nodeC])
 
       const { result } = renderHook(() => useCityFiltering(graph, positions))
@@ -546,7 +610,11 @@ describe('useCityFiltering', () => {
       const nodeA = createNode('a', 'file', 'src/models')
       const nodeB = createNode('b', 'file', 'src/services')
       const parseResult = buildV2ParseResult(nodeA, nodeB, false)
-      useCanvasStore.setState((s) => ({ ...s, parseResult, resolver: createViewResolver(parseResult) }))
+      useCanvasStore.setState((s) => ({
+        ...s,
+        parseResult,
+        resolver: createViewResolver(parseResult),
+      }))
 
       const graph = makeGraph([nodeA, nodeB], [createEdge('a', 'b', 'extends')])
       const positions = buildPositions([nodeA, nodeB])
@@ -561,9 +629,11 @@ describe('useCityFiltering', () => {
     it('sources district groups from GroupHierarchy at Module tier, not path strings', () => {
       const nodeA = createNode('file:a', 'file', 'src/mod1')
       const nodeB = createNode('file:b', 'file', 'src/mod1')
-      const parseResult = buildParseResult([nodeA, nodeB], [], [
-        { id: 'group:mod1', label: 'mod1', nodeIds: ['file:a', 'file:b'] },
-      ])
+      const parseResult = buildParseResult(
+        [nodeA, nodeB],
+        [],
+        [{ id: 'group:mod1', label: 'mod1', nodeIds: ['file:a', 'file:b'] }]
+      )
       useCanvasStore.setState({ parseResult, resolver: createViewResolver(parseResult) })
 
       const graph = makeGraph([nodeA, nodeB])

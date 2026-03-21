@@ -43,7 +43,12 @@ function makeGraph(nodes: IVMNode[], edges: IVMEdge[] = []): IVMGraph {
       schemaVersion: '1.0.0',
       generatedAt: new Date().toISOString(),
       rootPath: 'src/',
-      stats: { totalNodes: nodes.length, totalEdges: edges.length, nodesByType: {} as never, edgesByType: {} as never },
+      stats: {
+        totalNodes: nodes.length,
+        totalEdges: edges.length,
+        nodesByType: {} as never,
+        edgesByType: {} as never,
+      },
       languages: [],
     },
     bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },

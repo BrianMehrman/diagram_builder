@@ -57,17 +57,11 @@ export function applyFocalPruning(
   }
 
   // Filter edges to those connecting kept nodes
-  let keptEdges = graph.edges.filter(
-    (e) => keptNodeIds.has(e.source) && keptNodeIds.has(e.target)
-  )
+  let keptEdges = graph.edges.filter((e) => keptNodeIds.has(e.source) && keptNodeIds.has(e.target))
 
   // Progressive shrink if over edge budget
   let currentHops = falloffHops
-  while (
-    constraints.maxEdges &&
-    keptEdges.length > constraints.maxEdges &&
-    currentHops > 0
-  ) {
+  while (constraints.maxEdges && keptEdges.length > constraints.maxEdges && currentHops > 0) {
     currentHops--
     keptNodeIds = new Set<string>()
     for (const [nodeId, dist] of hopDistance) {
@@ -75,9 +69,7 @@ export function applyFocalPruning(
         keptNodeIds.add(nodeId)
       }
     }
-    keptEdges = graph.edges.filter(
-      (e) => keptNodeIds.has(e.source) && keptNodeIds.has(e.target)
-    )
+    keptEdges = graph.edges.filter((e) => keptNodeIds.has(e.source) && keptNodeIds.has(e.target))
   }
 
   // Final weight-based pruning if still over budget

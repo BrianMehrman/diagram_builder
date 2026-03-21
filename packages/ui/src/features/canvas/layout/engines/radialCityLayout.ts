@@ -125,8 +125,12 @@ export class RadialCityLayoutEngine implements LayoutEngine {
     const positions = new Map<string, Position3D>()
 
     // === Separate nodes by role ===
-    const internalNodes = graph.nodes.filter((n) => !(n.metadata.properties?.isExternal as boolean | undefined))
-    const externalNodes = graph.nodes.filter((n) => (n.metadata.properties?.isExternal as boolean | undefined) === true)
+    const internalNodes = graph.nodes.filter(
+      (n) => !(n.metadata.properties?.isExternal as boolean | undefined)
+    )
+    const externalNodes = graph.nodes.filter(
+      (n) => (n.metadata.properties?.isExternal as boolean | undefined) === true
+    )
     const fileNodes = internalNodes.filter((n) => n.type === 'file')
     const nonFileNodes = internalNodes.filter((n) => n.type !== 'file')
 
@@ -143,7 +147,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       }
     } else {
       const paths = fileNodes.map((n) => {
-        const p = (n.metadata?.path) ?? n.metadata.label ?? ''
+        const p = n.metadata?.path ?? n.metadata.label ?? ''
         return { id: n.id, segments: p.split('/').filter(Boolean) }
       })
       if (paths.length > 0) {
@@ -345,7 +349,7 @@ export class RadialCityLayoutEngine implements LayoutEngine {
         // Filter to orphans that belong to this district (by directory)
         const districtDir = assignment.districtId
         const districtOrphanNodes = unassignedOrphans.filter((o) => {
-          const path = (o.metadata?.path) ?? o.metadata.label ?? ''
+          const path = o.metadata?.path ?? o.metadata.label ?? ''
           const dir = extractDirectory(path)
           return dir === districtDir
         })
@@ -464,7 +468,8 @@ export class RadialCityLayoutEngine implements LayoutEngine {
       // Group external nodes by infrastructure type
       const zoneGroups = new Map<string, IVMNode[]>()
       for (const node of externalNodes) {
-        const infraType = (node.metadata?.properties?.infrastructureType as string | undefined) ?? 'general'
+        const infraType =
+          (node.metadata?.properties?.infrastructureType as string | undefined) ?? 'general'
         if (!zoneGroups.has(infraType)) zoneGroups.set(infraType, [])
         zoneGroups.get(infraType)?.push(node)
       }
@@ -573,7 +578,7 @@ function groupByDirectory(nodes: IVMNode[]): Map<string, IVMNode[]> {
   const groups = new Map<string, IVMNode[]>()
 
   for (const node of nodes) {
-    const filePath = (node.metadata?.path) ?? node.metadata.label ?? ''
+    const filePath = node.metadata?.path ?? node.metadata.label ?? ''
     const dir = extractDirectory(filePath)
 
     if (!groups.has(dir)) groups.set(dir, [])

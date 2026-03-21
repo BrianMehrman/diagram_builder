@@ -30,7 +30,7 @@ export function XRayBuilding({
   xrayOpacity,
   showDetail,
 }: XRayBuildingProps) {
-  const buildingHeight = getBuildingHeight((node.metadata.properties?.depth as number | undefined))
+  const buildingHeight = getBuildingHeight(node.metadata.properties?.depth as number | undefined)
 
   const classes = useMemo(() => children.filter((n) => n.type === 'class'), [children])
 

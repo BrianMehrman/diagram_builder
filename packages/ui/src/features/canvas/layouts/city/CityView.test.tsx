@@ -196,7 +196,14 @@ const mockDistrictArcs = [
 let _mockLayoutGraph: IVMGraph = {
   nodes: [],
   edges: [],
-  metadata: { name: '', schemaVersion: '1.0.0', generatedAt: '', rootPath: '', languages: [], stats: { totalNodes: 0, totalEdges: 0, nodesByType: {} as never, edgesByType: {} as never } },
+  metadata: {
+    name: '',
+    schemaVersion: '1.0.0',
+    generatedAt: '',
+    rootPath: '',
+    languages: [],
+    stats: { totalNodes: 0, totalEdges: 0, nodesByType: {} as never, edgesByType: {} as never },
+  },
   bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
 }
 
@@ -225,7 +232,9 @@ vi.mock('../../views/BuildingFactory', () => ({
     const testId = typeMap[node.type] ?? `building-${node.id}`
     return <div data-testid={testId} />
   },
-  createBuildingElementAtOrigin: (node: IVMNode) => <div data-testid={`building-origin-${node.id}`} />,
+  createBuildingElementAtOrigin: (node: IVMNode) => (
+    <div data-testid={`building-origin-${node.id}`} />
+  ),
 }))
 
 vi.mock('../../views/InfrastructureFactory', () => ({
@@ -288,11 +297,7 @@ function createNode(
   }
 }
 
-function createEdge(
-  source: string,
-  target: string,
-  type: IVMEdge['type'] = 'imports'
-): IVMEdge {
+function createEdge(source: string, target: string, type: IVMEdge['type'] = 'imports'): IVMEdge {
   return {
     id: `${source}--${type}--${target}`,
     source,
@@ -309,7 +314,12 @@ function makeGraphMetadata(nodes: IVMNode[], edges: IVMEdge[]) {
     schemaVersion: '1.0.0',
     generatedAt: new Date().toISOString(),
     rootPath: 'src/',
-    stats: { totalNodes: nodes.length, totalEdges: edges.length, nodesByType: {} as never, edgesByType: {} as never },
+    stats: {
+      totalNodes: nodes.length,
+      totalEdges: edges.length,
+      nodesByType: {} as never,
+      edgesByType: {} as never,
+    },
     languages: [],
   }
 }
@@ -394,7 +404,14 @@ describe('CityView', () => {
     _mockLayoutGraph = {
       nodes: [],
       edges: [],
-      metadata: { name: '', schemaVersion: '1.0.0', generatedAt: '', rootPath: '', languages: [], stats: { totalNodes: 0, totalEdges: 0, nodesByType: {} as never, edgesByType: {} as never } },
+      metadata: {
+        name: '',
+        schemaVersion: '1.0.0',
+        generatedAt: '',
+        rootPath: '',
+        languages: [],
+        stats: { totalNodes: 0, totalEdges: 0, nodesByType: {} as never, edgesByType: {} as never },
+      },
       bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
     }
   })

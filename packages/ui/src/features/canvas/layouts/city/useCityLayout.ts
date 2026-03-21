@@ -20,7 +20,19 @@ import type { BoundingBox, DistrictLayout, ExternalZoneLayout } from '../../layo
 const EMPTY_GRAPH: IVMGraph = {
   nodes: [],
   edges: [],
-  metadata: { name: '', schemaVersion: '1.0.0', generatedAt: '', rootPath: '', languages: [], stats: { totalNodes: 0, totalEdges: 0, nodesByType: {} as Record<NodeType, number>, edgesByType: {} as Record<EdgeType, number> } },
+  metadata: {
+    name: '',
+    schemaVersion: '1.0.0',
+    generatedAt: '',
+    rootPath: '',
+    languages: [],
+    stats: {
+      totalNodes: 0,
+      totalEdges: 0,
+      nodesByType: {} as Record<NodeType, number>,
+      edgesByType: {} as Record<EdgeType, number>,
+    },
+  },
   bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
 }
 

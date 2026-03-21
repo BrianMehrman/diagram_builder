@@ -121,7 +121,9 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
         {(selectedNode.metadata.properties?.depth as number | undefined) !== undefined && (
           <div>
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Depth</div>
-            <div className="text-sm text-gray-200 mt-1">{selectedNode.metadata.properties?.depth as number | undefined}</div>
+            <div className="text-sm text-gray-200 mt-1">
+              {selectedNode.metadata.properties?.depth as number | undefined}
+            </div>
           </div>
         )}
 
@@ -141,7 +143,9 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
               Visibility
             </div>
-            <div className="text-sm text-gray-200 capitalize mt-1">{selectedNode.metadata.properties?.visibility as string | undefined}</div>
+            <div className="text-sm text-gray-200 capitalize mt-1">
+              {selectedNode.metadata.properties?.visibility as string | undefined}
+            </div>
           </div>
         )}
 
@@ -150,12 +154,16 @@ export function NodeDetails({ nodes, className = '' }: NodeDetailsProps) {
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
               Methods
             </div>
-            <div className="text-sm text-gray-200 mt-1">{(selectedNode.metadata.properties?.methodCount as number | undefined)}</div>
+            <div className="text-sm text-gray-200 mt-1">
+              {selectedNode.metadata.properties?.methodCount as number | undefined}
+            </div>
           </div>
         )}
 
         {/* Boolean flags */}
-        {((selectedNode.metadata.properties?.isExternal as boolean | undefined) || (selectedNode.metadata.properties?.isDeprecated as boolean | undefined) || (selectedNode.metadata.properties?.isExported as boolean | undefined)) && (
+        {((selectedNode.metadata.properties?.isExternal as boolean | undefined) ||
+          (selectedNode.metadata.properties?.isDeprecated as boolean | undefined) ||
+          (selectedNode.metadata.properties?.isExported as boolean | undefined)) && (
           <div>
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Flags</div>
             <div className="flex flex-wrap gap-1 mt-1">

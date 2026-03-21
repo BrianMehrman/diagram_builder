@@ -51,8 +51,18 @@ function createMockParseResult(): ParseResult {
     nodes: [
       { id: 'file:a.ts', type: 'file', metadata: { label: 'a.ts', path: 'a.ts' } },
       { id: 'file:b.ts', type: 'file', metadata: { label: 'b.ts', path: 'b.ts' } },
-      { id: 'class:A', type: 'class', parentId: 'file:a.ts', metadata: { label: 'A', path: 'a.ts' } },
-      { id: 'method:A.foo', type: 'method', parentId: 'class:A', metadata: { label: 'foo', path: 'a.ts' } },
+      {
+        id: 'class:A',
+        type: 'class',
+        parentId: 'file:a.ts',
+        metadata: { label: 'A', path: 'a.ts' },
+      },
+      {
+        id: 'method:A.foo',
+        type: 'method',
+        parentId: 'class:A',
+        metadata: { label: 'foo', path: 'a.ts' },
+      },
     ],
     edges: [
       { source: 'file:a.ts', target: 'file:b.ts', type: 'imports' },
@@ -67,9 +77,7 @@ function createMockParseResult(): ParseResult {
       { id: 'file:a.ts', type: 'file', metadata: { label: 'a.ts', path: 'a.ts' } },
       { id: 'file:b.ts', type: 'file', metadata: { label: 'b.ts', path: 'b.ts' } },
     ],
-    edges: [
-      { source: 'file:a.ts', target: 'file:b.ts', type: 'imports' },
-    ],
+    edges: [{ source: 'file:a.ts', target: 'file:b.ts', type: 'imports' }],
     metadata: { name: 'test (tier 3)', rootPath: '/test' },
   })
 
@@ -77,7 +85,12 @@ function createMockParseResult(): ParseResult {
     nodes: [
       { id: 'file:a.ts', type: 'file', metadata: { label: 'a.ts', path: 'a.ts' } },
       { id: 'file:b.ts', type: 'file', metadata: { label: 'b.ts', path: 'b.ts' } },
-      { id: 'class:A', type: 'class', parentId: 'file:a.ts', metadata: { label: 'A', path: 'a.ts' } },
+      {
+        id: 'class:A',
+        type: 'class',
+        parentId: 'file:a.ts',
+        metadata: { label: 'A', path: 'a.ts' },
+      },
     ],
     edges: [
       { source: 'file:a.ts', target: 'file:b.ts', type: 'imports' },
@@ -108,7 +121,10 @@ function createMockParseResult(): ParseResult {
         children: [],
       },
       tierCount: { 0: 0, 1: 0, 2: 0, 3: 2, 4: 1, 5: 1 } as Record<SemanticTier, number>,
-      edgesByTier: { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] } as Record<SemanticTier, AggregatedEdge[]>,
+      edgesByTier: { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [] } as Record<
+        SemanticTier,
+        AggregatedEdge[]
+      >,
     },
     tiers,
   }

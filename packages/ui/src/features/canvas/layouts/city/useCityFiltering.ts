@@ -62,10 +62,16 @@ export function useCityFiltering(
   const parseResult = useCanvasStore((s) => s.parseResult)
 
   // Separate internal and external nodes
-  const internalNodes = useMemo(() => graph.nodes.filter((n) => !(n.metadata.properties?.isExternal as boolean | undefined)), [graph.nodes])
+  const internalNodes = useMemo(
+    () => graph.nodes.filter((n) => !(n.metadata.properties?.isExternal as boolean | undefined)),
+    [graph.nodes]
+  )
 
   const externalNodes = useMemo(
-    () => graph.nodes.filter((n) => (n.metadata.properties?.isExternal as boolean | undefined) === true),
+    () =>
+      graph.nodes.filter(
+        (n) => (n.metadata.properties?.isExternal as boolean | undefined) === true
+      ),
     [graph.nodes]
   )
 
@@ -82,10 +88,7 @@ export function useCityFiltering(
     return {
       districtGroups: new Map(moduleGroups.map((g) => [g.id, g.nodeIds])),
       fileDistrictGroups: new Map(
-        moduleGroups.map((g) => [
-          g.id,
-          g.nodeIds.filter((id) => nodeMap.get(id)?.type === 'file'),
-        ])
+        moduleGroups.map((g) => [g.id, g.nodeIds.filter((id) => nodeMap.get(id)?.type === 'file')])
       ),
     }
   }, [parseResult, graph.nodes])

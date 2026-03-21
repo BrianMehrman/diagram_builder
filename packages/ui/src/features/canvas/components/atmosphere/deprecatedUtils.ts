@@ -16,7 +16,7 @@ export function isDeprecated(node: IVMNode): boolean {
   // Check metadata.properties (IVM format)
   const props = node.metadata?.properties
   if (props != null && typeof props === 'object' && !Array.isArray(props)) {
-    const nested = (props).isDeprecated
+    const nested = props.isDeprecated
     if (nested === true) return true
   }
 

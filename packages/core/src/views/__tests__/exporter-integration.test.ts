@@ -195,9 +195,24 @@ interface ExporterSpec {
 
 // PNG is excluded: its sync export() falls back to text/plain (requires a browser renderer for actual PNG)
 const EXPORTERS: ExporterSpec[] = [
-  { name: 'Mermaid', exporter: new MermaidExporter(), mimeType: 'text/x-mermaid', extension: 'mmd' },
-  { name: 'PlantUML', exporter: new PlantUMLExporter(), mimeType: 'text/x-plantuml', extension: 'puml' },
-  { name: 'Draw.io', exporter: new DrawioExporter(), mimeType: 'application/vnd.jgraph.mxfile', extension: 'drawio' },
+  {
+    name: 'Mermaid',
+    exporter: new MermaidExporter(),
+    mimeType: 'text/x-mermaid',
+    extension: 'mmd',
+  },
+  {
+    name: 'PlantUML',
+    exporter: new PlantUMLExporter(),
+    mimeType: 'text/x-plantuml',
+    extension: 'puml',
+  },
+  {
+    name: 'Draw.io',
+    exporter: new DrawioExporter(),
+    mimeType: 'application/vnd.jgraph.mxfile',
+    extension: 'drawio',
+  },
   { name: 'SVG', exporter: new SVGExporter(), mimeType: 'image/svg+xml', extension: 'svg' },
   { name: 'GLTF', exporter: new GLTFExporter(), mimeType: 'model/gltf+json', extension: 'gltf' },
 ]

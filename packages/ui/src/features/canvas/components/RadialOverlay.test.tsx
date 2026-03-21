@@ -13,9 +13,39 @@ import type { IVMGraph } from '../../../shared/types'
 
 const graph: IVMGraph = {
   nodes: [
-    { id: 'A', type: 'file', metadata: { label: 'src/A.ts', path: 'src/A.ts', properties: { depth: 1, isExternal: false } }, lod: 1, position: { x: 0, y: 0, z: 0 } },
-    { id: 'B', type: 'file', metadata: { label: 'src/B.ts', path: 'src/B.ts', properties: { depth: 1, isExternal: false } }, lod: 1, position: { x: 0, y: 0, z: 0 } },
-    { id: 'C', type: 'file', metadata: { label: 'src/C.ts', path: 'src/C.ts', properties: { depth: 1, isExternal: false } }, lod: 1, position: { x: 0, y: 0, z: 0 } },
+    {
+      id: 'A',
+      type: 'file',
+      metadata: {
+        label: 'src/A.ts',
+        path: 'src/A.ts',
+        properties: { depth: 1, isExternal: false },
+      },
+      lod: 1,
+      position: { x: 0, y: 0, z: 0 },
+    },
+    {
+      id: 'B',
+      type: 'file',
+      metadata: {
+        label: 'src/B.ts',
+        path: 'src/B.ts',
+        properties: { depth: 1, isExternal: false },
+      },
+      lod: 1,
+      position: { x: 0, y: 0, z: 0 },
+    },
+    {
+      id: 'C',
+      type: 'file',
+      metadata: {
+        label: 'src/C.ts',
+        path: 'src/C.ts',
+        properties: { depth: 1, isExternal: false },
+      },
+      lod: 1,
+      position: { x: 0, y: 0, z: 0 },
+    },
   ],
   edges: [
     { id: 'A-imports-B', source: 'A', target: 'B', type: 'imports', metadata: {}, lod: 0 },

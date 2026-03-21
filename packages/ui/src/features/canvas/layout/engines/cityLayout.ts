@@ -42,8 +42,12 @@ export class CityLayoutEngine implements LayoutEngine {
     const positions = new Map<string, Position3D>()
 
     // Separate internal file nodes from external nodes
-    const fileNodes = graph.nodes.filter((n) => n.type === 'file' && !(n.metadata.properties?.isExternal as boolean | undefined))
-    const externalNodes = graph.nodes.filter((n) => (n.metadata.properties?.isExternal as boolean | undefined) === true)
+    const fileNodes = graph.nodes.filter(
+      (n) => n.type === 'file' && !(n.metadata.properties?.isExternal as boolean | undefined)
+    )
+    const externalNodes = graph.nodes.filter(
+      (n) => (n.metadata.properties?.isExternal as boolean | undefined) === true
+    )
 
     // Group files by directory (neighborhoods)
     const neighborhoods = this.groupByDirectory(fileNodes)
@@ -53,7 +57,9 @@ export class CityLayoutEngine implements LayoutEngine {
     let offsetX = 0
 
     for (const [, nodes] of neighborhoods) {
-      const sorted = [...nodes].sort((a, b) => (a.metadata.label ?? '').localeCompare(b.metadata.label ?? ''))
+      const sorted = [...nodes].sort((a, b) =>
+        (a.metadata.label ?? '').localeCompare(b.metadata.label ?? '')
+      )
       const gridSize = Math.max(1, Math.ceil(Math.sqrt(sorted.length)))
 
       for (let i = 0; i < sorted.length; i++) {
@@ -75,7 +81,9 @@ export class CityLayoutEngine implements LayoutEngine {
 
     // Layout external libraries in a ring
     if (externalNodes.length > 0) {
-      const sorted = [...externalNodes].sort((a, b) => (a.metadata.label ?? '').localeCompare(b.metadata.label ?? ''))
+      const sorted = [...externalNodes].sort((a, b) =>
+        (a.metadata.label ?? '').localeCompare(b.metadata.label ?? '')
+      )
       const angleStep = (2 * Math.PI) / sorted.length
 
       for (let i = 0; i < sorted.length; i++) {
@@ -124,7 +132,7 @@ export class CityLayoutEngine implements LayoutEngine {
     const groups = new Map<string, IVMNode[]>()
 
     for (const node of nodes) {
-      const filePath = (node.metadata?.path) ?? node.metadata.label ?? ''
+      const filePath = node.metadata?.path ?? node.metadata.label ?? ''
       const dir = this.extractDirectory(filePath)
 
       if (!groups.has(dir)) groups.set(dir, [])

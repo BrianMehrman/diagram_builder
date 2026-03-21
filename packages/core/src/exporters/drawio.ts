@@ -480,7 +480,10 @@ export class DrawioExporter implements Exporter<DrawioExportOptions> {
     const errors: string[] = []
 
     if (options) {
-      if (options.lodLevel !== undefined && ((options.lodLevel as number) < 0 || (options.lodLevel as number) > 5)) {
+      if (
+        options.lodLevel !== undefined &&
+        ((options.lodLevel as number) < 0 || (options.lodLevel as number) > 5)
+      ) {
         errors.push('lodLevel must be between 0 and 5')
       }
 

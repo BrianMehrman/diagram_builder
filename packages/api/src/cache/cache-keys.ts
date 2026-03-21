@@ -13,7 +13,13 @@ export const CACHE_NAMESPACE = 'diagram-builder'
 /**
  * Valid resource types for cache keys
  */
-export type CacheResource = 'graph' | 'query' | 'viewpoint' | 'workspace' | 'codebase' | 'parse-result'
+export type CacheResource =
+  | 'graph'
+  | 'query'
+  | 'viewpoint'
+  | 'workspace'
+  | 'codebase'
+  | 'parse-result'
 
 /**
  * Build a properly formatted cache key

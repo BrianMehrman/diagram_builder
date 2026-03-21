@@ -32,7 +32,12 @@ function makeGraph(nodes: IVMNode[]): IVMGraph {
       schemaVersion: '1.0.0',
       generatedAt: new Date().toISOString(),
       rootPath: 'src/',
-      stats: { totalNodes: nodes.length, totalEdges: 0, nodesByType: {} as never, edgesByType: {} as never },
+      stats: {
+        totalNodes: nodes.length,
+        totalEdges: 0,
+        nodesByType: {} as never,
+        edgesByType: {} as never,
+      },
       languages: [],
     },
     bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
@@ -55,7 +60,15 @@ describe('CityLayoutEngine', () => {
     })
 
     it('should return false when graph has no file nodes', () => {
-      const graph = makeGraph([{ id: '1', type: 'class', metadata: { label: 'Foo', path: 'src/Foo.ts' }, lod: 0, position: { x: 0, y: 0, z: 0 } }])
+      const graph = makeGraph([
+        {
+          id: '1',
+          type: 'class',
+          metadata: { label: 'Foo', path: 'src/Foo.ts' },
+          lod: 0,
+          position: { x: 0, y: 0, z: 0 },
+        },
+      ])
       expect(engine.canHandle(graph)).toBe(false)
     })
 

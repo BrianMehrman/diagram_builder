@@ -364,35 +364,35 @@ export async function getNodeDependencies(repoId: string, nodeId: string): Promi
   const dependencies: IVMNode[] = results.map((node) => {
     const nodeType = node.type === 'abstract_class' ? 'class' : node.type
     return {
-    id: node.id,
-    type: nodeType,
-    position: {
-      x: node.x ?? 0,
-      y: node.y ?? 0,
-      z: node.z ?? 0,
-    },
-    lod: (node.lod ?? 3) as LODLevel,
-    ...(node.parentId && { parentId: node.parentId }),
-    metadata: {
-      label: node.label,
-      path: node.path,
-      ...(node.language && { language: node.language }),
-      ...(node.loc !== undefined && { loc: node.loc }),
-      ...(node.complexity !== undefined && { complexity: node.complexity }),
-      ...(node.dependencyCount !== undefined && { dependencyCount: node.dependencyCount }),
-      ...(node.dependentCount !== undefined && { dependentCount: node.dependentCount }),
-      ...(node.startLine !== undefined &&
-        node.endLine !== undefined && {
-          location: {
-            startLine: node.startLine,
-            endLine: node.endLine,
-            ...(node.startColumn !== undefined && { startColumn: node.startColumn }),
-            ...(node.endColumn !== undefined && { endColumn: node.endColumn }),
-          },
-        }),
-      ...(node.properties && { properties: node.properties }),
-    },
-  }
+      id: node.id,
+      type: nodeType,
+      position: {
+        x: node.x ?? 0,
+        y: node.y ?? 0,
+        z: node.z ?? 0,
+      },
+      lod: (node.lod ?? 3) as LODLevel,
+      ...(node.parentId && { parentId: node.parentId }),
+      metadata: {
+        label: node.label,
+        path: node.path,
+        ...(node.language && { language: node.language }),
+        ...(node.loc !== undefined && { loc: node.loc }),
+        ...(node.complexity !== undefined && { complexity: node.complexity }),
+        ...(node.dependencyCount !== undefined && { dependencyCount: node.dependencyCount }),
+        ...(node.dependentCount !== undefined && { dependentCount: node.dependentCount }),
+        ...(node.startLine !== undefined &&
+          node.endLine !== undefined && {
+            location: {
+              startLine: node.startLine,
+              endLine: node.endLine,
+              ...(node.startColumn !== undefined && { startColumn: node.startColumn }),
+              ...(node.endColumn !== undefined && { endColumn: node.endColumn }),
+            },
+          }),
+        ...(node.properties && { properties: node.properties }),
+      },
+    }
   })
 
   // Cache the result

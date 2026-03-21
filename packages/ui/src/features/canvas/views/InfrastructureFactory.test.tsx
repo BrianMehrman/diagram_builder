@@ -18,7 +18,11 @@ function makeExternal(infraType: string): IVMNode {
     id: 'ext1',
     type: 'file',
     lod: 1,
-    metadata: { label: 'ext1', path: 'ext1', properties: { isExternal: true, infrastructureType: infraType } },
+    metadata: {
+      label: 'ext1',
+      path: 'ext1',
+      properties: { isExternal: true, infrastructureType: infraType },
+    },
     position: { x: 0, y: 0, z: 0 },
   }
 }
@@ -29,7 +33,16 @@ describe('createInfrastructureElement', () => {
   })
   it('returns null when no metadata', () => {
     expect(
-      createInfrastructureElement({ id: 'x', type: 'file', lod: 1, metadata: { label: 'x', path: 'x' }, position: { x: 0, y: 0, z: 0 } }, pos)
+      createInfrastructureElement(
+        {
+          id: 'x',
+          type: 'file',
+          lod: 1,
+          metadata: { label: 'x', path: 'x' },
+          position: { x: 0, y: 0, z: 0 },
+        },
+        pos
+      )
     ).toBeNull()
   })
   it('returns element for database', () => {

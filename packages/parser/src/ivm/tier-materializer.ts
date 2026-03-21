@@ -7,10 +7,12 @@
  */
 
 import type { IVMGraph, IVMNode, IVMEdge, NodeType, EdgeType } from '../../../core/src/ivm/types.js'
-import {
-  SemanticTier,
+import { SemanticTier } from '../../../core/src/ivm/semantic-tier.js'
+import type {
+  GroupNode,
+  GroupHierarchy,
+  AggregatedEdge,
 } from '../../../core/src/ivm/semantic-tier.js'
-import type { GroupNode, GroupHierarchy, AggregatedEdge } from '../../../core/src/ivm/semantic-tier.js'
 import {
   createDefaultPosition,
   calculateBounds,
@@ -47,7 +49,7 @@ const TIER_TO_NODE_TYPE: Record<SemanticTier, NodeType> = {
 function collectVisibleGroups(
   group: GroupNode,
   tier: SemanticTier,
-  result: Map<string, GroupNode>,
+  result: Map<string, GroupNode>
 ): void {
   if (group.tier === tier) {
     // This group IS at the target tier — it becomes a visible node
@@ -173,7 +175,7 @@ function materializeAggregatedEdge(aggEdge: AggregatedEdge): IVMEdge {
 export function materializeTier(
   fullGraph: IVMGraph,
   hierarchy: GroupHierarchy,
-  tier: SemanticTier,
+  tier: SemanticTier
 ): IVMGraph {
   // Detail tier returns the full graph as-is
   if (tier === SemanticTier.Detail) {

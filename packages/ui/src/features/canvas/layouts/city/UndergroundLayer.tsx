@@ -42,7 +42,7 @@ export function UndergroundLayer({ graph, positions }: UndergroundLayerProps) {
   const externalNodeIds = useMemo(() => {
     const ids = new Set<string>()
     for (const node of graph.nodes) {
-      if ((node.metadata.properties?.isExternal as boolean | undefined)) {
+      if (node.metadata.properties?.isExternal as boolean | undefined) {
         ids.add(node.id)
       }
     }

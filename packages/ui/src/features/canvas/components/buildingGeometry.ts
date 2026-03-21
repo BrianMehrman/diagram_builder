@@ -90,7 +90,10 @@ export function getBuildingConfig(
   // For non-class types, use the legacy height calculation
   const legacyHeight = encodingOptions
     ? getEncodedHeight(node, encodingOptions, resolvedMethodCount)
-    : getMethodBasedHeight(resolvedMethodCount || undefined, (node.metadata.properties?.depth as number | undefined))
+    : getMethodBasedHeight(
+        resolvedMethodCount || undefined,
+        node.metadata.properties?.depth as number | undefined
+      )
 
   switch (node.type) {
     case 'class': {

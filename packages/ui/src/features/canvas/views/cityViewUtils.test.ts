@@ -330,19 +330,13 @@ describe('cityViewUtils', () => {
     })
 
     it('handles all-public methods without reordering', () => {
-      const methods = [
-        makeMethodNode('a', 'public'),
-        makeMethodNode('b', 'public'),
-      ]
+      const methods = [makeMethodNode('a', 'public'), makeMethodNode('b', 'public')]
       const sorted = sortMethodsByVisibility(methods)
       expect(sorted.map((m) => m.id)).toEqual(['a', 'b'])
     })
 
     it('does not mutate the input array', () => {
-      const methods = [
-        makeMethodNode('z', 'private'),
-        makeMethodNode('a', 'public'),
-      ]
+      const methods = [makeMethodNode('z', 'private'), makeMethodNode('a', 'public')]
       const original = [...methods]
       sortMethodsByVisibility(methods)
       expect(methods[0]!.id).toBe(original[0]!.id)

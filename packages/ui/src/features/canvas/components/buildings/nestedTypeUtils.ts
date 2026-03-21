@@ -9,11 +9,7 @@
 import type { IVMNode } from '../../../../shared/types'
 
 /** Node types that represent nested type definitions */
-const NESTED_TYPE_KINDS = new Set<IVMNode['type']>([
-  'class',
-  'interface',
-  'enum',
-])
+const NESTED_TYPE_KINDS = new Set<IVMNode['type']>(['class', 'interface', 'enum'])
 
 /**
  * Build a lookup map of parentId → child nodes for nested types.

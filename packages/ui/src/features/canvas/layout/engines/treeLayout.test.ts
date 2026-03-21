@@ -4,9 +4,29 @@ import type { IVMGraph } from '../../../../shared/types'
 
 const graph: IVMGraph = {
   nodes: [
-    { id: 'root', type: 'file', lod: 1, metadata: { label: 'root.ts', path: 'root.ts', properties: { depth: 0 } }, position: { x: 0, y: 0, z: 0 } },
-    { id: 'child1', type: 'class', lod: 1, parentId: 'root', metadata: { label: 'A', path: 'A.ts', properties: { depth: 1 } }, position: { x: 0, y: 0, z: 0 } },
-    { id: 'child2', type: 'class', lod: 1, parentId: 'root', metadata: { label: 'B', path: 'B.ts', properties: { depth: 1 } }, position: { x: 0, y: 0, z: 0 } },
+    {
+      id: 'root',
+      type: 'file',
+      lod: 1,
+      metadata: { label: 'root.ts', path: 'root.ts', properties: { depth: 0 } },
+      position: { x: 0, y: 0, z: 0 },
+    },
+    {
+      id: 'child1',
+      type: 'class',
+      lod: 1,
+      parentId: 'root',
+      metadata: { label: 'A', path: 'A.ts', properties: { depth: 1 } },
+      position: { x: 0, y: 0, z: 0 },
+    },
+    {
+      id: 'child2',
+      type: 'class',
+      lod: 1,
+      parentId: 'root',
+      metadata: { label: 'B', path: 'B.ts', properties: { depth: 1 } },
+      position: { x: 0, y: 0, z: 0 },
+    },
   ],
   edges: [],
   metadata: {

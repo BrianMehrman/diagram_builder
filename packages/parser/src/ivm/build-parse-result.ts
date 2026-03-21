@@ -24,7 +24,9 @@ export function buildParseResult(graph: IVMGraph): ParseResult {
   const hierarchy = buildGroupHierarchy(graph)
 
   const tiers = {} as Record<SemanticTier, IVMGraph>
-  for (const tier of Object.values(SemanticTier).filter((v) => typeof v === 'number') as SemanticTier[]) {
+  for (const tier of Object.values(SemanticTier).filter(
+    (v) => typeof v === 'number'
+  ) as SemanticTier[]) {
     tiers[tier] = materializeTier(graph, hierarchy, tier)
   }
 

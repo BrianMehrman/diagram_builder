@@ -32,7 +32,9 @@ export class BuildingLayoutEngine implements LayoutEngine {
     const { floorHeight = 4, roomSize = 2, roomSpacing = 1, wallPadding = 2 } = config
 
     // Find the file node (building)
-    const fileNode = graph.nodes.find((n) => n.type === 'file' && !(n.metadata.properties?.isExternal as boolean | undefined))
+    const fileNode = graph.nodes.find(
+      (n) => n.type === 'file' && !(n.metadata.properties?.isExternal as boolean | undefined)
+    )
     if (!fileNode) {
       return {
         positions,

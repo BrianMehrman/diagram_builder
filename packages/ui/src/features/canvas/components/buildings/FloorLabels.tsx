@@ -25,7 +25,8 @@ export function FloorLabels({ methods, totalHeight, buildingWidth, lodLevel }: F
     <>
       {methods.map((method, index) => {
         const y = floorHeight * (index + 0.5)
-        const label = (method.metadata.label ?? method.id).split('/').pop()?.split('.').pop() ?? method.id
+        const label =
+          (method.metadata.label ?? method.id).split('/').pop()?.split('.').pop() ?? method.id
 
         return (
           <Text

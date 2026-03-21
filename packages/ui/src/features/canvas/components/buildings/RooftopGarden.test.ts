@@ -15,9 +15,7 @@ import type { IVMNode } from '../../../../shared/types'
 /** Mirrors the constants in RooftopGarden.tsx */
 const TIER_HEIGHT = 0.8
 
-function makeNode(
-  overrides: Partial<IVMNode> & { id: string; type: IVMNode['type'] }
-): IVMNode {
+function makeNode(overrides: Partial<IVMNode> & { id: string; type: IVMNode['type'] }): IVMNode {
   return {
     label: 'Test',
     metadata: {},

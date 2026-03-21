@@ -6,10 +6,7 @@ import { describe, it, expect } from 'vitest'
 import { getSignType, getSignVisibility } from './signUtils'
 import type { IVMNode } from '../../../../shared/types'
 
-function makeNode(
-  type: IVMNode['type'],
-  properties: Record<string, unknown> = {}
-): IVMNode {
+function makeNode(type: IVMNode['type'], properties: Record<string, unknown> = {}): IVMNode {
   return {
     id: 'test-1',
     type,

@@ -26,13 +26,17 @@ import type { IVMGraph, IVMNode } from '../../../../shared/types'
 /** Compute rooftop Y for a node so OverheadWire arcs start/end at the correct height. */
 function getNodeRooftopY(node: IVMNode | undefined): number {
   if (!node) return 0
-  if (node.type === 'class' || (node.metadata.properties?.isAbstract as boolean | undefined) || node.type === 'interface') {
+  if (
+    node.type === 'class' ||
+    (node.metadata.properties?.isAbstract as boolean | undefined) ||
+    node.type === 'interface'
+  ) {
     return getContainmentHeight((node.metadata.properties?.methodCount as number | undefined) ?? 0)
   }
   if (node.type === 'function') {
     return KIOSK_HEIGHT
   }
-  return getBuildingHeight((node.metadata.properties?.depth as number | undefined))
+  return getBuildingHeight(node.metadata.properties?.depth as number | undefined)
 }
 
 interface CitySkyProps {

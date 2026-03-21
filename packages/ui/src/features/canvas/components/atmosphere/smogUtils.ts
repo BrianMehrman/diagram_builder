@@ -22,7 +22,7 @@ export function getComplexity(node: IVMNode): number {
   // Nested under properties (parser output format)
   const props = meta.properties
   if (props != null && typeof props === 'object' && !Array.isArray(props)) {
-    const nested = (props).complexity
+    const nested = props.complexity
     if (typeof nested === 'number') return nested
   }
 

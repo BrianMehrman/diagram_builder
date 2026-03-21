@@ -19,7 +19,7 @@ export function getChangeCount(node: IVMNode): number {
   // Nested under properties (parser output format)
   const props = meta.properties
   if (props != null && typeof props === 'object' && !Array.isArray(props)) {
-    const nested = (props).changeCount
+    const nested = props.changeCount
     if (typeof nested === 'number') return nested
   }
 

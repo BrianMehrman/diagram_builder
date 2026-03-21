@@ -163,19 +163,50 @@ vi.mock('../cache/cache-utils', () => ({
 }))
 
 vi.mock('@diagram-builder/parser', () => {
-  const emptyGraph = { nodes: [], edges: [], metadata: { name: 'test', schemaVersion: '1.0.0', generatedAt: '', rootPath: '/', stats: { totalNodes: 0, totalEdges: 0, nodesByType: {}, edgesByType: {} }, languages: [] }, bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } } }
+  const emptyGraph = {
+    nodes: [],
+    edges: [],
+    metadata: {
+      name: 'test',
+      schemaVersion: '1.0.0',
+      generatedAt: '',
+      rootPath: '/',
+      stats: { totalNodes: 0, totalEdges: 0, nodesByType: {}, edgesByType: {} },
+      languages: [],
+    },
+    bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
+  }
   return {
     buildParseResult: vi.fn().mockReturnValue({
       graph: emptyGraph,
       hierarchy: { root: { id: 'root', nodeIds: [], children: [] } },
-      tiers: { 0: emptyGraph, 1: emptyGraph, 2: emptyGraph, 3: emptyGraph, 4: emptyGraph, 5: emptyGraph },
+      tiers: {
+        0: emptyGraph,
+        1: emptyGraph,
+        2: emptyGraph,
+        3: emptyGraph,
+        4: emptyGraph,
+        5: emptyGraph,
+      },
     }),
   }
 })
 
 vi.mock('@diagram-builder/core', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@diagram-builder/core')>()
-  const emptyGraph = { nodes: [], edges: [], metadata: { name: 'test', schemaVersion: '1.0.0', generatedAt: '', rootPath: '/', stats: { totalNodes: 0, totalEdges: 0, nodesByType: {}, edgesByType: {} }, languages: [] }, bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } } }
+  const emptyGraph = {
+    nodes: [],
+    edges: [],
+    metadata: {
+      name: 'test',
+      schemaVersion: '1.0.0',
+      generatedAt: '',
+      rootPath: '/',
+      stats: { totalNodes: 0, totalEdges: 0, nodesByType: {}, edgesByType: {} },
+      languages: [],
+    },
+    bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } },
+  }
   return {
     ...actual,
     createViewResolver: vi.fn().mockReturnValue({
@@ -304,7 +335,13 @@ describe('Graph Query Endpoints', () => {
         .set('Authorization', `Bearer ${authToken}`)
 
       expect(res.status).toBe(200)
-      const abstractNode = (res.body.nodes as Array<{ type: string; metadata: { properties?: Record<string, unknown> }; abstractClass?: unknown }>).find((n) => n.metadata.properties?.isAbstract === true)
+      const abstractNode = (
+        res.body.nodes as Array<{
+          type: string
+          metadata: { properties?: Record<string, unknown> }
+          abstractClass?: unknown
+        }>
+      ).find((n) => n.metadata.properties?.isAbstract === true)
       expect(abstractNode).toBeDefined()
       expect(abstractNode?.type).toBe('class')
       expect(abstractNode?.abstractClass).toBeUndefined()

@@ -6,7 +6,10 @@
  * by both CLI and web UI.
  */
 
-import { SemanticTier, SEMANTIC_TIER_DESCRIPTIONS as _SEMANTIC_TIER_DESCRIPTIONS } from './semantic-tier.js'
+import {
+  SemanticTier,
+  SEMANTIC_TIER_DESCRIPTIONS as _SEMANTIC_TIER_DESCRIPTIONS,
+} from './semantic-tier.js'
 
 // =============================================================================
 // Position Types

@@ -90,7 +90,9 @@ export function NodeTooltip({ nodes, className = '' }: NodeTooltipProps) {
             <div className="text-xs text-gray-400 uppercase tracking-wider">
               {getTypeLabel(highlightedNode.type)}
             </div>
-            <div className="font-semibold text-white truncate">{highlightedNode.metadata.label}</div>
+            <div className="font-semibold text-white truncate">
+              {highlightedNode.metadata.label}
+            </div>
           </div>
         </div>
 

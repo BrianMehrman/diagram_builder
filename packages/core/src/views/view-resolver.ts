@@ -210,9 +210,7 @@ function applyExpandCollapse(
     const existingEdgeIds = new Set(edges.map((e) => e.id))
     const newEdges = parseResult.graph.edges.filter(
       (e) =>
-        allVisibleIds.has(e.source) &&
-        allVisibleIds.has(e.target) &&
-        !existingEdgeIds.has(e.id)
+        allVisibleIds.has(e.source) && allVisibleIds.has(e.target) && !existingEdgeIds.has(e.id)
     )
     edges = edges.concat(newEdges)
   }
@@ -287,20 +285,14 @@ export function createViewResolver(parseResult: ParseResult): ViewResolver {
       }
 
       // Apply edge budget (skip if focal pruning already satisfied it)
-      if (
-        config.constraints?.maxEdges &&
-        graph.edges.length > config.constraints.maxEdges
-      ) {
+      if (config.constraints?.maxEdges && graph.edges.length > config.constraints.maxEdges) {
         const pruned = pruneEdgesToBudget(graph, config.constraints.maxEdges)
         graph = pruned.graph
         pruningReport = mergePruningReports(pruningReport, pruned.report)
       }
 
       // Apply node budget (skip if already within budget)
-      if (
-        config.constraints?.maxNodes &&
-        graph.nodes.length > config.constraints.maxNodes
-      ) {
+      if (config.constraints?.maxNodes && graph.nodes.length > config.constraints.maxNodes) {
         const pruned = pruneNodesToBudget(graph, config.constraints.maxNodes)
         graph = pruned.graph
         pruningReport = mergePruningReports(pruningReport, pruned.report)

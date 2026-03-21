@@ -6,9 +6,7 @@ import { describe, it, expect } from 'vitest'
 import { buildNestedTypeMap, collectNestingTiers, countOverflowChildren } from './nestedTypeUtils'
 import type { IVMNode } from '../../../../shared/types'
 
-function makeNode(
-  overrides: Partial<IVMNode> & { id: string; type: IVMNode['type'] }
-): IVMNode {
+function makeNode(overrides: Partial<IVMNode> & { id: string; type: IVMNode['type'] }): IVMNode {
   const { id, type, ...rest } = overrides
   return {
     id,
