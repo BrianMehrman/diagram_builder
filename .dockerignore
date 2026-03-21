@@ -27,5 +27,4 @@ logs/
 Thumbs.db
 
 # Large project-management artefacts not needed in the build context
-_bmad-output/
 docs/
