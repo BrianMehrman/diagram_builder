@@ -144,7 +144,7 @@ export function buildRadialTree(
     (n) => n.metadata.properties?.['depth'] === 0
   )
 
-  let entryNodeIds: string[]
+  let entryNodeIds: string[] = []
   if (depthZeroNodes.length > 0) {
     entryNodeIds = depthZeroNodes.map((n) => n.id)
   } else {
@@ -157,8 +157,9 @@ export function buildRadialTree(
     if (noIncoming.length > 0) {
       entryNodeIds = noIncoming.map((n) => n.id)
     } else {
-      // Fully cyclic — use first node
-      entryNodeIds = [graph.nodes[0]!.id]
+      // Fully cyclic — use first node (graph.nodes is non-empty per early-return above)
+      const firstNode = graph.nodes[0]
+      entryNodeIds = firstNode !== undefined ? [firstNode.id] : []
     }
   }
 
@@ -168,7 +169,9 @@ export function buildRadialTree(
 
   const rootPositions = fibonacciSphere(entryNodeIds.length, rootRadius)
   for (let i = 0; i < entryNodeIds.length; i++) {
-    positions.set(entryNodeIds[i]!, rootPositions[i]!)
+    const nodeId = entryNodeIds[i]
+    const pos = rootPositions[i]
+    if (nodeId !== undefined && pos !== undefined) positions.set(nodeId, pos)
   }
 
   // ------------------------------------------------------------------
@@ -242,14 +245,14 @@ export function buildRadialTree(
     const multiParentChildren: [string, string[]][] = [] // [childId, parentIds][]
 
     for (const [childId, parentIds] of childToParentIds) {
-      const parentDepth = bfsDepth.get(parentIds[0]!) ?? 0
+      const parentDepth = bfsDepth.get(parentIds[0] ?? '') ?? 0
       const childDepth = parentDepth + 1
       if (childDepth > maxDepth) maxDepth = childDepth
       bfsDepth.set(childId, childDepth)
       nextQueue.push(childId)
 
       if (parentIds.length === 1) {
-        const pid = parentIds[0]!
+        const pid = parentIds[0] ?? ''
         const group = singleParentGroups.get(pid) ?? []
         group.push(childId)
         singleParentGroups.set(pid, group)
@@ -260,7 +263,8 @@ export function buildRadialTree(
 
     // Place single-parent siblings as a group so each gets its own position
     for (const [parentId, siblingIds] of singleParentGroups) {
-      const parentPos = positions.get(parentId)!
+      const parentPos = positions.get(parentId)
+      if (parentPos === undefined) continue
       const parentDepth = bfsDepth.get(parentId) ?? 0
       const childDepth = parentDepth + 1
       const childRadius = rootRadius + childDepth * depthSpacing
@@ -275,18 +279,23 @@ export function buildRadialTree(
         sectorHalfAngle
       )
       for (let i = 0; i < siblingIds.length; i++) {
-        positions.set(siblingIds[i]!, placed[i]!)
+        const sid = siblingIds[i]
+        const spos = placed[i]
+        if (sid !== undefined && spos !== undefined) positions.set(sid, spos)
       }
     }
 
     // Place multi-parent children at centroid of their parents
     for (const [childId, parentIds] of multiParentChildren) {
-      const parentDepth = bfsDepth.get(parentIds[0]!) ?? 0
+      const parentDepth = bfsDepth.get(parentIds[0] ?? '') ?? 0
       const childDepth = parentDepth + 1
       const childRadius = rootRadius + childDepth * depthSpacing
       void childRadius // radius computed for consistency; centroid handles placement
 
-      const parentPositions = parentIds.map((pid) => positions.get(pid)!)
+      const parentPositions = parentIds
+        .map((pid) => positions.get(pid))
+        .filter((p): p is Position3D => p !== undefined)
+      if (parentPositions.length === 0) continue
       const centroid: Position3D = { x: 0, y: 0, z: 0 }
       for (const p of parentPositions) {
         centroid.x += p.x
