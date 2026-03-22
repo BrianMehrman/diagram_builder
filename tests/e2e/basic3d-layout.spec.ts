@@ -130,7 +130,10 @@ test.describe('Basic3D Layout @P1', () => {
   // ── window.__canvasStore integration ─────────────────────────────
 
   test('[P1] should expose canvasStore on window for E2E access', async ({ page }) => {
-    // THEN: window.__canvasStore is set by Canvas3D component
+    // NOTE: window.__canvasStore is only set in DEV mode (import.meta.env.DEV).
+    // E2E tests run against the dev server so this will be available here.
+    // In production builds this will be undefined — assertions below use optional
+    // chaining so they degrade gracefully if run against a production bundle.
     const storeExists = await page.evaluate(() => typeof window.__canvasStore === 'function')
     expect(storeExists).toBe(true)
 

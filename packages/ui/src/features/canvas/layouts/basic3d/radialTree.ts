@@ -236,40 +236,67 @@ export function buildRadialTree(
         ? Math.sqrt((2 * Math.PI) / totalChildrenAtLevel)
         : Math.PI / 4
 
+    // Group single-parent children by their parent so siblings are spread across
+    // the parent's sector rather than all placed at the same angular position.
+    const singleParentGroups = new Map<string, string[]>() // parentId → [childId...]
+    const multiParentChildren: [string, string[]][] = [] // [childId, parentIds][]
+
     for (const [childId, parentIds] of childToParentIds) {
       const parentDepth = bfsDepth.get(parentIds[0]!) ?? 0
       const childDepth = parentDepth + 1
-      const childRadius = rootRadius + childDepth * depthSpacing
-
       if (childDepth > maxDepth) maxDepth = childDepth
       bfsDepth.set(childId, childDepth)
       nextQueue.push(childId)
 
       if (parentIds.length === 1) {
-        // Single parent: place on the child shell in the direction of the parent
-        const parentPos = positions.get(parentIds[0]!)!
-        const siblingsOfSameParent = [...childToParentIds.values()].filter(
-          (pIds) => pIds[0] === parentIds[0]
-        ).length
-        const fraction = siblingsOfSameParent / Math.max(totalChildrenAtLevel, 1)
-        const sectorHalfAngle = Math.max(baseHalfAngle, fraction * Math.PI)
-
-        const placed = placeChildrenInSector(1, childRadius, parentPos, sectorHalfAngle)
-        positions.set(childId, placed[0]!)
+        const pid = parentIds[0]!
+        const group = singleParentGroups.get(pid) ?? []
+        group.push(childId)
+        singleParentGroups.set(pid, group)
       } else {
-        // Multiple parents in the same BFS wave: place at centroid of parent positions
-        const parentPositions = parentIds.map((pid) => positions.get(pid)!)
-        const centroid: Position3D = { x: 0, y: 0, z: 0 }
-        for (const p of parentPositions) {
-          centroid.x += p.x
-          centroid.y += p.y
-          centroid.z += p.z
-        }
-        centroid.x /= parentPositions.length
-        centroid.y /= parentPositions.length
-        centroid.z /= parentPositions.length
-        positions.set(childId, centroid)
+        multiParentChildren.push([childId, parentIds])
       }
+    }
+
+    // Place single-parent siblings as a group so each gets its own position
+    for (const [parentId, siblingIds] of singleParentGroups) {
+      const parentPos = positions.get(parentId)!
+      const parentDepth = bfsDepth.get(parentId) ?? 0
+      const childDepth = parentDepth + 1
+      const childRadius = rootRadius + childDepth * depthSpacing
+
+      const fraction = siblingIds.length / Math.max(totalChildrenAtLevel, 1)
+      const sectorHalfAngle = Math.max(baseHalfAngle, fraction * Math.PI)
+
+      const placed = placeChildrenInSector(
+        siblingIds.length,
+        childRadius,
+        parentPos,
+        sectorHalfAngle
+      )
+      for (let i = 0; i < siblingIds.length; i++) {
+        positions.set(siblingIds[i]!, placed[i]!)
+      }
+    }
+
+    // Place multi-parent children at centroid of their parents
+    for (const [childId, parentIds] of multiParentChildren) {
+      const parentDepth = bfsDepth.get(parentIds[0]!) ?? 0
+      const childDepth = parentDepth + 1
+      const childRadius = rootRadius + childDepth * depthSpacing
+      void childRadius // radius computed for consistency; centroid handles placement
+
+      const parentPositions = parentIds.map((pid) => positions.get(pid)!)
+      const centroid: Position3D = { x: 0, y: 0, z: 0 }
+      for (const p of parentPositions) {
+        centroid.x += p.x
+        centroid.y += p.y
+        centroid.z += p.z
+      }
+      centroid.x /= parentPositions.length
+      centroid.y /= parentPositions.length
+      centroid.z /= parentPositions.length
+      positions.set(childId, centroid)
     }
 
     queue = nextQueue

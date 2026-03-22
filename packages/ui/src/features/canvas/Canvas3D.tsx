@@ -166,10 +166,13 @@ export function Canvas3D({ className = '' }: Canvas3DProps) {
   const parseResult = useCanvasStore((state) => state.parseResult)
   const activeLayout = useCanvasStore((state) => state.activeLayout)
 
-  // Expose store to window for E2E test access
+  // Expose store to window for E2E test access (DEV only)
   React.useEffect(() => {
+    if (!import.meta.env.DEV) return
+    // @ts-ignore
     window.__canvasStore = useCanvasStore.getState
     return () => {
+      // @ts-ignore
       delete window.__canvasStore
     }
   }, [])
