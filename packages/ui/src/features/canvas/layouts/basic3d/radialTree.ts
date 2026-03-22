@@ -158,7 +158,7 @@ export function buildRadialTree(
       entryNodeIds = noIncoming.map((n) => n.id)
     } else {
       // Fully cyclic — use first node
-      entryNodeIds = [graph.nodes[0].id]
+      entryNodeIds = [graph.nodes[0]!.id]
     }
   }
 
@@ -168,7 +168,7 @@ export function buildRadialTree(
 
   const rootPositions = fibonacciSphere(entryNodeIds.length, rootRadius)
   for (let i = 0; i < entryNodeIds.length; i++) {
-    positions.set(entryNodeIds[i], rootPositions[i])
+    positions.set(entryNodeIds[i]!, rootPositions[i]!)
   }
 
   // ------------------------------------------------------------------
@@ -237,7 +237,7 @@ export function buildRadialTree(
         : Math.PI / 4
 
     for (const [childId, parentIds] of childToParentIds) {
-      const parentDepth = bfsDepth.get(parentIds[0]) ?? 0
+      const parentDepth = bfsDepth.get(parentIds[0]!) ?? 0
       const childDepth = parentDepth + 1
       const childRadius = rootRadius + childDepth * depthSpacing
 
@@ -247,7 +247,7 @@ export function buildRadialTree(
 
       if (parentIds.length === 1) {
         // Single parent: place on the child shell in the direction of the parent
-        const parentPos = positions.get(parentIds[0])!
+        const parentPos = positions.get(parentIds[0]!)!
         const siblingsOfSameParent = [...childToParentIds.values()].filter(
           (pIds) => pIds[0] === parentIds[0]
         ).length
@@ -255,7 +255,7 @@ export function buildRadialTree(
         const sectorHalfAngle = Math.max(baseHalfAngle, fraction * Math.PI)
 
         const placed = placeChildrenInSector(1, childRadius, parentPos, sectorHalfAngle)
-        positions.set(childId, placed[0])
+        positions.set(childId, placed[0]!)
       } else {
         // Multiple parents in the same BFS wave: place at centroid of parent positions
         const parentPositions = parentIds.map((pid) => positions.get(pid)!)
