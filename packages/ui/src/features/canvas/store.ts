@@ -495,5 +495,6 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       layoutDensity: 1.0,
       visibleLayers: { aboveGround: true, underground: true },
       citySettings: { ...DEFAULT_CITY_SETTINGS },
+      nearestNodeId: null,
     }),
 }))

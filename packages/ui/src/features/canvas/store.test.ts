@@ -413,6 +413,15 @@ describe('nearestNodeId', () => {
     expect(useCanvasStore.getState().nearestNodeId).toBeNull()
   })
 
+  it('should reset nearestNodeId to null on reset', () => {
+    const store = useCanvasStore.getState()
+    expect(store.nearestNodeId).toBeNull()
+    store.setNearestNodeId('node-before-reset')
+    expect(useCanvasStore.getState().nearestNodeId).toBe('node-before-reset')
+    useCanvasStore.getState().reset()
+    expect(useCanvasStore.getState().nearestNodeId).toBeNull()
+  })
+
   it('nearestNodeId is independent of focusedNodeId', () => {
     useCanvasStore.getState().setNearestNodeId('node-nearest')
     expect(useCanvasStore.getState().focusedNodeId).toBeNull()
