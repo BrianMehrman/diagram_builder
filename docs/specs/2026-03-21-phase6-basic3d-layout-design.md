@@ -166,7 +166,7 @@ Props: `node: IVMNode`, `position: Position3D`, `isSelected: boolean`
 
 - Looks up shape geometry and color from `basic3dShapes.ts`
 - On hover: shows tooltip via existing HUD tooltip system
-- On click: calls `canvasStore.setSelectedNodeId(node.id)`
+- On click: calls `canvasStore.selectNode(node.id)`
 - Selected state: slight emissive highlight on material
 
 ### `Basic3DEdge`
@@ -219,7 +219,7 @@ Repos with multiple entry points (`depth === 0`) each become their own root node
 
 ### Component Tests
 
-- **`Basic3DNode`** — renders correct shape mesh for each `NodeType`; applies selected highlight when `isSelected: true`; fires `setSelectedNodeId` on click; tooltip appears on hover
+- **`Basic3DNode`** — renders correct shape mesh for each `NodeType`; applies selected highlight when `isSelected: true`; fires `selectNode` on click; tooltip appears on hover
 - **`Basic3DEdge`** — renders a `<Line>` between the two provided positions with opacity `0.4`
 - **`Basic3DView`** — given a fixture `ParseResult`, positions are computed and nodes/edges rendered; changing `lodLevel` in store from 1–3 does not change the graph (same Symbol tier call); LOD 4 with a selected node produces a focal subgraph
 

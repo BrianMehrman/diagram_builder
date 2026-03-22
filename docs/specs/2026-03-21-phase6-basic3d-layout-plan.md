@@ -829,7 +829,11 @@ export function useBasic3DLayout(): Basic3DLayoutResult {
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
   const setLayoutPositions = useCanvasStore((s) => s.setLayoutPositions)
   const setNearestNodeId = useCanvasStore((s) => s.setNearestNodeId)
-  const cameraPosition = useCanvasStore((s) => s.camera.position)
+  // Select primitive coordinates to avoid re-renders when other camera props (zoom, target) change
+  const cameraPosX = useCanvasStore((s) => s.camera.position.x)
+  const cameraPosY = useCanvasStore((s) => s.camera.position.y)
+  const cameraPosZ = useCanvasStore((s) => s.camera.position.z)
+  const cameraPosition = { x: cameraPosX, y: cameraPosY, z: cameraPosZ }
 
   // LOD → ViewResolver mapping (all levels use Symbol tier)
   const graph = useMemo(() => {
