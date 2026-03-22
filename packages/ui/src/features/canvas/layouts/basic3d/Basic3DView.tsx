@@ -6,6 +6,7 @@
  * canvas store and delegates layout computation to useBasic3DLayout.
  */
 
+import type { JSX } from 'react'
 import { useCanvasStore } from '../../store'
 import { useBasic3DLayout } from './useBasic3DLayout'
 import { Basic3DNode } from './Basic3DNode'
@@ -32,14 +33,18 @@ export function Basic3DView() {
         )
       })}
 
-      {/* Render edges only at LOD >= 2 */}
+      {/* Render edges only at LOD >= 2. Use reduce to avoid null returns in
+          the R3F scene graph — the fiber reconciler's removeChild cannot
+          handle null children. */}
       {lodLevel >= 2 &&
-        graph.edges.map((edge) => {
+        graph.edges.reduce<JSX.Element[]>((acc, edge) => {
           const from = positions.get(edge.source)
           const to = positions.get(edge.target)
-          if (!from || !to) return null
-          return <Basic3DEdge key={edge.id} from={from} to={to} />
-        })}
+          if (from !== undefined && to !== undefined) {
+            acc.push(<Basic3DEdge key={edge.id} from={from} to={to} />)
+          }
+          return acc
+        }, [])}
     </group>
   )
 }

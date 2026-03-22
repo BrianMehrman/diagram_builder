@@ -67,11 +67,9 @@ export function Basic3DNode({ node, position, isSelected }: Basic3DNodeProps) {
 
   return (
     <group
+      name="basic3d-node"
       position={[position.x, position.y, position.z]}
-      data-testid="basic3d-node"
-      data-node-id={node.id}
-      data-wireframe={wireframe ? 'true' : 'false'}
-      data-selected={isSelected ? 'true' : 'false'}
+      userData={{ nodeId: node.id, wireframe, selected: isSelected }}
       onClick={handleClick}
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}
