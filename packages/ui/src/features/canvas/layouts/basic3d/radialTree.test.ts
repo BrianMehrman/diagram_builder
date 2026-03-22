@@ -12,11 +12,7 @@ import type { IVMGraph, IVMNode, IVMEdge } from '@diagram-builder/core'
 // Test fixture helpers
 // =============================================================================
 
-function makeNode(
-  id: string,
-  overrides: Partial<IVMNode> = {},
-  depth?: number
-): IVMNode {
+function makeNode(id: string, overrides: Partial<IVMNode> = {}, depth?: number): IVMNode {
   return {
     id,
     type: 'module',
@@ -128,21 +124,12 @@ describe('buildRadialTree', () => {
 
     // root at rootRadius, child at rootRadius + 1*depthSpacing, grand at rootRadius + 2*depthSpacing
     expect(rootDist).toBeCloseTo(DEFAULT_OPTIONS.rootRadius, 1)
-    expect(childDist).toBeCloseTo(
-      DEFAULT_OPTIONS.rootRadius + DEFAULT_OPTIONS.depthSpacing,
-      1
-    )
-    expect(grandDist).toBeCloseTo(
-      DEFAULT_OPTIONS.rootRadius + 2 * DEFAULT_OPTIONS.depthSpacing,
-      1
-    )
+    expect(childDist).toBeCloseTo(DEFAULT_OPTIONS.rootRadius + DEFAULT_OPTIONS.depthSpacing, 1)
+    expect(grandDist).toBeCloseTo(DEFAULT_OPTIONS.rootRadius + 2 * DEFAULT_OPTIONS.depthSpacing, 1)
   })
 
   it('places multiple entry points at distinct positions using Fibonacci sampling', () => {
-    const graph = makeGraph(
-      [makeNode('a', {}, 0), makeNode('b', {}, 0), makeNode('c', {}, 0)],
-      []
-    )
+    const graph = makeGraph([makeNode('a', {}, 0), makeNode('b', {}, 0), makeNode('c', {}, 0)], [])
     const result = buildRadialTree(graph, DEFAULT_OPTIONS)
 
     const posA = result.positions.get('a')!
@@ -210,11 +197,7 @@ describe('buildRadialTree', () => {
 
   it('returns correct maxDepth for a 3-level graph', () => {
     const graph = makeGraph(
-      [
-        makeNode('root', {}, 0),
-        makeNode('level1'),
-        makeNode('level2'),
-      ],
+      [makeNode('root', {}, 0), makeNode('level1'), makeNode('level2')],
       [makeEdge('root', 'level1', 0), makeEdge('level1', 'level2', 1)]
     )
     const result = buildRadialTree(graph, DEFAULT_OPTIONS)
@@ -223,10 +206,7 @@ describe('buildRadialTree', () => {
 
   it('falls back to no-incoming-edge nodes when no depth===0 metadata exists', () => {
     // No node has depth property — fall back to nodes with no incoming edges
-    const graph = makeGraph(
-      [makeNode('root'), makeNode('child')],
-      [makeEdge('root', 'child', 0)]
-    )
+    const graph = makeGraph([makeNode('root'), makeNode('child')], [makeEdge('root', 'child', 0)])
     const result = buildRadialTree(graph, DEFAULT_OPTIONS)
 
     // root has no incoming edge, so it's an entry point at rootRadius

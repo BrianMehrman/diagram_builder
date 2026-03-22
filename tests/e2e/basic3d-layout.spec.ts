@@ -81,7 +81,10 @@ test.describe('Basic3D Layout @P1', () => {
     await page.waitForTimeout(200)
 
     // THEN: Active layout is city
-    await expect(page.locator('[data-testid="active-layout"]')).toHaveAttribute('data-value', 'city')
+    await expect(page.locator('[data-testid="active-layout"]')).toHaveAttribute(
+      'data-value',
+      'city'
+    )
 
     // THEN: City button is pressed, basic3d is not
     await expect(page.locator('[data-testid="layout-switcher-city"]')).toHaveAttribute(

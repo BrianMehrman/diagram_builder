@@ -65,7 +65,7 @@ describe('getShapeForType', () => {
       const shape = getShapeForType(nodeType)
       expect(shape, `NodeType "${nodeType}" returned undefined`).toBeDefined()
       expect(VALID_SHAPES, `NodeType "${nodeType}" returned unknown shape "${shape}"`).toContain(
-        shape,
+        shape
       )
     }
   })
@@ -91,7 +91,9 @@ describe('getColorForType', () => {
     for (const nodeType of ALL_NODE_TYPES) {
       const color = getColorForType(nodeType)
       expect(color, `NodeType "${nodeType}" returned undefined`).toBeDefined()
-      expect(color, `NodeType "${nodeType}" returned non-hex "${color}"`).toMatch(/^#[0-9A-Fa-f]{6}$/)
+      expect(color, `NodeType "${nodeType}" returned non-hex "${color}"`).toMatch(
+        /^#[0-9A-Fa-f]{6}$/
+      )
     }
   })
 

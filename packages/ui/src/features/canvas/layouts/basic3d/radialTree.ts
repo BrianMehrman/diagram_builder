@@ -102,10 +102,7 @@ function placeChildrenInSector(
   for (let i = 0; i < count; i++) {
     const t = count === 1 ? 0 : i / (count - 1) // 0..1
     // Spread phi within [cPhi - half, cPhi + half], clamped to [0, PI]
-    const phi = Math.max(
-      0,
-      Math.min(Math.PI, cPhi + (t - 0.5) * 2 * sectorHalfAngle)
-    )
+    const phi = Math.max(0, Math.min(Math.PI, cPhi + (t - 0.5) * 2 * sectorHalfAngle))
     // Spread theta using golden-ratio steps
     const theta = cTheta + (i / GOLDEN) * sectorHalfAngle * 2
     pts.push(fromSpherical(radius, theta, phi))
@@ -117,10 +114,7 @@ function placeChildrenInSector(
 // Main export
 // =============================================================================
 
-export function buildRadialTree(
-  graph: IVMGraph,
-  options: RadialTreeOptions
-): RadialTreeResult {
+export function buildRadialTree(graph: IVMGraph, options: RadialTreeOptions): RadialTreeResult {
   const { depthSpacing, rootRadius } = options
   const positions = new Map<string, Position3D>()
 
@@ -140,9 +134,7 @@ export function buildRadialTree(
   // ------------------------------------------------------------------
 
   // Nodes with metadata.properties.depth === 0
-  const depthZeroNodes = graph.nodes.filter(
-    (n) => n.metadata.properties?.['depth'] === 0
-  )
+  const depthZeroNodes = graph.nodes.filter((n) => n.metadata.properties?.['depth'] === 0)
 
   let entryNodeIds: string[] = []
   if (depthZeroNodes.length > 0) {
@@ -235,9 +227,7 @@ export function buildRadialTree(
     const totalChildrenAtLevel = childToParentIds.size
 
     const baseHalfAngle =
-      totalChildrenAtLevel > 0
-        ? Math.sqrt((2 * Math.PI) / totalChildrenAtLevel)
-        : Math.PI / 4
+      totalChildrenAtLevel > 0 ? Math.sqrt((2 * Math.PI) / totalChildrenAtLevel) : Math.PI / 4
 
     // Group single-parent children by their parent so siblings are spread across
     // the parent's sector rather than all placed at the same angular position.

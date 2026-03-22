@@ -118,7 +118,10 @@ function makeGraph(nodes: IVMNode[], edges: IVMEdge[] = []): IVMGraph {
   }
 }
 
-function setupLayout(graph: IVMGraph, positions?: Map<string, { x: number; y: number; z: number }>) {
+function setupLayout(
+  graph: IVMGraph,
+  positions?: Map<string, { x: number; y: number; z: number }>
+) {
   const pos = positions ?? new Map(graph.nodes.map((n, i) => [n.id, { x: i * 5, y: 0, z: 0 }]))
   mockUseBasic3DLayout.mockReturnValue({ graph, positions: pos, maxDepth: 3 })
 }
@@ -171,7 +174,9 @@ describe('Basic3DView', () => {
       setupLayout(makeGraph(nodes))
 
       const { getAllByTestId } = render(<Basic3DView />)
-      const renderedIds = getAllByTestId('basic3d-node').map((el) => el.getAttribute('data-node-id'))
+      const renderedIds = getAllByTestId('basic3d-node').map((el) =>
+        el.getAttribute('data-node-id')
+      )
       expect(renderedIds).toContain('alpha')
       expect(renderedIds).toContain('beta')
     })
