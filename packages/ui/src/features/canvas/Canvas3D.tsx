@@ -16,6 +16,13 @@ import { RadialOverlay } from './components/RadialOverlay'
 import { useUIStore } from '../../shared/stores/uiStore'
 import './visualization/setup' // register built-in visualization styles
 
+// Expose canvas store to window for E2E test access
+declare global {
+  interface Window {
+    __canvasStore?: typeof useCanvasStore.getState
+  }
+}
+
 interface Canvas3DProps {
   className?: string
 }
@@ -157,6 +164,15 @@ export function Canvas3D({ className = '' }: Canvas3DProps) {
   const toggleControlMode = useCanvasStore((state) => state.toggleControlMode)
   const closeAllPanels = useUIStore((state) => state.closeAllPanels)
   const parseResult = useCanvasStore((state) => state.parseResult)
+  const activeLayout = useCanvasStore((state) => state.activeLayout)
+
+  // Expose store to window for E2E test access
+  React.useEffect(() => {
+    window.__canvasStore = useCanvasStore.getState
+    return () => {
+      delete window.__canvasStore
+    }
+  }, [])
 
   // Keyboard shortcut to toggle control mode
   React.useEffect(() => {
@@ -177,6 +193,13 @@ export function Canvas3D({ className = '' }: Canvas3DProps) {
 
   return (
     <div className={`w-full h-full relative ${className}`} onPointerDown={closeAllPanels}>
+      {/* Hidden DOM indicator for E2E test detection of active layout */}
+      <div
+        data-testid="active-layout"
+        data-value={activeLayout}
+        style={{ display: 'none' }}
+        aria-hidden="true"
+      />
       <DependencyLegend />
       <Canvas
         shadows
