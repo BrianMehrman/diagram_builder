@@ -56,3 +56,4 @@ neo4j-data/
 
 # Redis data
 redis-data/
+.worktrees/

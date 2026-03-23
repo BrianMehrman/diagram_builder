@@ -15,10 +15,13 @@ import { HeightEncodingSelector } from '../canvas/components/HeightEncodingSelec
 import { AtmosphereTogglePanel } from '../canvas/components/AtmosphereTogglePanel'
 import { EdgeTierControls } from '../canvas/components/EdgeTierControls'
 import { LodControls } from '../canvas/LodControls'
+import { useCanvasStore } from '../canvas/store'
 
 export function RightPanel() {
   const isOpen = useUIStore((state) => state.isRightPanelOpen)
   const closePanel = useUIStore((state) => state.closeRightPanel)
+  const activeLayout = useCanvasStore((state) => state.activeLayout)
+  const setActiveLayout = useCanvasStore((state) => state.setActiveLayout)
 
   return (
     <aside
@@ -49,6 +52,39 @@ export function RightPanel() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Layout Engine Switcher */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Layout Engine
+            </h3>
+            <div className="flex gap-1" data-testid="layout-switcher">
+              <button
+                onClick={() => setActiveLayout('city')}
+                aria-pressed={activeLayout === 'city'}
+                data-testid="layout-switcher-city"
+                className={`flex-1 py-1 text-xs rounded transition-colors ${
+                  activeLayout === 'city'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                }`}
+              >
+                City
+              </button>
+              <button
+                onClick={() => setActiveLayout('basic3d')}
+                aria-pressed={activeLayout === 'basic3d'}
+                data-testid="layout-switcher-basic3d"
+                className={`flex-1 py-1 text-xs rounded transition-colors ${
+                  activeLayout === 'basic3d'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                }`}
+              >
+                Basic 3D
+              </button>
+            </div>
+          </div>
+
           {/* Layout Controls */}
           <div className="space-y-2">
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Layout</h3>

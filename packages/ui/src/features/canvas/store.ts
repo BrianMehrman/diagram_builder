@@ -129,6 +129,10 @@ interface CanvasState {
   hoveredNodeId: string | null
   setHoveredNode: (nodeId: string | null) => void
 
+  // Nearest node state (basic3d mode — node closest to camera)
+  nearestNodeId: string | null
+  setNearestNodeId: (nodeId: string | null) => void
+
   // Highlighted node state (for arrival feedback)
   highlightedNodeId: string | null
   setHighlightedNode: (nodeId: string | null) => void
@@ -287,6 +291,10 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   // Hover state
   hoveredNodeId: null,
   setHoveredNode: (nodeId) => set({ hoveredNodeId: nodeId }),
+
+  // Nearest node state (basic3d mode — node closest to camera)
+  nearestNodeId: null,
+  setNearestNodeId: (nodeId) => set({ nearestNodeId: nodeId }),
 
   // Highlighted node state (for arrival feedback)
   highlightedNodeId: null,
@@ -487,5 +495,6 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       layoutDensity: 1.0,
       visibleLayers: { aboveGround: true, underground: true },
       citySettings: { ...DEFAULT_CITY_SETTINGS },
+      nearestNodeId: null,
     }),
 }))

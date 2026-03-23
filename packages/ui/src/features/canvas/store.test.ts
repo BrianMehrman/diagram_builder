@@ -392,6 +392,42 @@ describe('useCanvasStore', () => {
   })
 })
 
+// nearestNodeId — basic3d layout
+describe('nearestNodeId', () => {
+  beforeEach(() => {
+    useCanvasStore.getState().reset()
+  })
+
+  it('initialises nearestNodeId as null', () => {
+    expect(useCanvasStore.getState().nearestNodeId).toBeNull()
+  })
+
+  it('setNearestNodeId sets a node id', () => {
+    useCanvasStore.getState().setNearestNodeId('node-abc')
+    expect(useCanvasStore.getState().nearestNodeId).toBe('node-abc')
+  })
+
+  it('setNearestNodeId accepts null to clear', () => {
+    useCanvasStore.getState().setNearestNodeId('node-abc')
+    useCanvasStore.getState().setNearestNodeId(null)
+    expect(useCanvasStore.getState().nearestNodeId).toBeNull()
+  })
+
+  it('should reset nearestNodeId to null on reset', () => {
+    const store = useCanvasStore.getState()
+    expect(store.nearestNodeId).toBeNull()
+    store.setNearestNodeId('node-before-reset')
+    expect(useCanvasStore.getState().nearestNodeId).toBe('node-before-reset')
+    useCanvasStore.getState().reset()
+    expect(useCanvasStore.getState().nearestNodeId).toBeNull()
+  })
+
+  it('nearestNodeId is independent of focusedNodeId', () => {
+    useCanvasStore.getState().setNearestNodeId('node-nearest')
+    expect(useCanvasStore.getState().focusedNodeId).toBeNull()
+  })
+})
+
 describe('canvas store — ParseResult', () => {
   beforeEach(() => {
     useCanvasStore.setState(initialState)
