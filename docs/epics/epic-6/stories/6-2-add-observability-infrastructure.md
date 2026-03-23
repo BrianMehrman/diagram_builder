@@ -102,25 +102,28 @@ This story adds the instrumentation needed to answer these questions and debug f
 - [ ] Add request/response middleware logging - deferred (not critical for MVP)
 
 ### Task 4: Add progress tracking
-- [ ] Design progress reporting mechanism
-- [ ] Track parsing progress (files processed / total)
-- [ ] Log progress at key milestones (25%, 50%, 75%, 100%)
-- [ ] (Optional) Expose progress via API endpoint
-- [ ] (Optional) Store progress in Redis for polling
+> ⚠️ **Migrated to Story 12-13** (Epic 12 - Observability & Infrastructure)
+- [ ] ~~Design progress reporting mechanism~~ → moved
+- [ ] ~~Track parsing progress (files processed / total)~~ → moved
+- [ ] ~~Log progress at key milestones (25%, 50%, 75%, 100%)~~ → moved
+- [ ] ~~(Optional) Expose progress via API endpoint~~ → moved
+- [ ] ~~(Optional) Store progress in Redis for polling~~ → moved
 
 ### Task 5: Error instrumentation
-- [ ] Review all try/catch blocks
-- [ ] Add context to error logs (inputs, config, state)
-- [ ] Log error stack traces
-- [ ] Ensure no silent failures
-- [ ] Add error categorization (parser error, db error, etc.)
+> ⚠️ **Migrated to Story 12-13** (Epic 12 - Observability & Infrastructure)
+- [ ] ~~Review all try/catch blocks~~ → moved
+- [ ] ~~Add context to error logs (inputs, config, state)~~ → moved
+- [ ] ~~Log error stack traces~~ → moved
+- [ ] ~~Ensure no silent failures~~ → moved
+- [ ] ~~Add error categorization (parser error, db error, etc.)~~ → moved
 
 ### Task 6: Testing and validation
-- [ ] Verify logs appear during normal operation
-- [ ] Verify logs include expected context
-- [ ] Test log levels work correctly
-- [ ] Validate error logging captures full context
-- [ ] Check log output doesn't impact performance
+> ⚠️ **Migrated to Story 12-13** (Epic 12 - Observability & Infrastructure)
+- [ ] ~~Verify logs appear during normal operation~~ → moved
+- [ ] ~~Verify logs include expected context~~ → moved
+- [ ] ~~Test log levels work correctly~~ → moved
+- [ ] ~~Validate error logging captures full context~~ → moved
+- [ ] ~~Check log output doesn't impact performance~~ → moved
 
 ---
 
@@ -331,7 +334,12 @@ const logger = winston.createLogger({
   - Instrumented parser and API packages
   - Deferred advanced features (progress tracking, middleware)
 
+- **2026-03-22**: Deferred items migrated
+  - Tasks 4 (progress tracking), 5 (error instrumentation), 6 (test validation) migrated to Epic 12 Story 12-13
+  - Partial Task 3 deferred items (graph endpoints, middleware) also migrated to Story 12-13
+  - Story 12-13 positioned as prerequisite to OTEL instrumentation (Stories 12-5, 12-6, 12-7)
+
 **Status:** review
 **Created:** 2026-01-04
-**Last Updated:** 2026-01-04
-**Completion Criteria:** MVP logging working, advanced features deferred
+**Last Updated:** 2026-03-22
+**Completion Criteria:** MVP logging working (Winston in parser + API). Deferred items (Tasks 4, 5, 6 and partial Task 3) migrated to Epic 12 Story 12-13.
