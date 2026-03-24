@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { DependencyGraph } from '../graph/dependency-graph'
 import type { RepositoryContext } from '../repository/repository-loader'
 import { convertToIVM } from './ivm-converter'
+import { logger } from '../logger'
 
 describe('ivm-converter', () => {
   describe('convertToIVM', () => {
@@ -193,6 +194,96 @@ describe('ivm-converter', () => {
       const ivm = convertToIVM(depGraph, repoContext, { name: 'test' })
 
       expect(ivm.nodes[0].id).toBe('custom:id:123')
+    })
+
+    it('logs completion with node/edge counts', () => {
+      const logSpy = vi.spyOn(logger, 'info')
+
+      const depGraph = new DependencyGraph()
+      depGraph.addNode({
+        id: 'file:src/a.ts',
+        type: 'file',
+        name: 'a.ts',
+        path: 'src/a.ts',
+        metadata: { loc: 50, language: 'typescript' },
+      })
+      depGraph.addNode({
+        id: 'file:src/b.ts',
+        type: 'file',
+        name: 'b.ts',
+        path: 'src/b.ts',
+        metadata: { loc: 30, language: 'typescript' },
+      })
+      depGraph.addEdge({
+        source: 'file:src/a.ts',
+        target: 'file:src/b.ts',
+        type: 'imports',
+        metadata: {},
+      })
+
+      const repoContext: RepositoryContext = {
+        path: '/path/to/project',
+        files: ['src/a.ts', 'src/b.ts'],
+        metadata: {
+          type: 'local',
+          fileCount: 2,
+          scannedAt: new Date('2025-01-01T00:00:00Z'),
+        },
+      }
+
+      convertToIVM(depGraph, repoContext, { name: 'test-project' })
+
+      expect(logSpy).toHaveBeenCalledWith(
+        expect.stringContaining('IVM'),
+        expect.objectContaining({ inputNodes: expect.any(Number) })
+      )
+
+      logSpy.mockRestore()
+    })
+
+    it('logs entry debug with node/edge counts', () => {
+      const debugSpy = vi.spyOn(logger, 'debug')
+
+      const depGraph = new DependencyGraph()
+      depGraph.addNode({
+        id: 'file:src/a.ts',
+        type: 'file',
+        name: 'a.ts',
+        path: 'src/a.ts',
+        metadata: { loc: 50, language: 'typescript' },
+      })
+      depGraph.addNode({
+        id: 'file:src/b.ts',
+        type: 'file',
+        name: 'b.ts',
+        path: 'src/b.ts',
+        metadata: { loc: 30, language: 'typescript' },
+      })
+      depGraph.addEdge({
+        source: 'file:src/a.ts',
+        target: 'file:src/b.ts',
+        type: 'imports',
+        metadata: {},
+      })
+
+      const repoContext: RepositoryContext = {
+        path: '/path/to/project',
+        files: ['src/a.ts', 'src/b.ts'],
+        metadata: {
+          type: 'local',
+          fileCount: 2,
+          scannedAt: new Date('2025-01-01T00:00:00Z'),
+        },
+      }
+
+      convertToIVM(depGraph, repoContext, { name: 'test-project' })
+
+      expect(debugSpy).toHaveBeenCalledWith(
+        expect.stringContaining('start'),
+        expect.objectContaining({ inputNodes: expect.any(Number) })
+      )
+
+      debugSpy.mockRestore()
     })
 
     it('should calculate bounding box', () => {
