@@ -1,6 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import ignore, { type Ignore } from 'ignore'
+import { logger } from '../logger'
 
 /**
  * Options for directory scanning
@@ -103,7 +104,7 @@ async function createIgnoreMatcher(
     const gitignoreContent = await fs.readFile(gitignorePath, 'utf-8')
     ig.add(gitignoreContent)
   } catch {
-    // .gitignore doesn't exist, skip
+    logger.debug('No .gitignore found, skipping', { category: 'parser', dirPath: rootPath })
   }
 
   return ig
@@ -165,9 +166,12 @@ async function scanRecursive(
         }
       }
     }
-  } catch {
-    // Skip directories that can't be read (permissions, etc.)
-    // Silently ignore - this is expected for inaccessible directories
+  } catch (err) {
+    logger.warn('Failed to read directory, skipping', {
+      category: 'parser',
+      dirPath: currentPath,
+      error: (err as Error).message,
+    })
   }
 
   return files

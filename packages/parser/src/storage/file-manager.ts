@@ -102,7 +102,12 @@ export async function getStorageMetadata(
       createdAt: stats.birthtime,
       sizeBytes: await getDirectorySize(storagePath),
     }
-  } catch {
+  } catch (err) {
+    logger.debug('Storage metadata not found, returning null', {
+      category: 'parser',
+      storagePath,
+      error: (err as Error).message,
+    })
     return null
   }
 }
@@ -151,7 +156,12 @@ export async function listStoredCodebases(): Promise<
     // Check if base directory exists
     try {
       await fs.access(basePath)
-    } catch {
+    } catch (err) {
+      logger.debug('Base storage directory does not exist, returning empty list', {
+        category: 'parser',
+        basePath,
+        error: (err as Error).message,
+      })
       return []
     }
 

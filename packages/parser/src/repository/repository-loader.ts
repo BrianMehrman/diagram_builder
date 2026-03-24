@@ -2,7 +2,7 @@ import { scanDirectory, type ScanOptions } from './directory-scanner'
 import { cloneRepository, type CloneOptions } from './git-cloner'
 import fs from 'fs/promises'
 import path from 'path'
-import { logOperation } from '../logger'
+import { logger, logOperation } from '../logger'
 
 /**
  * Repository configuration for loading
@@ -150,7 +150,12 @@ async function loadLocalDirectory(
     if (!stats.isDirectory()) {
       throw new Error(`Path is not a directory: ${absolutePath}`)
     }
-  } catch {
+  } catch (err) {
+    logger.error('Directory not found or inaccessible', {
+      category: 'parser',
+      dirPath: absolutePath,
+      error: (err as Error).message,
+    })
     throw new Error(`Directory not found: ${absolutePath}`)
   }
 
@@ -235,8 +240,12 @@ async function loadGitRepository(
   const cleanup = async (): Promise<void> => {
     try {
       await fs.rm(clonePath, { recursive: true, force: true })
-    } catch {
-      // Silently ignore cleanup errors - not critical
+    } catch (err) {
+      logger.warn('Failed to clean up cloned repository, skipping', {
+        category: 'parser',
+        clonePath,
+        error: (err as Error).message,
+      })
     }
   }
 

@@ -2,6 +2,7 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 import { createParser, type Language, type ParseResult } from './parser-factory'
 import { ParseError, UnsupportedFileExtensionError } from './errors'
+import { logger } from '../logger'
 
 /**
  * Parse a file from disk and return the AST
@@ -57,16 +58,22 @@ export function parseContent(content: string, language: Language): ParseResult {
   try {
     // Defensive check for content type
     if (typeof content !== 'string') {
-      console.error('[parseContent] Invalid content type:', typeof content, content)
+      logger.error('Invalid content type passed to parser', {
+        category: 'parser',
+        contentType: typeof content,
+      })
       throw new Error(`Invalid content type for parser: ${typeof content}`)
     }
     if (content.length === 0) {
-      console.warn('[parseContent] Empty content string passed to parser')
+      logger.warn('Empty content string passed to parser', { category: 'parser', language })
     }
 
     // Check for binary content (null bytes indicate binary)
     if (content.includes('\0')) {
-      console.warn('[parseContent] Content contains null bytes, likely binary file')
+      logger.warn('Content contains null bytes, likely binary file — returning empty tree', {
+        category: 'parser',
+        language,
+      })
       // Return empty tree for binary files
       const jsParser = createParser('javascript')
       const emptyTree = jsParser.parser.parse('')
@@ -81,9 +88,11 @@ export function parseContent(content: string, language: Language): ParseResult {
     try {
       tree = parser.parse(content)
     } catch (err) {
-      console.error('[parseContent] Error parsing content:', err, {
+      logger.error('Error parsing content', {
+        category: 'parser',
         language,
         contentSnippet: content.slice(0, 100),
+        error: (err as Error).message,
       })
       throw err
     }
