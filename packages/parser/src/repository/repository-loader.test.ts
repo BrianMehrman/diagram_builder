@@ -30,6 +30,10 @@ describe('Repository Loader', () => {
   })
 
   describe('loadRepository', () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
     it('should load local directory and return file paths', async () => {
       // Create test files
       await fs.writeFile(path.join(testDir, 'index.js'), 'console.log("test")')
@@ -179,7 +183,6 @@ describe('Repository Loader', () => {
         expect.stringContaining('progress'),
         expect.objectContaining({ processed: expect.any(Number), total: expect.any(Number) })
       )
-      logSpy.mockRestore()
     })
   })
 })

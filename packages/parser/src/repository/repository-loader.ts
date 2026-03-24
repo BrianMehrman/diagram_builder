@@ -134,9 +134,8 @@ function isGitUrl(str: string): boolean {
  * @param files - Array of file paths returned by scanDirectory
  * @param source - Human-readable source label for log context
  */
-function logFileProgress(files: string[], source: string | undefined): void {
+function logFileProgress(files: string[], source: string | undefined, startTime: number): void {
   const total = files.length
-  const loopStart = Date.now()
   logger.info('Parser start', { total, source: source ?? 'unknown' })
   const milestones = new Set([25, 50, 75])
   let processed = 0
@@ -153,7 +152,7 @@ function logFileProgress(files: string[], source: string | undefined): void {
     }
   }
 
-  logger.info('Parser complete', { processed, total, durationMs: Date.now() - loopStart })
+  logger.info('Parser complete', { processed, total, durationMs: Date.now() - startTime })
 }
 
 /**
@@ -169,6 +168,7 @@ async function loadLocalDirectory(
   config: RepositoryConfig,
   options?: ScanOptions
 ): Promise<RepositoryContext> {
+  const start = Date.now()
   // Resolve to absolute path
   const absolutePath = path.resolve(dirPath)
 
@@ -206,7 +206,7 @@ async function loadLocalDirectory(
 
   const files = await scanDirectory(absolutePath, scanOptions)
 
-  logFileProgress(files, config.path ?? absolutePath)
+  logFileProgress(files, config.path ?? absolutePath, start)
 
   return {
     path: absolutePath,
@@ -230,6 +230,7 @@ async function loadGitRepository(
   config: RepositoryConfig,
   options?: ScanOptions
 ): Promise<RepositoryContext> {
+  const start = Date.now()
   if (!config.url) {
     throw new Error('Git repository URL is required')
   }
@@ -266,7 +267,7 @@ async function loadGitRepository(
 
   const files = await scanDirectory(clonePath, scanOptions)
 
-  logFileProgress(files, config.url)
+  logFileProgress(files, config.url, start)
 
   // Create cleanup function
   const cleanup = async (): Promise<void> => {
