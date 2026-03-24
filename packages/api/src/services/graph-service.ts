@@ -5,6 +5,7 @@
  * Implements caching for performance optimization
  */
 
+import { logger } from '../logger'
 import { runQuery } from '../database/query-utils'
 import { buildCacheKey } from '../cache/cache-keys'
 import * as cache from '../cache/cache-utils'
@@ -91,10 +92,14 @@ interface Neo4jRepository {
  * @returns Complete IVM graph
  */
 export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
+  const start = Date.now()
+  logger.debug('getFullGraph start', { repoId })
+  try {
   // Check cache first
   const cacheKey = buildCacheKey('graph', repoId)
   const cached = await cache.get<IVMGraph>(cacheKey)
   if (cached) {
+    logger.debug('getFullGraph cache hit', { repoId, durationMs: Date.now() - start })
     return cached
   }
 
@@ -233,7 +238,22 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
   // Cache the result
   await cache.set(cacheKey, graph)
 
+  logger.info('getFullGraph complete', {
+    repoId,
+    nodeCount: graph.nodes.length,
+    edgeCount: graph.edges.length,
+    durationMs: Date.now() - start,
+  })
   return graph
+  } catch (err) {
+    logger.error('getFullGraph failed', {
+      category: 'neo4j',
+      repoId,
+      error: (err as Error).message,
+      stack: (err as Error).stack,
+    })
+    throw err
+  }
 }
 
 /**
@@ -243,16 +263,35 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
  * @returns ParseResult with graph, hierarchy, and tiers, or null if not found
  */
 export async function getParseResult(repoId: string): Promise<ParseResult | null> {
-  const cacheKey = buildCacheKey('parse-result', repoId)
-  const cached = await cache.get<ParseResult>(cacheKey)
-  if (cached) return cached
+  const start = Date.now()
+  logger.debug('getParseResult start', { repoId })
+  try {
+    const cacheKey = buildCacheKey('parse-result', repoId)
+    const cached = await cache.get<ParseResult>(cacheKey)
+    if (cached) {
+      logger.debug('getParseResult cache hit', { repoId, durationMs: Date.now() - start })
+      return cached
+    }
 
-  const graph = await getFullGraph(repoId)
-  if (!graph) return null
+    const graph = await getFullGraph(repoId)
+    if (!graph) {
+      logger.info('getParseResult not found', { repoId, durationMs: Date.now() - start })
+      return null
+    }
 
-  const result = buildParseResult(graph)
-  await cache.set(cacheKey, result)
-  return result
+    const result = buildParseResult(graph)
+    await cache.set(cacheKey, result)
+    logger.info('getParseResult complete', { repoId, durationMs: Date.now() - start })
+    return result
+  } catch (err) {
+    logger.error('getParseResult failed', {
+      category: 'neo4j',
+      repoId,
+      error: (err as Error).message,
+      stack: (err as Error).stack,
+    })
+    throw err
+  }
 }
 
 /**
@@ -263,10 +302,14 @@ export async function getParseResult(repoId: string): Promise<ParseResult | null
  * @returns Node details or null if not found
  */
 export async function getNodeDetails(repoId: string, nodeId: string): Promise<IVMNode | null> {
+  const start = Date.now()
+  logger.debug('getNodeDetails start', { repoId, nodeId })
+  try {
   // Check cache first
   const cacheKey = buildCacheKey('graph', `${repoId}:node:${nodeId}`)
   const cached = await cache.get<IVMNode>(cacheKey)
   if (cached) {
+    logger.debug('getNodeDetails cache hit', { repoId, nodeId, durationMs: Date.now() - start })
     return cached
   }
 
@@ -324,7 +367,18 @@ export async function getNodeDetails(repoId: string, nodeId: string): Promise<IV
   // Cache the result
   await cache.set(cacheKey, ivmNode)
 
+  logger.info('getNodeDetails complete', { repoId, nodeId, durationMs: Date.now() - start })
   return ivmNode
+  } catch (err) {
+    logger.error('getNodeDetails failed', {
+      category: 'neo4j',
+      repoId,
+      nodeId,
+      error: (err as Error).message,
+      stack: (err as Error).stack,
+    })
+    throw err
+  }
 }
 
 /**
@@ -336,10 +390,14 @@ export async function getNodeDetails(repoId: string, nodeId: string): Promise<IV
  * @returns Array of dependent nodes
  */
 export async function getNodeDependencies(repoId: string, nodeId: string): Promise<IVMNode[]> {
+  const start = Date.now()
+  logger.debug('getNodeDependencies start', { repoId, nodeId })
+  try {
   // Check cache first
   const cacheKey = buildCacheKey('graph', `${repoId}:deps:${nodeId}`)
   const cached = await cache.get<IVMNode[]>(cacheKey)
   if (cached) {
+    logger.debug('getNodeDependencies cache hit', { repoId, nodeId, durationMs: Date.now() - start })
     return cached
   }
 
@@ -398,7 +456,23 @@ export async function getNodeDependencies(repoId: string, nodeId: string): Promi
   // Cache the result
   await cache.set(cacheKey, dependencies)
 
+  logger.info('getNodeDependencies complete', {
+    repoId,
+    nodeId,
+    count: dependencies.length,
+    durationMs: Date.now() - start,
+  })
   return dependencies
+  } catch (err) {
+    logger.error('getNodeDependencies failed', {
+      category: 'neo4j',
+      repoId,
+      nodeId,
+      error: (err as Error).message,
+      stack: (err as Error).stack,
+    })
+    throw err
+  }
 }
 
 /**
@@ -415,6 +489,9 @@ export async function executeCustomQuery(
   cypherQuery: string,
   params: Record<string, unknown> = {}
 ): Promise<Record<string, unknown>[]> {
+  const start = Date.now()
+  logger.debug('executeCustomQuery start', { repoId })
+  try {
   // Create cache key based on query and params
   const queryHash = createQueryHash(cypherQuery, params)
   const cacheKey = buildCacheKey('query', `${repoId}:${queryHash}`)
@@ -438,7 +515,21 @@ export async function executeCustomQuery(
   // Cache the result
   await cache.set(cacheKey, results)
 
+  logger.info('executeCustomQuery complete', {
+    repoId,
+    resultCount: results.length,
+    durationMs: Date.now() - start,
+  })
   return results
+  } catch (err) {
+    logger.error('executeCustomQuery failed', {
+      category: 'neo4j',
+      repoId,
+      error: (err as Error).message,
+      stack: (err as Error).stack,
+    })
+    throw err
+  }
 }
 
 /**
