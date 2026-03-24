@@ -79,9 +79,9 @@ USER node
 # In Docker, env vars are injected directly; dotenv silently no-ops if absent.
 WORKDIR /app/packages/api
 
-EXPOSE 4000
+EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:4000/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
+  CMD wget -qO- http://localhost:3000/health || exit 1
 
 CMD ["node", "dist/server.js"]

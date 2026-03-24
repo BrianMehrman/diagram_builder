@@ -8,7 +8,7 @@
     "dev": "tsx src/server.ts",
     "dev:watch": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node -r dotenv/config dist/server.js",
+    "start": "node --experimental-specifier-resolution=node dist/server.js",
     "test": "vitest",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts"
