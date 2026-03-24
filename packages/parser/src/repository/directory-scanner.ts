@@ -104,7 +104,7 @@ async function createIgnoreMatcher(
     const gitignoreContent = await fs.readFile(gitignorePath, 'utf-8')
     ig.add(gitignoreContent)
   } catch {
-    logger.debug('No .gitignore found, skipping', { category: 'parser', dirPath: rootPath })
+    logger.warn('No .gitignore found, skipping', { category: 'parser', dirPath: rootPath })
   }
 
   return ig

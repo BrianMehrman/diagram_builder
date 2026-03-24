@@ -36,10 +36,14 @@ export async function initializeStorage(workspaceId: string, codebaseId: string)
     await fs.mkdir(storagePath, { recursive: true })
     logger.debug(`Initialized storage directory: ${storagePath}`)
     return storagePath
-  } catch (error) {
-    logger.error(`Failed to initialize storage directory: ${storagePath}`, error)
+  } catch (err) {
+    logger.error('Failed to initialize storage directory', {
+      category: 'parser',
+      storagePath,
+      error: (err as Error).message,
+    })
     throw new Error(
-      `Storage initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Storage initialization failed: ${err instanceof Error ? err.message : 'Unknown error'}`
     )
   }
 }
@@ -64,8 +68,12 @@ export async function cleanupCodebase(workspaceId: string, codebaseId: string): 
     // Remove directory recursively
     await fs.rm(storagePath, { recursive: true, force: true })
     logger.info(`Cleaned up storage for codebase ${codebaseId}: ${storagePath}`)
-  } catch (error) {
-    logger.error(`Failed to cleanup storage for codebase ${codebaseId}:`, error)
+  } catch (err) {
+    logger.error('Failed to cleanup storage for codebase', {
+      category: 'parser',
+      codebaseId,
+      error: (err as Error).message,
+    })
     // Don't throw - cleanup failures shouldn't block operations
   }
 }
@@ -80,8 +88,12 @@ export async function cleanupWorkspace(workspaceId: string): Promise<void> {
   try {
     await fs.rm(workspacePath, { recursive: true, force: true })
     logger.info(`Cleaned up storage for workspace ${workspaceId}`)
-  } catch (error) {
-    logger.error(`Failed to cleanup workspace ${workspaceId}:`, error)
+  } catch (err) {
+    logger.error('Failed to cleanup workspace', {
+      category: 'parser',
+      workspaceId,
+      error: (err as Error).message,
+    })
   }
 }
 
@@ -131,8 +143,12 @@ async function getDirectorySize(dirPath: string): Promise<number> {
         totalSize += stats.size
       }
     }
-  } catch (error) {
-    logger.warn(`Failed to calculate directory size for ${dirPath}:`, error)
+  } catch (err) {
+    logger.warn('Failed to calculate directory size', {
+      category: 'parser',
+      dirPath,
+      error: (err as Error).message,
+    })
   }
 
   return totalSize
@@ -190,8 +206,11 @@ export async function listStoredCodebases(): Promise<
         })
       }
     }
-  } catch (error) {
-    logger.error('Failed to list stored codebases:', error)
+  } catch (err) {
+    logger.error('Failed to list stored codebases', {
+      category: 'parser',
+      error: (err as Error).message,
+    })
   }
 
   return codebases
