@@ -1,5 +1,5 @@
 import express from 'express'
-import { loggerMiddleware } from './middleware/logger'
+import { loggerMiddleware, requestLogger } from './middleware/logger'
 import { corsMiddleware } from './middleware/cors-config'
 import { errorHandler } from './middleware/error-handler'
 import { authRouter } from './routes/auth'
@@ -12,8 +12,9 @@ import { workspacesRouter } from './routes/workspaces'
 const app = express()
 
 // Middleware stack (order matters!)
-app.use(loggerMiddleware) // 1. Logging first
-app.use(corsMiddleware) // 2. CORS second
+app.use(loggerMiddleware) // 1. Morgan logging first
+app.use(requestLogger)   // 2. Structured Winston request logger
+app.use(corsMiddleware)  // 3. CORS
 app.use(express.json()) // 3. Body parsing
 
 // Health check endpoint
