@@ -41,7 +41,8 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
   const start = Date.now()
   res.on('finish', () => {
     const durationMs = Date.now() - start
-    const route = req.route?.path ?? req.path
+    const routeRecord = req.route as { path?: string } | undefined
+    const route: string = routeRecord?.path ?? req.path
     logger.info('request', {
       method: req.method,
       route,
