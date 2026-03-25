@@ -29,52 +29,29 @@ Add Jaeger, Prometheus, and Grafana to Docker Compose under the `observability` 
 
 ### Task 1: Add observability services
 
-- [ ] Add `jaeger` service (profile: `observability`)
-  - Image: `jaegertracing/all-in-one:2.1`
-  - `environment: COLLECTOR_OTLP_ENABLED=true`
-  - Ports: `16686:16686` (UI), `4317:4317` (OTLP gRPC), `4318:4318` (OTLP HTTP)
-  - `networks: [diagram-builder-network]`
-- [ ] Add `prometheus` service (profile: `observability`)
-  - Image: `prom/prometheus:v3.1.0`
-  - Volume mount: `./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro`
-  - Volume: `prometheus-data:/prometheus`
-  - Port: `9090:9090`
-  - `networks: [diagram-builder-network]`
-- [ ] Add `grafana` service (profile: `observability`)
-  - Image: `grafana/grafana:11.4.0`
-  - Port: `3001:3000` (avoids conflict with UI on 3000)
-  - Volume: `grafana-data:/var/lib/grafana`
-  - Volume mount: `./config/grafana/provisioning:/etc/grafana/provisioning:ro`
-  - `depends_on: [prometheus, jaeger]`
-  - `networks: [diagram-builder-network]`
-- [ ] Add `prometheus-data` and `grafana-data` to `volumes:` block in docker-compose
+- [x] Added `jaeger` service (profile: `observability`) — `jaegertracing/all-in-one:2.1`, ports 16686/4317/4318
+- [x] Added `prometheus` service (profile: `observability`) — `prom/prometheus:v3.1.0`, port 9090
+- [x] Added `grafana` service (profile: `observability`) — `grafana/grafana:11.4.0`, port 3001:3000
+- [x] Added `prometheus-data` and `grafana-data` volumes
 
 ### Task 2: Prometheus configuration
 
-- [ ] Create `config/prometheus/prometheus.yml`
-  - Global: `scrape_interval: 15s`, `evaluation_interval: 15s`
-  - Scrape job `diagram-builder-api`: target `api:4000`, path `/metrics`
-  - Scrape job `prometheus` (self-scrape)
+- [x] Created `config/prometheus/prometheus.yml`
+  - `scrape_interval: 15s`, `evaluation_interval: 15s`
+  - Scrape job `diagram-builder-api`: target `api:9464` (PrometheusExporter port), path `/metrics`
+  - Self-scrape job
 
 ### Task 3: Grafana provisioning
 
-- [ ] Create `config/grafana/provisioning/datasources/datasources.yaml`
-  - Prometheus datasource: `http://prometheus:9090`, default datasource
-  - Jaeger datasource: `http://jaeger:16686`, with `tracesToLogs` correlation
-- [ ] Create `config/grafana/provisioning/dashboards/dashboards.yaml`
-  - File-based dashboard provider pointing to `/etc/grafana/provisioning/dashboards`
-- [ ] Create `config/grafana/provisioning/dashboards/api-overview.json`
-  - Panel: HTTP request rate by route (Counter, `http_requests_total`)
-  - Panel: HTTP latency p50/p95/p99 (Histogram, `http_request_duration_seconds`)
-  - Panel: HTTP error rate 4xx/5xx
-  - Panel: Active WebSocket sessions (`ws_active_sessions`)
-  - Panel: Cache hit/miss ratio (`cache_operations_total`)
-  - Panel: DB query duration (`db_query_duration_seconds`)
-  - Panel: Trace search link to Jaeger
+- [x] Created `config/grafana/provisioning/datasources/datasources.yaml` — Prometheus (default) + Jaeger
+- [x] Created `config/grafana/provisioning/dashboards/dashboards.yaml` — file-based provider
+- [x] Created `config/grafana/provisioning/dashboards/api-overview.json` — 7 panels:
+  - HTTP request rate by route, HTTP latency p50/p95/p99, HTTP error rate 4xx/5xx
+  - Active WebSocket sessions (stat), Cache hit/miss rate, DB query duration p50/p95, Jaeger link
 
 ### Task 4: Documentation
 
-- [ ] Update `PORT-CONFIGURATION.md` — add Grafana (3001), Jaeger UI (16686), Prometheus (9090), OTLP HTTP (4318), OTLP gRPC (4317)
+- [x] Updated `PORT-CONFIGURATION.md` — added Grafana (3001), Jaeger UI (16686), Prometheus (9090), OTLP HTTP (4318), OTLP gRPC (4317), Prometheus scrape (9464)
 
 ---
 
@@ -115,7 +92,8 @@ Add Jaeger, Prometheus, and Grafana to Docker Compose under the `observability` 
 ## Change Log
 
 - **2026-03-22**: Story created from TASKS.md Phase 9 Epic 12-B
+- **2026-03-24**: Story complete — Jaeger + Prometheus + Grafana added, all config files created
 
-**Status:** backlog
+**Status:** done
 **Created:** 2026-03-22
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-03-24

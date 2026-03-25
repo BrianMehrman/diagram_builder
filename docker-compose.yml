@@ -60,7 +60,7 @@ services:
       - neo4j
       - redis
     ports:
-      - '3000:3000'
+      - '4000:4000'
     networks:
       - diagram-builder-network
     restart: unless-stopped
@@ -80,12 +80,55 @@ services:
     restart: unless-stopped
 
   # ─── observability profile ──────────────────────────────────────────────────
-  # Jaeger, Prometheus, and Grafana are added in Story 12-4.
+  jaeger:
+    profiles: [observability]
+    image: jaegertracing/all-in-one:2.1
+    container_name: diagram-builder-jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - '16686:16686'  # Jaeger UI
+      - '4317:4317'    # OTLP gRPC
+      - '4318:4318'    # OTLP HTTP
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
+
+  prometheus:
+    profiles: [observability]
+    image: prom/prometheus:v3.1.0
+    container_name: diagram-builder-prometheus
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - '9090:9090'
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
+
+  grafana:
+    profiles: [observability]
+    image: grafana/grafana:11.4.0
+    container_name: diagram-builder-grafana
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - '3001:3000'
+    depends_on:
+      - prometheus
+      - jaeger
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
 
 volumes:
   neo4j-data:
   neo4j-logs:
   redis-data:
+  prometheus-data:
+  grafana-data:
 
 networks:
   diagram-builder-network:
