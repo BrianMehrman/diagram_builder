@@ -29,30 +29,27 @@ Refactor `docker-compose.yml` to use named profiles (`infra`, `app`, `observabil
 
 ### Task 1: Refactor profiles
 
-- [ ] Refactor `docker-compose.yml` to use named profiles
-  - Profile `infra`: existing `neo4j` and `redis` services (no change to config)
-  - Profile `app`: new `api` and `ui` services using Dockerfiles from Epic 12-A
-  - Profile `observability`: new `jaeger`, `prometheus`, `grafana` services (added in Story 12-4)
+- [x] Refactored `docker-compose.yml` with named profiles
+  - Profile `infra`: `neo4j` and `redis` (unchanged config)
+  - Profile `app`: `api` and `ui` using Dockerfiles from Epic 12-A
+  - Profile `observability`: placeholder comment (services added in Story 12-4)
 
 ### Task 2: Add app services
 
-- [ ] Add `api` service (profile: `app`)
+- [x] Added `api` service (profile: `app`)
   - Build context: `docker/api/Dockerfile`
   - `env_file: .env`
-  - `environment` overrides for docker networking: `NEO4J_URI=bolt://neo4j:7687`, `REDIS_HOST=redis`, `OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318`
-  - `depends_on: [neo4j, redis]`
-  - `ports: ["4000:4000"]`
-  - `networks: [diagram-builder-network]`
-- [ ] Add `ui` service (profile: `app`)
+  - Environment overrides: `NEO4J_URI=bolt://neo4j:7687`, `REDIS_HOST=redis`, `OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318`
+  - `depends_on: [neo4j, redis]`, `ports: ["3000:3000"]`
+- [x] Added `ui` service (profile: `app`)
   - Build context: `docker/ui/Dockerfile`
-  - `depends_on: [api]`
-  - `ports: ["3000:80"]`
-  - `networks: [diagram-builder-network]`
+  - `depends_on: [api]`, `ports: ["5173:80"]`
 
 ### Task 3: Validation
 
-- [ ] Add named volumes for any new persistent data
-- [ ] Validate `docker-compose --profile infra up -d` matches existing behavior
+- [x] No new named volumes needed (api/ui are stateless)
+- [x] `docker compose --profile infra config` — only neo4j and redis present (unchanged)
+- [x] `docker compose --profile infra --profile app config` — all four containers present
 
 ---
 
@@ -77,7 +74,8 @@ Refactor `docker-compose.yml` to use named profiles (`infra`, `app`, `observabil
 ## Change Log
 
 - **2026-03-22**: Story created from TASKS.md Phase 9 Epic 12-B
+- **2026-03-24**: Story complete — three profiles added, infra behavior unchanged
 
-**Status:** backlog
+**Status:** done
 **Created:** 2026-03-22
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-03-24

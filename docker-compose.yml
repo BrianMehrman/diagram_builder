@@ -1,7 +1,19 @@
 version: '3.9'
 
+# Profiles:
+#   infra        - Neo4j + Redis (local dev default)
+#   app          - API + UI containers (built from Dockerfiles)
+#   observability - Jaeger + Prometheus + Grafana (added in Story 12-4)
+#
+# Usage:
+#   docker compose --profile infra up -d               # infra only
+#   docker compose --profile infra --profile app up -d # full stack
+#   docker compose --profile infra --profile app --profile observability up -d # everything
+
 services:
+  # ─── infra profile ──────────────────────────────────────────────────────────
   neo4j:
+    profiles: [infra]
     image: neo4j:latest
     container_name: diagram-builder-neo4j
     ports:
@@ -20,6 +32,7 @@ services:
     restart: unless-stopped
 
   redis:
+    profiles: [infra]
     image: redis:7.4-alpine
     container_name: diagram-builder-redis
     ports:
@@ -30,6 +43,44 @@ services:
     networks:
       - diagram-builder-network
     restart: unless-stopped
+
+  # ─── app profile ────────────────────────────────────────────────────────────
+  api:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    container_name: diagram-builder-api
+    env_file: .env
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - REDIS_HOST=redis
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+    depends_on:
+      - neo4j
+      - redis
+    ports:
+      - '3000:3000'
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
+
+  ui:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: docker/ui/Dockerfile
+    container_name: diagram-builder-ui
+    depends_on:
+      - api
+    ports:
+      - '5173:80'
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
+
+  # ─── observability profile ──────────────────────────────────────────────────
+  # Jaeger, Prometheus, and Grafana are added in Story 12-4.
 
 volumes:
   neo4j-data:
