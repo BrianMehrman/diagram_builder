@@ -1,0 +1,92 @@
+{{/*
+Network policies for diagram-builder.
+Default deny-all ingress, then explicit allow rules for required traffic paths.
+*/}}
+
+# Default deny all ingress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "diagram-builder.fullname" . }}-default-deny
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "diagram-builder.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+# Allow ui → api (port 4000)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "diagram-builder.fullname" . }}-api-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "diagram-builder.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "diagram-builder.api.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow traffic from UI pods
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "diagram-builder.ui.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 4000
+    # Allow Prometheus to scrape API metrics
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9464
+    # Allow ingress controller (if ingress enabled)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 4000
+---
+# Allow prometheus → otel-collector (port 8889)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "diagram-builder.fullname" . }}-otel-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "diagram-builder.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "diagram-builder.name" . }}-otel-collector
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow API pods to push telemetry
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "diagram-builder.api.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+    # Allow Prometheus to scrape metrics
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 8889
