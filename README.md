@@ -16,11 +16,15 @@ This is a TypeScript monorepo with 5 packages:
 - **`@diagram-builder/cli`**: CLI tool for headless parsing and export
 - **`@diagram-builder/ui`**: Web UI (Vite + React 19 + react-three-fiber)
 
-## Requirements
+## Prerequisites
 
-- **Node.js**: 20.19+ or 22.12+ (LTS versions)
-- **npm**: 10.0.0+
-- **Docker**: Latest (for local development)
+| Tool | Version | Required For |
+|------|---------|-------------|
+| **Node.js** | 20.19+ or 22.12+ LTS | Local development |
+| **npm** | 10.0.0+ | All modes |
+| **Docker Desktop** | Latest (Kubernetes enabled for k8s mode) | All modes |
+| **Helm** | 3.x ([install](https://helm.sh/docs/intro/install/)) | `--mode=k8s` only |
+| **kubectl** | 1.29+ ([install](https://kubernetes.io/docs/tasks/tools/)) | `--mode=k8s` only |
 
 ## Quick Start
 
@@ -80,24 +84,45 @@ The application uses environment variables for configuration. Three example file
 
 ### 3. Start Services
 
-**Option A: Quick Start (Recommended)**
+Diagram Builder supports three deployment modes via `--mode` flag:
+
+#### Local Mode (default) — Node.js processes + Docker Compose infra
 
 ```bash
-# Idempotently start all services (Docker, API, UI)
-./scripts/init.sh
+./scripts/init.sh              # or: ./scripts/init.sh --mode=local
 ```
 
-This script will:
-- Start Neo4j and Redis (if not running)
-- Seed the database with test data
-- Start the API server on port 4000
-- Start the UI server on port 3000
+Starts Neo4j + Redis via Docker Compose, seeds the database, then starts the API (port 4000) and UI (port 3000) as Node.js processes.
 
-**Option B: Manual Start**
+#### Docker Mode — full Docker Compose stack
+
+```bash
+./scripts/init.sh --mode=docker
+```
+
+Starts all services including the API and UI in Docker containers, plus the full observability stack (Grafana, Jaeger, Prometheus).
+
+#### Kubernetes Mode — Helm deploy to Docker Desktop
+
+```bash
+./scripts/init.sh --mode=k8s
+```
+
+Deploys the full stack to Docker Desktop Kubernetes via Helm, then sets up port forwarding to localhost. Requires Kubernetes enabled in Docker Desktop and Helm installed.
+
+#### Stop Services
+
+```bash
+./scripts/stop.sh --mode=local    # Stop local dev environment
+./scripts/stop.sh --mode=docker   # Stop full Docker stack
+./scripts/stop.sh --mode=k8s      # Uninstall from Kubernetes
+```
+
+#### Manual Start
 
 ```bash
 # Start Neo4j and Redis
-docker compose up -d
+docker compose --profile infra up -d
 
 # Seed database
 cd packages/api && npx tsx src/database/seed-db.ts && cd ../..
@@ -113,6 +138,22 @@ Once the services are running:
 - **UI**: http://localhost:3000
 - **API**: http://localhost:4000
 - **Neo4j Browser**: http://localhost:7474
+
+### 5. Observability (Docker/K8s modes)
+
+When running with `--mode=docker` or `--mode=k8s`, the full observability stack is available:
+
+| Service | URL | Default Credentials |
+|---------|-----|---------------------|
+| **Grafana** | http://localhost:3001 | admin / admin |
+| **Jaeger** | http://localhost:16686 | — |
+| **Prometheus** | http://localhost:9090 | — |
+
+**Grafana**: The "Diagram Builder — API Overview" dashboard is pre-provisioned. It shows HTTP request rate, latency percentiles, error rates, WebSocket sessions, cache hit/miss, and DB query duration.
+
+**Jaeger**: Use the trace search to find traces by service (`diagram-builder-api`). Correlate with log output using the `trace_id` field in structured logs.
+
+**Prometheus**: Query raw metrics or explore the pre-configured dashboards in Grafana.
 
 ## Building Docker Images
 

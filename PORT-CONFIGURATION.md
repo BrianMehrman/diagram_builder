@@ -27,6 +27,29 @@ This document defines the **canonical port configuration** for the Diagram Build
 | **OTLP gRPC** | 4317 | Trace/metric ingestion | localhost:4317 |
 | **Prometheus scrape** | 9464 | API metrics endpoint (internal) | http://api:9464/metrics |
 
+### Kubernetes Port Forwarding
+
+When running in `--mode=k8s`, all services are accessed via port-forwarding through `scripts/port-forward.sh`.
+This maps Kubernetes service ports to the same localhost ports:
+
+```bash
+# Start port forwarding (runs in foreground, Ctrl+C to stop)
+./scripts/port-forward.sh
+
+# Stop port forwarding
+./scripts/port-forward.sh --stop
+```
+
+| Kubernetes Service | Local Port | URL |
+|-------------------|------------|-----|
+| `svc/diagram-builder-api` | 4000 | http://localhost:4000 |
+| `svc/diagram-builder-ui` | 3000 | http://localhost:3000 |
+| `svc/diagram-builder-...-grafana` | 3001 | http://localhost:3001 |
+| `svc/diagram-builder-jaeger-query` | 16686 | http://localhost:16686 |
+| `svc/diagram-builder-...-prometheus` | 9090 | http://localhost:9090 |
+
+> **Note:** Port 3001 is exclusively reserved for Grafana. Do NOT use it for any application service.
+
 ---
 
 ## Files That Reference Ports
