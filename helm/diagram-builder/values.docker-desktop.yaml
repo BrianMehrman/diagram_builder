@@ -88,6 +88,4 @@ jaeger:
         cpu: 500m
         memory: 256Mi
 
-opentelemetry-collector:
-  enabled: true
-  mode: deployment
+# OTEL Collector: uses custom templates, no subchart to configure

@@ -96,6 +96,4 @@ jaeger:
   query:
     enabled: true
 
-opentelemetry-collector:
-  enabled: true
-  mode: daemonset
+# OTEL Collector: uses custom templates, no subchart to configure

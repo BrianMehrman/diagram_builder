@@ -26,7 +26,4 @@ dependencies:
     repository: "https://jaegertracing.github.io/helm-charts"
     condition: jaeger.enabled
 
-  - name: opentelemetry-collector
-    version: "~0.110.0"
-    repository: "https://open-telemetry.github.io/opentelemetry-helm-charts"
-    condition: opentelemetry-collector.enabled
+  # opentelemetry-collector: managed via custom templates in templates/otel-collector/

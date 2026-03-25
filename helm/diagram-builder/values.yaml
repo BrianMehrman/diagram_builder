@@ -97,6 +97,37 @@ kube-prometheus-stack:
     service:
       type: ClusterIP
       port: 80
+    additionalDataSources:
+      - name: Jaeger
+        type: jaeger
+        access: proxy
+        url: http://{{ .Release.Name }}-jaeger-query:16686
+        jsonData:
+          tracesToLogs:
+            datasourceUid: loki
+            filterByTraceID: true
+            filterBySpanID: false
+    dashboardProviders:
+      dashboardproviders.yaml:
+        apiVersion: 1
+        providers:
+          - name: diagram-builder
+            orgId: 1
+            folder: Diagram Builder
+            type: file
+            disableDeletion: false
+            options:
+              path: /var/lib/grafana/dashboards/diagram-builder
+    dashboardsConfigMaps:
+      diagram-builder: diagram-builder-grafana-dashboards
+  prometheus:
+    prometheusSpec:
+      additionalScrapeConfigs:
+        - job_name: otel-collector
+          static_configs:
+            - targets:
+                - diagram-builder-otel-collector:8889
+          metrics_path: /metrics
 
 # Subchart: jaeger
 jaeger:
@@ -107,14 +138,12 @@ jaeger:
     enabled: true
   storage:
     type: memory
-  agent:
-    enabled: false
   collector:
+    enabled: false
+  agent:
     enabled: false
   query:
     enabled: false
 
-# Subchart: opentelemetry-collector
-opentelemetry-collector:
-  enabled: true
-  mode: deployment
+# Note: OTEL Collector is deployed via custom templates in templates/otel-collector/
+# (not via subchart) to allow full config control
