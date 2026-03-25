@@ -30,43 +30,40 @@ Update `scripts/init.sh` and `scripts/stop.sh` to support `--mode` flag (local/d
 
 ### Task 1: Update init.sh
 
-- [ ] Update `scripts/init.sh` to support `--mode` flag (default: `local`)
-  - `--mode=local`: existing behavior (docker-compose infra profile + Node.js API/UI processes)
-  - `--mode=docker`: `docker-compose --profile infra --profile app --profile observability up -d`, wait for health checks, seed DB, print URLs
+- [x] Updated `scripts/init.sh` to support `--mode` flag (default: `local`)
+  - `--mode=local`: existing behavior (docker compose v2 infra profile + Node.js API/UI processes)
+  - `--mode=docker`: `docker compose --profile infra --profile app --profile observability up -d`, wait for health checks, seed DB, print URLs
   - `--mode=k8s`: check `kubectl` and `helm` are available, call `scripts/deploy-helm.sh`, call `scripts/port-forward.sh`, print URLs
   - All modes: display colored service URL summary at end (including Grafana, Jaeger if observability is active)
 
 ### Task 2: Update stop.sh
 
-- [ ] Update `scripts/stop.sh` to support `--mode` flag
-  - `--mode=local`: existing behavior
-  - `--mode=docker`: `docker-compose --profile infra --profile app --profile observability down`
-  - `--mode=k8s`: `helm uninstall diagram-builder --namespace diagram-builder`
-  - Add `--observability` flag for local mode to stop/start only the observability Docker Compose profile
+- [x] Updated `scripts/stop.sh` to support `--mode` flag
+  - `--mode=local`: stops Node.js servers + Docker infra (or observability with `--observability`)
+  - `--mode=docker`: `docker compose --profile infra --profile app --profile observability down`
+  - `--mode=k8s`: `helm uninstall diagram-builder --namespace diagram-builder` + stop port forwards
+  - Added `--observability` flag for local mode to stop only the observability Docker Compose profile
+  - Legacy granular flags (`--all`, `--ui`, `--api`, etc.) preserved for backwards compatibility
 
 ### Task 3: Create deploy-helm.sh
 
-- [ ] Create `scripts/deploy-helm.sh`
-  - Parse flags: `--context` (default: `docker-desktop`), `--values` (default: `values.docker-desktop.yaml`), `--namespace` (default: `diagram-builder`)
-  - Check `helm` and `kubectl` are installed (print install links if not)
-  - Run `helm dependency update ./helm/diagram-builder` (only if `Chart.lock` is stale)
-  - Run `helm upgrade --install diagram-builder ./helm/diagram-builder --namespace $NAMESPACE --create-namespace --kube-context $CONTEXT -f ./helm/diagram-builder/$VALUES --wait --timeout 5m`
-  - On success: print pod status and service URLs
-  - On failure: print `helm status` and last 50 lines of failing pod logs
+- [x] Created `scripts/deploy-helm.sh`
+  - Flags: `--context` (default: `docker-desktop`), `--values` (default: `values.docker-desktop.yaml`), `--namespace` (default: `diagram-builder`)
+  - Checks `helm` and `kubectl` are installed (print install links if not)
+  - Checks context exists and values file exists before proceeding
+  - Runs `helm dependency update ./helm/diagram-builder` only if `Chart.lock` is stale
+  - Runs `helm upgrade --install ... --wait --timeout 5m`
+  - On success: prints pod status and services
+  - On failure: prints `helm status` and last 50 lines of failing pod logs
 
 ### Task 4: Create port-forward.sh
 
-- [ ] Create `scripts/port-forward.sh`
-  - Port-forward these services to localhost in background:
-    - `svc/diagram-builder-api 4000:4000`
-    - `svc/diagram-builder-ui 3000:80`
-    - `svc/diagram-builder-kube-prometheus-stack-grafana 3001:80`
-    - `svc/diagram-builder-jaeger-query 16686:16686`
-    - `svc/diagram-builder-kube-prometheus-stack-prometheus 9090:9090`
-  - Store PIDs in `/tmp/diagram-builder-port-forwards.pid`
-  - Trap `SIGINT`/`SIGTERM` to kill all forwards cleanly on exit
-  - Print "Port forwarding active — press Ctrl+C to stop" with URL list
-  - Add `--stop` flag: reads PID file, kills all forwards, removes PID file
+- [x] Created `scripts/port-forward.sh`
+  - Port-forwards all 5 services to localhost in background
+  - Stores PIDs in `/tmp/diagram-builder-port-forwards.pid`
+  - Traps `SIGINT`/`SIGTERM` to kill all forwards cleanly on exit
+  - Prints URL list on start
+  - `--stop` flag: reads PID file, kills all forwards, removes PID file
 
 ---
 
@@ -96,6 +93,11 @@ Update `scripts/init.sh` and `scripts/stop.sh` to support `--mode` flag (local/d
 
 - **2026-03-22**: Story created from TASKS.md Phase 9 Epic 12-E
 
-**Status:** backlog
+## Change Log
+
+- **2026-03-22**: Story created from TASKS.md Phase 9 Epic 12-E
+- **2026-03-24**: Story complete — all four scripts updated/created
+
+**Status:** done
 **Created:** 2026-03-22
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-03-24
