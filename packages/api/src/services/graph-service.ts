@@ -9,6 +9,7 @@ import { logger } from '../logger'
 import { runQuery } from '../database/query-utils'
 import { buildCacheKey } from '../cache/cache-keys'
 import * as cache from '../cache/cache-utils'
+import { withSpan, dbQueryDuration } from '../observability/instrumentation'
 import { buildParseResult } from '@diagram-builder/parser'
 import type {
   IVMGraph,
@@ -72,6 +73,22 @@ interface Neo4jEdge {
 }
 
 /**
+ * Runs a Neo4j query wrapped in an OTEL span, recording duration to dbQueryDuration histogram.
+ */
+async function tracedRunQuery<T>(
+  operation: string,
+  query: string,
+  params: Record<string, unknown>
+): Promise<T[]> {
+  return withSpan('neo4j.query', { 'db.operation': operation }, async (_span) => {
+    const start = Date.now()
+    const result = await runQuery<T>(query, params)
+    dbQueryDuration.record((Date.now() - start) / 1000, { operation })
+    return result
+  })
+}
+
+/**
  * Repository metadata from Neo4j
  */
 interface Neo4jRepository {
@@ -110,7 +127,9 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
            r.repositoryUrl as repositoryUrl, r.branch as branch,
            r.commit as commit, r.parsedAt as parsedAt
   `
-    const repoResults = await runQuery<Neo4jRepository>(repoQuery, { repoId })
+    const repoResults = await tracedRunQuery<Neo4jRepository>('getFullGraph.repo', repoQuery, {
+      repoId,
+    })
 
     if (!repoResults || repoResults.length === 0) {
       return null
@@ -134,7 +153,9 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
            n.isDeprecated as isDeprecated, n.isExported as isExported,
            n.properties as properties
   `
-    const nodeResults = await runQuery<Neo4jNode>(nodesQuery, { repoId })
+    const nodeResults = await tracedRunQuery<Neo4jNode>('getFullGraph.nodes', nodesQuery, {
+      repoId,
+    })
 
     // Query all edges for this repository
     const edgesQuery = `
@@ -146,7 +167,9 @@ export async function getFullGraph(repoId: string): Promise<IVMGraph | null> {
            e.weight as weight, e.circular as circular, e.reference as reference,
            e.properties as properties
   `
-    const edgeResults = await runQuery<Neo4jEdge>(edgesQuery, { repoId })
+    const edgeResults = await tracedRunQuery<Neo4jEdge>('getFullGraph.edges', edgesQuery, {
+      repoId,
+    })
 
     // Transform Neo4j results to graph format
     const nodes = nodeResults.map((node) => {
@@ -324,7 +347,7 @@ export async function getNodeDetails(repoId: string, nodeId: string): Promise<IV
            n.startColumn as startColumn, n.endColumn as endColumn,
            n.properties as properties
   `
-    const results = await runQuery<Neo4jNode>(query, { repoId, nodeId })
+    const results = await tracedRunQuery<Neo4jNode>('getNodeDetails', query, { repoId, nodeId })
 
     if (!results || results.length === 0) {
       return null
@@ -421,7 +444,10 @@ export async function getNodeDependencies(repoId: string, nodeId: string): Promi
            target.startColumn as startColumn, target.endColumn as endColumn,
            target.properties as properties
   `
-    const results = await runQuery<Neo4jNode>(query, { repoId, nodeId })
+    const results = await tracedRunQuery<Neo4jNode>('getNodeDependencies', query, {
+      repoId,
+      nodeId,
+    })
 
     const dependencies: IVMNode[] = results.map((node) => {
       const nodeType = node.type === 'abstract_class' ? 'class' : node.type
@@ -514,7 +540,11 @@ export async function executeCustomQuery(
     }
 
     // Execute query
-    const results = await runQuery<Record<string, unknown>>(cypherQuery, queryParams)
+    const results = await tracedRunQuery<Record<string, unknown>>(
+      'executeCustomQuery',
+      cypherQuery,
+      queryParams
+    )
 
     // Cache the result
     await cache.set(cacheKey, results)

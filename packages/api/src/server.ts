@@ -3,6 +3,10 @@
  * Separate from app.ts to allow testing without starting the server
  */
 
+// OTEL must be initialized FIRST — auto-instrumentation patches modules at require time.
+// If Express or ioredis load before this, their instrumentation won't apply.
+import './observability'
+
 // Load environment variables from .env file in project root
 import dotenv from 'dotenv'
 import { resolve } from 'path'

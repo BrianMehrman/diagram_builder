@@ -22,6 +22,7 @@ import { readFile } from 'fs/promises'
 import * as cache from '../cache/cache-utils'
 import { buildCacheKey } from '../cache/cache-keys'
 import { logger } from '../logger'
+import { parserDuration } from '../observability/instrumentation'
 import type {
   Codebase,
   CreateCodebaseInput,
@@ -134,7 +135,11 @@ async function triggerParserImport(codebaseId: string, input: CreateCodebaseInpu
     }
 
     // Load repository (clone if Git, scan if local)
+    const parserStart = Date.now()
     const repoContext = await loadRepository(repoConfig)
+    parserDuration.record((Date.now() - parserStart) / 1000, {
+      language: 'unknown',
+    })
     logger.info('Repository loaded', {
       codebaseId,
       fileCount: repoContext.files.length,

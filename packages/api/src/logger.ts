@@ -5,10 +5,36 @@
  */
 
 import winston from 'winston'
+import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport'
 
 // Determine log level from environment
 const LOG_LEVEL =
   process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug')
+
+const OTEL_ENABLED = process.env.OTEL_ENABLED === 'true'
+
+const transports: winston.transport[] = [
+  // dev logs
+  new winston.transports.File({
+    filename: 'logs/development.log',
+  }),
+  // Console transport for development
+  new winston.transports.Console({
+    format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
+        const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : ''
+        return `${String(timestamp)} [${String(service)}] ${String(level)}: ${String(message)}${metaStr}`
+      })
+    ),
+  }),
+]
+
+// Add OTEL transport when enabled — bridges Winston logs into active traces,
+// injecting trace_id and span_id for log-to-trace correlation in Grafana.
+if (OTEL_ENABLED) {
+  transports.push(new OpenTelemetryTransportV3())
+}
 
 // Create logger instance
 export const logger = winston.createLogger({
@@ -22,22 +48,7 @@ export const logger = winston.createLogger({
     winston.format.json()
   ),
   defaultMeta: { service: 'api' },
-  transports: [
-    // dev logs
-    new winston.transports.File({
-      filename: 'logs/development.log',
-    }),
-    // Console transport for development
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
-          const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : ''
-          return `${String(timestamp)} [${String(service)}] ${String(level)}: ${String(message)}${metaStr}`
-        })
-      ),
-    }),
-  ],
+  transports,
 })
 
 // Add file transport in production

@@ -6,6 +6,7 @@
  */
 
 import type { AuthenticatedSocket } from './auth'
+import { wsActiveSessions } from '../observability/instrumentation'
 
 /**
  * User's cursor/camera position in 3D space
@@ -102,6 +103,8 @@ export class SessionManager {
     // Track user's session
     this.userToSession.set(socket.userId, sessionId)
 
+    wsActiveSessions.add(1, { repository_id: repositoryId ?? 'unknown' })
+
     return session
   }
 
@@ -121,6 +124,8 @@ export class SessionManager {
     if (session) {
       session.users.delete(socket.userId)
       session.lastActivity = Date.now()
+
+      wsActiveSessions.add(-1, { repository_id: session.repositoryId ?? 'unknown' })
 
       // Clean up empty sessions
       if (session.users.size === 0) {

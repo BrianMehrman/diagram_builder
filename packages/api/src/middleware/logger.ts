@@ -1,6 +1,7 @@
 import morgan from 'morgan'
 import { type Request, type Response, type NextFunction } from 'express'
 import { logger, loggerStream } from '../logger'
+import { recordHttpMetrics } from '../observability/instrumentation'
 
 /**
  * Request logging middleware configuration
@@ -39,12 +40,15 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
   }
   const start = Date.now()
   res.on('finish', () => {
+    const durationMs = Date.now() - start
+    const route = req.route?.path ?? req.path
     logger.info('request', {
       method: req.method,
-      route: req.route?.path ?? req.path,
+      route,
       status: res.statusCode,
-      durationMs: Date.now() - start,
+      durationMs,
     })
+    recordHttpMetrics(req.method, route, res.statusCode, durationMs)
   })
   next()
 }
