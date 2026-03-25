@@ -28,36 +28,29 @@ Update project documentation to reflect Epic 12's new infrastructure: port confi
 
 ### Task 1: Port configuration
 
-- [ ] Update `PORT-CONFIGURATION.md`
-  - Add new services table rows: Grafana (3001), Jaeger UI (16686), Prometheus (9090), OTLP HTTP (4318), OTLP gRPC (4317)
-  - Add "Kubernetes Port Forwarding" section (via `scripts/port-forward.sh`)
-  - Add note that port 3001 is Grafana — do NOT use for any app service
-  - Update "Files That Reference Ports" section with new config files
+- [x] Updated `PORT-CONFIGURATION.md` — added Kubernetes Port Forwarding section with port-forward.sh usage; note that 3001 is Grafana-only
+  (observability ports were added in Story 12-4)
 
 ### Task 2: README
 
-- [ ] Update `README.md`
-  - Add "Prerequisites" section listing Docker Desktop (with Kubernetes enabled), Helm 3.x, Node.js 22
-  - Add "Deployment Modes" section explaining local / docker / k8s
-  - Add "Observability" section: how to access Grafana (default creds), Jaeger trace search, Prometheus query
-  - Add Kubernetes quick start: `./scripts/init.sh --mode=k8s`
-  - Add Docker full-stack quick start: `./scripts/init.sh --mode=docker`
+- [x] Updated `README.md`:
+  - Replaced Requirements with Prerequisites table (Node.js, Docker, Helm, kubectl)
+  - Added Deployment Modes section (local/docker/k8s with commands)
+  - Added Observability section (Grafana/Jaeger/Prometheus URLs + default creds)
+  - Added Docker/k8s quick start commands
 
 ### Task 3: CLAUDE.md
 
-- [ ] Update `CLAUDE.md`
-  - Add new paths to "Document Locations" section (Helm chart, config/, docker/)
-  - Update "Development Commands" section with `--mode` flag examples
-  - Add OTEL env vars to relevant sections
+- [x] Updated `CLAUDE.md`:
+  - Document Locations expanded with helm/, docker/, config/ paths
+  - Added Deployment Modes section with `--mode` table, k8s scripts, OTEL env vars
+  - Updated init.sh reference to include `--mode=local`
 
 ### Task 4: .env.example
 
-- [ ] Update `.env.example`
-  - Add `OTEL_ENABLED=false`
-  - Add `OTEL_SERVICE_NAME=diagram-builder-api`
-  - Add `OTEL_SERVICE_VERSION=1.0.0`
-  - Add `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` (local Jaeger)
-  - Add `# DEPLOY_MODE: local | docker | k8s` comment block
+- [x] Updated `.env.example`:
+  - Added OTEL block: OTEL_ENABLED, OTEL_SERVICE_NAME, OTEL_SERVICE_VERSION, OTEL_EXPORTER_OTLP_ENDPOINT
+  - Added DEPLOY_MODE comment block explaining local/docker/k8s options
 
 ---
 
@@ -85,7 +78,8 @@ Update project documentation to reflect Epic 12's new infrastructure: port confi
 ## Change Log
 
 - **2026-03-22**: Story created from TASKS.md Phase 9 Epic 12-E
+- **2026-03-24**: Story complete — all four files updated, Epic 12 complete
 
-**Status:** backlog
+**Status:** done
 **Created:** 2026-03-22
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-03-24
