@@ -1,0 +1,93 @@
+# Values for local Docker Desktop Kubernetes development
+# Usage: helm upgrade --install diagram-builder ./helm/diagram-builder -f ./helm/diagram-builder/values.docker-desktop.yaml
+
+api:
+  replicaCount: 1
+  service:
+    type: NodePort
+    nodePort: 30400
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  hpa:
+    enabled: false
+  config:
+    nodeEnv: development
+    logLevel: debug
+    otelEnabled: "true"
+    corsOrigin: "http://localhost:3000"
+
+ui:
+  replicaCount: 1
+  service:
+    type: NodePort
+    nodePort: 30300
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+ingress:
+  enabled: false
+
+neo4j:
+  enabled: true
+  neo4j:
+    password: "password"
+    minimumClusterSize: 1
+  volumes:
+    data:
+      mode: volume
+      volume:
+        storageClassName: hostpath
+        requests:
+          storage: 2Gi
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  architecture: standalone
+
+kube-prometheus-stack:
+  enabled: true
+  alertmanager:
+    enabled: false
+  grafana:
+    enabled: true
+    adminPassword: admin
+    service:
+      type: NodePort
+      nodePort: 30301
+
+jaeger:
+  enabled: true
+  storage:
+    type: memory
+  allInOne:
+    enabled: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+
+opentelemetry-collector:
+  enabled: true
+  mode: deployment

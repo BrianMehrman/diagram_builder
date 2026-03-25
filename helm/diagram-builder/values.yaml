@@ -1,0 +1,120 @@
+# Default values for diagram-builder (production defaults)
+
+api:
+  replicaCount: 2
+  image:
+    repository: diagram-builder-api
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 4000
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+  config:
+    nodeEnv: production
+    logLevel: info
+    otelEnabled: "true"
+    otelServiceName: diagram-builder-api
+    otelServiceVersion: "1.0.0"
+    corsOrigin: "https://example.com"
+  secrets:
+    jwtSecret: "changeme"
+    neo4jPassword: "changeme"
+    redisPassword: ""
+
+ui:
+  replicaCount: 2
+  image:
+    repository: diagram-builder-ui
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: LoadBalancer
+    port: 80
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: diagram-builder.example.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: api
+        - path: /
+          pathType: Prefix
+          service: ui
+  tls: []
+  # - secretName: diagram-builder-tls
+  #   hosts:
+  #     - diagram-builder.example.com
+
+# Subchart: neo4j
+neo4j:
+  enabled: true
+  neo4j:
+    name: diagram-builder
+    password: "changeme"
+    minimumClusterSize: 1
+  volumes:
+    data:
+      mode: volume
+
+# Subchart: redis
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  architecture: standalone
+
+# Subchart: kube-prometheus-stack
+kube-prometheus-stack:
+  enabled: true
+  alertmanager:
+    enabled: true
+  grafana:
+    enabled: true
+    adminPassword: admin
+    service:
+      type: ClusterIP
+      port: 80
+
+# Subchart: jaeger
+jaeger:
+  enabled: true
+  provisionDataStore:
+    cassandra: false
+  allInOne:
+    enabled: true
+  storage:
+    type: memory
+  agent:
+    enabled: false
+  collector:
+    enabled: false
+  query:
+    enabled: false
+
+# Subchart: opentelemetry-collector
+opentelemetry-collector:
+  enabled: true
+  mode: deployment
