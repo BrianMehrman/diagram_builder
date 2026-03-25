@@ -635,9 +635,7 @@ describe('Graph Query Endpoints', () => {
 
     it('logs Graph query request with repoId on GET /:repoId', async () => {
       const logSpy = vi.spyOn(logger, 'info')
-      await request(app)
-        .get(`/api/graph/${mockRepoId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+      await request(app).get(`/api/graph/${mockRepoId}`).set('Authorization', `Bearer ${authToken}`)
       expect(logSpy).toHaveBeenCalledWith(
         expect.stringContaining('Graph'),
         expect.objectContaining({ repoId: expect.any(String) })

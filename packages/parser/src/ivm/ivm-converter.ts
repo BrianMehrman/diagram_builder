@@ -43,7 +43,10 @@ export function convertToIVM(
   repoContext: RepositoryContext,
   options: IVMConversionOptions
 ): IVMGraph {
-  logger.debug('convertToIVM start', { inputNodes: depGraph.getNodes().length, inputEdges: depGraph.getEdges().length })
+  logger.debug('convertToIVM start', {
+    inputNodes: depGraph.getNodes().length,
+    inputEdges: depGraph.getEdges().length,
+  })
   const start = Date.now()
 
   // Step 1: Convert nodes

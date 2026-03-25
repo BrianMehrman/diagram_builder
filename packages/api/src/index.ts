@@ -13,8 +13,8 @@ const app = express()
 
 // Middleware stack (order matters!)
 app.use(loggerMiddleware) // 1. Morgan logging first
-app.use(requestLogger)   // 2. Structured Winston request logger
-app.use(corsMiddleware)  // 3. CORS
+app.use(requestLogger) // 2. Structured Winston request logger
+app.use(corsMiddleware) // 3. CORS
 app.use(express.json()) // 3. Body parsing
 
 // Health check endpoint

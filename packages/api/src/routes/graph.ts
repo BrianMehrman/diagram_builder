@@ -90,7 +90,12 @@ graphRouter.get(
       )
     }
 
-    logger.info('Graph query complete', { repoId, route: 'GET /:repoId/node/:nodeId', nodeId, durationMs: Date.now() - start })
+    logger.info('Graph query complete', {
+      repoId,
+      route: 'GET /:repoId/node/:nodeId',
+      nodeId,
+      durationMs: Date.now() - start,
+    })
     res.json(node)
   })
 )
@@ -110,11 +115,21 @@ graphRouter.get(
     }
 
     const start = Date.now()
-    logger.info('Graph query request', { repoId, route: 'GET /:repoId/dependencies/:nodeId', nodeId })
+    logger.info('Graph query request', {
+      repoId,
+      route: 'GET /:repoId/dependencies/:nodeId',
+      nodeId,
+    })
 
     const dependencies = await getNodeDependencies(repoId, nodeId)
 
-    logger.info('Graph query complete', { repoId, route: 'GET /:repoId/dependencies/:nodeId', nodeId, count: dependencies.length, durationMs: Date.now() - start })
+    logger.info('Graph query complete', {
+      repoId,
+      route: 'GET /:repoId/dependencies/:nodeId',
+      nodeId,
+      count: dependencies.length,
+      durationMs: Date.now() - start,
+    })
     res.json({
       nodeId,
       count: dependencies.length,
@@ -156,13 +171,22 @@ graphRouter.post(
     try {
       const results = await executeCustomQuery(repoId, query, params)
 
-      logger.info('Graph query complete', { repoId, route: 'POST /:repoId/query', resultCount: results.length, durationMs: Date.now() - start })
+      logger.info('Graph query complete', {
+        repoId,
+        route: 'POST /:repoId/query',
+        resultCount: results.length,
+        durationMs: Date.now() - start,
+      })
       res.json({
         count: results.length,
         results,
       })
     } catch (error) {
-      logger.error('Graph query failed', { category: 'neo4j', repoId, error: (error as Error).message })
+      logger.error('Graph query failed', {
+        category: 'neo4j',
+        repoId,
+        error: (error as Error).message,
+      })
       if (error instanceof Error) {
         throw new ValidationError('Query execution failed', error.message)
       }
