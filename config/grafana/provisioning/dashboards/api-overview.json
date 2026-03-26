@@ -92,7 +92,10 @@
         }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "short", "thresholds": { "mode": "absolute", "steps": [{ "color": "green" }] } }
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green" }] }
+        }
       }
     },
     {
