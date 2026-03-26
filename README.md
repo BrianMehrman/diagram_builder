@@ -362,7 +362,7 @@ docker compose down -v
 
 ## Architecture Guidelines
 
-**Critical Rules** (from `_bmad-output/project-context.md`):
+**Critical Rules** (from `docs/project-context.md`):
 
 1. **State Management**: Zustand ONLY (NO Redux, NO Context API)
 2. **Organization**: Feature-based (NOT type-based)
@@ -379,15 +379,15 @@ docker compose down -v
 
 ### Quick Navigation
 
-- 📖 **[Architecture](/_bmad-output/planning-artifacts/architecture.md)** - System design, technology stack, and architectural decisions
-- 📋 **[Product Requirements](/_bmad-output/planning-artifacts/prd.md)** - Features, user stories, and acceptance criteria
-- 📊 **[Sprint Status](/_bmad-output/implementation-artifacts/sprint-status.yaml)** - Current epic and story progress
+- 📖 **[Architecture](/docs/architecture.md)** - System design, technology stack, and architectural decisions
+- 📋 **[Product Requirements](/docs/prd.md)** - Features, user stories, and acceptance criteria
+- 📊 **[Sprint Status](/docs/sprints/sprint-status.yaml)** - Current epic and story progress
 - 📝 **[Planning Guide](/PLANNING.md)** - How documentation is organized and where to find things
 - 🤖 **[LLM Instructions](/CLAUDE.md)** - Context loading guide for AI assistants
 
 ### Implementation Artifacts
 
-All epics and stories are documented in `_bmad-output/implementation-artifacts/`:
+All epics and stories are documented in `docs/epics/`:
 - **Epic 3**: Parser Package (`3-*.md`)
 - **Epic 4**: API Package (`4-*.md`)
 - **Epic 5**: UI Package (`5-*.md`)
@@ -396,7 +396,7 @@ All epics and stories are documented in `_bmad-output/implementation-artifacts/`
 ### Key Project Context
 
 For a deep dive into project history, conventions, and lessons learned:
-- 🔍 **[Project Context](/_bmad-output/project-context.md)** - Comprehensive project guide
+- 🔍 **[Project Context](/docs/project-context.md)** - Comprehensive project guide
 - 📚 **[Implementation Tasks](/TASKS.md)** - Phase-by-phase task breakdown
 
 ## CI/CD
