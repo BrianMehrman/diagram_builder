@@ -82,10 +82,8 @@ services:
   # ─── observability profile ──────────────────────────────────────────────────
   jaeger:
     profiles: [observability]
-    image: jaegertracing/all-in-one:2.1
+    image: jaegertracing/jaeger:2.1.0
     container_name: diagram-builder-jaeger
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
     ports:
       - '16686:16686'  # Jaeger UI
       - '4317:4317'    # OTLP gRPC
