@@ -1,0 +1,99 @@
+# Values for production deployment
+# Secrets MUST be provided via external secret manager or --set flags — never commit real values.
+
+api:
+  replicaCount: 3
+  image:
+    pullPolicy: Always
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+  hpa:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 60
+  config:
+    nodeEnv: production
+    logLevel: warn
+    otelEnabled: "true"
+    corsOrigin: "https://your-domain.com"  # Override with your domain
+
+ui:
+  replicaCount: 3
+  image:
+    pullPolicy: Always
+  service:
+    type: ClusterIP
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+  hosts:
+    - host: your-domain.com  # Override with your domain
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: api
+        - path: /
+          pathType: Prefix
+          service: ui
+  tls:
+    - secretName: diagram-builder-tls
+      hosts:
+        - your-domain.com  # Override with your domain
+
+neo4j:
+  enabled: true
+  neo4j:
+    minimumClusterSize: 1
+    # password set via --set neo4j.neo4j.password=... or external secret
+  volumes:
+    data:
+      mode: volume
+      volume:
+        storageClassName: gp3  # AWS EKS; adjust for your cloud
+        requests:
+          storage: 20Gi
+
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    # password set via --set redis.auth.password=...
+  architecture: standalone
+
+kube-prometheus-stack:
+  enabled: true
+  alertmanager:
+    enabled: true
+  grafana:
+    enabled: true
+    service:
+      type: ClusterIP
+    persistence:
+      enabled: true
+      storageClassName: gp3
+      size: 10Gi
+
+jaeger:
+  enabled: true
+  storage:
+    type: elasticsearch
+  allInOne:
+    enabled: false
+  collector:
+    enabled: true
+  query:
+    enabled: true
+
+# OTEL Collector: uses custom templates, no subchart to configure

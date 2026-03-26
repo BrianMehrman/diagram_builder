@@ -1,0 +1,13 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "diagram-builder.fullname" . }}-api
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "diagram-builder.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      {{- include "diagram-builder.api.selectorLabels" . | nindent 6 }}

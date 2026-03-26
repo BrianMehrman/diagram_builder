@@ -2,6 +2,7 @@ import Parser from 'tree-sitter'
 import JavaScript from 'tree-sitter-javascript'
 import TypeScript from 'tree-sitter-typescript'
 import { ParserInitError, UnsupportedLanguageError } from './errors'
+import { logger } from '../logger'
 
 export type Language = 'javascript' | 'typescript' | 'tsx' | 'python' | 'java' | 'go' | 'c' | 'cpp'
 
@@ -38,7 +39,10 @@ export function createParser(language: Language): ParserInstance {
     if (grammar) {
       parser.setLanguage(grammar as Parameters<typeof parser.setLanguage>[0])
     } else {
-      console.warn(`[createParser] No grammar available for language: ${language}`)
+      logger.warn('No grammar available for language, file will be scanned without AST parsing', {
+        category: 'parser',
+        language,
+      })
     }
 
     return {
@@ -46,7 +50,11 @@ export function createParser(language: Language): ParserInstance {
       language,
     }
   } catch (error) {
-    console.error(`[createParser] Error creating parser for ${language}:`, error)
+    logger.error('Error creating parser', {
+      category: 'parser',
+      language,
+      error: (error as Error).message,
+    })
     if (error instanceof UnsupportedLanguageError) {
       throw error
     }

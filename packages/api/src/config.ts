@@ -48,6 +48,19 @@ const ApiConfigSchema = z.object({
 
   // Logging
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  LOKI_ENABLED: z
+    .string()
+    .optional()
+    .default('false')
+    .transform((val) => val.toLowerCase() === 'true')
+    .pipe(z.boolean()),
+  LOKI_HOST: z.string().default('http://localhost:3100'),
+
+  // OpenTelemetry
+  OTEL_ENABLED: z.coerce.boolean().default(false),
+  OTEL_SERVICE_NAME: z.string().default('diagram-builder-api'),
+  OTEL_SERVICE_VERSION: z.string().default('1.0.0'),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().default('http://localhost:4318'),
 
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60000), // 1 minute

@@ -1,12 +1,9 @@
 import type { GraphInput } from '../../../core/src/ivm/types.js'
 import type { RepositoryContext } from '../repository/repository-loader'
 import { readFileSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { join } from 'path'
 
 // Read package version at module load time
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
 // Navigate to package root from dist/parser/src/ivm
 const packageJsonPath = join(__dirname, '../../../../package.json')
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as { version: string }

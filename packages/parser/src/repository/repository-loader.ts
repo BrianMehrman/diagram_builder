@@ -2,7 +2,7 @@ import { scanDirectory, type ScanOptions } from './directory-scanner'
 import { cloneRepository, type CloneOptions } from './git-cloner'
 import fs from 'fs/promises'
 import path from 'path'
-import { logOperation } from '../logger'
+import { logger, logOperation } from '../logger'
 
 /**
  * Repository configuration for loading
@@ -129,6 +129,33 @@ function isGitUrl(str: string): boolean {
 }
 
 /**
+ * Iterates over a scanned file list and logs progress milestones at 25%, 50%, 75%.
+ *
+ * @param files - Array of file paths returned by scanDirectory
+ * @param source - Human-readable source label for log context
+ */
+function logFileProgress(files: string[], source: string | undefined, startTime: number): void {
+  const total = files.length
+  logger.info('Parser start', { total, source: source ?? 'unknown' })
+  const milestones = new Set([25, 50, 75])
+  let processed = 0
+
+  for (let i = 0; i < files.length; i++) {
+    processed++
+    if (total > 20) {
+      const pct = Math.floor((processed / total) * 100)
+      const milestone = [25, 50, 75].find((m) => milestones.has(m) && pct >= m)
+      if (milestone !== undefined) {
+        milestones.delete(milestone)
+        logger.info('Parser progress', { processed, total, pct: `${milestone}%` })
+      }
+    }
+  }
+
+  logger.info('Parser complete', { processed, total, durationMs: Date.now() - startTime })
+}
+
+/**
  * Loads a local directory
  *
  * @param dirPath - Directory path
@@ -141,6 +168,7 @@ async function loadLocalDirectory(
   config: RepositoryConfig,
   options?: ScanOptions
 ): Promise<RepositoryContext> {
+  const start = Date.now()
   // Resolve to absolute path
   const absolutePath = path.resolve(dirPath)
 
@@ -150,7 +178,12 @@ async function loadLocalDirectory(
     if (!stats.isDirectory()) {
       throw new Error(`Path is not a directory: ${absolutePath}`)
     }
-  } catch {
+  } catch (err) {
+    logger.error('Directory not found or inaccessible', {
+      category: 'parser',
+      dirPath: absolutePath,
+      error: (err as Error).message,
+    })
     throw new Error(`Directory not found: ${absolutePath}`)
   }
 
@@ -172,6 +205,8 @@ async function loadLocalDirectory(
   }
 
   const files = await scanDirectory(absolutePath, scanOptions)
+
+  logFileProgress(files, config.path ?? absolutePath, start)
 
   return {
     path: absolutePath,
@@ -195,6 +230,7 @@ async function loadGitRepository(
   config: RepositoryConfig,
   options?: ScanOptions
 ): Promise<RepositoryContext> {
+  const start = Date.now()
   if (!config.url) {
     throw new Error('Git repository URL is required')
   }
@@ -231,12 +267,18 @@ async function loadGitRepository(
 
   const files = await scanDirectory(clonePath, scanOptions)
 
+  logFileProgress(files, config.url, start)
+
   // Create cleanup function
   const cleanup = async (): Promise<void> => {
     try {
       await fs.rm(clonePath, { recursive: true, force: true })
-    } catch {
-      // Silently ignore cleanup errors - not critical
+    } catch (err) {
+      logger.warn('Failed to clean up cloned repository, skipping', {
+        category: 'parser',
+        clonePath,
+        error: (err as Error).message,
+      })
     }
   }
 

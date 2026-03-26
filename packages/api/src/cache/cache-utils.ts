@@ -6,6 +6,7 @@
  */
 
 import { getRedisClient } from './redis-config'
+import { cacheOperationsTotal } from '../observability/instrumentation'
 
 /**
  * Default TTL for cached items (5 minutes)
@@ -24,9 +25,11 @@ export async function get<T>(key: string): Promise<T | null> {
     const value = await redis.get(key)
 
     if (!value) {
+      cacheOperationsTotal.add(1, { operation: 'get', result: 'miss' })
       return null
     }
 
+    cacheOperationsTotal.add(1, { operation: 'get', result: 'hit' })
     return JSON.parse(value) as T
   } catch (error) {
     console.error(`Cache get error for key "${key}":`, error)
@@ -51,6 +54,7 @@ export async function set<T>(
     const serialized = JSON.stringify(value)
 
     await redis.setex(key, ttl, serialized)
+    cacheOperationsTotal.add(1, { operation: 'set', result: 'hit' })
   } catch (error) {
     console.error(`Cache set error for key "${key}":`, error)
     throw error
@@ -66,6 +70,7 @@ export async function invalidate(key: string): Promise<void> {
   try {
     const redis = getRedisClient()
     await redis.del(key)
+    cacheOperationsTotal.add(1, { operation: 'del', result: 'hit' })
   } catch (error) {
     console.error(`Cache invalidate error for key "${key}":`, error)
     throw error

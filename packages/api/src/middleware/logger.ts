@@ -1,5 +1,7 @@
 import morgan from 'morgan'
-import { loggerStream } from '../logger'
+import { type Request, type Response, type NextFunction } from 'express'
+import { logger, loggerStream } from '../logger'
+import { recordHttpMetrics } from '../observability/instrumentation'
 
 /**
  * Request logging middleware configuration
@@ -25,3 +27,29 @@ const productionFormat = ':timestamp :method :url :status :res[content-length] -
 const format = process.env.NODE_ENV === 'production' ? productionFormat : developmentFormat
 
 export const loggerMiddleware = morgan(format, { stream: loggerStream })
+
+/**
+ * Structured Winston request logger middleware.
+ * Emits a structured log on response finish with method, route, status, and duration.
+ * Skips health check requests to reduce noise.
+ */
+export function requestLogger(req: Request, res: Response, next: NextFunction): void {
+  if (req.path === '/health') {
+    next()
+    return
+  }
+  const start = Date.now()
+  res.on('finish', () => {
+    const durationMs = Date.now() - start
+    const routeRecord = req.route as { path?: string } | undefined
+    const route: string = routeRecord?.path ?? req.path
+    logger.info('request', {
+      method: req.method,
+      route,
+      status: res.statusCode,
+      durationMs,
+    })
+    recordHttpMetrics(req.method, route, res.statusCode, durationMs)
+  })
+  next()
+}

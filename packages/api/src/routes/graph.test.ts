@@ -8,12 +8,13 @@
  * - POST /api/graph/:repoId/query - Custom Cypher query
  */
 
-import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, vi, beforeEach, afterEach } from 'vitest'
 import request from 'supertest'
 import express, { Express } from 'express'
 import { graphRouter } from './graph'
 import { errorHandler } from '../middleware/error-handler'
 import { generateToken } from '../auth/jwt'
+import { logger } from '../logger'
 import type { NodeType, EdgeType, LODLevel } from '@diagram-builder/core/ivm/types'
 
 // Mock graph data
@@ -624,6 +625,21 @@ describe('Graph Query Endpoints', () => {
         .set('Authorization', `Bearer ${authToken}`)
 
       expect(res.status).toBe(400)
+    })
+  })
+
+  describe('Logging', () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it('logs Graph query request with repoId on GET /:repoId', async () => {
+      const logSpy = vi.spyOn(logger, 'info')
+      await request(app).get(`/api/graph/${mockRepoId}`).set('Authorization', `Bearer ${authToken}`)
+      expect(logSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Graph'),
+        expect.objectContaining({ repoId: expect.any(String) })
+      )
     })
   })
 })

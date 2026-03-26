@@ -2,6 +2,7 @@ import { buildGraph } from '../../../core/src/ivm/builder.js'
 import type { GraphInput, IVMGraph } from '../../../core/src/ivm/types.js'
 import type { DependencyGraph } from '../graph/dependency-graph'
 import type { RepositoryContext } from '../repository/repository-loader'
+import { logger } from '../logger'
 import { convertNodes } from './node-converter'
 import { convertEdges } from './edge-converter'
 import { enrichGraphMetadata } from './metadata-enricher'
@@ -42,6 +43,12 @@ export function convertToIVM(
   repoContext: RepositoryContext,
   options: IVMConversionOptions
 ): IVMGraph {
+  logger.debug('convertToIVM start', {
+    inputNodes: depGraph.getNodes().length,
+    inputEdges: depGraph.getEdges().length,
+  })
+  const start = Date.now()
+
   // Step 1: Convert nodes
   const nodeInputs = convertNodes(depGraph.getNodes())
 
@@ -90,6 +97,14 @@ export function convertToIVM(
       `IVM validation failed with ${validation.errors.length} error(s):\n${errorMessages}`
     )
   }
+
+  logger.info('convertToIVM complete', {
+    inputNodes: depGraph.getNodes().length,
+    inputEdges: depGraph.getEdges().length,
+    ivmNodes: ivm.nodes.length,
+    ivmEdges: ivm.edges.length,
+    durationMs: Date.now() - start,
+  })
 
   return ivm
 }

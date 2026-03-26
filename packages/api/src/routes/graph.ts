@@ -9,6 +9,7 @@
  */
 
 import { Router, Request, Response } from 'express'
+import { logger } from '../logger'
 import { authenticate } from '../middleware/auth'
 import {
   getFullGraph,
@@ -39,15 +40,25 @@ graphRouter.get(
       throw new ValidationError('Invalid request', 'Repository ID is required')
     }
 
+    const start = Date.now()
+    logger.info('Graph query request', { repoId, route: 'GET /:repoId' })
+
     const graph = await getFullGraph(repoId)
 
     if (!graph) {
+      logger.warn('Graph query returned no data', { repoId })
       throw new NotFoundError(
         'Repository not found',
         `Repository with ID ${repoId} does not exist or has no graph data`
       )
     }
 
+    logger.info('Graph query complete', {
+      repoId,
+      nodeCount: graph.nodes.length,
+      edgeCount: graph.edges.length,
+      durationMs: Date.now() - start,
+    })
     res.json(graph)
   })
 )
@@ -66,15 +77,25 @@ graphRouter.get(
       throw new ValidationError('Invalid request', 'Repository ID and Node ID are required')
     }
 
+    const start = Date.now()
+    logger.info('Graph query request', { repoId, route: 'GET /:repoId/node/:nodeId', nodeId })
+
     const node = await getNodeDetails(repoId, nodeId)
 
     if (!node) {
+      logger.warn('Node not found', { repoId, nodeId })
       throw new NotFoundError(
         'Node not found',
         `Node with ID ${nodeId} does not exist in repository ${repoId}`
       )
     }
 
+    logger.info('Graph query complete', {
+      repoId,
+      route: 'GET /:repoId/node/:nodeId',
+      nodeId,
+      durationMs: Date.now() - start,
+    })
     res.json(node)
   })
 )
@@ -93,8 +114,22 @@ graphRouter.get(
       throw new ValidationError('Invalid request', 'Repository ID and Node ID are required')
     }
 
+    const start = Date.now()
+    logger.info('Graph query request', {
+      repoId,
+      route: 'GET /:repoId/dependencies/:nodeId',
+      nodeId,
+    })
+
     const dependencies = await getNodeDependencies(repoId, nodeId)
 
+    logger.info('Graph query complete', {
+      repoId,
+      route: 'GET /:repoId/dependencies/:nodeId',
+      nodeId,
+      count: dependencies.length,
+      durationMs: Date.now() - start,
+    })
     res.json({
       nodeId,
       count: dependencies.length,
@@ -131,14 +166,27 @@ graphRouter.post(
 
     const { query, params = {} } = validation.data
 
+    const start = Date.now()
+    logger.info('Graph query request', { repoId, route: 'POST /:repoId/query' })
     try {
       const results = await executeCustomQuery(repoId, query, params)
 
+      logger.info('Graph query complete', {
+        repoId,
+        route: 'POST /:repoId/query',
+        resultCount: results.length,
+        durationMs: Date.now() - start,
+      })
       res.json({
         count: results.length,
         results,
       })
     } catch (error) {
+      logger.error('Graph query failed', {
+        category: 'neo4j',
+        repoId,
+        error: (error as Error).message,
+      })
       if (error instanceof Error) {
         throw new ValidationError('Query execution failed', error.message)
       }

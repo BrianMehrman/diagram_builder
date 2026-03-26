@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { loadRepository } from './repository-loader'
+import { logger } from '../logger'
 import fs from 'fs/promises'
 import path from 'path'
 import os from 'os'
@@ -29,6 +30,10 @@ describe('Repository Loader', () => {
   })
 
   describe('loadRepository', () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
     it('should load local directory and return file paths', async () => {
       // Create test files
       await fs.writeFile(path.join(testDir, 'index.js'), 'console.log("test")')
@@ -163,6 +168,21 @@ describe('Repository Loader', () => {
 
       expect(context.files).toHaveLength(0)
       expect(context.metadata.fileCount).toBe(0)
+    })
+
+    it('logs progress milestones when processing many files', async () => {
+      // Create 40 files so 25% milestone (after 10) will fire
+      for (let i = 0; i < 40; i++) {
+        await fs.writeFile(path.join(testDir, `file${i}.js`), `// file ${i}`)
+      }
+
+      const logSpy = vi.spyOn(logger, 'info')
+      await loadRepository(testDir)
+
+      expect(logSpy).toHaveBeenCalledWith(
+        expect.stringContaining('progress'),
+        expect.objectContaining({ processed: expect.any(Number), total: expect.any(Number) })
+      )
     })
   })
 })

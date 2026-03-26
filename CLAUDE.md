@@ -66,10 +66,25 @@ const docs = {
   architecture: './_bmad-output/planning-artifacts/architecture.md',
   prd: './_bmad-output/planning-artifacts/prd.md',
   
-  // Stories by epic
-  epic3Stories: './_bmad-output/implementation-artifacts/3-*.md',
-  epic4Stories: './_bmad-output/implementation-artifacts/4-*.md',
-  epic5Stories: './_bmad-output/implementation-artifacts/5-*.md',
+  // Stories by epic (new location post-consolidation 2026-03-21)
+  epicStories: './docs/epics/epic-N/stories/*.md',
+
+  // Infrastructure
+  dockerApi: './docker/api/Dockerfile',
+  dockerUi: './docker/ui/Dockerfile',
+  dockerCompose: './docker-compose.yml',
+
+  // Helm chart (Kubernetes)
+  helmChart: './helm/diagram-builder/Chart.yaml',
+  helmValues: './helm/diagram-builder/values.yaml',
+  helmValuesDockerDesktop: './helm/diagram-builder/values.docker-desktop.yaml',
+  helmValuesProduction: './helm/diagram-builder/values.production.yaml',
+
+  // Observability config
+  prometheusConfig: './config/prometheus/prometheus.yml',
+  grafanaDatasources: './config/grafana/provisioning/datasources/datasources.yaml',
+  grafanaDashboards: './config/grafana/provisioning/dashboards/',
+  otelCollectorConfig: './config/otel-collector/config.yaml',
 }
 ```
 
@@ -115,14 +130,17 @@ const docs = {
 2. **E2E Tests**: Located in `tests/e2e/`
    - Use Playwright
    - Test critical user flows
-   - Services auto-start via `./scripts/init.sh`
+   - Services auto-start via `./scripts/init.sh` (or `./scripts/init.sh --mode=local`)
    - Run with: `npm run test:e2e`
 
 ### After Code Changes
 
-- ✅ Run tests: `npm test`
-- ✅ Check types: `npm run type-check`
-- ✅ Lint: `npm run lint`
+Run all four checks **in this order** before every push — this mirrors CI exactly:
+
+- ✅ `npm run type-check` — TypeScript (all workspaces)
+- ✅ `npm run lint` — ESLint (all workspaces)
+- ✅ `npm run format:check` — Prettier (must be run — subagents forget this)
+- ✅ `npm test` — Vitest unit tests
 - ✅ Update tests if behavior changed
 
 ### ARIA / Test Selector Rule
@@ -158,8 +176,10 @@ Update every stale query before committing. Stale queries cause silent failures.
 > **CRITICAL: Definition of Done — ALL items must be checked before a story is considered complete.**
 
 - [ ] All acceptance criteria implemented
-- [ ] `npm test` passes (zero new failures)
 - [ ] `npm run type-check` passes (zero TypeScript errors)
+- [ ] `npm run lint` passes (zero errors)
+- [ ] `npm run format:check` passes (all files formatted)
+- [ ] `npm test` passes (zero new failures)
 - [ ] **`sprint-status.yaml` updated** — mark story as `review  # Description - COMPLETE (YYYY-MM-DD)`
 - [ ] Tasks marked `[x]` in `TASKS.md`
 - [ ] Story file updated with completion notes and file list
@@ -175,6 +195,35 @@ in-progress    # Actively working
 review         # Complete, awaiting review
 done           # Reviewed and complete
 blocked        # Dependency or issue blocking
+```
+
+---
+
+## 🚀 Deployment Modes
+
+Diagram Builder supports three deployment modes via `--mode` flag on `init.sh` and `stop.sh`:
+
+| Mode | Command | Description |
+|------|---------|-------------|
+| `local` | `./scripts/init.sh --mode=local` | Node.js API/UI + Docker Compose infra (default) |
+| `docker` | `./scripts/init.sh --mode=docker` | Full Docker Compose stack (infra + app + observability) |
+| `k8s` | `./scripts/init.sh --mode=k8s` | Kubernetes via Helm + port-forward |
+
+**Kubernetes scripts:**
+```bash
+./scripts/deploy-helm.sh [--context=docker-desktop] [--values=values.docker-desktop.yaml]
+./scripts/port-forward.sh         # start forwarding
+./scripts/port-forward.sh --stop  # stop forwarding
+```
+
+**OTEL environment variables** (set in `.env` or Docker Compose):
+```bash
+OTEL_ENABLED=true                                   # enable tracing+metrics
+OTEL_SERVICE_NAME=diagram-builder-api
+OTEL_SERVICE_VERSION=1.0.0
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318   # local: jaeger on 4318
+                                                     # docker: http://jaeger:4318
+                                                     # k8s: set via Helm configmap
 ```
 
 ---

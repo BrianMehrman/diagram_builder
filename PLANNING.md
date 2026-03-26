@@ -1,400 +1,101 @@
-# Planning & Sprint Documentation Index
+# Planning & Sprint Documentation
 
 **Project:** diagram_builder - 3D Codebase Visualization Tool
-**Last Updated:** 2026-01-01
 
-> **Purpose:** This document serves as the **entry point** for all planning, sprint, and architecture documentation. Any LLM working on this project should start here to understand where to find critical project information.
-
----
-
-## 📚 Quick Navigation
-
-### For Product/Requirements Understanding
-- **PRD (Product Requirements Document)** → `_bmad-output/planning-artifacts/prd.md`
-- **Architecture Decisions** → `_bmad-output/planning-artifacts/architecture.md`
-- **Project Context (Brownfield Docs)** → `_bmad-output/project-context.md`
-
-### For Sprint Planning & Tracking
-- **Current Sprint Status** → `_bmad-output/implementation-artifacts/sprint-status.yaml`
-- **Implementation Tasks** → `TASKS.md` (root directory)
-- **Epics & Stories** → `_bmad-output/implementation-artifacts/` (story files: `{epic}-{story}-{name}.md`)
-
-### For Changes & Proposals
-- **Change Proposals** → `_bmad-output/planning-artifacts/sprint-change-proposal-{date}.md`
-- **Latest Change**: `sprint-change-proposal-2026-01-01.md` (Codebase Import Feature)
-
-### For UX/Design
-- **UX Specifications** → `_bmad-output/planning-artifacts/ux-*.md`
-- **Latest UX Spec**: To be created - `ux-codebase-import.md` (for stories 4-14, 5-15)
+> Start here when you need to find planning information or understand the project structure.
 
 ---
 
-## 📋 Document Descriptions
+## Where to Find Things
 
-### Planning Artifacts (`_bmad-output/planning-artifacts/`)
-
-#### PRD (Product Requirements Document)
-**Location:** `_bmad-output/planning-artifacts/prd.md`
-
-**Contains:**
-- Executive summary and product vision
-- Target users and use cases
-- 72 functional requirements (FR1-FR72)
-- 76 non-functional requirements (NFR-P1 through NFR-SC17)
-- User journeys (5 detailed scenarios)
-- MVP scope and phased development plan
-- Success criteria and metrics
-
-**When to read:**
-- Understanding product requirements
-- Validating features against original intent
-- Planning new features or changes
+| What you need | Where to look |
+|---|---|
+| Product requirements | `docs/prd.md` |
+| Technical architecture | `docs/architecture.md` |
+| Critical rules & conventions | `docs/project-context.md` |
+| Current sprint state | `docs/sprints/sprint-status.yaml` |
+| Story details | `docs/epics/epic-N/stories/N-M-name.md` |
+| Granular task tracking | `TASKS.md` |
+| Design & UX specs | `docs/specs/` |
+| Implementation plans | `docs/plans/` |
+| Research & brainstorming | `docs/research/` |
+| Change proposals | `docs/sprints/sprint-change-proposal-YYYY-MM-DD.md` |
 
 ---
 
-#### Architecture Document
-**Location:** `_bmad-output/planning-artifacts/architecture.md`
+## What to Read and When
 
-**Contains:**
-- Technical stack decisions (TypeScript, Neo4j, Three.js, React)
-- System components and their interactions
-- Data models and Neo4j schema
-- API endpoint specifications
-- Performance optimization strategies
-- Deployment architecture (Docker, Kubernetes, Helm)
-- Critical architectural decisions and rationale
+**`docs/project-context.md`** — Read this before writing any code. It contains naming conventions, state management rules, error handling patterns, and testing requirements. These are non-negotiable.
 
-**When to read:**
-- Before implementing any feature
-- Understanding system design
-- Planning technical changes
-- Debugging integration issues
+**`docs/architecture.md`** — Read before implementing any feature. Understand how the system fits together before touching it.
+
+**`docs/sprints/sprint-status.yaml`** — Check at the start of every work session. Update it whenever a story status changes. This is the source of truth for what's in progress, done, or blocked.
+
+**Story files** (`docs/epics/epic-N/stories/N-M-name.md`) — Read before starting a story. Update them with dev notes and completion status during and after implementation.
+
+**`docs/specs/`** — Read before implementing UI features or significant new functionality. Specs contain design decisions and technical approach that aren't in the story files.
+
+**`docs/prd.md`** — Read when you need to understand original intent or validate a feature against requirements.
 
 ---
 
-#### Project Context
-**Location:** `_bmad-output/project-context.md`
+## Common Workflows
 
-**Contains:**
-- Critical architecture rules (MUST FOLLOW)
-- Naming conventions (Neo4j, TypeScript, files)
-- State management rules (Zustand only)
-- Error handling patterns (RFC 7807)
-- Testing requirements
-- Code organization patterns (feature-based)
+### Starting a Work Session
+1. Check `docs/sprints/sprint-status.yaml` for current state
+2. If working on a story, read its file from `docs/epics/`
+3. Review `docs/project-context.md` if anything is unclear
 
-**When to read:**
-- ALWAYS read before writing code
-- Understanding project conventions
-- Reviewing code for compliance
+### Implementing a Story
+1. Find the story in `sprint-status.yaml` (status: `backlog` or `ready-for-dev`)
+2. Read the story file: `docs/epics/epic-N/stories/N-M-name.md`
+3. Check `docs/specs/` for any relevant design spec
+4. Mark story `in-progress` in `sprint-status.yaml`
+5. Implement following `docs/project-context.md` rules
+6. Mark tasks `[x]` in `TASKS.md` as you go
+7. Mark story `review` in `sprint-status.yaml` when complete
 
----
-
-#### Sprint Change Proposals
-**Location:** `_bmad-output/planning-artifacts/sprint-change-proposal-{date}.md`
-
-**Latest:** `sprint-change-proposal-2026-01-01.md` - Codebase Import Feature
-
-**Contains:**
-- Issue analysis and root cause
-- Epic and artifact impact assessment
-- Detailed change proposals
-- Implementation handoff plan
-- Success criteria
-
-**When to read:**
-- Understanding recent changes to sprint
-- Reviewing approved but not-yet-implemented features
-- Planning implementation of new stories
+### Adding New Requirements
+1. Create a change proposal: `docs/sprints/sprint-change-proposal-YYYY-MM-DD.md`
+2. When approved, add stories to `sprint-status.yaml`
+3. Create story files at `docs/epics/epic-N/stories/`
+4. Add tasks to `TASKS.md`
+5. Create a spec in `docs/specs/` if design work is needed
 
 ---
 
-#### UX Specifications
-**Location:** `_bmad-output/planning-artifacts/ux-*.md`
+## Story Status Values
 
-**Current Files:**
-- `ux-codebase-import.md` (TO BE CREATED - for stories 4-14, 5-15)
-
-**Contains:**
-- User flows and interaction design
-- UI component specifications
-- Input validation requirements
-- Loading and error states
-- Visual design guidance
-
-**When to read:**
-- Before implementing UI features
-- Understanding user experience requirements
-- Designing component interfaces
+| Status | Meaning |
+|---|---|
+| `not-started` | Story exists, work hasn't begun |
+| `backlog` | Ready to be picked up |
+| `ready-for-dev` | Validated and ready for implementation |
+| `in-progress` | Actively being worked on |
+| `review` | Complete, awaiting code review |
+| `done` | Code review passed |
+| `blocked` | Waiting on a dependency |
 
 ---
 
-### Implementation Artifacts (`_bmad-output/implementation-artifacts/`)
+## File Naming Conventions
 
-#### Sprint Status
-**Location:** `_bmad-output/implementation-artifacts/sprint-status.yaml`
-
-**Contains:**
-- Current sprint information
-- Epic status tracking (epic-3, epic-4, epic-5)
-- Story status tracking (by story key: `{epic}-{story}-{name}`)
-- Status definitions:
-  - `not-started`: Story exists but work hasn't begun
-  - `backlog`: Story ready to be picked up
-  - `ready-for-dev`: Story validated and ready for implementation
-  - `in-progress`: Developer actively working on story
-  - `review`: Implementation complete, awaiting code review
-  - `done`: Code review passed, story complete
-  - `blocked`: Story blocked by dependency or external issue
-
-**When to read/update:**
-- **ALWAYS** at start of work session (to know current sprint state)
-- **ALWAYS** when starting a new story (mark `in-progress`)
-- **ALWAYS** when completing a story (mark `done`)
-- When planning next work
-- When generating status reports
-
-**Critical Rules:**
-- Update immediately when story status changes
-- Never skip status updates
-- Preserve all comments and structure when editing
+- Stories: `{epic}-{story}-{short-name}.md` → `docs/epics/epic-4/stories/4-14-codebase-import-api.md`
+- Specs: `YYYY-MM-DD-{feature}-design.md` and `YYYY-MM-DD-{feature}-plan.md` → `docs/specs/`
+- Plans: `YYYY-MM-DD-{description}.md` → `docs/plans/`
+- Change proposals: `sprint-change-proposal-YYYY-MM-DD.md` → `docs/sprints/`
 
 ---
 
-#### Story Files
-**Location:** `_bmad-output/implementation-artifacts/{epic}-{story}-{name}.md`
+## Critical Rules
 
-**Format:** `{epic_number}-{story_number}-{story_name}.md`
-
-**Examples:**
-- `4-14-codebase-import-api.md`
-- `5-15-codebase-import-ui.md`
-
-**Contains:**
-- User story (As a... I want... so that...)
-- Acceptance criteria
-- Tasks and subtasks
-- Dev notes and technical requirements
-- Project structure notes
-- References to source documents
-- Dev agent record (completion notes, file list)
-
-**When to read:**
-- Before starting implementation of a story
-- Understanding story requirements
-- During code review
-
-**When to create:**
-- Use `create-story` workflow to generate from epics
-- Stories are created from backlog status in sprint-status.yaml
+- **Never** skip updating `sprint-status.yaml` when a story status changes
+- **Always** read `docs/project-context.md` before writing code
+- **Always** read `docs/architecture.md` before implementing a feature
+- **Never** use `any` types in TypeScript
+- **Always** write co-located tests (`.test.ts` next to source)
 
 ---
 
-### Root Directory Documents
-
-#### TASKS.md
-**Location:** `TASKS.md` (project root)
-
-**Contains:**
-- Detailed implementation tasks organized by phase
-- Checkbox tracking for each task
-- Phase 1: Project Infrastructure
-- Phase 2: Core Package
-- Phase 3: Parser Package
-- Phase 4: API Package (includes NEW story 4.14)
-- Phase 5: UI Package (includes NEW story 5.15)
-- Phase 6: CLI Package
-- Phase 7: Integration & Performance
-- Phase 8: Deployment
-- Testing checklist
-- Critical architecture rules reference
-
-**When to read:**
-- Understanding granular implementation tasks
-- Tracking technical progress
-- Planning development work
-
-**When to update:**
-- Mark tasks as complete `[x]` when finished
-- Add new tasks when new stories are added
-- Add verification tasks when needed
-
----
-
-#### PLANNING.md (This Document)
-**Location:** `PLANNING.md` (project root)
-
-**Purpose:** Navigation index for all planning and sprint documentation
-
-**When to read:**
-- Start of any work session
-- When unsure where to find planning information
-- When onboarding to the project
-
----
-
-## � _bmad-output Folder Organization
-
-The `_bmad-output/` directory contains all project planning and implementation documentation. It's organized into three main areas:
-
-### Structure Overview
-
-```
-_bmad-output/
-├── planning-artifacts/          # Strategic planning documents
-│   ├── architecture.md          # Technical architecture and decisions
-│   ├── prd.md                   # Product requirements document
-│   ├── sprint-change-*.md       # Sprint change proposals
-│   └── ux-*.md                  # UX specifications
-│
-├── implementation-artifacts/    # Tactical implementation tracking
-│   ├── sprint-status.yaml       # Current sprint progress
-│   ├── 3-*.md                   # Epic 3 stories (Parser)
-│   ├── 4-*.md                   # Epic 4 stories (API)
-│   ├── 5-*.md                   # Epic 5 stories (UI)
-│   └── 5.5-*.md                 # Epic 5.5 stories (Foundation Cleanup)
-│
-└── project-context.md           # Critical rules and conventions
-```
-
-### Document Relationships
-
-**Planning Flow:**
-1. **PRD** defines what to build → Features and requirements
-2. **Architecture** defines how to build it → Technical approach
-3. **Sprint Change Proposals** adapt the plan → New stories added
-4. **Sprint Status** tracks progress → Story-by-story completion
-5. **Story Files** detail implementation → Acceptance criteria and tasks
-
-**File Naming Conventions:**
-- Sprint changes: `sprint-change-proposal-YYYY-MM-DD.md`
-- Story files: `{epic}-{story}-{short-name}.md` (e.g., `4-14-codebase-import-api.md`)
-- UX specs: `ux-{feature-name}.md` (e.g., `ux-codebase-import.md`)
-
-### Documentation Lifecycle
-
-**Creation:**
-- Planning docs created during sprint planning
-- Story files generated via `create-story` workflow
-- Change proposals created via `correct-course` workflow
-
-**Updates:**
-- Sprint-status.yaml: Updated when story status changes
-- Story files: Dev agent populates during implementation
-- Architecture: Updated when system design changes
-- Project context: Updated when conventions evolve
-
-**Source of Truth:**
-- Sprint status → `sprint-status.yaml`
-- Story requirements → Individual story files in implementation-artifacts
-- Technical design → `architecture.md`
-- Project rules → `project-context.md`
-
----
-
-## �🔄 Common Workflows
-
-### Starting a New Work Session
-1. Read `PLANNING.md` (this document) for navigation
-2. Check `_bmad-output/implementation-artifacts/sprint-status.yaml` for current sprint state
-3. Read story file from `_bmad-output/implementation-artifacts/` if working on specific story
-4. Review `_bmad-output/project-context.md` for critical rules
-5. Check `TASKS.md` for detailed task tracking
-
-### Implementing a New Story
-1. Find story in `sprint-status.yaml` with status `backlog` or `ready-for-dev`
-2. Read story file `_bmad-output/implementation-artifacts/{epic}-{story}-{name}.md`
-3. Review related sections in Architecture document
-4. Review UX specification if UI story
-5. Update `sprint-status.yaml` to mark story as `in-progress`
-6. Implement following project-context.md rules
-7. Update `TASKS.md` as tasks are completed
-8. Update `sprint-status.yaml` to `review` when complete
-
-### Handling Changes or New Requirements
-1. Run `correct-course` workflow (creates sprint change proposal)
-2. Review generated proposal in `_bmad-output/planning-artifacts/sprint-change-proposal-{date}.md`
-3. If approved, update `sprint-status.yaml` with new stories
-4. Add new tasks to `TASKS.md`
-5. Update Architecture document if needed
-6. Create UX specifications if needed
-
-### Creating a New Story
-1. Check if story is in `sprint-status.yaml` with status `backlog`
-2. Run `create-story` workflow to generate story file
-3. Story file created in `_bmad-output/implementation-artifacts/`
-4. Add corresponding tasks to `TASKS.md`
-5. Update `sprint-status.yaml` to `ready-for-dev` when story is complete
-
----
-
-## 📊 Current Sprint State (as of 2026-01-01)
-
-**Active Epics:**
-- Epic 3 (Parser Package): `review` - **VERIFICATION NEEDED** for story 3-4
-- Epic 4 (API Package): `in-progress` - **NEW STORY 4-14** added
-- Epic 5 (UI Package): `in-progress` - **NEW STORY 5-15** added
-
-**Recent Changes:**
-- **2026-01-01**: Added stories 4-14 (Codebase Import API) and 5-15 (Codebase Import UI)
-- **Priority**: HIGH - both stories unblock core application usage
-- **Dependencies**: Story 5-15 depends on 4-14; both may need updates to 3-4
-
-**Next Actions:**
-1. Verify Epic 3 story 3-4 supports on-demand loading
-2. Create UX specification: `ux-codebase-import.md`
-3. Implement story 4-14 (API)
-4. Implement story 5-15 (UI)
-5. Update Architecture document with new endpoints and data model
-
----
-
-## 🎯 Critical Reminders for LLMs
-
-### Always Read These First
-1. **project-context.md** - Contains MUST FOLLOW rules
-2. **sprint-status.yaml** - Current sprint state
-3. **architecture.md** - Before implementing features
-
-### Always Update These
-1. **sprint-status.yaml** - When story status changes
-2. **TASKS.md** - When tasks are completed
-3. **Story files** - Dev notes, completion status, file lists
-
-### Never Skip
-- Reading Architecture before implementation
-- Following project-context.md rules
-- Updating sprint-status.yaml status changes
-- Writing tests (co-located with source)
-- TypeScript strict mode (no `any`)
-
-### Document Locations - Quick Reference
-```
-diagram_builder/
-├── PLANNING.md                           ← YOU ARE HERE
-├── TASKS.md                              ← Detailed task tracking
-├── _bmad-output/
-│   ├── planning-artifacts/
-│   │   ├── prd.md                       ← Product requirements
-│   │   ├── architecture.md              ← Technical architecture
-│   │   ├── sprint-change-proposal-*.md  ← Change proposals
-│   │   └── ux-*.md                      ← UX specifications
-│   ├── implementation-artifacts/
-│   │   ├── sprint-status.yaml           ← Current sprint state
-│   │   └── {epic}-{story}-{name}.md     ← Story files
-│   └── project-context.md               ← Critical rules
-```
-
----
-
-**For Questions or Clarifications:**
-- Review the appropriate document from this index
-- Check sprint change proposals for recent decisions
-- Read Architecture Decision Records in architecture.md
-- Consult PRD for original product intent
-
----
-
-**Last Updated:** 2026-01-01
-**Current Sprint:** Phase 4 (API Package) and Phase 5 (UI Package) with codebase import stories
-**Status:** Active development
+**Last Updated:** 2026-03-25
+**Current State:** Epic 12 complete. See `docs/sprints/sprint-status.yaml` for authoritative status.

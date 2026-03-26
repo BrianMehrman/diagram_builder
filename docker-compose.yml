@@ -1,7 +1,19 @@
 version: '3.9'
 
+# Profiles:
+#   infra        - Neo4j + Redis (local dev default)
+#   app          - API + UI containers (built from Dockerfiles)
+#   observability - Jaeger + Prometheus + Grafana (added in Story 12-4)
+#
+# Usage:
+#   docker compose --profile infra up -d               # infra only
+#   docker compose --profile infra --profile app up -d # full stack
+#   docker compose --profile infra --profile app --profile observability up -d # everything
+
 services:
+  # ─── infra profile ──────────────────────────────────────────────────────────
   neo4j:
+    profiles: [infra]
     image: neo4j:latest
     container_name: diagram-builder-neo4j
     ports:
@@ -20,6 +32,7 @@ services:
     restart: unless-stopped
 
   redis:
+    profiles: [infra]
     image: redis:7.4-alpine
     container_name: diagram-builder-redis
     ports:
@@ -31,10 +44,102 @@ services:
       - diagram-builder-network
     restart: unless-stopped
 
+  # ─── app profile ────────────────────────────────────────────────────────────
+  api:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    container_name: diagram-builder-api
+    env_file: .env
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - REDIS_HOST=redis
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+    depends_on:
+      - neo4j
+      - redis
+    ports:
+      - '4000:4000'
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
+
+  ui:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: docker/ui/Dockerfile
+    container_name: diagram-builder-ui
+    depends_on:
+      - api
+    ports:
+      - '5173:80'
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
+
+  # ─── observability profile ──────────────────────────────────────────────────
+  jaeger:
+    profiles: [observability]
+    image: jaegertracing/jaeger:2.1.0
+    container_name: diagram-builder-jaeger
+    ports:
+      - '16686:16686'  # Jaeger UI
+      - '4317:4317'    # OTLP gRPC
+      - '4318:4318'    # OTLP HTTP
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
+
+  loki:
+    profiles: [observability]
+    image: grafana/loki:3.3.2
+    container_name: diagram-builder-loki
+    ports:
+      - '3100:3100'  # Loki HTTP API
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
+
+  prometheus:
+    profiles: [observability]
+    image: prom/prometheus:v3.1.0
+    container_name: diagram-builder-prometheus
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - '9090:9090'
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
+
+  grafana:
+    profiles: [observability]
+    image: grafana/grafana:11.4.0
+    container_name: diagram-builder-grafana
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - '3001:3000'
+    depends_on:
+      - prometheus
+      - jaeger
+      - loki
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
+
 volumes:
   neo4j-data:
   neo4j-logs:
   redis-data:
+  prometheus-data:
+  grafana-data:
+  loki-data:
 
 networks:
   diagram-builder-network:
