@@ -3,17 +3,11 @@
  * Separate from app.ts to allow testing without starting the server
  */
 
-// OTEL must be initialized FIRST — auto-instrumentation patches modules at require time.
-// If Express or ioredis load before this, their instrumentation won't apply.
+// Load env vars FIRST — must precede observability, which calls getApiConfig() at load time.
+import './env'
+
+// OTEL must be initialized before Express/ioredis so auto-instrumentation patches them.
 import './observability'
-
-// Load environment variables from .env file in project root
-import dotenv from 'dotenv'
-import { resolve } from 'path'
-
-// When running via npm workspaces, cwd is the package dir, so go up 2 levels to project root
-const envPath = resolve(process.cwd(), '../../.env')
-dotenv.config({ path: envPath })
 
 import { createServer } from 'http'
 import app from './index'

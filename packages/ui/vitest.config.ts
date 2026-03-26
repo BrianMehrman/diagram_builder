@@ -1,8 +1,15 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      // Match vite.config.ts: resolve from TS source so vitest never depends on a stale dist.
+      '@diagram-builder/core': path.resolve(__dirname, '../core/src/index.ts'),
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',
