@@ -48,6 +48,13 @@ const ApiConfigSchema = z.object({
 
   // Logging
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  LOKI_ENABLED: z
+    .string()
+    .optional()
+    .default('false')
+    .transform((val) => val.toLowerCase() === 'true')
+    .pipe(z.boolean()),
+  LOKI_HOST: z.string().default('http://localhost:3100'),
 
   // OpenTelemetry
   OTEL_ENABLED: z.coerce.boolean().default(false),

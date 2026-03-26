@@ -92,6 +92,17 @@ services:
       - diagram-builder-network
     restart: unless-stopped
 
+  loki:
+    profiles: [observability]
+    image: grafana/loki:3.3.2
+    container_name: diagram-builder-loki
+    ports:
+      - '3100:3100'  # Loki HTTP API
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - diagram-builder-network
+    restart: unless-stopped
+
   prometheus:
     profiles: [observability]
     image: prom/prometheus:v3.1.0
@@ -117,6 +128,7 @@ services:
     depends_on:
       - prometheus
       - jaeger
+      - loki
     networks:
       - diagram-builder-network
     restart: unless-stopped
@@ -127,6 +139,7 @@ volumes:
   redis-data:
   prometheus-data:
   grafana-data:
+  loki-data:
 
 networks:
   diagram-builder-network:

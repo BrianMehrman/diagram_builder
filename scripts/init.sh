@@ -9,6 +9,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 MODE="local"
+OBSERVABILITY=false
 
 show_usage() {
   echo ""
@@ -17,16 +18,18 @@ show_usage() {
   echo "Usage: ./scripts/init.sh [OPTIONS]"
   echo ""
   echo "Options:"
-  echo "  --mode=local      (default) Start infra via Docker Compose, run API/UI as Node processes"
-  echo "  --mode=docker     Start all services (infra + app + observability) via Docker Compose"
-  echo "  --mode=k8s        Deploy via Helm to Kubernetes, set up port forwarding"
-  echo "  -h, --help        Show this help message"
+  echo "  --mode=local         (default) Start infra via Docker Compose, run API/UI as Node processes"
+  echo "  --mode=docker        Start all services (infra + app + observability) via Docker Compose"
+  echo "  --mode=k8s           Deploy via Helm to Kubernetes, set up port forwarding"
+  echo "  --observability      Also start observability stack (Jaeger, Prometheus, Grafana, Loki)"
+  echo "                       Only applies to --mode=local; docker/k8s always include observability"
+  echo "  -h, --help           Show this help message"
   echo ""
   echo "Examples:"
-  echo "  ./scripts/init.sh                  # local mode (default)"
-  echo "  ./scripts/init.sh --mode=local"
-  echo "  ./scripts/init.sh --mode=docker"
-  echo "  ./scripts/init.sh --mode=k8s"
+  echo "  ./scripts/init.sh                             # local mode, infra + API + UI only"
+  echo "  ./scripts/init.sh --mode=local --observability  # local mode + observability stack"
+  echo "  ./scripts/init.sh --mode=docker               # full Docker stack"
+  echo "  ./scripts/init.sh --mode=k8s                  # deploy to Kubernetes"
   echo ""
 }
 
@@ -35,6 +38,9 @@ for arg in "$@"; do
   case "$arg" in
     --mode=*)
       MODE="${arg#*=}"
+      ;;
+    --observability)
+      OBSERVABILITY=true
       ;;
     -h|--help)
       show_usage
@@ -60,6 +66,7 @@ esac
 
 print_urls() {
   local mode="$1"
+  local obs="$2"
   echo ""
   echo -e "${GREEN}✅ Environment ready! (mode: ${mode})${NC}"
   echo ""
@@ -68,12 +75,13 @@ print_urls() {
   echo -e "  API:        ${BLUE}http://localhost:4000${NC}"
   echo -e "  Neo4j:      ${BLUE}http://localhost:7474${NC}"
   echo -e "  Redis:      localhost:6379"
-  if [ "$mode" != "local" ] || [ "${OBSERVABILITY:-false}" = "true" ]; then
+  if [ "$obs" = "true" ]; then
     echo ""
     echo "Observability:"
     echo -e "  Grafana:    ${BLUE}http://localhost:3001${NC}"
     echo -e "  Jaeger:     ${BLUE}http://localhost:16686${NC}"
     echo -e "  Prometheus: ${BLUE}http://localhost:9090${NC}"
+    echo -e "  Loki:       localhost:3100"
   fi
   echo ""
 }
@@ -101,6 +109,18 @@ init_local() {
     echo -e "  ${GREEN}✓${NC} Redis already running"
   fi
 
+  if [ "$OBSERVABILITY" = "true" ]; then
+    echo "🔭 Checking observability services..."
+    if ! docker ps | grep -q diagram-builder-jaeger; then
+      echo "  Starting observability stack..."
+      docker compose --profile observability up -d
+      sleep 2
+      echo -e "  ${GREEN}✓${NC} Observability stack started"
+    else
+      echo -e "  ${GREEN}✓${NC} Observability stack already running"
+    fi
+  fi
+
   echo "🌱 Seeding database..."
   cd packages/api && npx tsx src/database/seed-db.ts > /dev/null 2>&1 && cd ../..
   echo -e "  ${GREEN}✓${NC} Database seeded"
@@ -125,7 +145,7 @@ init_local() {
     echo -e "  ${GREEN}✓${NC} UI server started on port 3000"
   fi
 
-  print_urls "local"
+  print_urls "local" "$OBSERVABILITY"
 }
 
 # ─── DOCKER MODE ─────────────────────────────────────────────────────────────
@@ -170,7 +190,7 @@ init_docker() {
     echo -e "  ${YELLOW}⚠${NC} Seed skipped (API may still be starting — run manually: docker compose exec api npx tsx src/database/seed-db.ts)"
   echo -e "  ${GREEN}✓${NC} Database seeded"
 
-  OBSERVABILITY=true print_urls "docker"
+  print_urls "docker" "true"
 }
 
 # ─── K8S MODE ────────────────────────────────────────────────────────────────
@@ -205,7 +225,7 @@ init_k8s() {
   echo "🔌 Setting up port forwarding..."
   bash "$(dirname "$0")/port-forward.sh"
 
-  OBSERVABILITY=true print_urls "k8s"
+  print_urls "k8s" "true"
 }
 
 # ─── DISPATCH ────────────────────────────────────────────────────────────────

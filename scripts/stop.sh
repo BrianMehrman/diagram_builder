@@ -43,7 +43,7 @@ stop_api() {
 stop_neo4j() {
   echo "📦 Stopping Neo4j..."
   if docker ps | grep -q diagram-builder-neo4j; then
-    docker compose stop neo4j > /dev/null 2>&1
+    docker compose --profile infra stop neo4j > /dev/null 2>&1
     echo -e "  ${GREEN}✓${NC} Neo4j stopped"
   else
     echo -e "  ${YELLOW}⚠${NC} Neo4j not running"
@@ -54,17 +54,28 @@ stop_neo4j() {
 stop_redis() {
   echo "📦 Stopping Redis..."
   if docker ps | grep -q diagram-builder-redis; then
-    docker compose stop redis > /dev/null 2>&1
+    docker compose --profile infra stop redis > /dev/null 2>&1
     echo -e "  ${GREEN}✓${NC} Redis stopped"
   else
     echo -e "  ${YELLOW}⚠${NC} Redis not running"
   fi
 }
 
+# Function to stop observability containers
+stop_observability() {
+  echo "🔭 Stopping observability containers..."
+  if docker ps | grep -q diagram-builder-jaeger; then
+    docker compose --profile observability down > /dev/null 2>&1
+    echo -e "  ${GREEN}✓${NC} Observability containers stopped"
+  else
+    echo -e "  ${YELLOW}⚠${NC} Observability containers not running"
+  fi
+}
+
 # Function to stop all Docker services
 stop_docker_all() {
-  echo "📦 Stopping all Docker services..."
-  docker compose down > /dev/null 2>&1
+  echo "📦 Stopping all Docker Compose services..."
+  docker compose --profile infra --profile app --profile observability down > /dev/null 2>&1
   echo -e "  ${GREEN}✓${NC} All Docker services stopped"
 }
 
@@ -75,27 +86,29 @@ show_usage() {
   echo "Usage: ./scripts/stop.sh [OPTIONS]"
   echo ""
   echo "Mode options (mutually exclusive):"
-  echo "  --mode=local      Stop local-mode services (infra Docker + Node.js servers)"
+  echo "  --mode=local      Stop local-mode services (servers + infra Docker containers)"
+  echo "                    Add --observability to also stop the observability stack"
   echo "  --mode=docker     Stop all Docker Compose services (infra + app + observability)"
   echo "  --mode=k8s        Uninstall Helm release"
   echo ""
-  echo "Legacy granular options (local mode only):"
+  echo "Granular options (use without --mode):"
   echo "  --all             Stop all services (UI, API, Docker)"
   echo "  --ui              Stop UI server only"
   echo "  --api             Stop API server only"
   echo "  --neo4j           Stop Neo4j only"
   echo "  --redis           Stop Redis only"
-  echo "  --docker          Stop all Docker services (Neo4j + Redis)"
+  echo "  --docker          Stop all Docker services"
   echo "  --servers         Stop UI and API servers only (keep Docker running)"
-  echo "  --observability   Stop observability profile containers only"
+  echo "  --observability   Stop observability containers only"
   echo ""
   echo "  -h, --help        Show this help message"
   echo ""
   echo "Examples:"
-  echo "  ./scripts/stop.sh --mode=local    # Stop local dev environment"
-  echo "  ./scripts/stop.sh --mode=docker   # Stop full Docker stack"
-  echo "  ./scripts/stop.sh --mode=k8s      # Uninstall from Kubernetes"
-  echo "  ./scripts/stop.sh --all           # Legacy: stop everything (local mode)"
+  echo "  ./scripts/stop.sh --mode=local                    # Stop servers + infra"
+  echo "  ./scripts/stop.sh --mode=local --observability    # Stop servers + infra + observability"
+  echo "  ./scripts/stop.sh --mode=docker                   # Stop full Docker stack"
+  echo "  ./scripts/stop.sh --mode=k8s                      # Uninstall from Kubernetes"
+  echo "  ./scripts/stop.sh --observability                 # Stop observability stack only"
   echo ""
 }
 
@@ -164,21 +177,16 @@ if [ -n "$MODE" ]; then
     local)
       stop_ui
       stop_api
+      stop_neo4j
+      stop_redis
       if [ "$OBSERVABILITY" = "true" ]; then
-        echo "📦 Stopping observability containers..."
-        docker compose --profile observability down > /dev/null 2>&1
-        echo -e "  ${GREEN}✓${NC} Observability containers stopped"
-      else
-        stop_neo4j
-        stop_redis
+        stop_observability
       fi
       echo ""
       echo -e "${GREEN}✅ Local services stopped!${NC}"
       ;;
     docker)
-      echo "📦 Stopping all Docker Compose services..."
-      docker compose --profile infra --profile app --profile observability down
-      echo -e "  ${GREEN}✓${NC} All services stopped"
+      stop_docker_all
       echo ""
       echo -e "${GREEN}✅ Docker stack stopped!${NC}"
       ;;
@@ -210,7 +218,7 @@ if [ -n "$MODE" ]; then
   exit 0
 fi
 
-# ─── LEGACY GRANULAR OPTIONS ─────────────────────────────────────────────────
+# ─── GRANULAR OPTIONS ────────────────────────────────────────────────────────
 
 if [ "$STOP_ALL" = true ]; then
   stop_ui
@@ -237,9 +245,7 @@ if [ "$STOP_DOCKER" = true ]; then
 fi
 
 if [ "$OBSERVABILITY" = true ]; then
-  echo "📦 Stopping observability containers..."
-  docker compose --profile observability down > /dev/null 2>&1
-  echo -e "  ${GREEN}✓${NC} Observability containers stopped"
+  stop_observability
   echo ""
   echo -e "${GREEN}✅ Observability services stopped!${NC}"
   exit 0
