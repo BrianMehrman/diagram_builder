@@ -7,6 +7,7 @@
 
 import { v4 as uuidv4 } from 'uuid'
 import { runQuery } from '../database/query-utils'
+import { createModuleLogger } from '../logger'
 import { buildCacheKey } from '../cache/cache-keys'
 import * as cache from '../cache/cache-utils'
 import type {
@@ -16,6 +17,8 @@ import type {
   GraphFilters,
   Annotation,
 } from '../types/viewpoint'
+
+const log = createModuleLogger('viewpoint-service')
 
 /**
  * Create a new viewpoint
@@ -28,6 +31,7 @@ export async function createViewpoint(
   input: CreateViewpointInput,
   userId: string
 ): Promise<Viewpoint> {
+  log.info('createViewpoint.start', { userId, repositoryId: input.repositoryId })
   const viewpointId = uuidv4()
   const now = new Date().toISOString()
 
@@ -78,6 +82,7 @@ export async function createViewpoint(
   // Invalidate cache for repository viewpoints list
   await cache.invalidatePattern(buildCacheKey('viewpoint', `${input.repositoryId}:*`))
 
+  log.info('createViewpoint.complete', { viewpointId, userId, repositoryId: input.repositoryId })
   return viewpoint
 }
 
@@ -234,6 +239,7 @@ export async function updateViewpoint(
  * @returns True if deleted, false if not found
  */
 export async function deleteViewpoint(viewpointId: string, userId: string): Promise<boolean> {
+  log.info('deleteViewpoint.start', { viewpointId, userId })
   // First, get the existing viewpoint to verify ownership
   const existing = await getViewpoint(viewpointId)
   if (!existing) {

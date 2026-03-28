@@ -10,6 +10,7 @@
 
 import { v4 as uuidv4 } from 'uuid'
 import { access, readFile } from 'fs/promises'
+import { createModuleLogger } from '../logger'
 import { constants } from 'fs'
 import { runQuery } from '../database/query-utils'
 import { invalidatePattern } from '../cache/cache-utils'
@@ -18,6 +19,8 @@ import { buildDependencyGraph } from '@diagram-builder/parser'
 import { convertToIVM } from '@diagram-builder/parser'
 import { cloneRepository } from '@diagram-builder/parser'
 import type { IVMGraph } from '@diagram-builder/core'
+
+const log = createModuleLogger('repository-service')
 
 /**
  * Constants
@@ -199,6 +202,7 @@ export async function parseAndStoreRepository(
   request: ParseRepositoryRequest
 ): Promise<{ id: string; status: string }> {
   const { url, path, branch } = request
+  log.info('parseAndStoreRepository.start', { url, path, branch })
 
   // Validate local path exists (Task 6 requirement)
   // Skip validation in test environment to allow mocking
@@ -225,11 +229,20 @@ export async function parseAndStoreRepository(
       branch,
     })
 
+    log.info('parseAndStoreRepository.complete', {
+      repoId,
+      nodeCount: ivm.nodes.length,
+      edgeCount: ivm.edges.length,
+    })
     return {
       id: repoId,
       status: 'completed',
     }
   } catch (error) {
+    log.error('parseAndStoreRepository.failed', {
+      repoId,
+      error: error instanceof Error ? error.message : String(error),
+    })
     // Store failed parsing status
     const metadata: Record<string, string> = {}
     if (url) metadata.url = url
@@ -333,6 +346,7 @@ export async function getRepositoryMetadata(repoId: string): Promise<RepositoryM
  * @returns true if repository was deleted, false if not found
  */
 export async function deleteRepository(repoId: string): Promise<boolean> {
+  log.info('deleteRepository.start', { repoId })
   // Check if repository exists
   const metadata = await getRepositoryMetadata(repoId)
   if (!metadata) {
