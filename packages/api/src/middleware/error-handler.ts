@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import { HttpError } from '../errors'
+import { createModuleLogger } from '../logger'
+
+const log = createModuleLogger('error-handler')
 
 /**
  * RFC 7807 Problem Details interface
@@ -46,10 +49,13 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
   }
 
   // Log error for monitoring
-  console.error(`[ERROR] ${status} ${type}:`, err.message)
-  if (process.env.NODE_ENV === 'development') {
-    console.error(err.stack)
-  }
+  log.error('unhandled error', {
+    status,
+    type,
+    message: err.message,
+    path: req.path,
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+  })
 
   // Send RFC 7807 response
   res.status(status).json(problemDetails)

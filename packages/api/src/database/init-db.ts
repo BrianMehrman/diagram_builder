@@ -11,13 +11,16 @@
  */
 
 import { runQuery } from './query-utils'
+import { createModuleLogger } from '../logger'
+
+const log = createModuleLogger('neo4j')
 
 /**
  * Initialize database with constraints and indexes
  * Safe to run multiple times (idempotent)
  */
 export async function initializeDatabase(): Promise<void> {
-  console.warn('Initializing Neo4j database...')
+  log.info('initializing Neo4j database')
 
   try {
     // Create unique constraints for node IDs
@@ -26,9 +29,11 @@ export async function initializeDatabase(): Promise<void> {
     // Create indexes for frequently queried properties
     await createIndexes()
 
-    console.warn('✓ Neo4j database initialized successfully')
+    log.info('Neo4j database initialized')
   } catch (error) {
-    console.error('Failed to initialize database:', error)
+    log.error('failed to initialize database', {
+      error: error instanceof Error ? error.message : String(error),
+    })
     throw error
   }
 }
@@ -50,7 +55,7 @@ async function createConstraints(): Promise<void> {
     await runQuery(constraint)
   }
 
-  console.warn('  ✓ Constraints created')
+  log.info('constraints created')
 }
 
 /**
@@ -68,5 +73,5 @@ async function createIndexes(): Promise<void> {
     await runQuery(index)
   }
 
-  console.warn('  ✓ Indexes created')
+  log.info('indexes created')
 }

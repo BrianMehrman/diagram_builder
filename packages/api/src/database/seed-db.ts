@@ -7,6 +7,9 @@
  */
 
 import { runQuery } from './query-utils'
+import { createModuleLogger } from '../logger'
+
+const log = createModuleLogger('seed')
 
 // User IDs for test data
 const TEST_USERS = {
@@ -35,7 +38,7 @@ const REPOSITORY_IDS = {
  * Safe to run multiple times (idempotent)
  */
 export async function seedDatabase(): Promise<void> {
-  console.warn('Seeding database with comprehensive test data...')
+  log.info('seeding database')
 
   try {
     await seedWorkspaces()
@@ -44,9 +47,11 @@ export async function seedDatabase(): Promise<void> {
     await seedViewpoints()
     await seedExportHistory()
     await validateSeedData()
-    console.warn('✓ Database seeded successfully')
+    log.info('database seeded')
   } catch (error) {
-    console.error('Failed to seed database:', error)
+    log.error('failed to seed database', {
+      error: error instanceof Error ? error.message : String(error),
+    })
     throw error
   }
 }
@@ -55,7 +60,7 @@ export async function seedDatabase(): Promise<void> {
  * Validate seeded data integrity
  */
 async function validateSeedData(): Promise<void> {
-  console.warn('  Validating seed data...')
+  log.debug('validating seed data')
 
   // Count workspaces
   const workspaceCount = await runQuery<{ count: number }>(
@@ -79,10 +84,7 @@ async function validateSeedData(): Promise<void> {
   const exportCount = await runQuery<{ count: number }>('MATCH (e:Export) RETURN count(e) as count')
   const exports = exportCount?.[0]?.count ?? 0
 
-  console.warn(`    Workspaces: ${workspaces}`)
-  console.warn(`    Repositories: ${repositories}`)
-  console.warn(`    Viewpoints: ${viewpoints}`)
-  console.warn(`    Exports: ${exports}`)
+  log.debug('seed data counts', { workspaces, repositories, viewpoints, exports })
 
   // Verify minimum expected data exists
   if (workspaces < 3) {
@@ -95,7 +97,7 @@ async function validateSeedData(): Promise<void> {
     throw new Error(`Expected at least 3 viewpoints, found ${viewpoints}`)
   }
 
-  console.warn('  ✓ Validation passed')
+  log.debug('seed validation passed')
 }
 
 /**
@@ -227,7 +229,7 @@ async function seedWorkspaces(): Promise<void> {
     await createOrUpdateWorkspace(workspace)
   }
 
-  console.warn('  ✓ Workspaces seeded')
+  log.info('workspaces seeded')
 }
 
 /**
@@ -282,7 +284,7 @@ async function seedRepositories(): Promise<void> {
     await createOrUpdateRepository(repo)
   }
 
-  console.warn('  ✓ Repositories seeded')
+  log.info('repositories seeded')
 }
 
 /**
@@ -299,7 +301,7 @@ async function seedGraphNodes(): Promise<void> {
     repoId: REPOSITORY_IDS.SAMPLE_JS,
   })
   if (existing && existing[0] && Number(existing[0].count) > 0) {
-    console.warn(`  ↻ Graph nodes for ${REPOSITORY_IDS.SAMPLE_JS} already exist, skipping`)
+    log.debug('graph nodes already exist, skipping', { repoId: REPOSITORY_IDS.SAMPLE_JS })
     return
   }
 
@@ -350,7 +352,7 @@ async function seedGraphNodes(): Promise<void> {
   `
 
   await runQuery(createQuery, { repoId: REPOSITORY_IDS.SAMPLE_JS })
-  console.warn(`  ✓ Graph nodes seeded for ${REPOSITORY_IDS.SAMPLE_JS}`)
+  log.info('graph nodes seeded', { repoId: REPOSITORY_IDS.SAMPLE_JS })
 }
 
 /**
@@ -452,7 +454,7 @@ async function seedViewpoints(): Promise<void> {
     await createOrUpdateViewpoint(viewpoint)
   }
 
-  console.warn('  ✓ Viewpoints seeded')
+  log.info('viewpoints seeded')
 }
 
 /**
@@ -499,7 +501,7 @@ async function seedExportHistory(): Promise<void> {
     await createOrUpdateExport(exportRecord)
   }
 
-  console.warn('  ✓ Export history seeded')
+  log.info('export history seeded')
 }
 
 /**
@@ -510,7 +512,7 @@ async function createOrUpdateWorkspace(workspace: Record<string, unknown>): Prom
   const existing = await runQuery(checkQuery, { id: workspace['id'] })
 
   if (existing && existing.length > 0) {
-    console.warn(`  ↻ Workspace ${String(workspace['id'])} already exists, skipping`)
+    log.debug('workspace already exists, skipping', { workspaceId: workspace['id'] })
     return
   }
 
@@ -532,7 +534,7 @@ async function createOrUpdateWorkspace(workspace: Record<string, unknown>): Prom
   `
 
   await runQuery(createQuery, workspace)
-  console.warn(`  ✓ Created workspace: ${String(workspace['name'])}`)
+  log.info('workspace created', { name: workspace['name'] })
 }
 
 /**
@@ -543,7 +545,7 @@ async function createOrUpdateRepository(repo: Record<string, unknown>): Promise<
   const existing = await runQuery(checkQuery, { id: repo['id'] })
 
   if (existing && existing.length > 0) {
-    console.warn(`  ↻ Repository ${String(repo['id'])} already exists, skipping`)
+    log.debug('repository already exists, skipping', { repoId: repo['id'] })
     return
   }
 
@@ -565,7 +567,7 @@ async function createOrUpdateRepository(repo: Record<string, unknown>): Promise<
   `
 
   await runQuery(createQuery, repo)
-  console.warn(`  ✓ Created repository: ${String(repo['name'])}`)
+  log.info('repository created', { name: repo['name'] })
 }
 
 /**
@@ -576,7 +578,7 @@ async function createOrUpdateViewpoint(viewpoint: Record<string, unknown>): Prom
   const existing = await runQuery(checkQuery, { id: viewpoint['id'] })
 
   if (existing && existing.length > 0) {
-    console.warn(`  ↻ Viewpoint ${String(viewpoint['id'])} already exists, skipping`)
+    log.debug('viewpoint already exists, skipping', { viewpointId: viewpoint['id'] })
     return
   }
 
@@ -599,7 +601,7 @@ async function createOrUpdateViewpoint(viewpoint: Record<string, unknown>): Prom
   `
 
   await runQuery(createQuery, viewpoint)
-  console.warn(`  ✓ Created viewpoint: ${String(viewpoint['name'])}`)
+  log.info('viewpoint created', { name: viewpoint['name'] })
 }
 
 /**
@@ -610,7 +612,7 @@ async function createOrUpdateExport(exportRecord: Record<string, unknown>): Prom
   const existing = await runQuery(checkQuery, { id: exportRecord['id'] })
 
   if (existing && existing.length > 0) {
-    console.warn(`  ↻ Export ${String(exportRecord['id'])} already exists, skipping`)
+    log.debug('export already exists, skipping', { exportId: exportRecord['id'] })
     return
   }
 
@@ -629,5 +631,5 @@ async function createOrUpdateExport(exportRecord: Record<string, unknown>): Prom
   `
 
   await runQuery(createQuery, exportRecord)
-  console.warn(`  ✓ Created export: ${String(exportRecord['id'])}`)
+  log.info('export created', { exportId: exportRecord['id'] })
 }

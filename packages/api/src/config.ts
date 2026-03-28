@@ -6,6 +6,9 @@
  */
 
 import { z } from 'zod'
+import { createModuleLogger } from './logger'
+
+const log = createModuleLogger('config')
 
 /**
  * Configuration schema with validation
@@ -83,8 +86,7 @@ export function loadApiConfig(): ApiConfig {
   const parsed = ApiConfigSchema.safeParse(process.env)
 
   if (!parsed.success) {
-    console.error('❌ API configuration validation failed:')
-    console.error(parsed.error.format())
+    log.error('API configuration validation failed', { errors: parsed.error.format() })
     process.exit(1)
   }
 

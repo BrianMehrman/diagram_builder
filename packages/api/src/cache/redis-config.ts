@@ -6,6 +6,9 @@
  */
 
 import Redis from 'ioredis'
+import { createModuleLogger } from '../logger'
+
+const log = createModuleLogger('redis')
 
 let redis: Redis | null = null
 
@@ -29,7 +32,7 @@ export function getRedisClient(): Redis {
       db,
       retryStrategy: (times) => {
         const delay = Math.min(times * 50, 2000)
-        console.warn(`Redis retry attempt ${times}, delay: ${delay}ms`)
+        log.warn('Redis retry', { attempt: times, delayMs: delay })
         return delay
       },
       maxRetriesPerRequest: 3,
@@ -38,20 +41,20 @@ export function getRedisClient(): Redis {
     })
 
     // Event listeners for monitoring
-    redis.on('error', (error) => {
-      console.error('Redis connection error:', error)
+    redis.on('error', (error: Error) => {
+      log.error('Redis connection error', { error: error.message })
     })
 
     redis.on('connect', () => {
-      console.warn('Redis client connected')
+      log.info('Redis client connected')
     })
 
     redis.on('ready', () => {
-      console.warn('Redis client ready')
+      log.info('Redis client ready')
     })
 
     redis.on('close', () => {
-      console.warn('Redis connection closed')
+      log.info('Redis connection closed')
     })
   }
 
