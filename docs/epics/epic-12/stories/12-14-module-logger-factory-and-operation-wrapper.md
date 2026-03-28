@@ -40,57 +40,25 @@
 
 ### Task 1: Add `createModuleLogger` to logger.ts
 
-- [ ] Add factory function below the existing `logger` export:
-  ```ts
-  export const createModuleLogger = (module: string): winston.Logger =>
-    logger.child({ module })
-  ```
-- [ ] Export from `packages/api/src/logger.ts`
+- [x] Add factory function below the existing `logger` export
+- [x] Export from `packages/api/src/logger.ts`
 
 ### Task 2: Add `withOperation` to logger.ts
 
-- [ ] Add typed async wrapper:
-  ```ts
-  export const withOperation = async <T>(
-    log: winston.Logger,
-    name: string,
-    meta: Record<string, unknown>,
-    fn: () => Promise<T>
-  ): Promise<T> => {
-    log.debug(`${name}.start`, meta)
-    const start = Date.now()
-    try {
-      const result = await fn()
-      log.info(`${name}.complete`, { ...meta, durationMs: Date.now() - start })
-      return result
-    } catch (err) {
-      log.error(`${name}.failed`, {
-        ...meta,
-        durationMs: Date.now() - start,
-        error: (err as Error).message,
-      })
-      throw err
-    }
-  }
-  ```
-- [ ] Export from `packages/api/src/logger.ts`
+- [x] Add typed async wrapper
+- [x] Export from `packages/api/src/logger.ts`
 
 ### Task 3: Write unit tests
 
-- [ ] Create `packages/api/src/logger.test.ts` (or add to existing if present)
-- [ ] Test `createModuleLogger`:
-  - Returned logger emits entries with correct `module` field
-- [ ] Test `withOperation`:
-  - Emits `.start` log before fn runs
-  - Emits `.complete` log with durationMs on success
-  - Emits `.failed` log with error.message on throw
-  - Re-throws the original error
+- [x] Created `packages/api/src/logger.test.ts`
+- [x] Test `createModuleLogger`: returns valid logger; entries include module field; different names produce distinct instances
+- [x] Test `withOperation`: emits .start, .complete, .failed correctly; returns value; re-throws; does not emit .complete on failure
 
 ### Task 4: Verify
 
-- [ ] `npm run type-check --workspace=@diagram-builder/api` — clean
-- [ ] `npm run lint --workspace=@diagram-builder/api` — clean
-- [ ] `npm test --workspace=@diagram-builder/api` — all tests pass
+- [x] `npm run type-check --workspace=@diagram-builder/api` — clean
+- [x] `npm run lint --workspace=@diagram-builder/api` — clean
+- [x] `npm test --workspace=@diagram-builder/api` — all tests pass (421/421)
 
 ---
 
@@ -132,10 +100,24 @@ This produces in Loki:
 
 ## Change Log
 
+## Dev Agent Record
+
+### File List
+- `packages/api/src/logger.ts` (MODIFIED) — added `createModuleLogger` and `withOperation` exports
+- `packages/api/src/logger.test.ts` (NEW) — 9 tests covering both utilities; 421/421 pass
+
+### Completion Notes
+Both utilities added to logger.ts. Winston child loggers share the parent's transport list, so tests use `PassThrough` streams added to individual child loggers and spy directly on child logger methods rather than the parent. 1915/1915 tests pass across all packages; type-check, lint, format:check all clean.
+
+---
+
 - **2026-03-28**: Story created
   - Identified during logging audit against live Loki instance
   - Positioned as prerequisite to 12-15 and 12-17
+- **2026-03-28**: Story complete
+  - Both utilities implemented and tested
+  - All CI checks pass
 
-**Status:** backlog
+**Status:** done
 **Created:** 2026-03-28
 **Last Updated:** 2026-03-28
