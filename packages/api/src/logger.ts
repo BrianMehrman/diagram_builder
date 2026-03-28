@@ -61,6 +61,7 @@ export const logger = winston.createLogger({
     }),
     winston.format.errors({ stack: true }),
     winston.format.splat(),
+    winston.format.uncolorize(), // strip ANSI before file/Loki/OTEL transports
     winston.format.json()
   ),
   defaultMeta: { service: 'api' },
@@ -86,6 +87,46 @@ if (process.env.NODE_ENV === 'production') {
   //       filename: 'logs/development.log',
   //     })
   //   )
+}
+
+// ─── Module logger factory ────────────────────────────────────────────────────
+
+/**
+ * Returns a child logger with a `module` field on every entry.
+ * Use this instead of importing `logger` directly so Loki logs are
+ * filterable by module name: {app="diagram-builder-api", module="workspace-service"}
+ */
+export const createModuleLogger = (module: string): winston.Logger => logger.child({ module })
+
+// ─── Operation wrapper ────────────────────────────────────────────────────────
+
+/**
+ * Wraps an async function with structured start / complete / failed logging.
+ *
+ *   DEBUG  <name>.start    { ...meta }
+ *   INFO   <name>.complete { ...meta, durationMs }
+ *   ERROR  <name>.failed   { ...meta, durationMs, error }  ← re-throws
+ */
+export const withOperation = async <T>(
+  log: winston.Logger,
+  name: string,
+  meta: Record<string, unknown>,
+  fn: () => Promise<T>
+): Promise<T> => {
+  log.debug(`${name}.start`, meta)
+  const start = Date.now()
+  try {
+    const result = await fn()
+    log.info(`${name}.complete`, { ...meta, durationMs: Date.now() - start })
+    return result
+  } catch (err) {
+    log.error(`${name}.failed`, {
+      ...meta,
+      durationMs: Date.now() - start,
+      error: (err as Error).message,
+    })
+    throw err
+  }
 }
 
 // Stream interface for morgan integration
