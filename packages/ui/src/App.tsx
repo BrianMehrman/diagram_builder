@@ -14,11 +14,17 @@ function App() {
         <GlobalErrorFallback error={error} resetError={resetError} />
       )}
       onError={(error, errorInfo) => {
-        // Log to console in development
-        console.error('Global error:', error, errorInfo)
-
-        // In production, you would send to error tracking service
-        // Example: Sentry.captureException(error, { extra: errorInfo });
+        // Send to API log endpoint so errors appear in Loki alongside API logs.
+        // Fire-and-forget — swallow any POST failure silently.
+        fetch('/api/logs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            level: 'error',
+            message: error.message,
+            context: { componentStack: errorInfo.componentStack },
+          }),
+        }).catch(() => undefined)
       }}
     >
       <ToastProvider>
