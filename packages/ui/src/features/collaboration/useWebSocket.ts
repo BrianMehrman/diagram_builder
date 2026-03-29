@@ -48,7 +48,7 @@ export function useWebSocket(sessionId: string | null, events?: WebSocketEvents)
     if (!sessionId || !currentUserId || !currentUsername) return
 
     // Create socket connection
-    const socket = io('http://localhost:4000', {
+    const socket = io('http://localhost:8741', {
       auth: {
         sessionId,
         userId: currentUserId,

@@ -6,12 +6,12 @@ This guide explains how to run the Playwright E2E tests for the Diagram Builder 
 
 The application consists of two main services:
 
-- **UI (React + Vite)**: Runs on `http://localhost:3000`
-- **API (Express + Socket.IO)**: Runs on `http://localhost:4000`
+- **UI (React + Vite)**: Runs on `http://localhost:8742`
+- **API (Express + Socket.IO)**: Runs on `http://localhost:8741`
 - **Database**: Neo4j on `bolt://localhost:7687`
 - **Cache**: Redis on `localhost:6379`
 
-The UI proxies API requests from `/api` to `http://localhost:4000`.
+The UI proxies API requests from `/api` to `http://localhost:8741`.
 
 ## Prerequisites
 
@@ -25,11 +25,11 @@ cp .env.example .env
 
 **Critical settings:**
 ```env
-# API Server runs on port 4000
-PORT=4000
+# API Server runs on port 8741
+PORT=8741
 
-# UI runs on port 3000, so CORS must allow it
-CORS_ORIGIN=http://localhost:3000
+# UI runs on port 8742, so CORS must allow it
+CORS_ORIGIN=http://localhost:8742
 
 # Database credentials
 NEO4J_PASSWORD=your-password
@@ -57,7 +57,7 @@ docker-compose up -d
 This approach gives you more control and better debugging:
 
 ```bash
-# Terminal 1: Start all services (UI on 3000, API on 4000)
+# Terminal 1: Start all services (UI on 8742, API on 8741)
 npm run dev
 
 # Terminal 2: Run tests
@@ -87,7 +87,7 @@ npm run test:e2e:debug -- integration-smoke.spec.ts
 
 Enable `webServer` in `playwright.config.ts` to auto-start services before tests.
 
-**Important:** Ensure `PORT=4000` in your `.env` file first!
+**Important:** Ensure `PORT=8741` in your `.env` file first!
 
 ## Test Structure
 
@@ -150,18 +150,18 @@ Located in `tests/support/factories/`:
 ### Port Already in Use
 
 ```bash
-# Kill process on port 3000 (UI)
-lsof -ti tcp:3000 | xargs kill -9
+# Kill process on port 8742 (UI)
+lsof -ti tcp:8742 | xargs kill -9
 
-# Kill process on port 4000 (API)
-lsof -ti tcp:4000 | xargs kill -9
+# Kill process on port 8741 (API)
+lsof -ti tcp:8741 | xargs kill -9
 ```
 
 ### Tests Timing Out
 
 - Ensure Neo4j and Redis are running: `docker-compose ps`
-- Check API is responding: `curl http://localhost:4000/health`
-- Check UI is serving: `curl http://localhost:3000`
+- Check API is responding: `curl http://localhost:8741/health`
+- Check UI is serving: `curl http://localhost:8742`
 
 ### Database Connection Errors
 

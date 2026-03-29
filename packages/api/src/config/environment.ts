@@ -29,7 +29,7 @@ export interface EnvironmentConfig {
  */
 export function validateEnvironment(): EnvironmentConfig {
   const config: EnvironmentConfig = {
-    PORT: parseInt(process.env.PORT || '3000', 10),
+    PORT: parseInt(process.env.PORT || '8741', 10),
     NODE_ENV: (process.env.NODE_ENV as EnvironmentConfig['NODE_ENV']) || 'development',
     CORS_ORIGIN: process.env.CORS_ORIGIN,
     JWT_SECRET: process.env.JWT_SECRET || '',

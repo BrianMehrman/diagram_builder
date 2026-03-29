@@ -71,14 +71,14 @@ print_urls() {
   echo -e "${GREEN}✅ Environment ready! (mode: ${mode})${NC}"
   echo ""
   echo "Services:"
-  echo -e "  UI:         ${BLUE}http://localhost:3000${NC}"
-  echo -e "  API:        ${BLUE}http://localhost:4000${NC}"
+  echo -e "  UI:         ${BLUE}http://localhost:8742${NC}"
+  echo -e "  API:        ${BLUE}http://localhost:8741${NC}"
   echo -e "  Neo4j:      ${BLUE}http://localhost:7474${NC}"
   echo -e "  Redis:      localhost:6379"
   if [ "$obs" = "true" ]; then
     echo ""
     echo "Observability:"
-    echo -e "  Grafana:    ${BLUE}http://localhost:3001${NC}"
+    echo -e "  Grafana:    ${BLUE}http://localhost:8743${NC}"
     echo -e "  Jaeger:     ${BLUE}http://localhost:16686${NC}"
     echo -e "  Prometheus: ${BLUE}http://localhost:9090${NC}"
     echo -e "  Loki:       localhost:3100"
@@ -126,23 +126,23 @@ init_local() {
   echo -e "  ${GREEN}✓${NC} Database seeded"
 
   echo "🔧 Checking API server..."
-  if lsof -ti:4000 > /dev/null 2>&1; then
-    echo -e "  ${GREEN}✓${NC} API server already running on port 4000"
+  if lsof -ti:8741 > /dev/null 2>&1; then
+    echo -e "  ${GREEN}✓${NC} API server already running on port 8741"
   else
     echo "  Starting API server..."
     npm run dev:watch --workspace=@diagram-builder/api > /dev/null 2>&1 &
     sleep 3
-    echo -e "  ${GREEN}✓${NC} API server started on port 4000"
+    echo -e "  ${GREEN}✓${NC} API server started on port 8741"
   fi
 
   echo "🎨 Checking UI server..."
-  if lsof -ti:3000 > /dev/null 2>&1; then
-    echo -e "  ${GREEN}✓${NC} UI server already running on port 3000"
+  if lsof -ti:8742 > /dev/null 2>&1; then
+    echo -e "  ${GREEN}✓${NC} UI server already running on port 8742"
   else
     echo "  Starting UI server..."
     npm run dev --workspace=@diagram-builder/ui > /dev/null 2>&1 &
     sleep 5
-    echo -e "  ${GREEN}✓${NC} UI server started on port 3000"
+    echo -e "  ${GREEN}✓${NC} UI server started on port 8742"
   fi
 
   print_urls "local" "$OBSERVABILITY"

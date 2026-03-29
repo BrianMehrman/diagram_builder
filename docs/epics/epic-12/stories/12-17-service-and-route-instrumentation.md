@@ -148,6 +148,6 @@ packages/api/src/services/export-service.ts
   - 8 files identified with zero logging during Loki audit
   - Scoped to service/route layer only; infrastructure files handled in 12-15
 
-**Status:** backlog
+**Status:** done
 **Created:** 2026-03-28
 **Last Updated:** 2026-03-28

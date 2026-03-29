@@ -19,7 +19,7 @@ api:
     nodeEnv: development
     logLevel: debug
     otelEnabled: "true"
-    corsOrigin: "http://localhost:3000"
+    corsOrigin: "http://localhost:8742"
 
 ui:
   replicaCount: 1

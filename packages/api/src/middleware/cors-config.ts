@@ -8,8 +8,8 @@ import cors from 'cors'
  * - Configures allowed methods and headers
  */
 export const corsMiddleware = cors({
-  // Allow origins from environment or default to localhost:3000 and 5173
-  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000', 'http://localhost:5173'],
+  // Allow origins from environment or default to localhost:8742 and 5173
+  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:8742', 'http://localhost:5173'],
 
   // Enable credentials for JWT cookie/auth handling
   credentials: true,

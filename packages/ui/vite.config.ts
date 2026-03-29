@@ -14,14 +14,15 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    port: 8742,
+    strictPort: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        target: 'http://localhost:8741',
         changeOrigin: true,
       },
       '/socket.io': {
-        target: 'http://localhost:4000',
+        target: 'http://localhost:8741',
         changeOrigin: true,
         ws: true,
       },

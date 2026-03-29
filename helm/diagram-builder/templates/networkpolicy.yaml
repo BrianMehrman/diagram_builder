@@ -16,7 +16,7 @@ spec:
   policyTypes:
     - Ingress
 ---
-# Allow ui → api (port 4000)
+# Allow ui → api (port 8741)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -38,7 +38,7 @@ spec:
               {{- include "diagram-builder.ui.selectorLabels" . | nindent 14 }}
       ports:
         - protocol: TCP
-          port: 4000
+          port: 8741
     # Allow Prometheus to scrape API metrics
     - from:
         - podSelector:
@@ -54,7 +54,7 @@ spec:
               kubernetes.io/metadata.name: ingress-nginx
       ports:
         - protocol: TCP
-          port: 4000
+          port: 8741
 ---
 # Allow prometheus → otel-collector (port 8889)
 apiVersion: networking.k8s.io/v1

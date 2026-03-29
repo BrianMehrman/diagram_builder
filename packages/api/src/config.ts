@@ -15,7 +15,7 @@ const log = createModuleLogger('config')
  */
 const ApiConfigSchema = z.object({
   // Server Configuration
-  PORT: z.coerce.number().min(1).max(65535).default(4000),
+  PORT: z.coerce.number().min(1).max(65535).default(8741),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   CORS_ORIGIN: z.string().optional(),
 

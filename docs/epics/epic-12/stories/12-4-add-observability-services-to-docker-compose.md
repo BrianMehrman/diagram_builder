@@ -31,7 +31,7 @@ Add Jaeger, Prometheus, and Grafana to Docker Compose under the `observability` 
 
 - [x] Added `jaeger` service (profile: `observability`) — `jaegertracing/all-in-one:2.1`, ports 16686/4317/4318
 - [x] Added `prometheus` service (profile: `observability`) — `prom/prometheus:v3.1.0`, port 9090
-- [x] Added `grafana` service (profile: `observability`) — `grafana/grafana:11.4.0`, port 3001:3000
+- [x] Added `grafana` service (profile: `observability`) — `grafana/grafana:11.4.0`, port 8743:3000
 - [x] Added `prometheus-data` and `grafana-data` volumes
 
 ### Task 2: Prometheus configuration

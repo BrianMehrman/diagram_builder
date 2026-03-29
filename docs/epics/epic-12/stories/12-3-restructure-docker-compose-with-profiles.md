@@ -40,7 +40,7 @@ Refactor `docker-compose.yml` to use named profiles (`infra`, `app`, `observabil
   - Build context: `docker/api/Dockerfile`
   - `env_file: .env`
   - Environment overrides: `NEO4J_URI=bolt://neo4j:7687`, `REDIS_HOST=redis`, `OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318`
-  - `depends_on: [neo4j, redis]`, `ports: ["3000:3000"]`
+  - `depends_on: [neo4j, redis]`, `ports: ["8741:8741"]`
 - [x] Added `ui` service (profile: `app`)
   - Build context: `docker/ui/Dockerfile`
   - `depends_on: [api]`, `ports: ["5173:80"]`

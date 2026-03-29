@@ -115,6 +115,6 @@ packages/api/src/services/codebase-service.ts  (console.error fallback only)
   - Identified 13 files bypassing Winston during Loki audit
   - Scoped as mechanical substitution only — no logic changes
 
-**Status:** backlog
+**Status:** done
 **Created:** 2026-03-28
 **Last Updated:** 2026-03-28

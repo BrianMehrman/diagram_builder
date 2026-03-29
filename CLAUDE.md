@@ -16,7 +16,7 @@
 
 - **[Project Context](/_bmad-output/project-context.md)** - CRITICAL rules and conventions (MUST READ)
 - **[Architecture](/_bmad-output/planning-artifacts/architecture.md)** - System design and technical decisions
-- **[PORT-CONFIGURATION.md](./PORT-CONFIGURATION.md)** - Standard ports: API=4000, UI=3000
+- **[PORT-CONFIGURATION.md](./PORT-CONFIGURATION.md)** - Standard ports: API=8741, UI=8742, Grafana=8743
 
 ### When Implementing a Story
 
@@ -57,7 +57,7 @@ Load these documents in order for optimal context:
 const docs = {
   navigation: './README.md',
   planning: './PLANNING.md',
-  ports: './PORT-CONFIGURATION.md',
+  ports: './PORT-CONFIGURATION.md', // Standard ports: API=8741, UI=8742, Grafana=8743
   tasks: './TASKS.md',
   
   // _bmad-output/

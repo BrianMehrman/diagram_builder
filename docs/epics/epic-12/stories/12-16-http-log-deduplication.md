@@ -112,6 +112,6 @@ This story is small enough to implement in the same PR as 12-14 if convenient.
   - Identified duplicate HTTP log entries in Loki during logging audit
   - Root cause: Morgan dev format writing to loggerStream in all environments
 
-**Status:** backlog
+**Status:** done
 **Created:** 2026-03-28
 **Last Updated:** 2026-03-28

@@ -9,7 +9,7 @@ metadata:
 data:
   NODE_ENV: {{ .Values.api.config.nodeEnv | quote }}
   LOG_LEVEL: {{ .Values.api.config.logLevel | quote }}
-  PORT: "4000"
+  PORT: "8741"
   OTEL_ENABLED: {{ .Values.api.config.otelEnabled | quote }}
   OTEL_SERVICE_NAME: {{ .Values.api.config.otelServiceName | quote }}
   OTEL_SERVICE_VERSION: {{ .Values.api.config.otelServiceVersion | quote }}

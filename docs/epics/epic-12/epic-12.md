@@ -65,11 +65,11 @@ Fill gaps identified during Loki audit (2026-03-28): infrastructure files bypass
 | 12-11 | Update scripts for multi-mode support | 12-E | done |
 | 12-12 | Documentation updates | 12-E | backlog |
 | 12-13 | Complete Winston logging foundation | 12-C prereq | done |
-| 12-14 | Module logger factory and operation wrapper | 12-F | backlog |
-| 12-15 | Infrastructure logger migration | 12-F | backlog |
-| 12-16 | HTTP log deduplication | 12-F | backlog |
-| 12-17 | Service and route instrumentation | 12-F | backlog |
-| 12-18 | UI error reporting | 12-F | backlog |
+| 12-14 | Module logger factory and operation wrapper | 12-F | done |
+| 12-15 | Infrastructure logger migration | 12-F | done |
+| 12-16 | HTTP log deduplication | 12-F | done |
+| 12-17 | Service and route instrumentation | 12-F | done |
+| 12-18 | UI error reporting | 12-F | done |
 
 **Total Stories:** 18
 

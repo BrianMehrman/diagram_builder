@@ -46,7 +46,7 @@ spec:
                 - ALL
           ports:
             - name: http
-              containerPort: 4000
+              containerPort: 8741
               protocol: TCP
             - name: metrics
               containerPort: 9464

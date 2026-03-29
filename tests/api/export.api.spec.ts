@@ -7,7 +7,7 @@
 
 import { test, expect } from '@playwright/test'
 
-const API_BASE_URL = 'http://localhost:4000/api'
+const API_BASE_URL = 'http://localhost:8741/api'
 const TEST_REPO_ID = 'test-repo-123'
 const AUTH_HEADER = { Authorization: 'Bearer test-token-123' }
 

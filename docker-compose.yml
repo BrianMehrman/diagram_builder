@@ -60,7 +60,7 @@ services:
       - neo4j
       - redis
     ports:
-      - '4000:4000'
+      - '8741:8741'
     networks:
       - diagram-builder-network
     restart: unless-stopped
@@ -74,7 +74,7 @@ services:
     depends_on:
       - api
     ports:
-      - '5173:80'
+      - '8742:80'
     networks:
       - diagram-builder-network
     restart: unless-stopped
@@ -124,7 +124,7 @@ services:
       - grafana-data:/var/lib/grafana
       - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
     ports:
-      - '3001:3000'
+      - '8743:3000'
     depends_on:
       - prometheus
       - jaeger

@@ -61,7 +61,7 @@ Create multi-stage Dockerfiles for the API and UI services, along with nginx con
 ### Task 5: Validation
 
 - [x] Validate both images build successfully: `docker build -f docker/api/Dockerfile .`
-- [x] Validate API container starts: server binds port 3000, module resolution confirmed (CommonJS migration applied)
+- [x] Validate API container starts: server binds port 8741, module resolution confirmed (CommonJS migration applied)
 
 ---
 

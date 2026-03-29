@@ -149,6 +149,6 @@ Mitigate abuse via rate limiting (Task 1) and by validating log level against an
   - Motivated by March 2026 stale-dist incident: 3D canvas silently failed with no server-side visibility
   - Scoped to rendering errors only; browser console capture and OTEL browser SDK deferred
 
-**Status:** backlog
+**Status:** done
 **Created:** 2026-03-28
 **Last Updated:** 2026-03-28

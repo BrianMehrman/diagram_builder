@@ -5,7 +5,7 @@
  * Coverage: Layout switching, rendering, and store integration
  *
  * Note: These tests interact with the workspace page which requires
- * a running API server (port 4000) and dev server (port 3000).
+ * a running API server (port 8741) and dev server (port 8742).
  * The `data-testid="active-layout"` hidden div in Canvas3D reflects
  * the active layout from the Zustand store.
  */
