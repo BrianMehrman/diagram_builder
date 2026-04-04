@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { runQuery } from '../database/query-utils'
 import { buildCacheKey } from '../cache/cache-keys'
 import * as cache from '../cache/cache-utils'
+import { createModuleLogger } from '../logger'
 import type {
   Workspace,
   CreateWorkspaceInput,
@@ -17,6 +18,8 @@ import type {
   AddMemberInput,
   UpdateMemberInput,
 } from '../types/workspace'
+
+const log = createModuleLogger('workspace-service')
 
 /**
  * Create a new workspace
@@ -29,6 +32,7 @@ export async function createWorkspace(
   input: CreateWorkspaceInput,
   userId: string
 ): Promise<Workspace> {
+  log.info('createWorkspace.start', { userId })
   const workspaceId = uuidv4()
   const now = new Date().toISOString()
 
@@ -84,6 +88,7 @@ export async function createWorkspace(
   // Invalidate the user's workspace list cache
   await cache.invalidate(buildCacheKey('workspace', `user:${userId}:list`))
 
+  log.info('createWorkspace.complete', { userId, workspaceId })
   return workspace
 }
 
@@ -253,6 +258,7 @@ export async function updateWorkspace(
  * @returns True if deleted, false if not found
  */
 export async function deleteWorkspace(workspaceId: string, userId: string): Promise<boolean> {
+  log.info('deleteWorkspace.start', { workspaceId, userId })
   // First, get the existing workspace to verify ownership
   const existing = await getWorkspace(workspaceId)
   if (!existing) {
@@ -275,6 +281,7 @@ export async function deleteWorkspace(workspaceId: string, userId: string): Prom
   await cache.invalidate(buildCacheKey('workspace', workspaceId))
   await cache.invalidate(buildCacheKey('workspace', `user:${userId}:list`))
 
+  log.info('deleteWorkspace.complete', { workspaceId, userId })
   return true
 }
 
@@ -350,6 +357,7 @@ export async function addWorkspaceMember(
   input: AddMemberInput,
   userId: string
 ): Promise<WorkspaceMember[]> {
+  log.info('addWorkspaceMember.start', { workspaceId, userId, targetUserId: input.userId })
   // Get existing workspace
   const workspace = await getWorkspace(workspaceId)
   if (!workspace) {
@@ -407,6 +415,7 @@ export async function removeWorkspaceMember(
   memberUserId: string,
   userId: string
 ): Promise<WorkspaceMember[]> {
+  log.info('removeWorkspaceMember.start', { workspaceId, userId, targetUserId: memberUserId })
   // Get existing workspace
   const workspace = await getWorkspace(workspaceId)
   if (!workspace) {

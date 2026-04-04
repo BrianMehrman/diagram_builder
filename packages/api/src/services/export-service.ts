@@ -11,6 +11,7 @@
  */
 
 import type { IVMGraph } from '@diagram-builder/core'
+import { createModuleLogger } from '../logger'
 import {
   exportToPlantUML,
   exportToMermaid,
@@ -28,6 +29,8 @@ import type {
   PNGExportOptions,
 } from '@diagram-builder/core'
 import { getFullGraph } from './graph-service'
+
+const log = createModuleLogger('export-service')
 
 /**
  * Graph filters for controlling visibility
@@ -225,6 +228,7 @@ async function prepareGraphForExport(
  * Export graph as PlantUML
  */
 export async function exportPlantUML(request: ExportRequest): Promise<ExportResult> {
+  log.info('export.start', { repoId: request.repoId, format: 'plantuml' })
   const startTime = Date.now()
 
   // Prepare graph
@@ -236,8 +240,7 @@ export async function exportPlantUML(request: ExportRequest): Promise<ExportResu
   )
 
   const duration = Date.now() - startTime
-
-  return {
+  const exportResult = {
     content: result.content,
     mimeType: result.mimeType,
     extension: result.extension,
@@ -247,12 +250,21 @@ export async function exportPlantUML(request: ExportRequest): Promise<ExportResu
       duration,
     },
   }
+  log.info('export.complete', {
+    repoId: request.repoId,
+    format: 'plantuml',
+    outputBytes:
+      typeof result.content === 'string' ? result.content.length : result.content.byteLength,
+    durationMs: duration,
+  })
+  return exportResult
 }
 
 /**
  * Export graph as Mermaid
  */
 export async function exportMermaid(request: ExportRequest): Promise<ExportResult> {
+  log.info('export.start', { repoId: request.repoId, format: 'mermaid' })
   const startTime = Date.now()
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
@@ -263,7 +275,12 @@ export async function exportMermaid(request: ExportRequest): Promise<ExportResul
   )
 
   const duration = Date.now() - startTime
-
+  log.info('export.complete', {
+    repoId: request.repoId,
+    format: 'mermaid',
+    outputBytes: result.content.length,
+    durationMs: duration,
+  })
   return {
     content: result.content,
     mimeType: result.mimeType,
@@ -280,6 +297,7 @@ export async function exportMermaid(request: ExportRequest): Promise<ExportResul
  * Export graph as Draw.io
  */
 export async function exportDrawio(request: ExportRequest): Promise<ExportResult> {
+  log.info('export.start', { repoId: request.repoId, format: 'drawio' })
   const startTime = Date.now()
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
@@ -290,7 +308,12 @@ export async function exportDrawio(request: ExportRequest): Promise<ExportResult
   )
 
   const duration = Date.now() - startTime
-
+  log.info('export.complete', {
+    repoId: request.repoId,
+    format: 'drawio',
+    outputBytes: result.content.length,
+    durationMs: duration,
+  })
   return {
     content: result.content,
     mimeType: result.mimeType,
@@ -307,6 +330,7 @@ export async function exportDrawio(request: ExportRequest): Promise<ExportResult
  * Export graph as GLTF
  */
 export async function exportGLTF(request: ExportRequest): Promise<ExportResult> {
+  log.info('export.start', { repoId: request.repoId, format: 'gltf' })
   const startTime = Date.now()
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
@@ -314,7 +338,13 @@ export async function exportGLTF(request: ExportRequest): Promise<ExportResult> 
   const result = exportToGLTF(graph, request.options as unknown as GLTFExportOptions | undefined)
 
   const duration = Date.now() - startTime
-
+  log.info('export.complete', {
+    repoId: request.repoId,
+    format: 'gltf',
+    outputBytes:
+      typeof result.content === 'string' ? result.content.length : result.content.byteLength,
+    durationMs: duration,
+  })
   return {
     content: result.content,
     mimeType: result.mimeType,
@@ -339,6 +369,7 @@ export interface ImageExportRequest extends ExportRequest {
  * Export graph as PNG or SVG
  */
 export async function exportImage(request: ImageExportRequest): Promise<ExportResult> {
+  log.info('export.start', { repoId: request.repoId, format: request.format })
   const startTime = Date.now()
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
@@ -347,7 +378,12 @@ export async function exportImage(request: ImageExportRequest): Promise<ExportRe
     const result = exportToSVG(graph, request.options as unknown as SVGExportOptions | undefined)
 
     const duration = Date.now() - startTime
-
+    log.info('export.complete', {
+      repoId: request.repoId,
+      format: 'svg',
+      outputBytes: result.content.length,
+      durationMs: duration,
+    })
     return {
       content: result.content,
       mimeType: result.mimeType,
@@ -362,6 +398,13 @@ export async function exportImage(request: ImageExportRequest): Promise<ExportRe
     const result = exportToPNG(graph, request.options as unknown as PNGExportOptions | undefined)
 
     const duration = Date.now() - startTime
+    log.info('export.complete', {
+      repoId: request.repoId,
+      format: 'png',
+      outputBytes:
+        typeof result.content === 'string' ? result.content.length : result.content.byteLength,
+      durationMs: duration,
+    })
 
     return {
       content: result.content,

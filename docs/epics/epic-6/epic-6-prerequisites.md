@@ -132,8 +132,8 @@
 
 - [x] **Development environment working**
   - Docker services running (Neo4j, Redis)
-  - API server functional (port 4000)
-  - UI server functional (port 3000)
+  - API server functional (port 8741)
+  - UI server functional (port 8742)
   - Database seeded with test data
 
 - [x] **Core packages ready**

@@ -15,6 +15,9 @@ import msgpackParser from 'socket.io-msgpack-parser'
 import { authenticateSocket, type AuthenticatedSocket } from './auth'
 import { sessionManager, type UserPosition } from './session-manager'
 import { PositionBatcher } from './position-batcher'
+import { createModuleLogger } from '../logger'
+
+const log = createModuleLogger('websocket')
 
 /**
  * Event types for type-safe socket communication
@@ -98,7 +101,7 @@ export function createWebSocketServer(
   // Connection handler
   io.on('connection', (socket) => {
     const authSocket = socket as AuthenticatedSocket
-    console.warn(`[WebSocket] User connected: ${authSocket.userId} (${authSocket.id})`)
+    log.info('user connected', { userId: authSocket.userId, socketId: authSocket.id })
 
     // Session join handler
     authSocket.on('session.join', (data: { workspaceId: string; repositoryId?: string }) => {
@@ -128,9 +131,11 @@ export function createWebSocketServer(
           username: undefined, // Can be enhanced with user profile lookup
         })
 
-        console.warn(
-          `[WebSocket] User ${authSocket.userId} joined session ${sessionId} (${session.users.size} users)`
-        )
+        log.info('user joined session', {
+          userId: authSocket.userId,
+          sessionId,
+          userCount: session.users.size,
+        })
       } catch (error) {
         authSocket.emit('error', {
           message: error instanceof Error ? error.message : 'Failed to join session',
@@ -228,13 +233,13 @@ export function createWebSocketServer(
 
     // Disconnect handler
     authSocket.on('disconnect', (reason) => {
-      console.warn(`[WebSocket] User disconnected: ${authSocket.userId} (${reason})`)
+      log.info('user disconnected', { userId: authSocket.userId, reason })
       handleSessionLeave(authSocket)
     })
 
     // Error handler
     authSocket.on('error', (error: Error) => {
-      console.error(`[WebSocket] Socket error for ${authSocket.userId}:`, error)
+      log.error('socket error', { userId: authSocket.userId, error: error.message })
     })
   })
 
@@ -243,7 +248,7 @@ export function createWebSocketServer(
     () => {
       const cleaned = sessionManager.cleanupStaleSessions()
       if (cleaned > 0) {
-        console.warn(`[WebSocket] Cleaned up ${cleaned} stale sessions`)
+        log.info('cleaned up stale sessions', { count: cleaned })
       }
     },
     10 * 60 * 1000
@@ -267,7 +272,7 @@ function handleSessionLeave(socket: AuthenticatedSocket): void {
       userId: socket.userId,
     })
 
-    console.warn(`[WebSocket] User ${socket.userId} left session ${sessionId}`)
+    log.info('user left session', { userId: socket.userId, sessionId })
   }
 }
 
@@ -288,7 +293,7 @@ export function getWebSocketStats() {
  */
 export function shutdownWebSocketServer(): void {
   if (positionBatcher) {
-    console.warn('[WebSocket] Flushing pending position updates...')
+    log.info('flushing pending position updates')
     positionBatcher.flushAll()
     positionBatcher.clear()
     positionBatcher = null

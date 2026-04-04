@@ -75,8 +75,8 @@
 
 - [ ] Run a quick smoke test:
   ```bash
-  docker run --rm -p 3001:80 diagram-builder-ui:local
-  curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/
+  docker run --rm -p 8742:80 diagram-builder-ui:local
+  curl -s -o /dev/null -w "%{http_code}" http://localhost:8742/
   ```
   Expected: `200`.
 

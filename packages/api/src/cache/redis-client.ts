@@ -5,6 +5,9 @@
  */
 
 import { getRedisClient, closeRedisClient } from './redis-config'
+import { createModuleLogger } from '../logger'
+
+const log = createModuleLogger('redis')
 
 /**
  * Connect to Redis cache
@@ -13,7 +16,7 @@ import { getRedisClient, closeRedisClient } from './redis-config'
  * @throws Error if connection fails
  */
 export async function connectRedis(): Promise<void> {
-  console.warn('Connecting to Redis cache...')
+  log.info('connecting to Redis cache')
 
   try {
     const redis = getRedisClient()
@@ -24,9 +27,11 @@ export async function connectRedis(): Promise<void> {
       throw new Error('Redis ping response invalid')
     }
 
-    console.warn('✓ Redis cache connected successfully')
+    log.info('Redis cache connected')
   } catch (error) {
-    console.error('Failed to connect to Redis cache:', error)
+    log.error('failed to connect to Redis cache', {
+      error: error instanceof Error ? error.message : String(error),
+    })
     throw new Error(
       `Redis connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`
     )
@@ -45,7 +50,9 @@ export async function checkRedisHealth(): Promise<boolean> {
     const pong = await redis.ping()
     return pong === 'PONG'
   } catch (error) {
-    console.error('Redis health check failed:', error)
+    log.error('Redis health check failed', {
+      error: error instanceof Error ? error.message : String(error),
+    })
     return false
   }
 }
@@ -55,7 +62,7 @@ export async function checkRedisHealth(): Promise<boolean> {
  * Should be called on application shutdown
  */
 export async function disconnectRedis(): Promise<void> {
-  console.warn('Disconnecting from Redis cache...')
+  log.info('disconnecting from Redis cache')
   await closeRedisClient()
-  console.warn('✓ Redis cache disconnected')
+  log.info('Redis cache disconnected')
 }

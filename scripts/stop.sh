@@ -20,9 +20,9 @@ OBSERVABILITY=false
 # Function to stop UI server
 stop_ui() {
   echo "🎨 Stopping UI server..."
-  if lsof -ti:3000 > /dev/null 2>&1; then
-    kill $(lsof -ti:3000) 2>/dev/null
-    echo -e "  ${GREEN}✓${NC} UI server stopped (port 3000)"
+  if lsof -ti:8742 > /dev/null 2>&1; then
+    kill $(lsof -ti:8742) 2>/dev/null
+    echo -e "  ${GREEN}✓${NC} UI server stopped (port 8742)"
   else
     echo -e "  ${YELLOW}⚠${NC} UI server not running"
   fi
@@ -31,9 +31,9 @@ stop_ui() {
 # Function to stop API server
 stop_api() {
   echo "🔧 Stopping API server..."
-  if lsof -ti:4000 > /dev/null 2>&1; then
-    kill $(lsof -ti:4000) 2>/dev/null
-    echo -e "  ${GREEN}✓${NC} API server stopped (port 4000)"
+  if lsof -ti:8741 > /dev/null 2>&1; then
+    kill $(lsof -ti:8741) 2>/dev/null
+    echo -e "  ${GREEN}✓${NC} API server stopped (port 8741)"
   else
     echo -e "  ${YELLOW}⚠${NC} API server not running"
   fi
@@ -42,8 +42,8 @@ stop_api() {
 # Function to stop Neo4j
 stop_neo4j() {
   echo "📦 Stopping Neo4j..."
-  if docker ps | grep -q diagram-builder-neo4j; then
-    docker compose --profile infra stop neo4j > /dev/null 2>&1
+  if docker ps -a --format '{{.Names}}' | grep -q '^diagram-builder-neo4j$'; then
+    docker rm -f diagram-builder-neo4j > /dev/null 2>&1
     echo -e "  ${GREEN}✓${NC} Neo4j stopped"
   else
     echo -e "  ${YELLOW}⚠${NC} Neo4j not running"
@@ -53,8 +53,8 @@ stop_neo4j() {
 # Function to stop Redis
 stop_redis() {
   echo "📦 Stopping Redis..."
-  if docker ps | grep -q diagram-builder-redis; then
-    docker compose --profile infra stop redis > /dev/null 2>&1
+  if docker ps -a --format '{{.Names}}' | grep -q '^diagram-builder-redis$'; then
+    docker rm -f diagram-builder-redis > /dev/null 2>&1
     echo -e "  ${GREEN}✓${NC} Redis stopped"
   else
     echo -e "  ${YELLOW}⚠${NC} Redis not running"
@@ -177,8 +177,6 @@ if [ -n "$MODE" ]; then
     local)
       stop_ui
       stop_api
-      stop_neo4j
-      stop_redis
       if [ "$OBSERVABILITY" = "true" ]; then
         stop_observability
       fi
@@ -223,6 +221,8 @@ fi
 if [ "$STOP_ALL" = true ]; then
   stop_ui
   stop_api
+  stop_neo4j
+  stop_redis
   stop_docker_all
   echo ""
   echo -e "${GREEN}✅ All services stopped!${NC}"

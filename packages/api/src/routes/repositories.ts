@@ -10,6 +10,7 @@
 
 import { Router, Request, Response } from 'express'
 import { authenticate } from '../middleware/auth'
+import { createModuleLogger } from '../logger'
 import {
   parseAndStoreRepository,
   getRepositoryMetadata,
@@ -22,6 +23,7 @@ import { ValidationError, NotFoundError } from '../errors'
 import { asyncHandler } from '../utils/async-handler'
 
 const repositoriesRouter = Router()
+const log = createModuleLogger('repositories')
 
 /**
  * UUID validation regex (accepts all UUID versions)
@@ -57,6 +59,7 @@ repositoriesRouter.post(
     if (branch) request.branch = branch
     if (token) request.token = token
 
+    log.info('parse.requested', { url: validation.data.url, path: validation.data.path })
     // Parse and store repository
     const result = await parseAndStoreRepository(request)
 

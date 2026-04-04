@@ -108,7 +108,7 @@ export class WebSocketManager {
 /**
  * Default WebSocket manager instance
  */
-const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:4000'
+const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8741'
 
 export const wsManager = new WebSocketManager({
   url: WS_URL,

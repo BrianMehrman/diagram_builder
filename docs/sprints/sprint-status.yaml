@@ -550,6 +550,6 @@ epics:
       - "12-E (scripts/docs) must come last — depends on 12-B and 12-D being complete"
       - "Three deployment modes: local (Node.js + infra docker-compose), docker (all profiles), k8s (Helm)"
       - "OTEL endpoint varies per mode: localhost:4318 (local), jaeger:4318 (docker), otel-collector:4317 (k8s)"
-      - "Grafana port 3001 to avoid conflict with UI dev server on port 3000"
+      - "Grafana port 8743 to avoid conflict with UI dev server on port 8742"
       - "No parser or UI changes required — all changes confined to api package, infra config, and scripts"
 

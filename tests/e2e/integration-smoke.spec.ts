@@ -28,7 +28,7 @@ test.describe('Integration Smoke Tests @P0 @smoke @integration', () => {
     })
 
     // GIVEN: User navigates to the application
-    console.log('Navigating to http://localhost:3000...')
+    console.log('Navigating to http://localhost:8742...')
     const response = await page.goto('/')
 
     // THEN: Page loads successfully
@@ -110,16 +110,16 @@ test.describe('Integration Smoke Tests @P0 @smoke @integration', () => {
     // Try common health check endpoints
     let response
     try {
-      response = await request.get('http://localhost:3000/api/health')
+      response = await request.get('http://localhost:8742/api/health')
       console.log(`/api/health responded with: ${response.status()}`)
     } catch (e) {
       console.log('/api/health not found, trying /health...')
       try {
-        response = await request.get('http://localhost:3000/health')
+        response = await request.get('http://localhost:8742/health')
         console.log(`/health responded with: ${response.status()}`)
       } catch (e2) {
         console.log('No health endpoint found - checking root API')
-        response = await request.get('http://localhost:3000/api')
+        response = await request.get('http://localhost:8742/api')
       }
     }
 

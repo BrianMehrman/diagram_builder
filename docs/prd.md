@@ -833,7 +833,7 @@ diagram-builder workspace load <name>
 
 # Server (Local Development)
 diagram-builder serve [options]
-  --port <number>        # Server port (default: 3000)
+  --port <number>        # Server port (default: 8742)
   --neo4j <url>         # Neo4j connection string
 
 # Help

@@ -7,6 +7,9 @@
 
 import { getRedisClient } from './redis-config'
 import { cacheOperationsTotal } from '../observability/instrumentation'
+import { createModuleLogger } from '../logger'
+
+const log = createModuleLogger('redis')
 
 /**
  * Default TTL for cached items (5 minutes)
@@ -32,7 +35,10 @@ export async function get<T>(key: string): Promise<T | null> {
     cacheOperationsTotal.add(1, { operation: 'get', result: 'hit' })
     return JSON.parse(value) as T
   } catch (error) {
-    console.error(`Cache get error for key "${key}":`, error)
+    log.error('cache get error', {
+      key,
+      error: error instanceof Error ? error.message : String(error),
+    })
     return null
   }
 }
@@ -56,7 +62,10 @@ export async function set<T>(
     await redis.setex(key, ttl, serialized)
     cacheOperationsTotal.add(1, { operation: 'set', result: 'hit' })
   } catch (error) {
-    console.error(`Cache set error for key "${key}":`, error)
+    log.error('cache set error', {
+      key,
+      error: error instanceof Error ? error.message : String(error),
+    })
     throw error
   }
 }
@@ -72,7 +81,10 @@ export async function invalidate(key: string): Promise<void> {
     await redis.del(key)
     cacheOperationsTotal.add(1, { operation: 'del', result: 'hit' })
   } catch (error) {
-    console.error(`Cache invalidate error for key "${key}":`, error)
+    log.error('cache invalidate error', {
+      key,
+      error: error instanceof Error ? error.message : String(error),
+    })
     throw error
   }
 }
@@ -104,7 +116,10 @@ export async function invalidatePattern(pattern: string): Promise<void> {
       await pipeline.exec()
     }
   } catch (error) {
-    console.error(`Cache invalidatePattern error for pattern "${pattern}":`, error)
+    log.error('cache invalidatePattern error', {
+      pattern,
+      error: error instanceof Error ? error.message : String(error),
+    })
     throw error
   }
 }

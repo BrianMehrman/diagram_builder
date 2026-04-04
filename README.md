@@ -59,9 +59,9 @@ The application uses environment variables for configuration. Three example file
 
 | Category | Variable | Default | Description |
 |----------|----------|---------|-------------|
-| **Server** | `PORT` | `4000` | API server port |
+| **Server** | `PORT` | `8741` | API server port |
 | | `NODE_ENV` | `development` | Environment: development\|production\|test |
-| | `CORS_ORIGIN` | - | Allowed CORS origin (e.g., http://localhost:3000) |
+| | `CORS_ORIGIN` | - | Allowed CORS origin (e.g., http://localhost:8742) |
 | **Database** | `NEO4J_URI` | `bolt://localhost:7687` | Neo4j connection URI |
 | | `NEO4J_USER` | `neo4j` | Neo4j username |
 | **Cache** | `REDIS_HOST` | `localhost` | Redis host |
@@ -92,7 +92,7 @@ Diagram Builder supports three deployment modes via `--mode` flag:
 ./scripts/init.sh              # or: ./scripts/init.sh --mode=local
 ```
 
-Starts Neo4j + Redis via Docker Compose, seeds the database, then starts the API (port 4000) and UI (port 3000) as Node.js processes.
+Starts Neo4j + Redis via Docker Compose, seeds the database, then starts the API (port 8741) and UI (port 8742) as Node.js processes.
 
 #### Docker Mode — full Docker Compose stack
 
@@ -135,8 +135,8 @@ npm run dev
 
 Once the services are running:
 
-- **UI**: http://localhost:3000
-- **API**: http://localhost:4000
+- **UI**: http://localhost:8742
+- **API**: http://localhost:8741
 - **Neo4j Browser**: http://localhost:7474
 
 ### 5. Observability (Docker/K8s modes)
@@ -145,7 +145,7 @@ When running with `--mode=docker` or `--mode=k8s`, the full observability stack 
 
 | Service | URL | Default Credentials |
 |---------|-----|---------------------|
-| **Grafana** | http://localhost:3001 | admin / admin |
+| **Grafana** | http://localhost:8743 | admin / admin |
 | **Jaeger** | http://localhost:16686 | — |
 | **Prometheus** | http://localhost:9090 | — |
 
@@ -170,7 +170,7 @@ docker build -f docker/ui/Dockerfile -t diagram-builder-ui:local .
 **Verify the API image:**
 ```bash
 # Container should start and /health should return 200
-docker run --rm -p 4000:4000 \
+docker run --rm -p 8741:8741 \
   -e NODE_ENV=development \
   -e JWT_SECRET=dev-secret-at-least-32-chars-long \
   -e NEO4J_URI=bolt://host.docker.internal:7687 \

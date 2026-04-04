@@ -326,7 +326,7 @@ EXAMPLES:
     $ diagram-builder <command> example3 --flag
 
 ENVIRONMENT VARIABLES:
-  API_URL             API server URL (default: http://localhost:4000)
+  API_URL             API server URL (default: http://localhost:8741)
   NEO4J_URI           Neo4j connection URI (default: bolt://localhost:7687)
   JWT_TOKEN           Authentication token for API
 

@@ -5,6 +5,10 @@
  * Provides default values where appropriate
  */
 
+import { createModuleLogger } from '../logger'
+
+const log = createModuleLogger('config')
+
 export interface EnvironmentConfig {
   PORT: number
   NODE_ENV: 'development' | 'production' | 'test'
@@ -25,7 +29,7 @@ export interface EnvironmentConfig {
  */
 export function validateEnvironment(): EnvironmentConfig {
   const config: EnvironmentConfig = {
-    PORT: parseInt(process.env.PORT || '3000', 10),
+    PORT: parseInt(process.env.PORT || '8741', 10),
     NODE_ENV: (process.env.NODE_ENV as EnvironmentConfig['NODE_ENV']) || 'development',
     CORS_ORIGIN: process.env.CORS_ORIGIN,
     JWT_SECRET: process.env.JWT_SECRET || '',
@@ -45,7 +49,7 @@ export function validateEnvironment(): EnvironmentConfig {
 
   // Validate NODE_ENV
   if (!['development', 'production', 'test'].includes(config.NODE_ENV)) {
-    console.warn(`Warning: NODE_ENV="${config.NODE_ENV}" is not standard. Using "development".`)
+    log.warn('NODE_ENV is not standard, defaulting to development', { nodeEnv: config.NODE_ENV })
     config.NODE_ENV = 'development'
   }
 
@@ -55,7 +59,7 @@ export function validateEnvironment(): EnvironmentConfig {
   }
 
   if (config.JWT_SECRET.length < 32) {
-    console.warn('Warning: JWT_SECRET should be at least 32 characters for security')
+    log.warn('JWT_SECRET is shorter than 32 characters')
   }
 
   // Validate Neo4j configuration

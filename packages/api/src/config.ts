@@ -6,13 +6,16 @@
  */
 
 import { z } from 'zod'
+import { createModuleLogger } from './logger'
+
+const log = createModuleLogger('config')
 
 /**
  * Configuration schema with validation
  */
 const ApiConfigSchema = z.object({
   // Server Configuration
-  PORT: z.coerce.number().min(1).max(65535).default(4000),
+  PORT: z.coerce.number().min(1).max(65535).default(8741),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   CORS_ORIGIN: z.string().optional(),
 
@@ -83,8 +86,7 @@ export function loadApiConfig(): ApiConfig {
   const parsed = ApiConfigSchema.safeParse(process.env)
 
   if (!parsed.success) {
-    console.error('❌ API configuration validation failed:')
-    console.error(parsed.error.format())
+    log.error('API configuration validation failed', { errors: parsed.error.format() })
     process.exit(1)
   }
 

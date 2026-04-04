@@ -22,7 +22,7 @@ const originalLocation = window.location
 beforeEach(() => {
   Object.defineProperty(window, 'location', {
     value: {
-      origin: 'http://localhost:3000',
+      origin: 'http://localhost:8742',
       pathname: '/workspace/123',
     },
     writable: true,
@@ -299,7 +299,7 @@ describe('useGlobalKeyboardShortcuts', () => {
       })
 
       const link = mockClipboard.writeText.mock.calls[0]?.[0] as string
-      expect(link).toContain('http://localhost:3000/workspace/123')
+      expect(link).toContain('http://localhost:8742/workspace/123')
       expect(link).toContain('cx=')
       expect(link).toContain('cy=')
       expect(link).toContain('zoom=')

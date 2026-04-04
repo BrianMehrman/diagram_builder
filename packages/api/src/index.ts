@@ -8,6 +8,7 @@ import { graphRouter } from './routes/graph'
 import { viewpointsRouter } from './routes/viewpoints'
 import { exportRouter } from './routes/export'
 import { workspacesRouter } from './routes/workspaces'
+import { logsRouter } from './routes/logs'
 
 const app = express()
 
@@ -39,6 +40,9 @@ app.use('/api/export', exportRouter)
 
 // Workspace routes
 app.use('/api/workspaces', workspacesRouter)
+
+// UI log endpoint (no auth — must capture errors before auth state is established)
+app.use('/api/logs', logsRouter)
 
 // Error handling middleware (MUST be last)
 app.use(errorHandler)

@@ -11,6 +11,7 @@
 
 import { Router, Request, Response } from 'express'
 import { authenticate } from '../middleware/auth'
+import { createModuleLogger } from '../logger'
 import {
   createViewpoint,
   getViewpoint,
@@ -26,6 +27,7 @@ import { asyncHandler } from '../utils/async-handler'
 import type { CreateViewpointInput, UpdateViewpointInput } from '../types/viewpoint'
 
 const viewpointsRouter = Router()
+const log = createModuleLogger('viewpoints')
 
 /**
  * POST /api/viewpoints
@@ -52,6 +54,7 @@ viewpointsRouter.post(
       throw new ValidationError('Invalid request', 'User ID not found in token')
     }
 
+    log.info('viewpoint.create', { userId })
     const viewpoint = await createViewpoint(validation.data as CreateViewpointInput, userId)
 
     res.status(201).json(viewpoint)

@@ -20,7 +20,7 @@ describe('validateEnvironment', () => {
 
     const config = validateEnvironment()
 
-    expect(config.PORT).toBe(3000)
+    expect(config.PORT).toBe(8741)
     expect(config.NODE_ENV).toBe('development')
     expect(config.CORS_ORIGIN).toBeUndefined()
     expect(config.JWT_SECRET).toBe('test-secret-key-at-least-32-characters-long')

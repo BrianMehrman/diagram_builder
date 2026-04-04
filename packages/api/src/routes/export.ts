@@ -11,6 +11,7 @@
 
 import { Router, Request, Response } from 'express'
 import { authenticate } from '../middleware/auth'
+import { createModuleLogger } from '../logger'
 import {
   exportPlantUML,
   exportMermaid,
@@ -36,6 +37,7 @@ interface ImageExportBody extends ExportBody {
 }
 
 const exportRouter = Router()
+const log = createModuleLogger('export')
 
 /**
  * POST /api/export/plantuml
@@ -51,6 +53,7 @@ exportRouter.post(
       throw new ValidationError('Invalid request', 'Repository ID is required')
     }
 
+    log.info('export.requested', { repoId, format: 'plantuml' })
     const request: ExportRequest = {
       repoId,
       ...(lodLevel !== undefined && { lodLevel }),

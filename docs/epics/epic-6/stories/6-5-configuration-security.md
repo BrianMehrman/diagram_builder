@@ -289,7 +289,7 @@ export function loadConfig(): Config {
 **.env.example:**
 ```bash
 # Server Configuration
-PORT=4000
+PORT=8741
 NODE_ENV=development
 
 # Database Configuration (Required)

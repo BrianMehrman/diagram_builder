@@ -82,10 +82,10 @@ export async function importCodebase(
   // Trigger async parser import (fire and forget - updates status when complete)
   void triggerParserImport(codebaseId, input).catch((error: unknown) => {
     // Log error but don't fail the request
-    console.error(
-      `Parser import failed for codebase ${codebaseId}:`,
-      error instanceof Error ? error.message : String(error)
-    )
+    logger.error('parser import failed', {
+      codebaseId,
+      error: error instanceof Error ? error.message : String(error),
+    })
   })
 
   const codebase: Codebase = {

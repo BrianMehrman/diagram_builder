@@ -10,7 +10,7 @@
 import { test, expect } from '../support/fixtures'
 import type { Page, APIResponse } from '@playwright/test'
 
-const API_BASE_URL = 'http://localhost:4000/api'
+const API_BASE_URL = 'http://localhost:8741/api'
 
 type ImportType = 'git' | 'local'
 type CodebaseStatus = 'pending' | 'processing' | 'completed' | 'failed'

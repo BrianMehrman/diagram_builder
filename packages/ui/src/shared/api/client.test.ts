@@ -10,7 +10,7 @@ global.fetch = vi.fn()
 
 describe('createApiClient', () => {
   const mockGetToken = vi.fn()
-  const baseUrl = 'http://localhost:4000'
+  const baseUrl = 'http://localhost:8741'
 
   let apiClient: ReturnType<typeof createApiClient>
 

@@ -53,7 +53,7 @@ describe('API Configuration', () => {
     it('should load config with default values when minimal env vars set', () => {
       const config = loadApiConfig()
 
-      expect(config.PORT).toBe(4000)
+      expect(config.PORT).toBe(8741)
       expect(config.NODE_ENV).toBe('development')
       expect(config.JWT_SECRET).toBe('test-secret-key-that-is-at-least-32-characters-long')
       expect(config.NEO4J_URI).toBe('bolt://localhost:7687')
@@ -212,12 +212,12 @@ describe('API Configuration', () => {
       const config2 = getApiConfig()
 
       expect(config1).toBe(config2)
-      expect(config2.PORT).toBe(4000) // Original default
+      expect(config2.PORT).toBe(8741) // Original default
     })
 
     it('should load fresh config after reset', () => {
       const config1 = getApiConfig()
-      expect(config1.PORT).toBe(4000)
+      expect(config1.PORT).toBe(8741)
 
       resetApiConfig()
       process.env.PORT = '5000'

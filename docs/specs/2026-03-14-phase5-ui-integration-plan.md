@@ -2159,15 +2159,15 @@ cd /Users/brianmehrman/projects/diagram_builder_tree/feature/phase5-ui-integrati
 
 Expected output within 10 seconds:
 ```
-🚀 Server running on port 4000 in development mode
-   Health check: http://localhost:4000/health
-vite dev server ready on port 3000
+🚀 Server running on port 8741 in development mode
+   Health check: http://localhost:8741/health
+vite dev server ready on port 8742
 ```
 
 - [ ] **Step 4: Verify API health endpoint**
 
 ```bash
-curl -s http://localhost:4000/health | head -5
+curl -s http://localhost:8741/health | head -5
 ```
 
 Expected: `{"status":"healthy"}`
@@ -2190,7 +2190,7 @@ With the dev server running (Task 14 complete):
 
 - [ ] **Step 1: Verify homepage loads and workspace is created**
 
-Open `http://localhost:3000` in a browser.
+Open `http://localhost:8742` in a browser.
 
 Expected:
 - HomePage loads
@@ -2198,7 +2198,7 @@ Expected:
 - Navigates to `/workspace/:id`
 
 If "Failed to create workspace. Please check that the API is running." still appears:
-1. Confirm `curl http://localhost:4000/api/workspaces` returns a response (not connection refused)
+1. Confirm `curl http://localhost:8741/api/workspaces` returns a response (not connection refused)
 2. Check browser network tab for the failing request URL and status code
 3. Check API logs for the workspace creation error
 
@@ -2222,7 +2222,7 @@ If the canvas shows empty (no buildings):
 ```bash
 # Replace REPO_ID with an actual repository ID from your database
 curl -s -H "Authorization: Bearer dev-token" \
-  http://localhost:4000/api/graph/REPO_ID/parse-result | \
+  http://localhost:8741/api/graph/REPO_ID/parse-result | \
   python3 -m json.tool | head -30
 ```
 

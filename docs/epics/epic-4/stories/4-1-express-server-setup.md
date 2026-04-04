@@ -48,7 +48,7 @@ This story establishes the server infrastructure that all subsequent API endpoin
   - Log levels configurable via environment variables
 
 - **AC-5:** Server startup and configuration validated
-  - Server listens on configurable port (default 3000)
+  - Server listens on configurable port (default 8741)
   - Graceful shutdown handlers for SIGTERM and SIGINT
   - Health check endpoint at GET /health returns 200 OK
   - Environment variable validation on startup
@@ -116,7 +116,7 @@ This story establishes the server infrastructure that all subsequent API endpoin
 ### Task 5: Server startup, configuration, and health check
 - [ ] Create `src/config/environment.ts` for environment variable management
 - [ ] Validate required environment variables on startup (PORT, NODE_ENV)
-- [ ] Set default values: PORT=3000, NODE_ENV=development
+- [ ] Set default values: PORT=8741, NODE_ENV=development
 - [ ] Implement graceful shutdown handlers for SIGTERM and SIGINT
 - [ ] Close Express server on shutdown signals
 - [ ] Add health check endpoint: GET /health → 200 OK with { status: "healthy" }
@@ -128,7 +128,7 @@ This story establishes the server infrastructure that all subsequent API endpoin
 - [ ] Verify all tests pass 100%
 - [ ] Test development server startup: `npm run dev`
 - [ ] Test production build and startup: `npm run build && npm start`
-- [ ] Verify health check endpoint returns 200: `curl http://localhost:3000/health`
+- [ ] Verify health check endpoint returns 200: `curl http://localhost:8741/health`
 - [ ] Test CORS headers with preflight request
 - [ ] Test error middleware with intentional error route
 - [ ] Run TypeScript type checking: `tsc --noEmit`

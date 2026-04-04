@@ -35,7 +35,7 @@ cp .env.example .env
 ```
 
 Required variables:
-- `BASE_URL`: URL of the application under test (default: `http://localhost:3000`)
+- `BASE_URL`: URL of the application under test (default: `http://localhost:8742`)
 - `TEST_USER_EMAIL`: Test user email for authenticated tests
 - `TEST_USER_PASSWORD`: Test user password
 
@@ -80,15 +80,15 @@ The easiest way to start all services is using the init script:
 # Terminal 1: Docker services
 docker-compose up
 
-# Terminal 2: API server (port 4000)
+# Terminal 2: API server (port 8741)
 cd packages/api && npm run dev
 
-# Terminal 3: UI server (port 3000)
+# Terminal 3: UI server (port 8742)
 cd packages/ui && npm run dev
 ```
 
-The UI should be accessible at `http://localhost:3000`.
-The API should be accessible at `http://localhost:4000`.
+The UI should be accessible at `http://localhost:8742`.
+The API should be accessible at `http://localhost:8741`.
 
 ---
 

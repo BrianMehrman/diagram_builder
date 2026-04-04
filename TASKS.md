@@ -593,12 +593,12 @@ All tests must follow these rules:
   - `env_file: .env`
   - `environment` overrides for docker networking: `NEO4J_URI=bolt://neo4j:7687`, `REDIS_HOST=redis`, `OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318`
   - `depends_on: [neo4j, redis]`
-  - `ports: ["4000:4000"]`
+  - `ports: ["8741:8741"]`
   - `networks: [diagram-builder-network]`
 - [ ] Add `ui` service (profile: `app`)
   - Build context: `docker/ui/Dockerfile`
   - `depends_on: [api]`
-  - `ports: ["3000:80"]`
+  - `ports: ["8742:80"]`
   - `networks: [diagram-builder-network]`
 - [ ] Add named volumes for any new persistent data
 - [ ] Validate `docker-compose --profile infra up -d` matches existing behavior
@@ -763,7 +763,7 @@ All tests must follow these rules:
   - Readiness probe: `GET /health` (initialDelaySeconds: 10, periodSeconds: 5)
   - `envFrom`: configmap ref + secret ref
   - `OTEL_EXPORTER_OTLP_ENDPOINT` → `http://{{ .Release.Name }}-otel-collector:4317`
-- [ ] Create `helm/diagram-builder/templates/api/service.yaml` (ClusterIP, port 4000)
+- [ ] Create `helm/diagram-builder/templates/api/service.yaml` (ClusterIP, port 8741)
 - [ ] Create `helm/diagram-builder/templates/api/configmap.yaml` (NODE_ENV, LOG_LEVEL, OTEL_SERVICE_NAME, etc.)
 - [ ] Create `helm/diagram-builder/templates/api/secret.yaml` (JWT_SECRET, NEO4J_PASSWORD, REDIS_PASSWORD — base64 encoded via `{{ .Values.api.secrets.jwtSecret | b64enc }}`)
 - [ ] Create `helm/diagram-builder/templates/api/hpa.yaml`

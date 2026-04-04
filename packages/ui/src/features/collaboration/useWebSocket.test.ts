@@ -43,7 +43,7 @@ describe('useWebSocket', () => {
 
     await waitFor(() => {
       expect(io).toHaveBeenCalledWith(
-        'http://localhost:4000',
+        'http://localhost:8741',
         expect.objectContaining({
           auth: {
             sessionId: 'session-123',

@@ -364,7 +364,7 @@ Multi-layer optimization strategy:
 **Development Workflow Decisions:**
 
 - **Local Development**: Docker Compose with hot reload volumes
-  - Services: neo4j (ports 7474, 7687), parser, api (depends on neo4j), ui (port 3000)
+  - Services: neo4j (ports 7474, 7687), parser, api (depends on neo4j), ui (port 8742)
   - One-command setup: `npm run setup`
   - *Rationale*: Production parity (same Docker images). Eliminates "works on my machine" issues.
 
@@ -2057,9 +2057,9 @@ packages/api/src/test/setup.ts
 # Starts in parallel:
 - Neo4j (Docker Compose)
 - Redis (Docker Compose)
-- API server (port 3000)
-- WebSocket server (port 3001)
-- UI dev server (port 5173)
+- API server (port 8741)
+- WebSocket server (integrated into API on port 8741)
+- UI dev server (port 8742)
 ```
 
 **Hot Reload**:

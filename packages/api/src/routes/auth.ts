@@ -9,8 +9,11 @@ import { Router, Request, Response } from 'express'
 import { generateToken } from '../auth/jwt'
 import { authenticate } from '../middleware/auth'
 import { ValidationError } from '../errors'
+import { createModuleLogger } from '../logger'
 
 export const authRouter = Router()
+
+const log = createModuleLogger('auth')
 
 /**
  * Token response interface
@@ -65,6 +68,7 @@ authRouter.post('/login', (req: Request, res: Response) => {
       authenticatedUserId = TEST_USER.userId
       userEmail = TEST_USER.email
     } else {
+      log.warn('login.failed', { reason: 'invalid credentials' })
       res.status(401).json({
         type: 'https://tools.ietf.org/html/rfc7807',
         title: 'Authentication Failed',
@@ -85,6 +89,7 @@ authRouter.post('/login', (req: Request, res: Response) => {
   const token = generateToken(authenticatedUserId)
   const expiresIn = 24 * 60 * 60 // 24 hours in seconds
 
+  log.info('login.success', { userId: authenticatedUserId })
   const response: TokenResponse = {
     token,
     expiresIn,
@@ -109,6 +114,7 @@ authRouter.post('/refresh', authenticate, (req: Request, res: Response) => {
     throw new ValidationError('Missing user', 'User information not found in request')
   }
 
+  log.info('token.refresh', { userId: req.user.userId })
   const token = generateToken(req.user.userId)
   const expiresIn = 24 * 60 * 60 // 24 hours in seconds
 

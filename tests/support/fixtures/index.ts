@@ -8,7 +8,7 @@ import { test as base, Page, APIRequestContext } from '@playwright/test'
 import { createGraph, createRepository, createViewpoint } from '../factories'
 import type { Graph, Repository, Viewpoint } from '../factories'
 
-const API_BASE_URL = 'http://localhost:4000/api'
+const API_BASE_URL = 'http://localhost:8741/api'
 
 /** Shape returned by POST /api/workspaces */
 export interface Workspace {

@@ -26,7 +26,12 @@ const productionFormat = ':timestamp :method :url :status :res[content-length] -
 
 const format = process.env.NODE_ENV === 'production' ? productionFormat : developmentFormat
 
-export const loggerMiddleware = morgan(format, { stream: loggerStream })
+// In development, write Morgan output directly to stdout (terminal only) to avoid
+// ANSI-coloured strings polluting Loki. In production, route through loggerStream
+// so the structured format lands in Loki alongside the requestLogger entries.
+const morganStream = process.env.NODE_ENV === 'production' ? loggerStream : process.stdout
+
+export const loggerMiddleware = morgan(format, { stream: morganStream })
 
 /**
  * Structured Winston request logger middleware.

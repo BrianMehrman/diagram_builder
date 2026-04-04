@@ -374,7 +374,7 @@ To persist auth across refreshes (future enhancement):
 - No errors shown
 
 **Solution:**
-1. Check API is running (default: http://localhost:3001)
+1. Check API is running (default: http://localhost:8741)
 2. Verify API auth endpoints exist: `POST /auth/login`
 3. Check network tab for CORS errors
 4. Verify credentials match test data in API
@@ -399,7 +399,7 @@ API base URL for requests.
 
 ```bash
 # Default
-VITE_API_BASE_URL=http://localhost:3001
+VITE_API_BASE_URL=http://localhost:8741
 
 # Production
 VITE_API_BASE_URL=https://api.yourdomain.com

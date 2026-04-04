@@ -17,6 +17,9 @@ import { initializeDatabase } from './database/init-db'
 import { seedDatabase } from './database/seed-db'
 import { connectRedis, disconnectRedis } from './cache/redis-client'
 import { createWebSocketServer, shutdownWebSocketServer } from './websocket/server'
+import { createModuleLogger } from './logger'
+
+const log = createModuleLogger('startup')
 
 // Validate environment configuration
 const config = validateEnvironment()
@@ -29,12 +32,13 @@ const io = createWebSocketServer(httpServer)
 
 // Start server and connect to database
 const server = httpServer.listen(config.PORT, () => {
-  console.warn(`🚀 Server running on port ${config.PORT} in ${config.NODE_ENV} mode`)
-  console.warn(`   Health check: http://localhost:${config.PORT}/health`)
-  console.warn(`   WebSocket server: ws://localhost:${config.PORT}`)
-  if (config.CORS_ORIGIN) {
-    console.warn(`   CORS origins: ${config.CORS_ORIGIN}`)
-  }
+  log.info('server started', {
+    port: config.PORT,
+    env: config.NODE_ENV,
+    healthUrl: `http://localhost:${config.PORT}/health`,
+    wsUrl: `ws://localhost:${config.PORT}`,
+    ...(config.CORS_ORIGIN && { corsOrigin: config.CORS_ORIGIN }),
+  })
 
   // Connect to Neo4j database and Redis cache
   void (async () => {
@@ -44,7 +48,9 @@ const server = httpServer.listen(config.PORT, () => {
       await seedDatabase()
       await connectRedis()
     } catch (error) {
-      console.error('Failed to connect to services on startup:', error)
+      log.error('failed to connect to services on startup', {
+        error: error instanceof Error ? error.message : String(error),
+      })
       process.exit(1)
     }
   })()
@@ -52,18 +58,18 @@ const server = httpServer.listen(config.PORT, () => {
 
 // Graceful shutdown handlers
 function shutdown(signal: string) {
-  console.warn(`\n${signal} received. Shutting down gracefully...`)
+  log.info('shutdown signal received', { signal })
 
   // Flush WebSocket batches and cleanup
   shutdownWebSocketServer()
 
   // Close WebSocket server
   void io.close(() => {
-    console.warn('WebSocket server closed.')
+    log.info('websocket server closed')
 
     // Then close HTTP server
     server.close(() => {
-      console.warn('HTTP server closed.')
+      log.info('http server closed')
 
       // Disconnect from database and cache
       void (async () => {
@@ -71,13 +77,12 @@ function shutdown(signal: string) {
           await disconnectDatabase()
           await disconnectRedis()
         } catch (error) {
-          console.error(
-            'Error disconnecting from services:',
-            error instanceof Error ? error.message : String(error)
-          )
+          log.error('error disconnecting from services', {
+            error: error instanceof Error ? error.message : String(error),
+          })
         }
 
-        console.warn('Exiting process.')
+        log.info('exiting process')
         process.exit(0)
       })()
     })
@@ -85,7 +90,7 @@ function shutdown(signal: string) {
 
   // Force exit after 10 seconds if graceful shutdown fails
   setTimeout(() => {
-    console.error('Forced shutdown after timeout.')
+    log.error('forced shutdown after timeout')
     process.exit(1)
   }, 10000)
 }

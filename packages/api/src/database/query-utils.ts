@@ -7,6 +7,9 @@
 
 import { getDriver } from './neo4j-config'
 import { Session, QueryResult, ManagedTransaction } from 'neo4j-driver'
+import { createModuleLogger } from '../logger'
+
+const log = createModuleLogger('neo4j')
 
 /**
  * Run a single Cypher query with parameters
@@ -26,9 +29,11 @@ export async function runQuery<T = unknown>(
     const result: QueryResult = await session.run(cypher, params)
     return result.records.map((record) => record.toObject()) as T[]
   } catch (error) {
-    console.error('Neo4j query error:', error)
-    console.error('Query:', cypher)
-    console.error('Params:', params)
+    log.error('Neo4j query error', {
+      error: error instanceof Error ? error.message : String(error),
+      query: cypher,
+      params,
+    })
     throw error
   } finally {
     await session.close()
@@ -82,8 +87,10 @@ export async function runTransaction(queries: TransactionQuery[]): Promise<void>
       }
     })
   } catch (error) {
-    console.error('Neo4j transaction error:', error)
-    console.error('Queries:', queries)
+    log.error('Neo4j transaction error', {
+      error: error instanceof Error ? error.message : String(error),
+      queryCount: queries.length,
+    })
     throw error
   } finally {
     await session.close()
