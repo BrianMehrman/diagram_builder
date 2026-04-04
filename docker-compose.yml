@@ -17,8 +17,8 @@ services:
     image: neo4j:latest
     container_name: diagram-builder-neo4j
     ports:
-      - '7474:7474'  # HTTP
-      - '7687:7687'  # Bolt
+      - '7474:7474' # HTTP
+      - '7687:7687' # Bolt
     environment:
       - NEO4J_AUTH=neo4j/password123
       - NEO4J_PLUGINS=["apoc"]
@@ -56,6 +56,9 @@ services:
       - NEO4J_URI=bolt://neo4j:7687
       - REDIS_HOST=redis
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+      - OTEL_ENABLED=true
+      - OTEL_SERVICE_NAME=diagram-builder-api
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
     depends_on:
       - neo4j
       - redis
@@ -73,6 +76,13 @@ services:
     container_name: diagram-builder-ui
     depends_on:
       - api
+    env_file:
+      - packages/ui/.env
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+      - OTEL_ENABLED=true
+      - OTEL_SERVICE_NAME=diagram-builder-ui
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318=value
     ports:
       - '8742:80'
     networks:
@@ -85,9 +95,9 @@ services:
     image: jaegertracing/jaeger:2.1.0
     container_name: diagram-builder-jaeger
     ports:
-      - '16686:16686'  # Jaeger UI
-      - '4317:4317'    # OTLP gRPC
-      - '4318:4318'    # OTLP HTTP
+      - '16686:16686' # Jaeger UI
+      - '4317:4317' # OTLP gRPC
+      - '4318:4318' # OTLP HTTP
     networks:
       - diagram-builder-network
     restart: unless-stopped
@@ -97,7 +107,7 @@ services:
     image: grafana/loki:3.3.2
     container_name: diagram-builder-loki
     ports:
-      - '3100:3100'  # Loki HTTP API
+      - '3100:3100' # Loki HTTP API
     command: -config.file=/etc/loki/local-config.yaml
     networks:
       - diagram-builder-network
