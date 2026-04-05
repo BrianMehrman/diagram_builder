@@ -458,7 +458,7 @@ describe('createSVGExporter', () => {
 describe('exportToSVG', () => {
   it('should export graph using convenience function', () => {
     const graph = createTestGraph()
-    const result = exportToSVG(graph)
+    const { result } = exportToSVG(graph)
 
     expect(result.content).toContain('<?xml')
     expect(result.content).toContain('<svg')
@@ -467,7 +467,7 @@ describe('exportToSVG', () => {
 
   it('should accept options', () => {
     const graph = createTestGraph()
-    const result = exportToSVG(graph, { title: 'Test Title' })
+    const { result } = exportToSVG(graph, { title: 'Test Title' })
 
     expect(result.content).toContain('<title>Test Title</title>')
   })

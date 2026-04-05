@@ -679,7 +679,11 @@ export function createMermaidExporter(): MermaidExporter {
 /**
  * Convenience function to export a graph to Mermaid format
  */
-export function exportToMermaid(graph: IVMGraph, options?: MermaidExportOptions): ExportResult {
-  const exporter = new MermaidExporter()
-  return exporter.export(graph, options)
+export function exportToMermaid(
+  graph: IVMGraph,
+  options?: MermaidExportOptions
+): { result: ExportResult; durationMs: number } {
+  const start = Date.now()
+  const result = new MermaidExporter().export(graph, options)
+  return { result, durationMs: Date.now() - start }
 }

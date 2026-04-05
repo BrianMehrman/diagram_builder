@@ -12,7 +12,6 @@ import {
   wsActiveSessions,
   dbQueryDuration,
   cacheOperationsTotal,
-  parserDuration,
 } from './metrics'
 
 /**
@@ -67,6 +66,5 @@ export {
   wsActiveSessions,
   dbQueryDuration,
   cacheOperationsTotal,
-  parserDuration,
   context,
 }

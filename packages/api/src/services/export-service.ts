@@ -269,7 +269,7 @@ export async function exportMermaid(request: ExportRequest): Promise<ExportResul
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
-  const result = exportToMermaid(
+  const { result, durationMs: exportDurationMs } = exportToMermaid(
     graph,
     request.options as unknown as MermaidExportOptions | undefined
   )
@@ -279,6 +279,7 @@ export async function exportMermaid(request: ExportRequest): Promise<ExportResul
     repoId: request.repoId,
     format: 'mermaid',
     outputBytes: result.content.length,
+    exportDurationMs,
     durationMs: duration,
   })
   return {
@@ -302,7 +303,7 @@ export async function exportDrawio(request: ExportRequest): Promise<ExportResult
 
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
-  const result = exportToDrawio(
+  const { result, durationMs: exportDurationMs } = exportToDrawio(
     graph,
     request.options as unknown as DrawioExportOptions | undefined
   )
@@ -312,6 +313,7 @@ export async function exportDrawio(request: ExportRequest): Promise<ExportResult
     repoId: request.repoId,
     format: 'drawio',
     outputBytes: result.content.length,
+    exportDurationMs,
     durationMs: duration,
   })
   return {
@@ -375,13 +377,17 @@ export async function exportImage(request: ImageExportRequest): Promise<ExportRe
   const graph = await prepareGraphForExport(request.repoId, request.lodLevel, request.filters)
 
   if (request.format === 'svg') {
-    const result = exportToSVG(graph, request.options as unknown as SVGExportOptions | undefined)
+    const { result, durationMs: exportDurationMs } = exportToSVG(
+      graph,
+      request.options as unknown as SVGExportOptions | undefined
+    )
 
     const duration = Date.now() - startTime
     log.info('export.complete', {
       repoId: request.repoId,
       format: 'svg',
       outputBytes: result.content.length,
+      exportDurationMs,
       durationMs: duration,
     })
     return {

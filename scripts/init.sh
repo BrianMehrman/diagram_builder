@@ -111,9 +111,13 @@ init_local() {
 
   if [ "$OBSERVABILITY" = "true" ]; then
     echo "🔭 Checking observability services..."
+    # In local mode the API and parser run as host processes, not Docker containers.
+    # Write PROMETHEUS_CONFIG to .compose.env so docker compose always picks it up,
+    # even when Prometheus is restarted manually from a different shell.
+    echo "PROMETHEUS_CONFIG=./config/prometheus/prometheus-local.yml" > .compose.env
     if ! docker ps | grep -q diagram-builder-jaeger; then
       echo "  Starting observability stack..."
-      docker compose --profile observability up -d
+      docker compose --env-file .compose.env --profile observability up -d
       sleep 2
       echo -e "  ${GREEN}✓${NC} Observability stack started"
     else
@@ -175,8 +179,11 @@ wait_for_health() {
 init_docker() {
   echo "🚀 Initializing Diagram Builder (docker mode)..."
 
+  # In docker mode all services run as containers — use service-name scrape targets.
+  echo "PROMETHEUS_CONFIG=./config/prometheus/prometheus.yml" > .compose.env
+
   echo "📦 Starting all Docker Compose services..."
-  docker compose --profile infra --profile app --profile observability up -d --build
+  docker compose --env-file .compose.env --profile infra --profile app --profile observability up -d --build
   echo -e "  ${GREEN}✓${NC} Services started"
 
   echo "⏳ Waiting for health checks..."

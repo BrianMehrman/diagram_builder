@@ -11,6 +11,7 @@
 
 import { NodeSDK } from '@opentelemetry/sdk-node'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
+import { PrometheusExporter } from '@opentelemetry/exporter-prometheus'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
 import { resourceFromAttributes } from '@opentelemetry/resources'
 import { trace } from '@opentelemetry/api'
@@ -35,9 +36,19 @@ export function initTracing(): void {
     url: `${config.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces`,
   })
 
+  // metricReader wires the PrometheusExporter into the SDK's MeterProvider.
+  // NodeSDK.start() calls metrics.setGlobalMeterProvider() — if we don't pass a
+  // metricReader here, the SDK registers a no-reader provider first and our
+  // subsequent metrics.setGlobalMeterProvider() call in initMetrics() is silently dropped.
   sdk = new NodeSDK({
     resource,
     traceExporter,
+    metricReader: new PrometheusExporter({
+      port: 9464,
+      // Promote service.name and service.version from the resource onto every metric
+      // so Prometheus/Grafana can filter by service without joining target_info.
+      withResourceConstantLabels: /^service\.(name|version)$/,
+    }),
     instrumentations: [getNodeAutoInstrumentations()],
   })
 

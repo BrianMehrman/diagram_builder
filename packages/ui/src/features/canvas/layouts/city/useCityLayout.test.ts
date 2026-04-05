@@ -2,7 +2,7 @@
  * useCityLayout Hook Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useCityLayout } from './useCityLayout'
 import { useCanvasStore } from '../../store'
@@ -46,6 +46,13 @@ const mockExternalZones: Array<{
   zoneMetadata: { type: string; arcStart: number; arcEnd: number; nodeCount: number }
   nodes: Array<{ nodeId: string; position: { x: number; y: number; z: number } }>
 }> = []
+
+vi.mock('../../../../lib/telemetry', () => ({
+  withSpan: vi.fn((_name: string, _attrs: unknown, fn: (span: unknown) => unknown) =>
+    fn({ end: vi.fn(), setAttributes: vi.fn(), setStatus: vi.fn() })
+  ),
+  getTracer: vi.fn(),
+}))
 
 vi.mock('../../layout/engines/radialCityLayout', () => ({
   RadialCityLayoutEngine: class MockRadialCityLayoutEngine {
@@ -439,6 +446,32 @@ function buildCentroidTestParseResult(): ParseResult {
     >,
   }
 }
+
+// ---------------------------------------------------------------------------
+// Telemetry instrumentation tests
+// ---------------------------------------------------------------------------
+
+describe('useCityLayout telemetry', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    useCanvasStore.getState().reset()
+    mockPositions.clear()
+    const graph = createGraph(3)
+    const parseResult = buildMockParseResult(graph)
+    const resolver = createViewResolver(parseResult)
+    useCanvasStore.setState({ parseResult, resolver })
+  })
+
+  it('emits ui.layout.compute span with node_count when layout runs', async () => {
+    const telemetry = await import('../../../../lib/telemetry')
+    renderHook(() => useCityLayout())
+    expect(telemetry.withSpan).toHaveBeenCalledWith(
+      'ui.layout.compute',
+      expect.objectContaining({ node_count: expect.any(Number) }),
+      expect.any(Function)
+    )
+  })
+})
 
 describe('focusedGroupId centroid computation', () => {
   beforeEach(() => {

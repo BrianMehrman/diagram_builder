@@ -447,7 +447,7 @@ describe('exportToMermaid()', () => {
   it('should export a graph directly', () => {
     const graph = createTestGraph([{ id: 'file1', type: 'file', metadata: { label: 'Test File' } }])
 
-    const result = exportToMermaid(graph)
+    const { result } = exportToMermaid(graph)
 
     expect(result.content).toContain('flowchart TB')
     expect(result.content).toContain('file1')
@@ -458,7 +458,7 @@ describe('exportToMermaid()', () => {
       { id: 'class1', type: 'class', metadata: { label: 'TestClass' } },
     ])
 
-    const result = exportToMermaid(graph, { diagramType: 'classDiagram' })
+    const { result } = exportToMermaid(graph, { diagramType: 'classDiagram' })
 
     expect(result.content).toContain('classDiagram')
   })

@@ -526,7 +526,11 @@ export function createDrawioExporter(): DrawioExporter {
 /**
  * Convenience function to export a graph to Draw.io format
  */
-export function exportToDrawio(graph: IVMGraph, options?: DrawioExportOptions): ExportResult {
-  const exporter = new DrawioExporter()
-  return exporter.export(graph, options)
+export function exportToDrawio(
+  graph: IVMGraph,
+  options?: DrawioExportOptions
+): { result: ExportResult; durationMs: number } {
+  const start = Date.now()
+  const result = new DrawioExporter().export(graph, options)
+  return { result, durationMs: Date.now() - start }
 }

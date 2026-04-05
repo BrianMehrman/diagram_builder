@@ -17,11 +17,12 @@ const LOKI_ENABLED = process.env.LOKI_ENABLED === 'true'
 const LOKI_HOST = process.env.LOKI_HOST ?? 'http://localhost:3100'
 
 const transports: winston.transport[] = [
-  // dev logs
+  // dev logs — uncolorize so ANSI codes don't appear in the file
   new winston.transports.File({
     filename: 'logs/development.log',
+    format: winston.format.combine(winston.format.uncolorize(), winston.format.json()),
   }),
-  // Console transport for development
+  // Console transport for development — colorize runs here, not stripped by root format
   new winston.transports.Console({
     format: winston.format.combine(
       winston.format.colorize(),
@@ -45,9 +46,10 @@ if (LOKI_ENABLED) {
     new LokiTransport({
       host: LOKI_HOST,
       labels: { app: 'diagram-builder-api' },
-      json: true,
       batching: true,
       interval: 5,
+      // uncolorize here so ANSI codes don't appear in Loki log lines
+      format: winston.format.combine(winston.format.uncolorize(), winston.format.json()),
     })
   )
 }
@@ -61,7 +63,6 @@ export const logger = winston.createLogger({
     }),
     winston.format.errors({ stack: true }),
     winston.format.splat(),
-    winston.format.uncolorize(), // strip ANSI before file/Loki/OTEL transports
     winston.format.json()
   ),
   defaultMeta: { service: 'api' },
@@ -70,23 +71,20 @@ export const logger = winston.createLogger({
 
 // Add file transport in production
 if (process.env.NODE_ENV === 'production') {
+  const fileFormat = winston.format.combine(winston.format.uncolorize(), winston.format.json())
   logger.add(
     new winston.transports.File({
       filename: 'logs/api-error.log',
       level: 'error',
+      format: fileFormat,
     })
   )
   logger.add(
     new winston.transports.File({
       filename: 'logs/api-combined.log',
+      format: fileFormat,
     })
   )
-  // } else {
-  //   logger.add(
-  //     new winston.transports.File({
-  //       filename: 'logs/development.log',
-  //     })
-  //   )
 }
 
 // ─── Module logger factory ────────────────────────────────────────────────────
@@ -97,6 +95,45 @@ if (process.env.NODE_ENV === 'production') {
  * filterable by module name: {app="diagram-builder-api", module="workspace-service"}
  */
 export const createModuleLogger = (module: string): winston.Logger => logger.child({ module })
+
+// ─── App logger factory ───────────────────────────────────────────────────────
+
+/**
+ * Creates a standalone logger with its own Loki transport labelled with the
+ * given app name. Use this when logs should appear in Loki under a different
+ * {app} stream than "diagram-builder-api" — for example, UI error logs
+ * forwarded through the API should land under {app="diagram-builder-ui"}.
+ *
+ * The returned logger ships to Loki only (no console/file). The caller is
+ * responsible for any additional transports they need.
+ */
+export const createAppLogger = (appName: string): winston.Logger => {
+  const appTransports: winston.transport[] = []
+
+  if (LOKI_ENABLED) {
+    appTransports.push(
+      new LokiTransport({
+        host: LOKI_HOST,
+        labels: { app: appName },
+        batching: true,
+        interval: 5,
+        format: winston.format.combine(winston.format.uncolorize(), winston.format.json()),
+      })
+    )
+  }
+
+  return winston.createLogger({
+    level: LOG_LEVEL,
+    format: winston.format.combine(
+      winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+      winston.format.errors({ stack: true }),
+      winston.format.splat(),
+      winston.format.json()
+    ),
+    defaultMeta: { service: appName },
+    transports: appTransports,
+  })
+}
 
 // ─── Operation wrapper ────────────────────────────────────────────────────────
 

@@ -7,6 +7,7 @@
  */
 
 import { useMemo, useEffect } from 'react'
+import { withSpan } from '../../../../lib/telemetry'
 import { SemanticTier } from '@diagram-builder/core'
 import type { IVMGraph } from '@diagram-builder/core'
 import type { NodeType, EdgeType } from '@diagram-builder/core'
@@ -89,7 +90,10 @@ export function useBasic3DLayout(): Basic3DLayoutResult {
   // ---------------------------------------------------------------------------
 
   const positions = useMemo(
-    () => buildRadialTree(graph, { depthSpacing: 30, rootRadius: 5 }),
+    () =>
+      withSpan('ui.layout.compute', { node_count: graph.nodes.length }, () =>
+        buildRadialTree(graph, { depthSpacing: 30, rootRadius: 5 })
+      ),
     [graph]
   )
 

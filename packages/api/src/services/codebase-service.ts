@@ -12,17 +12,10 @@
 import { v4 as uuidv4 } from 'uuid'
 import { runQuery } from '../database/query-utils'
 import { NotFoundError, ValidationError } from '../errors'
-import {
-  loadRepository,
-  buildDependencyGraph,
-  convertToIVM,
-  type RepositoryConfig,
-} from '@diagram-builder/parser'
-import { readFile } from 'fs/promises'
+import { runParserPipeline, type RepositoryConfig } from '@diagram-builder/parser'
 import * as cache from '../cache/cache-utils'
 import { buildCacheKey } from '../cache/cache-keys'
 import { logger } from '../logger'
-import { parserDuration } from '../observability/instrumentation'
 import type {
   Codebase,
   CreateCodebaseInput,
@@ -134,109 +127,20 @@ async function triggerParserImport(codebaseId: string, input: CreateCodebaseInpu
       }),
     }
 
-    // Load repository (clone if Git, scan if local)
-    const parserStart = Date.now()
-    const repoContext = await loadRepository(repoConfig)
-    parserDuration.record((Date.now() - parserStart) / 1000, {
-      language: 'unknown',
-    })
-    logger.info('Repository loaded', {
-      codebaseId,
-      fileCount: repoContext.files.length,
-      type: repoContext.metadata.type,
-      path: repoContext.path,
-    })
-
-    await updateCodebaseProgress(codebaseId, {
-      percentage: 30,
-      stage: 'cloning',
-      message: `Found ${repoContext.files.length} files`,
-      totalFiles: repoContext.files.length,
-      filesProcessed: 0,
-    })
-
-    // Stage 2: Parsing files (30-70%)
+    // Run parser pipeline: scan → parse → graph (instrumented with OTEL spans + metrics)
     await updateCodebaseProgress(codebaseId, {
       percentage: 30,
       stage: 'parsing',
-      message: 'Reading file contents...',
-      totalFiles: repoContext.files.length,
+      message: 'Parsing repository...',
+      totalFiles: 0,
       filesProcessed: 0,
     })
 
-    // Read file contents, skipping files that can't be read
-    const fileInputs: Array<{ filePath: string; content: string }> = []
-    const skippedFiles: string[] = []
-    const totalFiles = repoContext.files.length
-
-    for (const [i, filePath] of repoContext.files.entries()) {
-      try {
-        const content = await readFile(filePath, 'utf-8')
-        // Skip files with null bytes (likely binary)
-        if (content.includes('\0')) {
-          logger.warn('Skipping binary file', { filePath, codebaseId })
-          skippedFiles.push(filePath)
-          continue
-        }
-        fileInputs.push({ filePath, content })
-      } catch (err) {
-        logger.warn('Failed to read file, skipping', {
-          filePath,
-          codebaseId,
-          error: (err as Error).message,
-        })
-        skippedFiles.push(filePath)
-      }
-
-      // Update progress every 10 files or at the end
-      if ((i + 1) % 10 === 0 || i === repoContext.files.length - 1) {
-        const parsingProgress = 30 + Math.round(((i + 1) / totalFiles) * 30)
-        await updateCodebaseProgress(codebaseId, {
-          percentage: parsingProgress,
-          stage: 'parsing',
-          message: `Reading files (${i + 1}/${totalFiles})`,
-          totalFiles,
-          filesProcessed: i + 1,
-        })
-      }
-    }
-
-    logger.debug('File contents read', {
-      codebaseId,
-      fileCount: fileInputs.length,
-      skippedCount: skippedFiles.length,
-    })
-
-    // Stage 3: Building dependency graph (60-80%)
-    await updateCodebaseProgress(codebaseId, {
-      percentage: 60,
-      stage: 'graph-building',
-      message: 'Building dependency graph...',
-      totalFiles,
-      filesProcessed: totalFiles,
-    })
-
-    // Build dependency graph
-    const depGraph = buildDependencyGraph(fileInputs)
-    logger.info('Dependency graph built', {
-      codebaseId,
-      nodeCount: depGraph.getNodes().length,
-      edgeCount: depGraph.getEdges().length,
-    })
-
-    await updateCodebaseProgress(codebaseId, {
-      percentage: 70,
-      stage: 'graph-building',
-      message: `Found ${depGraph.getNodes().length} nodes, ${depGraph.getEdges().length} edges`,
-      totalFiles,
-      filesProcessed: totalFiles,
-    })
-
-    // Convert to IVM
-    const ivm = convertToIVM(depGraph, repoContext, {
+    const ivm = await runParserPipeline(repoConfig, {
       name: input.source.split('/').pop() || 'repository',
     })
-    logger.info('IVM created', {
+
+    logger.info('Parser pipeline complete', {
       codebaseId,
       ivmNodes: ivm.nodes.length,
       ivmEdges: ivm.edges.length,
@@ -246,17 +150,18 @@ async function triggerParserImport(codebaseId: string, input: CreateCodebaseInpu
       percentage: 80,
       stage: 'graph-building',
       message: `Created ${ivm.nodes.length} visualization nodes`,
-      totalFiles,
-      filesProcessed: totalFiles,
+      totalFiles: ivm.nodes.length,
+      filesProcessed: ivm.nodes.length,
     })
 
     // Stage 4: Storing in Neo4j (80-100%)
+    const totalFiles = ivm.nodes.length
     await updateCodebaseProgress(codebaseId, {
       percentage: 80,
       stage: 'storing',
       message: 'Creating repository...',
       totalFiles,
-      filesProcessed: totalFiles,
+      filesProcessed: 0,
     })
 
     // Create Repository node in Neo4j (use MERGE for idempotency)
@@ -276,11 +181,11 @@ async function triggerParserImport(codebaseId: string, input: CreateCodebaseInpu
       {
         id: repositoryId,
         name: ivm.metadata.name,
-        rootPath: repoContext.path,
-        repositoryUrl: repoContext.metadata.type === 'git' ? repoContext.metadata.url : null,
-        branch: repoContext.metadata.branch || null,
-        type: repoContext.metadata.type,
-        fileCount: repoContext.metadata.fileCount,
+        rootPath: ivm.metadata.rootPath,
+        repositoryUrl: repoConfig.url ?? null,
+        branch: repoConfig.branch ?? null,
+        type: repoConfig.url ? 'git' : 'local',
+        fileCount: ivm.nodes.length,
       }
     )
 
@@ -438,16 +343,9 @@ async function triggerParserImport(codebaseId: string, input: CreateCodebaseInpu
       codebaseId,
       repositoryId,
       duration: `${duration}ms`,
-      fileCount: repoContext.files.length,
       nodeCount: ivm.nodes.length,
       edgeCount: ivm.edges.length,
     })
-
-    // Cleanup cloned repository if needed
-    if (repoContext.cleanup) {
-      await repoContext.cleanup()
-      logger.debug('Cleaned up temporary files', { codebaseId })
-    }
   } catch (error) {
     // Update status to failed with error message
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'

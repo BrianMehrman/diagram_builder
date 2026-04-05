@@ -753,7 +753,11 @@ export function createSVGExporter(): SVGExporter {
 /**
  * Convenience function to export a graph to SVG format
  */
-export function exportToSVG(graph: IVMGraph, options?: SVGExportOptions): ExportResult {
-  const exporter = new SVGExporter()
-  return exporter.export(graph, options)
+export function exportToSVG(
+  graph: IVMGraph,
+  options?: SVGExportOptions
+): { result: ExportResult; durationMs: number } {
+  const start = Date.now()
+  const result = new SVGExporter().export(graph, options)
+  return { result, durationMs: Date.now() - start }
 }

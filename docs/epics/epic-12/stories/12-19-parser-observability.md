@@ -54,7 +54,7 @@ Architecture spec: `docs/specs/2026-04-04-observability-architecture-design.md`
 
 ### Task 1: Install OTEL packages in parser
 
-- [ ] Add to `packages/parser/package.json`:
+- [x] Add to `packages/parser/package.json`:
   - `@opentelemetry/api`
   - `@opentelemetry/sdk-node`
   - `@opentelemetry/exporter-trace-otlp-http`
@@ -63,53 +63,54 @@ Architecture spec: `docs/specs/2026-04-04-observability-architecture-design.md`
 
 ### Task 2: Create parser observability module
 
-- [ ] Create `packages/parser/src/observability/tracing.ts` — mirrors API pattern (`initTracing`, `shutdownTracing`, `getTracer`)
-- [ ] Create `packages/parser/src/observability/metrics.ts` — `initMetrics`, exports `parserFilesTotal`, `parserRunDuration`, `parserErrorsTotal`; no-op defaults; `PrometheusExporter` on port 9465 when `OTEL_ENABLED=true`
-- [ ] Create `packages/parser/src/observability/index.ts` — calls `initTracing()` and `initMetrics()`
+- [x] Create `packages/parser/src/observability/tracing.ts` — mirrors API pattern (`initTracing`, `shutdownTracing`, `getTracer`)
+- [x] Create `packages/parser/src/observability/metrics.ts` — `initMetrics`, exports `parserFilesTotal`, `parserRunDuration`, `parserErrorsTotal`; no-op defaults; `PrometheusExporter` on port 9465 when `OTEL_ENABLED=true`
+- [x] Create `packages/parser/src/observability/index.ts` — calls `initTracing()` and `initMetrics()`
 
 ### Task 3: Add Loki transport to parser logger
 
-- [ ] Update `packages/parser/src/logger.ts`:
+- [x] Update `packages/parser/src/logger.ts`:
   - Add `winston-loki` transport when `LOKI_ENABLED=true`
   - Label: `{app: 'diagram-builder-parser'}`
   - Match API logger pattern from Story 12-7
 
 ### Task 4: Instrument parse pipeline
 
-- [ ] Wrap the top-level parse entry point in a `parser.run` span (attributes: `language`, `file_count`, `repository_path`)
-- [ ] Add child spans for `parser.scan`, `parser.parse`, `parser.graph` phases
-- [ ] Record `parser_files_total` per file processed (increment with `language` + `status`)
-- [ ] Record `parser_run_duration_seconds` at end of each phase
-- [ ] Record `parser_errors_total` on caught parse errors
+- [x] Wrap the top-level parse entry point in a `parser.run` span (attributes: `language`, `file_count`, `repository_path`)
+- [x] Add child spans for `parser.scan`, `parser.parse`, `parser.graph` phases
+- [x] Record `parser_files_total` per file processed (increment with `language` + `status`)
+- [x] Record `parser_run_duration_seconds` at end of each phase
+- [x] Record `parser_errors_total` on caught parse errors
 
 ### Task 5: Update Prometheus scrape config
 
-- [ ] Edit `config/prometheus/prometheus.yml`:
+- [x] Edit `config/prometheus/prometheus.yml`:
   - Add scrape job `diagram-builder-parser` targeting `parser:9465`
+- [x] Create `config/prometheus/prometheus-local.yml` with `host.docker.internal:9465` target for local mode
 
 ### Task 6: Remove API proxy metric
 
-- [ ] Remove `parserDuration` from `packages/api/src/observability/metrics.ts`
-- [ ] Remove `parserDuration.record(...)` call from `packages/api/src/services/codebase-service.ts`
-- [ ] Remove `parserDuration` re-export from `packages/api/src/observability/instrumentation.ts`
+- [x] Remove `parserDuration` from `packages/api/src/observability/metrics.ts`
+- [x] Remove `parserDuration.record(...)` call from `packages/api/src/services/codebase-service.ts`
+- [x] Remove `parserDuration` re-export from `packages/api/src/observability/instrumentation.ts`
 
 ### Task 7: Add env var config to parser
 
-- [ ] Add `OTEL_ENABLED`, `OTEL_SERVICE_NAME`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `LOKI_ENABLED`, `LOKI_HOST` to parser config (read from `process.env` directly or via a small config module — keep it lightweight, no Zod dependency needed)
+- [x] Add `OTEL_ENABLED`, `OTEL_SERVICE_NAME`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `LOKI_ENABLED`, `LOKI_HOST` to parser config
 
 ### Task 8: Write tests
 
-- [ ] Unit tests for metric recording: verify counters increment and histograms record
-- [ ] Unit test for span creation: verify `parser.run` span emitted with correct attributes
-- [ ] Verify Loki transport wired correctly in logger
+- [x] Unit tests for metric recording: verify counters increment and histograms record
+- [x] Unit test for span creation: verify `parser.run` span emitted with correct attributes
+- [x] Verify Loki transport wired correctly in logger
 
 ### Task 9: Verify
 
-- [ ] `npm run type-check` — clean (parser package)
-- [ ] `npm run lint` — clean (parser package)
-- [ ] `npm run format:check` — clean
-- [ ] `npm test` — all passing
-- [ ] Smoke test: run a parse job with `OTEL_ENABLED=true`, confirm spans in Jaeger and metrics at `localhost:9465/metrics`
+- [x] `npm run type-check` — clean (parser package)
+- [x] `npm run lint` — clean (parser package)
+- [x] `npm run format:check` — clean
+- [x] `npm test` — all passing
+- [x] Smoke test: run a parse job with `OTEL_ENABLED=true`, confirm spans in Jaeger and metrics at `localhost:9465/metrics`
 
 ---
 
@@ -139,7 +140,13 @@ If the parser is invoked in-process by the API, the API's OTEL SDK will already 
 - **2026-04-04**: Story created
   - Gap identified against observability architecture spec (`docs/specs/2026-04-04-observability-architecture-design.md`)
   - Part of Epic 12-G: Observability Gap Fill
+- **2026-04-05**: Post-merge bug fixes
+  - `observability/index.ts` was never imported — `initTracing()` and `initMetrics()` never ran. Fixed by adding a side-effect import in `packages/parser/src/index.ts`.
+  - `initMetrics()` called `metrics.setGlobalMeterProvider()` which is silently dropped when the API's `NodeSDK` has already registered a global provider. Fixed by using `provider.getMeter()` directly on the local `MeterProvider` so instruments are always wired to the port 9465 exporter.
+  - `OTEL_SERVICE_NAME` env var is set to `diagram-builder-api` by the API's `.env`; parser inherited this value. Fixed by hardcoding `'diagram-builder-parser'` in the resource and meter name.
+  - Prometheus scrape target `parser:9465` is a Docker hostname unreachable in local mode. Fixed by adding `config/prometheus/prometheus-local.yml` with `host.docker.internal:9465` and updating `init.sh` to export `PROMETHEUS_CONFIG` for local mode.
+  - Added `withResourceConstantLabels: /^service\.name$/` to `PrometheusExporter` so `service_name` label appears on all parser metrics.
 
-**Status:** backlog
+**Status:** done
 **Created:** 2026-04-04
-**Last Updated:** 2026-04-04
+**Last Updated:** 2026-04-05

@@ -73,10 +73,10 @@ Extend observability to the remaining packages (parser, UI, CLI, core) as define
 | 12-16 | HTTP log deduplication | 12-F | done |
 | 12-17 | Service and route instrumentation | 12-F | done |
 | 12-18 | UI error reporting | 12-F | done |
-| 12-19 | Parser observability — traces, metrics, Loki | 12-G | backlog |
-| 12-20 | UI OTEL browser tracing | 12-G | backlog |
-| 12-21 | CLI structured logger and core timing metadata | 12-G | backlog |
-| 12-22 | Grafana dashboard updates for parser and UI metrics | 12-G | backlog |
+| 12-19 | Parser observability — traces, metrics, Loki | 12-G | done |
+| 12-20 | UI OTEL browser tracing | 12-G | done |
+| 12-21 | CLI structured logger and core timing metadata | 12-G | done |
+| 12-22 | Grafana dashboard updates for parser and UI metrics | 12-G | done |
 
 **Total Stories:** 22
 
@@ -119,7 +119,11 @@ Extend observability to the remaining packages (parser, UI, CLI, core) as define
   - parser, UI, CLI, and core packages have no OTEL instrumentation
   - Added Stories 12-19 through 12-22
   - Total stories: 22
+- **2026-04-05**: Post-merge bug fix pass on 12-G stories
+  - All 22 stories confirmed done
+  - Fixed: parser observability init never ran (missing side-effect import), metrics provider conflict with API NodeSDK, parser service name inheriting API env var, Prometheus local-mode scrape targets, ZoneContextManager breaking UI tracing, UI missing service.name resource, API PrometheusExporter dropped due to NodeSDK global provider registration order
+  - See individual story change logs for details
 
-**Status:** in-progress
+**Status:** done
 **Created:** 2026-03-22
 **Last Updated:** 2026-03-28

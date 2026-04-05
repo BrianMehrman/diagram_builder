@@ -3,6 +3,13 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+
+vi.mock('../../../../lib/telemetry', () => ({
+  withSpan: vi.fn((_name: string, _attrs: unknown, fn: (span: unknown) => unknown) =>
+    fn({ end: vi.fn(), setAttributes: vi.fn(), setStatus: vi.fn() })
+  ),
+  getTracer: vi.fn(),
+}))
 import { renderHook, act } from '@testing-library/react'
 import { useBasic3DLayout } from './useBasic3DLayout'
 import { useCanvasStore } from '../../store'
@@ -219,5 +226,30 @@ describe('useBasic3DLayout nearestNodeId', () => {
     vi.advanceTimersByTime(250)
 
     expect(useCanvasStore.getState().nearestNodeId).toBe('node-near')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Telemetry instrumentation
+// ---------------------------------------------------------------------------
+
+describe('useBasic3DLayout telemetry', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    useCanvasStore.getState().reset()
+  })
+
+  it('emits ui.layout.compute span with node_count when layout runs', async () => {
+    const telemetry = await import('../../../../lib/telemetry')
+    const resolver = makeMockResolver()
+    useCanvasStore.setState({ resolver, lodLevel: 1 })
+
+    renderHook(() => useBasic3DLayout())
+
+    expect(telemetry.withSpan).toHaveBeenCalledWith(
+      'ui.layout.compute',
+      expect.objectContaining({ node_count: expect.any(Number) }),
+      expect.any(Function)
+    )
   })
 })

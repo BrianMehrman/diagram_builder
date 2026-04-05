@@ -52,54 +52,47 @@ Architecture spec: `docs/specs/2026-04-04-observability-architecture-design.md`
 
 ### Task 1: Add Winston logger to CLI
 
-- [ ] Add `winston` to `packages/cli/package.json` dependencies
-- [ ] Create `packages/cli/src/logger.ts`:
+- [x] Add `winston` to `packages/cli/package.json` dependencies
+- [x] Create `packages/cli/src/logger.ts`:
   - Winston logger with JSON format, stdout transport
   - Log level from `LOG_LEVEL` env var, defaulting to `info`
   - Export `logger` and `createModuleLogger(module: string)` (same pattern as API/parser)
 
 ### Task 2: Wire --verbose flag
 
-- [ ] In the CLI's Commander setup (`packages/cli/src/index.ts`):
+- [x] In the CLI's Commander setup (`packages/cli/src/index.ts`):
   - Add global `-v, --verbose` option
   - When set, call `logger.level = 'debug'` before command execution
 
 ### Task 3: Instrument CLI commands
 
-- [ ] Add `log.info('command started', { command, args })` at the start of each command handler
-- [ ] Add `log.info('command complete', { durationMs })` on success
-- [ ] Add `log.error('command failed', { error: e.message })` in catch blocks
+- [x] Added `log.info('command started', ...)`, `log.info('command complete', { durationMs })`, and `log.error('command failed', ...)` to command handlers
 
 ### Task 4: Top-level error handler
 
-- [ ] Wrap the Commander `program.parseAsync()` call in a try/catch
-- [ ] On unhandled error: `logger.error('unhandled error', { error }); process.exit(1)`
+- [x] Wrapped `program.parseAsync()` with `.catch()` handler: `logger.error('unhandled error', { error }); process.exit(1)`
 
 ### Task 5: Identify expensive core operations
 
-- [ ] Audit `packages/core/src/` for operations that are called frequently or known to be slow:
-  - Layout computation (force-directed / radial)
-  - Export serialization (SVG, Draw.io, Mermaid)
-- [ ] List the specific functions to wrap
+- [x] Identified: `exportToMermaid`, `exportToSVG`, `exportToDrawio` (serialization), `layoutGraph` (force-directed computation)
 
 ### Task 6: Add timing return to core operations
 
-- [ ] For each identified operation, change the return type from `T` to `{ result: T; durationMs: number }`
-- [ ] Record `Date.now()` before and after, compute `durationMs`
-- [ ] Update all callers (API services, CLI) to destructure `{ result }`
+- [x] Changed return type of all four functions to `{ result: T; durationMs: number }`
+- [x] Updated all callers in API services, CLI, and demo scripts to destructure `{ result }`
 
 ### Task 7: Write tests
 
-- [ ] CLI: test that `--verbose` sets log level to debug
-- [ ] CLI: test that top-level error handler catches and logs before exit
-- [ ] Core: test that timing metadata is returned and non-negative
+- [x] CLI: test that `--verbose` sets log level to debug
+- [x] CLI: test that top-level error handler catches and logs before exit
+- [x] Core: test that timing metadata is returned and non-negative for all four operations
 
 ### Task 8: Verify
 
-- [ ] `npm run type-check` — clean (cli + core packages)
-- [ ] `npm run lint` — clean
-- [ ] `npm run format:check` — clean
-- [ ] `npm test` — all passing
+- [x] `npm run type-check` — clean (cli + core packages)
+- [x] `npm run lint` — clean
+- [x] `npm run format:check` — clean
+- [x] `npm test` — all passing
 
 ---
 
@@ -130,7 +123,8 @@ Focus on operations that take >10ms on typical inputs. Layout computation for gr
 - **2026-04-04**: Story created
   - Gap identified against observability architecture spec (`docs/specs/2026-04-04-observability-architecture-design.md`)
   - Part of Epic 12-G: Observability Gap Fill
+- **2026-04-05**: All tasks confirmed complete; no post-merge bugs found.
 
-**Status:** backlog
+**Status:** done
 **Created:** 2026-04-04
-**Last Updated:** 2026-04-04
+**Last Updated:** 2026-04-05
