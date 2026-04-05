@@ -87,10 +87,10 @@ async function main() {
 
   const formatExports = [
     { name: 'PlantUML', ext: 'puml', fn: () => exportToPlantUML(graph) },
-    { name: 'Mermaid', ext: 'mmd', fn: () => exportToMermaid(graph) },
-    { name: 'Draw.io', ext: 'drawio', fn: () => exportToDrawio(graph) },
+    { name: 'Mermaid', ext: 'mmd', fn: () => exportToMermaid(graph).result },
+    { name: 'Draw.io', ext: 'drawio', fn: () => exportToDrawio(graph).result },
     { name: 'GLTF', ext: 'gltf', fn: () => exportToGLTF(graph) },
-    { name: 'SVG', ext: 'svg', fn: () => exportToSVG(graph) },
+    { name: 'SVG', ext: 'svg', fn: () => exportToSVG(graph).result },
   ]
 
   for (const { name, ext, fn } of formatExports) {

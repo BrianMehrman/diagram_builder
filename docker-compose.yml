@@ -79,10 +79,8 @@ services:
     env_file:
       - packages/ui/.env
     environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
-      - OTEL_ENABLED=true
-      - OTEL_SERVICE_NAME=diagram-builder-ui
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318=value
+      - VITE_OTEL_ENABLED=true
+      - VITE_OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
     ports:
       - '8742:80'
     networks:
@@ -94,6 +92,10 @@ services:
     profiles: [observability]
     image: jaegertracing/jaeger:2.1.0
     container_name: diagram-builder-jaeger
+    volumes:
+      - ./config/jaeger/config.yaml:/etc/jaeger/config.yaml:ro
+    command:
+      - '--config=/etc/jaeger/config.yaml'
     ports:
       - '16686:16686' # Jaeger UI
       - '4317:4317' # OTLP gRPC
@@ -117,8 +119,10 @@ services:
     profiles: [observability]
     image: prom/prometheus:v3.1.0
     container_name: diagram-builder-prometheus
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     volumes:
-      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${PROMETHEUS_CONFIG:-./config/prometheus/prometheus.yml}:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
     ports:
       - '9090:9090'

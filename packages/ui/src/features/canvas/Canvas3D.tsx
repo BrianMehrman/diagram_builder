@@ -4,8 +4,9 @@
  * Main 3D visualization canvas using Three.js and React Three Fiber
  */
 
-import React from 'react'
+import React, { useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
+import { withSpan } from '../../lib/telemetry'
 import { OrbitControls, FlyControls, Grid, PerspectiveCamera } from '@react-three/drei'
 import { useCanvasStore } from './store'
 import { ViewModeRenderer } from './views'
@@ -165,6 +166,7 @@ export function Canvas3D({ className = '' }: Canvas3DProps) {
   const closeAllPanels = useUIStore((state) => state.closeAllPanels)
   const parseResult = useCanvasStore((state) => state.parseResult)
   const activeLayout = useCanvasStore((state) => state.activeLayout)
+  const renderSpanFired = useRef(false)
 
   // Expose store to window for E2E test access (DEV only)
   React.useEffect(() => {
@@ -210,6 +212,18 @@ export function Canvas3D({ className = '' }: Canvas3DProps) {
           alpha: false,
         }}
         style={{ background: '#111827' }}
+        onCreated={() => {
+          if (renderSpanFired.current) return
+          renderSpanFired.current = true
+          withSpan(
+            'ui.canvas.render',
+            {
+              view: activeLayout,
+              node_count: parseResult?.graph.nodes.length ?? 0,
+            },
+            (span) => span.end()
+          )
+        }}
       >
         <CameraController />
         <Scene />

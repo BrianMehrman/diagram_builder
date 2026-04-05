@@ -37,30 +37,24 @@ Architecture spec: `docs/specs/2026-04-04-observability-architecture-design.md`
 
 ### Task 1: Decide dashboard structure
 
-- [ ] Determine whether to extend `api-overview.json` or create a separate `parser-overview.json`
-  - Recommendation: create `parser-overview.json` to keep dashboards focused; cross-link via dashboard links
+- [x] Created separate `parser-overview.json` and `ui-overview.json`; cross-linked from `api-overview.json` via dashboard links
 
 ### Task 2: Add parser metric panels
 
-Add the following panels to the parser dashboard:
-
-- [ ] **Parse Run Rate** — `sum(rate(parser_files_total[5m]))` by `language`
-- [ ] **Parse Duration p50 / p95** — `histogram_quantile(0.5|0.95, rate(parser_run_duration_seconds_bucket[5m]))` grouped by `phase`
-- [ ] **Files by Status** — `sum by (status) (rate(parser_files_total[5m]))` (parsed / skipped / error)
-- [ ] **Parse Error Rate** — `sum(rate(parser_errors_total[5m]))` by `error_type`
+- [x] **Parse Run Rate** — `sum by (language) (rate(parser_files_total[5m]))`
+- [x] **Parse Duration p50 / p95** — `histogram_quantile(0.50|0.95, sum by (le, phase) (rate(parser_run_duration_seconds_bucket[5m])))`
+- [x] **Files by Status** — `sum by (status) (rate(parser_files_total[5m]))`
+- [x] **Parse Error Rate** — `sum by (error_type) (rate(parser_errors_total[5m]))`
 
 ### Task 3: Add UI error panel (Loki-sourced)
 
-- [ ] Add a panel to `api-overview.json` (or a new `ui-overview.json`):
-  - **UI Error Rate** — LogQL: `sum(rate({app="diagram-builder-ui"} | json | level="error" [5m]))`
-  - This uses the existing Loki datasource — no new Prometheus metric required
+- [x] Created `ui-overview.json` with UI Error Rate (LogQL) and a log stream panel
+- [x] `api-overview.json` updated with `links` array cross-linking to parser and UI dashboards
 
 ### Task 4: Verify dashboards load
 
-- [ ] Start observability stack: `./scripts/init.sh --mode=local --observability`
-- [ ] Open Grafana at `http://localhost:8743`
-- [ ] Confirm all new panels load without errors (empty data is fine without active parser runs)
-- [ ] Confirm Loki-sourced UI error panel renders without query errors
+- [x] Dashboards provision correctly via `config/grafana/provisioning/dashboards/`
+- [x] All panels load without errors; data populates once parser jobs run and Prometheus scrapes correctly
 
 ---
 
@@ -88,7 +82,8 @@ Grafana provisioned dashboards must be valid JSON. Copy an existing panel from `
 - **2026-04-04**: Story created
   - Gap identified against observability architecture spec (`docs/specs/2026-04-04-observability-architecture-design.md`)
   - Part of Epic 12-G: Observability Gap Fill
+- **2026-04-05**: All tasks confirmed complete. Dashboard JSON is correct; parser panels were showing no data due to upstream bugs in Story 12-19 (metrics never initializing, Prometheus scrape unreachable in local mode) — those are fixed in 12-19's change log. No changes to dashboard JSON required.
 
-**Status:** backlog
+**Status:** done
 **Created:** 2026-04-04
-**Last Updated:** 2026-04-04
+**Last Updated:** 2026-04-05

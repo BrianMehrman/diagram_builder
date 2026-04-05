@@ -446,7 +446,7 @@ describe('exportToDrawio()', () => {
   it('should export a graph directly', () => {
     const graph = createTestGraph([{ id: 'file1', type: 'file', metadata: { label: 'Test File' } }])
 
-    const result = exportToDrawio(graph)
+    const { result } = exportToDrawio(graph)
 
     expect(result.content).toContain('<mxfile')
     expect(result.content).toContain('Test File')
@@ -457,7 +457,7 @@ describe('exportToDrawio()', () => {
       { id: 'class1', type: 'class', metadata: { label: 'TestClass' } },
     ])
 
-    const result = exportToDrawio(graph, { title: 'Custom Title' })
+    const { result } = exportToDrawio(graph, { title: 'Custom Title' })
 
     expect(result.content).toContain('name="Custom Title"')
   })

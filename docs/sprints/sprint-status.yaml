@@ -4,7 +4,7 @@
 
 project_name: diagram_builder
 sprint_start: "2025-12-29"
-current_phase: "Epic 10: Not Started - 25 stories across 5 sub-epics (City Metaphor Rethink — Hierarchical Containment, Sky Edges, Atmosphere)"
+current_phase: "Epic 12: Done — Observability & Infrastructure complete (22 stories). Epic 11 in review. Next: Epic 13 TBD."
 
 # Epic and Story Status Tracking
 development_status:
@@ -464,24 +464,37 @@ epics:
       - "Deferred: edge bundling, LOD 4 interior view, underground layer"
 
   # Epic 12: Observability & Infrastructure
-  epic-12: not-started
+  epic-12: done  # All 22 stories complete (2026-04-05)
   # Epic 12-A: Application Containerization
-  12-1-dockerfiles-api-ui: review  # docker/api/Dockerfile, docker/ui/Dockerfile, docker/ui/nginx.conf, .dockerignore - COMPLETE (2026-03-14)
-  12-2-docker-image-hardening: review  # Pinned base images, non-root USER, npm prune, build docs in README - trivy scan pending first build (2026-03-14)
+  12-1-dockerfiles-api-ui: done  # docker/api/Dockerfile, docker/ui/Dockerfile, docker/ui/nginx.conf, .dockerignore - COMPLETE (2026-03-14)
+  12-2-docker-image-hardening: done  # Pinned base images, non-root USER, npm prune, build docs in README - COMPLETE (2026-03-14)
   # Epic 12-B: Docker Compose Full Stack with Observability
-  12-3-docker-compose-profiles: not-started
-  12-4-observability-services-docker-compose: not-started
+  12-3-docker-compose-profiles: done  # COMPLETE (2026-04-05)
+  12-4-observability-services-docker-compose: done  # Jaeger, Prometheus, Grafana, Loki in compose - COMPLETE (2026-04-05)
   # Epic 12-C: OTEL Instrumentation — API Package
-  12-5-otel-sdk-tracing: not-started
-  12-6-otel-metrics-prometheus: not-started
-  12-7-otel-log-bridge-instrumentation: not-started
+  12-5-otel-sdk-tracing: done  # NodeSDK, OTLP exporter, auto-instrumentation - COMPLETE (2026-04-05)
+  12-6-otel-metrics-prometheus: done  # PrometheusExporter on :9464, http/ws/db/cache metrics - COMPLETE (2026-04-05)
+  12-7-otel-log-bridge-instrumentation: done  # OpenTelemetryTransportV3, Loki shipping - COMPLETE (2026-04-05)
   # Epic 12-D: Helm Charts for Kubernetes
-  12-8-helm-scaffold-app-templates: not-started
-  12-9-otel-collector-helm-observability: not-started
-  12-10-kubernetes-production-readiness: not-started
+  12-8-helm-scaffold-app-templates: done  # COMPLETE (2026-04-05)
+  12-9-otel-collector-helm-observability: done  # COMPLETE (2026-04-05)
+  12-10-kubernetes-production-readiness: done  # COMPLETE (2026-04-05)
   # Epic 12-E: Developer Experience & Scripts
-  12-11-scripts-multi-mode: not-started
-  12-12-documentation-updates: not-started
+  12-11-scripts-multi-mode: done  # init.sh/stop.sh --mode=local|docker, --observability flag - COMPLETE (2026-04-05)
+  12-12-documentation-updates: done  # COMPLETE (2026-04-05)
+  # Epic 12-C prereq: Complete Winston foundation
+  12-13-winston-logging-foundation: done  # COMPLETE (2026-03-28)
+  # Epic 12-F: Logging Completeness
+  12-14-module-logger-factory: done  # createModuleLogger, withOperation wrapper - COMPLETE (2026-03-28)
+  12-15-infrastructure-logger-migration: done  # 13 infra files migrated to Winston - COMPLETE (2026-03-28)
+  12-16-http-log-deduplication: done  # Single request log entry, morgan dedup - COMPLETE (2026-03-28)
+  12-17-service-route-instrumentation: done  # Service and route logging - COMPLETE (2026-03-28)
+  12-18-ui-error-reporting: done  # POST /api/logs endpoint, rate limiting, UI error forwarding - COMPLETE (2026-03-28)
+  # Epic 12-G: Observability Gap Fill
+  12-19-parser-observability: done  # Parser traces (OTLP), metrics (:9465), Loki logs - COMPLETE (2026-04-05)
+  12-20-ui-otel-browser-tracing: done  # WebTracerProvider, StackContextManager, withSpan overloads - COMPLETE (2026-04-05)
+  12-21-cli-structured-logger: done  # CLI Winston logger, createModuleLogger - COMPLETE (2026-04-05)
+  12-22-grafana-dashboard-updates: done  # Parser and UI panels added to Grafana dashboards - COMPLETE (2026-04-05)
 
   epic-11:
     name: "Vertical Layering — 3D Semantic City"
@@ -519,7 +532,7 @@ epics:
 
   epic-12:
     name: "Observability & Infrastructure"
-    description: "Add full OpenTelemetry observability (traces → Jaeger, metrics → Prometheus, logs → Grafana) and support three deployment modes: local Node.js dev, full Docker Compose stack, and Kubernetes via Helm charts. Includes Dockerfiles for API and UI, Docker Compose profile restructure, OTEL SDK instrumentation, Helm chart with kube-prometheus-stack and Jaeger dependencies, and developer scripts for all modes."
+    description: "Add full OpenTelemetry observability (traces → Jaeger, metrics → Prometheus, logs → Grafana/Loki) and support three deployment modes: local Node.js dev, full Docker Compose stack, and Kubernetes via Helm charts. Includes Dockerfiles, Docker Compose profiles, OTEL SDK for API/parser/UI/CLI, Helm charts, developer scripts, and Winston logging completeness."
     stories:
       # Epic 12-A: Application Containerization
       - 12-1-dockerfiles-api-ui
@@ -527,7 +540,8 @@ epics:
       # Epic 12-B: Docker Compose Full Stack with Observability
       - 12-3-docker-compose-profiles
       - 12-4-observability-services-docker-compose
-      # Epic 12-C: OTEL Instrumentation — API Package
+      # Epic 12-C prereq + OTEL Instrumentation — API Package
+      - 12-13-winston-logging-foundation
       - 12-5-otel-sdk-tracing
       - 12-6-otel-metrics-prometheus
       - 12-7-otel-log-bridge-instrumentation
@@ -538,18 +552,28 @@ epics:
       # Epic 12-E: Developer Experience & Scripts
       - 12-11-scripts-multi-mode
       - 12-12-documentation-updates
+      # Epic 12-F: Logging Completeness
+      - 12-14-module-logger-factory
+      - 12-15-infrastructure-logger-migration
+      - 12-16-http-log-deduplication
+      - 12-17-service-route-instrumentation
+      - 12-18-ui-error-reporting
+      # Epic 12-G: Observability Gap Fill (parser, UI, CLI, core)
+      - 12-19-parser-observability
+      - 12-20-ui-otel-browser-tracing
+      - 12-21-cli-structured-logger
+      - 12-22-grafana-dashboard-updates
     dependencies:
       - "Epic 11: Vertical Layering (application is stable and feature-complete)"
       - "Docker Desktop with Kubernetes enabled (external prerequisite)"
       - "Helm 3.x (external prerequisite)"
     notes:
-      - "5 sub-epics: 12-A (Containerization, 2 stories), 12-B (Docker Compose, 2 stories), 12-C (OTEL, 3 stories), 12-D (Helm, 3 stories), 12-E (Scripts & Docs, 2 stories)"
-      - "Critical path: 12-A → 12-B → 12-E(scripts); 12-A → 12-D; 12-C can run in parallel with 12-D"
-      - "12-A (Dockerfiles) is prerequisite for both 12-B (app profile) and 12-D (Helm image refs)"
-      - "12-C (OTEL instrumentation) is independent of 12-D (Helm) — can be developed in parallel"
-      - "12-E (scripts/docs) must come last — depends on 12-B and 12-D being complete"
+      - "7 sub-epics: 12-A (Containerization), 12-B (Docker Compose), 12-C (OTEL API), 12-D (Helm), 12-E (Scripts), 12-F (Logging), 12-G (Gap Fill)"
+      - "22 stories total — all done as of 2026-04-05"
       - "Three deployment modes: local (Node.js + infra docker-compose), docker (all profiles), k8s (Helm)"
       - "OTEL endpoint varies per mode: localhost:4318 (local), jaeger:4318 (docker), otel-collector:4317 (k8s)"
-      - "Grafana port 8743 to avoid conflict with UI dev server on port 8742"
-      - "No parser or UI changes required — all changes confined to api package, infra config, and scripts"
+      - "Ports: UI 8742, API 8741, Grafana 8743 — see PORT-CONFIGURATION.md"
+      - "Prometheus local mode: prometheus-local.yml uses host.docker.internal for host-process scrape targets"
+      - "UI logs forwarded via POST /api/logs → Loki under {app=diagram-builder-ui}"
+      - "Parser metrics on :9465 (separate from API on :9464) — provider conflict avoided via direct provider.getMeter()"
 

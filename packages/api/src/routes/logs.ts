@@ -11,11 +11,13 @@
 import { Router, type Request, type Response } from 'express'
 import rateLimit from 'express-rate-limit'
 import { z } from 'zod'
-import { createModuleLogger } from '../logger'
+import { createAppLogger } from '../logger'
 
 export const logsRouter = Router()
 
-const log = createModuleLogger('ui')
+// Separate logger so UI-forwarded logs land in Loki under {app="diagram-builder-ui"}
+// rather than the API's {app="diagram-builder-api"} stream.
+const log = createAppLogger('diagram-builder-ui')
 
 const ALLOWED_LEVELS = ['debug', 'info', 'warn', 'error'] as const
 

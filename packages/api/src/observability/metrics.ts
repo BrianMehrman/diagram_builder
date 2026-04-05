@@ -8,8 +8,6 @@
  * them with real instruments backed by a PrometheusExporter.
  */
 
-import { MeterProvider } from '@opentelemetry/sdk-metrics'
-import { PrometheusExporter } from '@opentelemetry/exporter-prometheus'
 import { metrics, type Counter, type Histogram, type UpDownCounter } from '@opentelemetry/api'
 import { getApiConfig } from '../config'
 
@@ -21,7 +19,6 @@ let httpRequestsTotal: Counter = _noop.createCounter('http_requests_total')
 let wsActiveSessions: UpDownCounter = _noop.createUpDownCounter('ws_active_sessions')
 let dbQueryDuration: Histogram = _noop.createHistogram('db_query_duration_seconds')
 let cacheOperationsTotal: Counter = _noop.createCounter('cache_operations_total')
-let parserDuration: Histogram = _noop.createHistogram('parser_duration_seconds')
 
 export function initMetrics(): void {
   const config = getApiConfig()
@@ -30,14 +27,9 @@ export function initMetrics(): void {
     return
   }
 
-  const exporter = new PrometheusExporter({ port: 9464 })
-
-  const provider = new MeterProvider({
-    readers: [exporter],
-  })
-
-  metrics.setGlobalMeterProvider(provider)
-
+  // NodeSDK.start() (called in initTracing) has already registered a global MeterProvider
+  // with a PrometheusExporter on port 9464. Use it directly — calling setGlobalMeterProvider
+  // again would be silently ignored.
   const meter = metrics.getMeter(config.OTEL_SERVICE_NAME, config.OTEL_SERVICE_VERSION)
 
   httpRequestDuration = meter.createHistogram('http_request_duration_seconds', {
@@ -64,11 +56,6 @@ export function initMetrics(): void {
   cacheOperationsTotal = meter.createCounter('cache_operations_total', {
     description: 'Total number of cache operations',
   })
-
-  parserDuration = meter.createHistogram('parser_duration_seconds', {
-    description: 'Duration of parser runs in seconds',
-    unit: 's',
-  })
 }
 
 export {
@@ -77,5 +64,4 @@ export {
   wsActiveSessions,
   dbQueryDuration,
   cacheOperationsTotal,
-  parserDuration,
 }

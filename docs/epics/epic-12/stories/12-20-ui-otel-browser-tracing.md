@@ -42,53 +42,46 @@ Architecture spec: `docs/specs/2026-04-04-observability-architecture-design.md`
 
 ### Task 1: Install OTEL browser packages
 
-- [ ] Add to `packages/ui/package.json`:
+- [x] Add to `packages/ui/package.json`:
   - `@opentelemetry/api`
   - `@opentelemetry/sdk-trace-web`
   - `@opentelemetry/exporter-trace-otlp-http`
-  - `@opentelemetry/context-zone` (browser context propagation)
+  - ~~`@opentelemetry/context-zone`~~ — removed (see bugs below; replaced by `StackContextManager`)
 
 ### Task 2: Create UI telemetry module
 
-- [ ] Create `packages/ui/src/lib/telemetry.ts`:
+- [x] Create `packages/ui/src/lib/telemetry.ts`:
   - `initTelemetry()` — reads `VITE_OTEL_ENABLED` and `VITE_OTEL_EXPORTER_OTLP_ENDPOINT`; initializes `WebTracerProvider` with `OTLPTraceExporter`; registers with `@opentelemetry/api`; no-op when disabled
   - `getTracer()` — returns `trace.getTracer('diagram-builder-ui')`
   - Export a `withSpan(name, attributes, fn)` helper matching the API's `instrumentation.ts` pattern
 
 ### Task 3: Initialize in main.tsx
 
-- [ ] Call `initTelemetry()` as the first statement in `packages/ui/src/main.tsx` before the React render
+- [x] Call `initTelemetry()` as the first statement in `packages/ui/src/main.tsx` before the React render
 
 ### Task 4: Instrument layout computation
 
-- [ ] Locate the layout engine invocation in the canvas store or page component
-- [ ] Wrap with `withSpan('ui.layout.compute', { node_count }, fn)`
+- [x] Wrap layout engine invocation with `withSpan('ui.layout.compute', { node_count }, fn)` in `useCityLayout.ts` and `useBasic3DLayout.ts`
 
 ### Task 5: Instrument canvas first render
 
-- [ ] Locate where the 3D canvas signals render complete (R3F `onCreated` or equivalent)
-- [ ] Emit `withSpan('ui.canvas.render', { view, node_count }, fn)` around the render lifecycle
+- [x] Emit `withSpan('ui.canvas.render', { view, node_count }, fn)` on R3F `onCreated` in `Canvas3D.tsx`
 
 ### Task 6: Fix docker-compose
 
-- [ ] Remove the malformed `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318=value` line from the `ui` service in `docker-compose.yml`
-- [ ] Ensure `OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318` remains as the single value for docker mode
+- [x] Removed malformed `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318=value` line from `ui` service
 
 ### Task 7: Update env example
 
-- [ ] Add to `packages/ui/.env.example`:
-  ```
-  VITE_OTEL_ENABLED=false
-  VITE_OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
-  ```
+- [x] Added `VITE_OTEL_ENABLED` and `VITE_OTEL_EXPORTER_OTLP_ENDPOINT` to `packages/ui/.env.example`
 
 ### Task 8: Verify
 
-- [ ] `npm run type-check` — clean (ui package)
-- [ ] `npm run lint` — clean
-- [ ] `npm run format:check` — clean
-- [ ] `npm test` — all passing
-- [ ] Smoke test: open canvas with `VITE_OTEL_ENABLED=true`, confirm `ui.layout.compute` and `ui.canvas.render` spans appear in Jaeger under `diagram-builder-ui`
+- [x] `npm run type-check` — clean (ui package)
+- [x] `npm run lint` — clean
+- [x] `npm run format:check` — clean
+- [x] `npm test` — all passing
+- [x] Smoke test: open canvas with `VITE_OTEL_ENABLED=true`, confirm `ui.layout.compute` and `ui.canvas.render` spans appear in Jaeger under `diagram-builder-ui`
 
 ---
 
@@ -119,7 +112,11 @@ Vite only exposes env vars prefixed with `VITE_` to the browser bundle. Use `imp
 - **2026-04-04**: Story created
   - Deferred from Story 12-18 ("OpenTelemetry browser SDK for distributed frontend traces — separate story")
   - Part of Epic 12-G: Observability Gap Fill
+- **2026-04-05**: Post-merge bug fixes
+  - `@opentelemetry/context-zone` requires `zone.js` as a peer dependency (an Angular package not installed in this React app). `ZoneContextManager` initialization silently failed, breaking all span export. Fixed by switching to `StackContextManager` from `@opentelemetry/sdk-trace-web` and removing `@opentelemetry/context-zone` from dependencies.
+  - `packages/ui/.env` had `OTEL_ENABLED=true` instead of `VITE_OTEL_ENABLED=true`. Vite strips env vars without the `VITE_` prefix from the browser bundle, so telemetry was disabled. Fixed env file.
+  - `WebTracerProvider` was initialized without a resource, so `service.name` defaulted to `unknown_service`. Fixed by adding `resourceFromAttributes({ [ATTR_SERVICE_NAME]: 'diagram-builder-ui' })` via `@opentelemetry/resources` and `@opentelemetry/semantic-conventions`.
 
-**Status:** backlog
+**Status:** done
 **Created:** 2026-04-04
-**Last Updated:** 2026-04-04
+**Last Updated:** 2026-04-05

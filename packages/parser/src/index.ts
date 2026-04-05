@@ -122,3 +122,11 @@ export type { ValidationError, ValidationResult } from './ivm/validator'
 // IVM Hierarchy & Parse Result
 export { buildParseResult } from './ivm/build-parse-result'
 export { buildGroupHierarchy } from './ivm/hierarchy-builder'
+
+// Observability — side-effect import triggers initTracing() + initMetrics() at load time
+import './observability/index'
+export {
+  runParserPipeline,
+  getTracer as getParserTracer,
+  shutdownTracing as shutdownParserTracing,
+} from './observability/index'

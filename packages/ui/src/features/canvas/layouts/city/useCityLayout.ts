@@ -8,6 +8,7 @@
  */
 
 import { useMemo, useEffect, useRef } from 'react'
+import { withSpan } from '../../../../lib/telemetry'
 import { RadialCityLayoutEngine } from '../../layout/engines/radialCityLayout'
 import { flattenHierarchicalLayout } from '../../layout/hierarchicalUtils'
 import { useCanvasStore } from '../../store'
@@ -91,12 +92,16 @@ export function useCityLayout(): CityLayoutResult & { graph: IVMGraph } {
     return resolver.getView({ baseTier: SemanticTier.Symbol, focalNodeId: selectedNodeId }).graph
   }, [resolver, lodLevel, focusedGroupId, selectedNodeId])
 
-  const layout = useMemo(() => {
-    const engine = new RadialCityLayoutEngine()
-    const result = engine.layout(graph, { density: layoutDensity })
-    const flatPositions = flattenHierarchicalLayout(result)
-    return { ...result, flatPositions }
-  }, [graph, layoutDensity])
+  const layout = useMemo(
+    () =>
+      withSpan('ui.layout.compute', { node_count: graph.nodes.length }, () => {
+        const engine = new RadialCityLayoutEngine()
+        const result = engine.layout(graph, { density: layoutDensity })
+        const flatPositions = flattenHierarchicalLayout(result)
+        return { ...result, flatPositions }
+      }),
+    [graph, layoutDensity]
+  )
 
   // Publish flattened layout positions to store so camera flight can use them
   useEffect(() => {

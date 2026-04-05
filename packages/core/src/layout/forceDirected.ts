@@ -397,8 +397,9 @@ export function layoutGraph(
   graph: IVMGraph,
   config: Partial<ForceDirectedConfig> = {},
   onProgress?: LayoutProgressCallback
-): { graph: IVMGraph; result: LayoutResult } {
+): { graph: IVMGraph; result: LayoutResult; durationMs: number } {
+  const start = Date.now()
   const result = forceDirectedLayout(graph, config, onProgress)
   const layoutedGraph = applyLayoutToGraph(graph, result.positions)
-  return { graph: layoutedGraph, result }
+  return { graph: layoutedGraph, result, durationMs: Date.now() - start }
 }
