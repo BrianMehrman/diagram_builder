@@ -8,6 +8,7 @@ import { create } from 'zustand'
 import { createViewResolver } from '@diagram-builder/core'
 import type { ParseResult, ViewResolver } from '@diagram-builder/core'
 import type { Position3D, IVMNode } from '../../shared/types'
+import type { ClusterData } from './layouts/basic3d/clusterBuilder'
 
 /**
  * Camera state
@@ -18,17 +19,8 @@ export interface CameraState {
   zoom: number
 }
 
-/**
- * A cluster of nodes grouped by module/directory for LOD 1–2 rendering
- */
-export interface ClusterData {
-  id: string // e.g. "cluster:src/auth"
-  label: string // e.g. "auth (12)"
-  nodeIds: string[]
-  centroid: Position3D
-  radius: number // bounding sphere radius
-  dominantType: string // most common node type (drives proxy colour)
-}
+// Re-export ClusterData for store consumers
+export type { ClusterData }
 
 /**
  * Layout computation state for async worker flow

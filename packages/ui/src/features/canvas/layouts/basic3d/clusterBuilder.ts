@@ -10,7 +10,19 @@
  */
 
 import type { IVMGraph, IVMNode, Position3D } from '@diagram-builder/core'
-import type { ClusterData } from '../../store'
+
+// ---------------------------------------------------------------------------
+// ClusterData — defined here, re-exported from store.ts
+// ---------------------------------------------------------------------------
+
+export interface ClusterData {
+  id: string // e.g. "cluster:src/auth"
+  label: string // e.g. "auth (12)"
+  nodeIds: string[]
+  centroid: Position3D
+  radius: number // bounding sphere radius of member positions
+  dominantType: string // most common node type (drives proxy colour)
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -39,8 +51,8 @@ function groupNodes(nodes: IVMNode[]): Map<string, IVMNode[]> {
   const groups = new Map<string, IVMNode[]>()
 
   const hasModule = nodes.some((n) => typeof n.metadata.properties?.['module'] === 'string')
-  const dirs = new Set(nodes.map((n) => parentDir(n.metadata.path)))
-  const hasPathStructure = dirs.size > 1
+  const hasPathStructure =
+    !hasModule && new Set(nodes.map((n) => parentDir(n.metadata.path))).size > 1
 
   for (const node of nodes) {
     let key: string
