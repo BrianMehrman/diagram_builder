@@ -61,6 +61,10 @@ const browserGlobals = {
   MutationObserver: 'readonly',
   ResizeObserver: 'readonly',
   IntersectionObserver: 'readonly',
+  // Web Workers
+  self: 'readonly',
+  Worker: 'readonly',
+  SharedWorker: 'readonly',
   // Fetch API types
   RequestInit: 'readonly',
   RequestInfo: 'readonly',
