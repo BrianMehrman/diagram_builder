@@ -19,6 +19,23 @@ export interface CameraState {
 }
 
 /**
+ * A cluster of nodes grouped by module/directory for LOD 1–2 rendering
+ */
+export interface ClusterData {
+  id: string // e.g. "cluster:src/auth"
+  label: string // e.g. "auth (12)"
+  nodeIds: string[]
+  centroid: Position3D
+  radius: number // bounding sphere radius
+  dominantType: string // most common node type (drives proxy colour)
+}
+
+/**
+ * Layout computation state for async worker flow
+ */
+export type LayoutState = 'idle' | 'computing' | 'ready' | 'error'
+
+/**
  * Control mode
  */
 export type ControlMode = 'orbit' | 'fly'
@@ -168,6 +185,14 @@ interface CanvasState {
   // Layout positions (computed by view renderers)
   layoutPositions: Map<string, Position3D>
   setLayoutPositions: (positions: Map<string, Position3D>) => void
+
+  // Async layout state (worker flow)
+  layoutState: LayoutState
+  setLayoutState: (state: LayoutState) => void
+  layoutProgress: number
+  setLayoutProgress: (progress: number) => void
+  clusters: Map<string, ClusterData>
+  setClusters: (clusters: Map<string, ClusterData>) => void
 
   // X-ray mode
   isXRayMode: boolean
@@ -376,6 +401,14 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   layoutPositions: new Map<string, Position3D>(),
   setLayoutPositions: (positions) => set({ layoutPositions: positions }),
 
+  // Async layout state
+  layoutState: 'idle' as LayoutState,
+  setLayoutState: (state) => set({ layoutState: state }),
+  layoutProgress: 0,
+  setLayoutProgress: (progress) => set({ layoutProgress: progress }),
+  clusters: new Map<string, ClusterData>(),
+  setClusters: (clusters) => set({ clusters }),
+
   // X-ray mode
   isXRayMode: false,
   xrayOpacity: 0.05,
@@ -488,6 +521,9 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       focusedNodeId: null,
       focusHistory: [],
       layoutPositions: new Map<string, Position3D>(),
+      layoutState: 'idle' as LayoutState,
+      layoutProgress: 0,
+      clusters: new Map<string, ClusterData>(),
       isXRayMode: false,
       xrayOpacity: 0.05,
       isUndergroundMode: false,
