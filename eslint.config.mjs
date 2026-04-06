@@ -28,10 +28,13 @@ const browserGlobals = {
   CustomEvent: 'readonly',
   KeyboardEvent: 'readonly',
   MouseEvent: 'readonly',
+  MessageEvent: 'readonly',
+  ErrorEvent: 'readonly',
   PointerEvent: 'readonly',
   InputEvent: 'readonly',
   FocusEvent: 'readonly',
   EventTarget: 'readonly',
+  EventListenerOrEventListenerObject: 'readonly',
   FrameRequestCallback: 'readonly',
   // Timers / animation
   requestAnimationFrame: 'readonly',
