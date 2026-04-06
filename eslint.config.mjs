@@ -103,6 +103,7 @@ const vitestGlobals = {
   beforeAll: 'readonly',
   afterAll: 'readonly',
   suite: 'readonly',
+  structuredClone: 'readonly',
 }
 
 export default [
