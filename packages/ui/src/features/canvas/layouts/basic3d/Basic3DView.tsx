@@ -1,26 +1,49 @@
 /**
  * Basic3DView — root layout component for the Basic3D layout.
  *
- * Renders one Basic3DNode per node and (at LOD >= 2) one Basic3DEdge per
- * edge in the current LOD graph. Reads selectedNodeId and lodLevel from the
- * canvas store and delegates layout computation to useBasic3DLayout.
+ * Shows a loading indicator while the worker computes layout.
+ * At LOD 1–2: renders ClusterLayer (proxy spheres per module group).
+ * At LOD 3–4: renders individual nodes and (LOD 4) edges.
  */
 
 import type { JSX } from 'react'
+import { Text } from '@react-three/drei'
 import { useCanvasStore } from '../../store'
 import { useBasic3DLayout } from './useBasic3DLayout'
 import { Basic3DNode } from './Basic3DNode'
 import { Basic3DEdge } from './Basic3DEdge'
+import { ClusterLayer } from './ClusterLayer'
 
 export function Basic3DView() {
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
   const lodLevel = useCanvasStore((s) => s.lodLevel)
+  const layoutState = useCanvasStore((s) => s.layoutState)
 
   const { positions, graph } = useBasic3DLayout()
 
+  // ── Loading state ──────────────────────────────────────────────────────────
+  if (layoutState === 'computing') {
+    return (
+      <group name="basic3d-loading" data-testid="basic3d-loading">
+        <Text position={[0, 0, 0]} fontSize={2} color="#888888" anchorX="center" anchorY="middle">
+          Loading…
+        </Text>
+      </group>
+    )
+  }
+
+  // ── LOD 1–2: cluster proxies ───────────────────────────────────────────────
+  if (lodLevel <= 2) {
+    return (
+      <group name="basic3d-view" data-testid="basic3d-view">
+        <ClusterLayer />
+      </group>
+    )
+  }
+
+  // ── LOD 3–4: individual nodes ──────────────────────────────────────────────
   return (
     <group name="basic3d-view" data-testid="basic3d-view">
-      {/* Render one node per graph node */}
       {graph.nodes.map((node) => {
         const position = positions.get(node.id) ?? { x: 0, y: 0, z: 0 }
         return (
@@ -33,10 +56,7 @@ export function Basic3DView() {
         )
       })}
 
-      {/* Render edges only at LOD >= 2. Use reduce to avoid null returns in
-          the R3F scene graph — the fiber reconciler's removeChild cannot
-          handle null children. */}
-      {lodLevel >= 2 &&
+      {lodLevel >= 4 &&
         graph.edges.reduce<JSX.Element[]>((acc, edge) => {
           const from = positions.get(edge.source)
           const to = positions.get(edge.target)

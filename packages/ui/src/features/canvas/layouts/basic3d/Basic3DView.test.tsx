@@ -1,7 +1,7 @@
 /**
  * Basic3DView Test Suite
  *
- * Tests observable behaviors: node rendering, LOD-driven edge visibility,
+ * Tests observable behaviors: loading state, node rendering, LOD-driven edge visibility,
  * and selected node prop forwarding.
  */
 
@@ -43,6 +43,10 @@ vi.mock('./Basic3DNode', () => ({
 
 vi.mock('./Basic3DEdge', () => ({
   Basic3DEdge: vi.fn(() => <div data-testid="basic3d-edge" />),
+}))
+
+vi.mock('./ClusterLayer', () => ({
+  ClusterLayer: () => <div data-testid="cluster-layer" />,
 }))
 
 // ---------------------------------------------------------------------------
@@ -133,9 +137,11 @@ function setupLayout(
 beforeEach(() => {
   vi.clearAllMocks()
   useCanvasStore.getState().reset()
+  useCanvasStore.setState({ layoutState: 'ready' })
 
-  // Default: empty graph, LOD 1
+  // Default: empty graph, LOD 3 (individual nodes shown by default in tests)
   setupLayout(makeEmptyGraph())
+  useCanvasStore.getState().setLodLevel(3)
 })
 
 // ---------------------------------------------------------------------------
@@ -143,6 +149,24 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('Basic3DView', () => {
+  describe('loading state', () => {
+    it('renders loading text when layoutState is computing', () => {
+      setupLayout(makeEmptyGraph())
+      useCanvasStore.setState({ layoutState: 'computing' })
+
+      const { getByText } = render(<Basic3DView />)
+      expect(getByText(/loading/i)).toBeDefined()
+    })
+
+    it('does not render loading text when layoutState is ready', () => {
+      setupLayout(makeEmptyGraph())
+      useCanvasStore.setState({ layoutState: 'ready' })
+
+      const { queryByText } = render(<Basic3DView />)
+      expect(queryByText(/loading/i)).toBeNull()
+    })
+  })
+
   describe('empty graph', () => {
     it('renders without crashing given an empty graph', () => {
       const { container } = render(<Basic3DView />)
@@ -183,43 +207,46 @@ describe('Basic3DView', () => {
   })
 
   describe('LOD-driven edge visibility', () => {
-    it('renders no edges at LOD 1', () => {
-      const nodes = [createNode('a'), createNode('b')]
-      const edges = [createEdge('a', 'b')]
-      setupLayout(makeGraph(nodes, edges))
+    it('renders no edges at LOD 1 (cluster layer shown)', () => {
+      setupLayout(makeEmptyGraph())
       useCanvasStore.getState().setLodLevel(1)
+      useCanvasStore.setState({ layoutState: 'ready' })
 
       const { queryAllByTestId } = render(<Basic3DView />)
       expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
+      expect(queryAllByTestId('basic3d-node')).toHaveLength(0)
     })
 
-    it('renders edges at LOD 2', () => {
+    it('renders no edges at LOD 3 (nodes visible, edges not)', () => {
       const nodes = [createNode('a'), createNode('b')]
       const edges = [createEdge('a', 'b')]
       setupLayout(makeGraph(nodes, edges))
-      useCanvasStore.getState().setLodLevel(2)
+      useCanvasStore.getState().setLodLevel(3)
+      useCanvasStore.setState({ layoutState: 'ready' })
+
+      const { queryAllByTestId } = render(<Basic3DView />)
+      expect(queryAllByTestId('basic3d-node')).toHaveLength(2)
+      expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
+    })
+
+    it('renders edges at LOD 4', () => {
+      const nodes = [createNode('a'), createNode('b')]
+      const edges = [createEdge('a', 'b')]
+      setupLayout(makeGraph(nodes, edges))
+      useCanvasStore.getState().setLodLevel(4)
+      useCanvasStore.setState({ layoutState: 'ready' })
 
       const { getAllByTestId } = render(<Basic3DView />)
       expect(getAllByTestId('basic3d-edge')).toHaveLength(1)
     })
 
-    it('renders edges at LOD 3', () => {
-      const nodes = [createNode('a'), createNode('b'), createNode('c')]
-      const edges = [createEdge('a', 'b'), createEdge('b', 'c')]
-      setupLayout(makeGraph(nodes, edges))
-      useCanvasStore.getState().setLodLevel(3)
-
-      const { getAllByTestId } = render(<Basic3DView />)
-      expect(getAllByTestId('basic3d-edge')).toHaveLength(2)
-    })
-
     it('does not render edges when source position is missing', () => {
       const nodes = [createNode('a'), createNode('b')]
       const edges = [createEdge('a', 'b')]
-      // Only provide position for 'a', not 'b'
       const positions = new Map([['a', { x: 0, y: 0, z: 0 }]])
       setupLayout(makeGraph(nodes, edges), positions)
-      useCanvasStore.getState().setLodLevel(2)
+      useCanvasStore.getState().setLodLevel(4)
+      useCanvasStore.setState({ layoutState: 'ready' })
 
       const { queryAllByTestId } = render(<Basic3DView />)
       expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
@@ -228,10 +255,10 @@ describe('Basic3DView', () => {
     it('does not render edges when target position is missing', () => {
       const nodes = [createNode('a'), createNode('b')]
       const edges = [createEdge('a', 'b')]
-      // Only provide position for 'b', not 'a'
       const positions = new Map([['b', { x: 5, y: 0, z: 0 }]])
       setupLayout(makeGraph(nodes, edges), positions)
-      useCanvasStore.getState().setLodLevel(2)
+      useCanvasStore.getState().setLodLevel(4)
+      useCanvasStore.setState({ layoutState: 'ready' })
 
       const { queryAllByTestId } = render(<Basic3DView />)
       expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
