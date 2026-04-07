@@ -9,9 +9,13 @@
 
 import { useRef } from 'react'
 import { Text, Billboard } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useCanvasStore } from '../../store'
 import type { ClusterData } from './clusterBuilder'
+
+/** Hide cluster proxies beyond this distance from the camera (world units). */
+const CLUSTER_MAX_VISIBLE_DIST = 200
 
 // Colour per dominant node type — mirrors basic3dShapes.ts palette
 const TYPE_COLORS: Record<string, string> = {
@@ -38,12 +42,24 @@ interface ClusterProxyProps {
 }
 
 function ClusterProxy({ cluster }: ClusterProxyProps) {
+  const groupRef = useRef<THREE.Group>(null)
   const meshRef = useRef<THREE.Mesh>(null)
   const setCameraPosition = useCanvasStore((s) => s.setCameraPosition)
   const setCameraTarget = useCanvasStore((s) => s.setCameraTarget)
   const color = clusterColor(cluster.dominantType)
   const radius = Math.max(cluster.radius, 5) // minimum visible size
   const { centroid } = cluster
+
+  // Cull clusters that are too far from the camera — mutates Three.js directly to
+  // avoid per-frame React re-renders.
+  useFrame(({ camera }) => {
+    if (!groupRef.current) return
+    const dx = camera.position.x - centroid.x
+    const dy = camera.position.y - centroid.y
+    const dz = camera.position.z - centroid.z
+    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz)
+    groupRef.current.visible = dist <= CLUSTER_MAX_VISIBLE_DIST
+  })
 
   function handleClick() {
     // Fly to cluster: position camera so we cross into LOD 3 range (<60 units from centroid)
@@ -56,7 +72,7 @@ function ClusterProxy({ cluster }: ClusterProxyProps) {
   }
 
   return (
-    <group position={[centroid.x, centroid.y, centroid.z]}>
+    <group ref={groupRef} position={[centroid.x, centroid.y, centroid.z]}>
       {/* Translucent bounding sphere */}
       <mesh ref={meshRef} onClick={handleClick} data-testid="cluster-sphere">
         <sphereGeometry args={[radius, 16, 16]} />

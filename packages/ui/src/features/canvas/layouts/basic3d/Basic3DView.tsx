@@ -14,6 +14,13 @@ import { Basic3DNode } from './Basic3DNode'
 import { Basic3DEdge } from './Basic3DEdge'
 import { ClusterLayer } from './ClusterLayer'
 
+/**
+ * Maximum distance from origin for an edge endpoint to be rendered at LOD 4.
+ * Matches the radial tree depth-2 shell (~65 units) with a small margin.
+ * Filters out edges to deep/distant nodes that clutter the view when zoomed in.
+ */
+const EDGE_NODE_MAX_DIST_FROM_ORIGIN = 80
+
 export function Basic3DView() {
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
   const lodLevel = useCanvasStore((s) => s.lodLevel)
@@ -60,9 +67,21 @@ export function Basic3DView() {
         graph.edges.reduce<JSX.Element[]>((acc, edge) => {
           const from = positions.get(edge.source)
           const to = positions.get(edge.target)
-          if (from !== undefined && to !== undefined) {
-            acc.push(<Basic3DEdge key={edge.id} from={from} to={to} />)
+          if (from === undefined || to === undefined) return acc
+
+          // Only show edges where both endpoints are near the scene origin.
+          // At LOD 4 the camera is <25 units from origin; filtering by origin
+          // distance keeps edges local to what the camera can actually see.
+          const fromDist = Math.sqrt(from.x * from.x + from.y * from.y + from.z * from.z)
+          const toDist = Math.sqrt(to.x * to.x + to.y * to.y + to.z * to.z)
+          if (
+            fromDist > EDGE_NODE_MAX_DIST_FROM_ORIGIN ||
+            toDist > EDGE_NODE_MAX_DIST_FROM_ORIGIN
+          ) {
+            return acc
           }
+
+          acc.push(<Basic3DEdge key={edge.id} from={from} to={to} />)
           return acc
         }, [])}
     </group>
