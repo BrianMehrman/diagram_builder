@@ -9,6 +9,13 @@ import type { IVMNode } from '@diagram-builder/core'
 // Mock R3F — render JSX children as plain elements so JSDOM can inspect them
 // ---------------------------------------------------------------------------
 
+vi.mock('@react-three/drei', () => ({
+  Text: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+    <div data-testid="basic3d-node-label" {...props}>{children}</div>
+  ),
+  Billboard: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}))
+
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   useFrame: vi.fn(),
@@ -118,5 +125,33 @@ describe('Basic3DNode', () => {
     expect(() =>
       render(<Basic3DNode node={node} position={defaultPosition} isSelected={true} />)
     ).not.toThrow()
+  })
+
+  describe('showLabel', () => {
+    it('does not render a label when showLabel is omitted', () => {
+      const node = createNode('node-label-off', 'file')
+      const { queryAllByTestId } = render(
+        <Basic3DNode node={node} position={defaultPosition} isSelected={false} />
+      )
+      expect(queryAllByTestId('basic3d-node-label')).toHaveLength(0)
+    })
+
+    it('does not render a label when showLabel is false', () => {
+      const node = createNode('node-label-false', 'file')
+      const { queryAllByTestId } = render(
+        <Basic3DNode node={node} position={defaultPosition} isSelected={false} showLabel={false} />
+      )
+      expect(queryAllByTestId('basic3d-node-label')).toHaveLength(0)
+    })
+
+    it('renders a label with the node metadata label text when showLabel is true', () => {
+      const node = createNode('node-label-on', 'class')
+      const { getByTestId } = render(
+        <Basic3DNode node={node} position={defaultPosition} isSelected={false} showLabel={true} />
+      )
+      const label = getByTestId('basic3d-node-label')
+      expect(label).toBeDefined()
+      expect(label.textContent).toBe('node-label-on')
+    })
   })
 })
