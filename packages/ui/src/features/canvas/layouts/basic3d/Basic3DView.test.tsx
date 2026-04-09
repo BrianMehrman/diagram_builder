@@ -308,6 +308,17 @@ describe('Basic3DView', () => {
       expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
     })
 
+    it('hides edge at LOD 3 when one endpoint is a leaf type', () => {
+      const nodes = [createNode('cls', 'class'), createNode('fn-a', 'function')]
+      const edges = [createEdge('cls', 'fn-a')]
+      setupLayout(makeGraph(nodes, edges))
+      useCanvasStore.getState().setLodLevel(3)
+      useCanvasStore.setState({ layoutState: 'ready' })
+
+      const { queryAllByTestId } = render(<Basic3DView />)
+      expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
+    })
+
     it('renders container + structural nodes at LOD 3', () => {
       const nodes = [
         createNode('mod', 'module'),
