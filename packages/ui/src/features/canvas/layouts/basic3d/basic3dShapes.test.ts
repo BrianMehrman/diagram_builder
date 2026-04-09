@@ -146,7 +146,13 @@ describe('isAbstractNode', () => {
 })
 
 describe('isNodeVisibleAtLod', () => {
-  const CONTAINER_NODE_TYPES: NodeType[] = ['repository', 'package', 'namespace', 'module', 'directory']
+  const CONTAINER_NODE_TYPES: NodeType[] = [
+    'repository',
+    'package',
+    'namespace',
+    'module',
+    'directory',
+  ]
   const STRUCTURAL_ONLY_TYPES: NodeType[] = ['file', 'class', 'interface', 'type']
   const LEAF_TYPES: NodeType[] = ['function', 'method', 'variable', 'enum']
 
