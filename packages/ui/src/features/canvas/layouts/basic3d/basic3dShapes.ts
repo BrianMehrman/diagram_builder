@@ -85,3 +85,38 @@ export function getColorForType(type: NodeType): string {
 export function isAbstractNode(node: IVMNode): boolean {
   return node.metadata?.properties?.['isAbstract'] === true
 }
+
+// =============================================================================
+// LOD visibility
+// =============================================================================
+
+const CONTAINER_TYPES = new Set<NodeType>([
+  'repository',
+  'package',
+  'namespace',
+  'module',
+  'directory',
+])
+
+const STRUCTURAL_TYPES = new Set<NodeType>([
+  ...CONTAINER_TYPES,
+  'file',
+  'class',
+  'interface',
+  'type',
+])
+
+/**
+ * Returns true if a node should be rendered as an individual node at the given LOD level.
+ *
+ * LOD 1: no individual nodes (cluster layer only)
+ * LOD 2: container types only (repository, package, namespace, module, directory)
+ * LOD 3: container + structural types (+ file, class, interface, type)
+ * LOD 4: all types
+ */
+export function isNodeVisibleAtLod(node: IVMNode, lod: number): boolean {
+  if (lod >= 4) return true
+  if (lod === 3) return STRUCTURAL_TYPES.has(node.type)
+  if (lod === 2) return CONTAINER_TYPES.has(node.type)
+  return false
+}
