@@ -11,7 +11,9 @@ import type { IVMNode } from '@diagram-builder/core'
 
 vi.mock('@react-three/drei', () => ({
   Text: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
-    <div data-testid="basic3d-node-label" {...props}>{children}</div>
+    <div data-testid="basic3d-node-label" {...props}>
+      {children}
+    </div>
   ),
   Billboard: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))

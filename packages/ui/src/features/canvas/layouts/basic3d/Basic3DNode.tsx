@@ -87,14 +87,7 @@ export function Basic3DNode({ node, position, isSelected, showLabel = false }: B
       </mesh>
       {showLabel && (
         <Billboard>
-          <Text
-            position={[0, -2, 0]}
-            fontSize={1.2}
-            color="#FFFFFF"
-            anchorX="center"
-            anchorY="top"
-            data-testid="basic3d-node-label"
-          >
+          <Text position={[0, -2, 0]} fontSize={1.2} color="#FFFFFF" anchorX="center" anchorY="top">
             {node.metadata.label}
           </Text>
         </Billboard>
