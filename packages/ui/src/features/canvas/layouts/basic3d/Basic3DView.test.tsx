@@ -139,9 +139,8 @@ beforeEach(() => {
   useCanvasStore.getState().reset()
   useCanvasStore.setState({ layoutState: 'ready' })
 
-  // Default: empty graph, LOD 3 (individual nodes shown by default in tests)
   setupLayout(makeEmptyGraph())
-  useCanvasStore.getState().setLodLevel(3)
+  useCanvasStore.getState().setLodLevel(4) // was 3 — file nodes visible at LOD 4 now
 })
 
 // ---------------------------------------------------------------------------
@@ -206,111 +205,86 @@ describe('Basic3DView', () => {
     })
   })
 
-  describe('LOD-driven edge visibility', () => {
-    it('renders no edges at LOD 1 (cluster layer shown)', () => {
+  describe('LOD-driven rendering', () => {
+    it('LOD 1: renders ClusterLayer, no individual nodes or edges', () => {
       setupLayout(makeEmptyGraph())
       useCanvasStore.getState().setLodLevel(1)
       useCanvasStore.setState({ layoutState: 'ready' })
 
       const { queryAllByTestId } = render(<Basic3DView />)
-      expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
       expect(queryAllByTestId('basic3d-node')).toHaveLength(0)
-    })
-
-    it('renders structural nodes and their edges at LOD 3', () => {
-      const nodes = [createNode('a', 'file'), createNode('b', 'file')]
-      const edges = [createEdge('a', 'b')]
-      setupLayout(makeGraph(nodes, edges))
-      useCanvasStore.getState().setLodLevel(3)
-      useCanvasStore.setState({ layoutState: 'ready' })
-
-      const { getAllByTestId } = render(<Basic3DView />)
-      expect(getAllByTestId('basic3d-node')).toHaveLength(2)
-      expect(getAllByTestId('basic3d-edge')).toHaveLength(1)
-    })
-
-    it('renders edges at LOD 4', () => {
-      const nodes = [createNode('a'), createNode('b')]
-      const edges = [createEdge('a', 'b')]
-      setupLayout(makeGraph(nodes, edges))
-      useCanvasStore.getState().setLodLevel(4)
-      useCanvasStore.setState({ layoutState: 'ready' })
-
-      const { getAllByTestId } = render(<Basic3DView />)
-      expect(getAllByTestId('basic3d-edge')).toHaveLength(1)
-    })
-
-    it('does not render edges when source position is missing', () => {
-      const nodes = [createNode('a'), createNode('b')]
-      const edges = [createEdge('a', 'b')]
-      const positions = new Map([['a', { x: 0, y: 0, z: 0 }]])
-      setupLayout(makeGraph(nodes, edges), positions)
-      useCanvasStore.getState().setLodLevel(4)
-      useCanvasStore.setState({ layoutState: 'ready' })
-
-      const { queryAllByTestId } = render(<Basic3DView />)
       expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
+      expect(queryAllByTestId('cluster-layer')).toHaveLength(1)
     })
 
-    it('does not render edges when target position is missing', () => {
-      const nodes = [createNode('a'), createNode('b')]
-      const edges = [createEdge('a', 'b')]
-      const positions = new Map([['b', { x: 5, y: 0, z: 0 }]])
-      setupLayout(makeGraph(nodes, edges), positions)
-      useCanvasStore.getState().setLodLevel(4)
-      useCanvasStore.setState({ layoutState: 'ready' })
-
-      const { queryAllByTestId } = render(<Basic3DView />)
-      expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
-    })
-  })
-
-  describe('LOD node-type filtering', () => {
-    it('renders only container nodes at LOD 2', () => {
+    it('LOD 2: renders only repository and package nodes', () => {
       const nodes = [
+        createNode('repo', 'repository'),
+        createNode('pkg', 'package'),
+        createNode('mod', 'module'),
+        createNode('file-a', 'file'),
+        createNode('fn-a', 'function'),
+      ]
+      setupLayout(makeGraph(nodes))
+      useCanvasStore.getState().setLodLevel(2)
+      useCanvasStore.setState({ layoutState: 'ready' })
+
+      const { getAllByTestId } = render(<Basic3DView />)
+      const rendered = getAllByTestId('basic3d-node').map((el) => el.getAttribute('data-node-id'))
+      expect(rendered).toContain('repo')
+      expect(rendered).toContain('pkg')
+      expect(rendered).not.toContain('mod')
+      expect(rendered).not.toContain('file-a')
+      expect(rendered).not.toContain('fn-a')
+    })
+
+    it('LOD 2: no edges without selection', () => {
+      const nodes = [createNode('repo', 'repository'), createNode('pkg', 'package')]
+      const edges = [createEdge('repo', 'pkg')]
+      setupLayout(makeGraph(nodes, edges))
+      useCanvasStore.getState().setLodLevel(2)
+      useCanvasStore.setState({ layoutState: 'ready' })
+
+      const { queryAllByTestId } = render(<Basic3DView />)
+      expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
+    })
+
+    it('LOD 2: shows edge when selected node is connected', () => {
+      const nodes = [createNode('repo', 'repository'), createNode('pkg', 'package')]
+      const edges = [createEdge('repo', 'pkg')]
+      setupLayout(makeGraph(nodes, edges))
+      useCanvasStore.getState().setLodLevel(2)
+      useCanvasStore.getState().selectNode('repo')
+      useCanvasStore.setState({ layoutState: 'ready' })
+
+      const { getAllByTestId } = render(<Basic3DView />)
+      expect(getAllByTestId('basic3d-edge')).toHaveLength(1)
+    })
+
+    it('LOD 3: renders all container nodes', () => {
+      const nodes = [
+        createNode('repo', 'repository'),
         createNode('mod', 'module'),
         createNode('dir', 'directory'),
         createNode('file-a', 'file'),
         createNode('fn-a', 'function'),
       ]
       setupLayout(makeGraph(nodes))
-      useCanvasStore.getState().setLodLevel(2)
+      useCanvasStore.getState().setLodLevel(3)
       useCanvasStore.setState({ layoutState: 'ready' })
 
       const { getAllByTestId } = render(<Basic3DView />)
       const rendered = getAllByTestId('basic3d-node').map((el) => el.getAttribute('data-node-id'))
+      expect(rendered).toContain('repo')
       expect(rendered).toContain('mod')
       expect(rendered).toContain('dir')
       expect(rendered).not.toContain('file-a')
       expect(rendered).not.toContain('fn-a')
     })
 
-    it('renders edge at LOD 2 when both endpoints are container types', () => {
+    it('LOD 3: no edges without selection', () => {
       const nodes = [createNode('mod-a', 'module'), createNode('mod-b', 'module')]
       const edges = [createEdge('mod-a', 'mod-b')]
-      setupLayout(makeGraph(nodes, edges))
-      useCanvasStore.getState().setLodLevel(2)
-      useCanvasStore.setState({ layoutState: 'ready' })
-
-      const { getAllByTestId } = render(<Basic3DView />)
-      expect(getAllByTestId('basic3d-node')).toHaveLength(2)
-      expect(getAllByTestId('basic3d-edge')).toHaveLength(1)
-    })
-
-    it('hides edge at LOD 2 when one endpoint is not a container type', () => {
-      const nodes = [createNode('mod-a', 'module'), createNode('file-b', 'file')]
-      const edges = [createEdge('mod-a', 'file-b')]
-      setupLayout(makeGraph(nodes, edges))
-      useCanvasStore.getState().setLodLevel(2)
-      useCanvasStore.setState({ layoutState: 'ready' })
-
-      const { queryAllByTestId } = render(<Basic3DView />)
-      expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
-    })
-
-    it('hides edge at LOD 3 when one endpoint is a leaf type', () => {
-      const nodes = [createNode('cls', 'class'), createNode('fn-a', 'function')]
-      const edges = [createEdge('cls', 'fn-a')]
       setupLayout(makeGraph(nodes, edges))
       useCanvasStore.getState().setLodLevel(3)
       useCanvasStore.setState({ layoutState: 'ready' })
@@ -319,29 +293,23 @@ describe('Basic3DView', () => {
       expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
     })
 
-    it('renders container + structural nodes at LOD 3', () => {
+    it('LOD 3: shows edge when selected node is connected and both endpoints are visible', () => {
+      const nodes = [createNode('mod-a', 'module'), createNode('mod-b', 'module')]
+      const edges = [createEdge('mod-a', 'mod-b')]
+      setupLayout(makeGraph(nodes, edges))
+      useCanvasStore.getState().setLodLevel(3)
+      useCanvasStore.getState().selectNode('mod-a')
+      useCanvasStore.setState({ layoutState: 'ready' })
+
+      const { getAllByTestId } = render(<Basic3DView />)
+      expect(getAllByTestId('basic3d-edge')).toHaveLength(1)
+    })
+
+    it('LOD 4: renders container + structural nodes, not leaf nodes', () => {
       const nodes = [
         createNode('mod', 'module'),
         createNode('file-a', 'file'),
         createNode('cls', 'class'),
-        createNode('fn-a', 'function'),
-      ]
-      setupLayout(makeGraph(nodes))
-      useCanvasStore.getState().setLodLevel(3)
-      useCanvasStore.setState({ layoutState: 'ready' })
-
-      const { getAllByTestId } = render(<Basic3DView />)
-      const rendered = getAllByTestId('basic3d-node').map((el) => el.getAttribute('data-node-id'))
-      expect(rendered).toContain('mod')
-      expect(rendered).toContain('file-a')
-      expect(rendered).toContain('cls')
-      expect(rendered).not.toContain('fn-a')
-    })
-
-    it('renders all nodes at LOD 4', () => {
-      const nodes = [
-        createNode('mod', 'module'),
-        createNode('file-a', 'file'),
         createNode('fn-a', 'function'),
         createNode('meth', 'method'),
       ]
@@ -350,32 +318,134 @@ describe('Basic3DView', () => {
       useCanvasStore.setState({ layoutState: 'ready' })
 
       const { getAllByTestId } = render(<Basic3DView />)
+      const rendered = getAllByTestId('basic3d-node').map((el) => el.getAttribute('data-node-id'))
+      expect(rendered).toContain('mod')
+      expect(rendered).toContain('file-a')
+      expect(rendered).toContain('cls')
+      expect(rendered).not.toContain('fn-a')
+      expect(rendered).not.toContain('meth')
+    })
+
+    it('LOD 4: shows edge when selected node is connected', () => {
+      const nodes = [createNode('file-a', 'file'), createNode('file-b', 'file')]
+      const edges = [createEdge('file-a', 'file-b')]
+      setupLayout(makeGraph(nodes, edges))
+      useCanvasStore.getState().setLodLevel(4)
+      useCanvasStore.getState().selectNode('file-a')
+      useCanvasStore.setState({ layoutState: 'ready' })
+
+      const { getAllByTestId } = render(<Basic3DView />)
+      expect(getAllByTestId('basic3d-edge')).toHaveLength(1)
+    })
+
+    it('LOD 5: renders all node types', () => {
+      const nodes = [
+        createNode('mod', 'module'),
+        createNode('file-a', 'file'),
+        createNode('fn-a', 'function'),
+        createNode('meth', 'method'),
+      ]
+      setupLayout(makeGraph(nodes))
+      useCanvasStore.getState().setLodLevel(5)
+      useCanvasStore.setState({ layoutState: 'ready' })
+
+      const { getAllByTestId } = render(<Basic3DView />)
       expect(getAllByTestId('basic3d-node')).toHaveLength(4)
     })
 
-    it('passes showLabel=false to nodes at LOD 2', () => {
-      const nodes = [createNode('mod', 'module')]
-      setupLayout(makeGraph(nodes))
-      useCanvasStore.getState().setLodLevel(2)
+    it('LOD 5: renders edge when both endpoints are near camera (proximity)', () => {
+      // Default camera in store: { x: 0, y: 0, z: 0 }
+      // Nodes at x=5 and x=10 — both within EDGE_PROXIMITY_SQ (60^2 = 3600)
+      const nodes = [createNode('a', 'function'), createNode('b', 'function')]
+      const edges = [createEdge('a', 'b')]
+      const positions = new Map([
+        ['a', { x: 5, y: 0, z: 0 }],
+        ['b', { x: 10, y: 0, z: 0 }],
+      ])
+      setupLayout(makeGraph(nodes, edges), positions)
+      useCanvasStore.getState().setLodLevel(5)
+      useCanvasStore.setState({
+        layoutState: 'ready',
+        camera: { position: { x: 0, y: 0, z: 0 }, target: { x: 0, y: 0, z: 0 }, zoom: 1 },
+      })
+
+      const { getAllByTestId } = render(<Basic3DView />)
+      expect(getAllByTestId('basic3d-edge')).toHaveLength(1)
+    })
+
+    it('LOD 5: hides edge when both endpoints are far from camera and no selection', () => {
+      const nodes = [createNode('a', 'function'), createNode('b', 'function')]
+      const edges = [createEdge('a', 'b')]
+      const positions = new Map([
+        ['a', { x: 200, y: 0, z: 0 }],
+        ['b', { x: 210, y: 0, z: 0 }],
+      ])
+      setupLayout(makeGraph(nodes, edges), positions)
+      useCanvasStore.getState().setLodLevel(5)
+      useCanvasStore.setState({
+        layoutState: 'ready',
+        camera: { position: { x: 0, y: 0, z: 0 }, target: { x: 0, y: 0, z: 0 }, zoom: 1 },
+      })
+
+      const { queryAllByTestId } = render(<Basic3DView />)
+      expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
+    })
+
+    it('does not render edges when source position is missing', () => {
+      const nodes = [createNode('a', 'file'), createNode('b', 'file')]
+      const edges = [createEdge('a', 'b')]
+      const positions = new Map([['a', { x: 0, y: 0, z: 0 }]])
+      setupLayout(makeGraph(nodes, edges), positions)
+      useCanvasStore.getState().setLodLevel(4)
+      useCanvasStore.getState().selectNode('a')
       useCanvasStore.setState({ layoutState: 'ready' })
 
-      render(<Basic3DView />)
-      const calls = mockBasic3DNode.mock.calls
-      for (const [props] of calls) {
-        expect(props.showLabel).toBe(false)
+      const { queryAllByTestId } = render(<Basic3DView />)
+      expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
+    })
+
+    it('does not render edges when target position is missing', () => {
+      const nodes = [createNode('a', 'file'), createNode('b', 'file')]
+      const edges = [createEdge('a', 'b')]
+      const positions = new Map([['b', { x: 5, y: 0, z: 0 }]])
+      setupLayout(makeGraph(nodes, edges), positions)
+      useCanvasStore.getState().setLodLevel(4)
+      useCanvasStore.getState().selectNode('a')
+      useCanvasStore.setState({ layoutState: 'ready' })
+
+      const { queryAllByTestId } = render(<Basic3DView />)
+      expect(queryAllByTestId('basic3d-edge')).toHaveLength(0)
+    })
+
+    it('passes showLabel=false at LOD 2 and 3', () => {
+      const nodes = [createNode('mod', 'module')]
+      setupLayout(makeGraph(nodes))
+      for (const lod of [2, 3]) {
+        vi.clearAllMocks()
+        useCanvasStore.getState().setLodLevel(lod)
+        useCanvasStore.setState({ layoutState: 'ready' })
+        render(<Basic3DView />)
+        const calls = mockBasic3DNode.mock.calls
+        for (const [props] of calls) {
+          expect(props.showLabel, `LOD ${lod} should have showLabel=false`).toBe(false)
+        }
       }
     })
 
-    it('passes showLabel=true to nodes at LOD 3', () => {
+    it('passes showLabel=true at LOD 4 and 5', () => {
       const nodes = [createNode('file-a', 'file')]
       setupLayout(makeGraph(nodes))
-      useCanvasStore.getState().setLodLevel(3)
-      useCanvasStore.setState({ layoutState: 'ready' })
-
-      render(<Basic3DView />)
-      const calls = mockBasic3DNode.mock.calls
-      for (const [props] of calls) {
-        expect(props.showLabel).toBe(true)
+      for (const lod of [4, 5]) {
+        vi.clearAllMocks()
+        useCanvasStore.getState().setLodLevel(lod)
+        useCanvasStore.setState({ layoutState: 'ready' })
+        render(<Basic3DView />)
+        const calls = mockBasic3DNode.mock.calls
+        if (calls.length > 0) {
+          for (const [props] of calls) {
+            expect(props.showLabel, `LOD ${lod} should have showLabel=true`).toBe(true)
+          }
+        }
       }
     })
   })

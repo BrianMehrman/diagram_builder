@@ -1,14 +1,15 @@
 /**
  * Basic3DView — root layout component for the Basic3D layout.
  *
- * Shows a loading indicator while the worker computes layout.
- *
- * LOD 1:   ClusterLayer (proxy spheres per module group)
- * LOD 2:   Container nodes only (repository, package, namespace, module, directory)
- *           + edges between container-typed endpoints
- * LOD 3:   Container + structural nodes (+ file, class, interface, type) with labels
- *           + edges between structural-typed endpoints
- * LOD 4:   All nodes + edges (proximity-based edge culling via isEdgeVisibleForLod)
+ * LOD 1 (> 200 units):   ClusterLayer (proxy spheres per module group)
+ * LOD 2 (120–200 units): Top containers only (repository, package), no labels
+ *                        Edges visible only when source/target is selected
+ * LOD 3 (60–120 units):  All container nodes (+ namespace, module, directory), no labels
+ *                        Edges visible only when source/target is selected
+ * LOD 4 (25–60 units):   + Structural nodes (file, class, interface, type), labels visible
+ *                        Edges visible when selected or via proximity (60 unit sphere)
+ * LOD 5 (≤ 25 units):    All nodes + labels
+ *                        Edges visible when selected or via proximity
  */
 
 import { useMemo, type JSX } from 'react'
@@ -54,9 +55,9 @@ export function Basic3DView() {
     )
   }
 
-  // ── LOD 2–3: type-filtered nodes + edges ──────────────────────────────────
-  if (lodLevel <= 3) {
-    const showLabel = lodLevel >= 3
+  // ── LOD 2–4: type-filtered nodes + selection-based edges ──────────────────
+  if (lodLevel <= 4) {
+    const showLabel = lodLevel >= 4
     const visibleNodes = graph.nodes.filter((n) => isNodeVisibleAtLod(n, lodLevel))
 
     const visibleEdges = graph.edges.reduce<JSX.Element[]>((acc, edge) => {
@@ -69,6 +70,19 @@ export function Basic3DView() {
       const from = positions.get(edge.source)
       const to = positions.get(edge.target)
       if (from === undefined || to === undefined) return acc
+      if (
+        !isEdgeVisibleForLod(
+          edge.source,
+          edge.target,
+          selectedNodeId,
+          lodLevel,
+          from,
+          to,
+          cameraPosition
+        )
+      ) {
+        return acc
+      }
       acc.push(<Basic3DEdge key={edge.id} from={from} to={to} />)
       return acc
     }, [])
@@ -93,7 +107,7 @@ export function Basic3DView() {
     )
   }
 
-  // ── LOD 4: all nodes + proximity-culled edges ──────────────────────────────
+  // ── LOD 5: all nodes + proximity-culled edges ──────────────────────────────
   return (
     <group name="basic3d-view">
       <LodController />
