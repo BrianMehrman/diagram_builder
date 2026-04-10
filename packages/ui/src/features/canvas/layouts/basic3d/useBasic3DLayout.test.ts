@@ -139,9 +139,19 @@ describe('useBasic3DLayout LOD dispatch', () => {
     expect(resolver.getView).not.toHaveBeenCalled()
   })
 
-  it('LOD 4 with selectedNodeId calls getView with focalNodeId', () => {
+  it('LOD 4 with selectedNodeId calls getTier(Symbol) — focal subgraph not active below LOD 5', () => {
     const resolver = makeMockResolver()
     useCanvasStore.setState({ resolver, lodLevel: 4, selectedNodeId: 'node-1' })
+
+    renderHook(() => useBasic3DLayout())
+
+    expect(resolver.getTier).toHaveBeenCalledWith(SemanticTier.Symbol)
+    expect(resolver.getView).not.toHaveBeenCalled()
+  })
+
+  it('LOD 5 with selectedNodeId calls getView with focalNodeId', () => {
+    const resolver = makeMockResolver()
+    useCanvasStore.setState({ resolver, lodLevel: 5, selectedNodeId: 'node-1' })
 
     renderHook(() => useBasic3DLayout())
 
@@ -155,6 +165,16 @@ describe('useBasic3DLayout LOD dispatch', () => {
   it('LOD 4 without selectedNodeId falls back to getTier(Symbol)', () => {
     const resolver = makeMockResolver()
     useCanvasStore.setState({ resolver, lodLevel: 4, selectedNodeId: null })
+
+    renderHook(() => useBasic3DLayout())
+
+    expect(resolver.getTier).toHaveBeenCalledWith(SemanticTier.Symbol)
+    expect(resolver.getView).not.toHaveBeenCalled()
+  })
+
+  it('LOD 5 without selectedNodeId falls back to getTier(Symbol)', () => {
+    const resolver = makeMockResolver()
+    useCanvasStore.setState({ resolver, lodLevel: 5, selectedNodeId: null })
 
     renderHook(() => useBasic3DLayout())
 

@@ -91,7 +91,7 @@ export function useBasic3DLayout(): Basic3DLayoutResult {
 
   const graph = useMemo(() => {
     if (!resolver) return EMPTY_GRAPH
-    if (lodLevel <= 3) return resolver.getTier(SemanticTier.Symbol)
+    if (lodLevel < 5) return resolver.getTier(SemanticTier.Symbol)
     if (!selectedNodeId) return resolver.getTier(SemanticTier.Symbol)
     return resolver.getView({ baseTier: SemanticTier.Symbol, focalNodeId: selectedNodeId }).graph
   }, [resolver, lodLevel, selectedNodeId])
