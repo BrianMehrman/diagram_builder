@@ -146,61 +146,74 @@ describe('isAbstractNode', () => {
 })
 
 describe('isNodeVisibleAtLod', () => {
-  const CONTAINER_NODE_TYPES: NodeType[] = [
-    'repository',
-    'package',
-    'namespace',
-    'module',
-    'directory',
-  ]
+  const TOP_CONTAINER_TYPES: NodeType[] = ['repository', 'package']
+  const OTHER_CONTAINER_TYPES: NodeType[] = ['namespace', 'module', 'directory']
   const STRUCTURAL_ONLY_TYPES: NodeType[] = ['file', 'class', 'interface', 'type']
   const LEAF_TYPES: NodeType[] = ['function', 'method', 'variable', 'enum']
 
-  it('LOD 1 returns false for all individual node types', () => {
-    for (const t of ALL_NODE_TYPES) {
+  it('LOD 1 returns false for all node types', () => {
+    const allTypes: NodeType[] = [
+      ...TOP_CONTAINER_TYPES,
+      ...OTHER_CONTAINER_TYPES,
+      ...STRUCTURAL_ONLY_TYPES,
+      ...LEAF_TYPES,
+    ]
+    for (const t of allTypes) {
       expect(isNodeVisibleAtLod(makeNode(t), 1), `${t} should not be visible at LOD 1`).toBe(false)
     }
   })
 
-  it('LOD 2 returns true for all container types', () => {
-    for (const t of CONTAINER_NODE_TYPES) {
+  it('LOD 2 returns true for top container types (repository, package)', () => {
+    for (const t of TOP_CONTAINER_TYPES) {
       expect(isNodeVisibleAtLod(makeNode(t), 2), `${t} should be visible at LOD 2`).toBe(true)
     }
   })
 
-  it('LOD 2 returns false for structural-only types', () => {
-    for (const t of STRUCTURAL_ONLY_TYPES) {
-      expect(isNodeVisibleAtLod(makeNode(t), 2), `${t} should not be visible at LOD 2`).toBe(false)
+  it('LOD 2 returns false for other container types (namespace, module, directory)', () => {
+    for (const t of OTHER_CONTAINER_TYPES) {
+      expect(isNodeVisibleAtLod(makeNode(t), 2), `${t} should NOT be visible at LOD 2`).toBe(false)
     }
   })
 
-  it('LOD 2 returns false for leaf types', () => {
-    for (const t of LEAF_TYPES) {
-      expect(isNodeVisibleAtLod(makeNode(t), 2), `${t} should not be visible at LOD 2`).toBe(false)
+  it('LOD 2 returns false for structural and leaf types', () => {
+    for (const t of [...STRUCTURAL_ONLY_TYPES, ...LEAF_TYPES]) {
+      expect(isNodeVisibleAtLod(makeNode(t), 2), `${t} should NOT be visible at LOD 2`).toBe(false)
     }
   })
 
   it('LOD 3 returns true for all container types', () => {
-    for (const t of CONTAINER_NODE_TYPES) {
+    for (const t of [...TOP_CONTAINER_TYPES, ...OTHER_CONTAINER_TYPES]) {
       expect(isNodeVisibleAtLod(makeNode(t), 3), `${t} should be visible at LOD 3`).toBe(true)
     }
   })
 
-  it('LOD 3 returns true for structural-only types', () => {
-    for (const t of STRUCTURAL_ONLY_TYPES) {
-      expect(isNodeVisibleAtLod(makeNode(t), 3), `${t} should be visible at LOD 3`).toBe(true)
+  it('LOD 3 returns false for structural-only and leaf types', () => {
+    for (const t of [...STRUCTURAL_ONLY_TYPES, ...LEAF_TYPES]) {
+      expect(isNodeVisibleAtLod(makeNode(t), 3), `${t} should NOT be visible at LOD 3`).toBe(false)
     }
   })
 
-  it('LOD 3 returns false for leaf types', () => {
-    for (const t of LEAF_TYPES) {
-      expect(isNodeVisibleAtLod(makeNode(t), 3), `${t} should not be visible at LOD 3`).toBe(false)
-    }
-  })
-
-  it('LOD 4 returns true for all node types', () => {
-    for (const t of ALL_NODE_TYPES) {
+  it('LOD 4 returns true for all container + structural types', () => {
+    for (const t of [...TOP_CONTAINER_TYPES, ...OTHER_CONTAINER_TYPES, ...STRUCTURAL_ONLY_TYPES]) {
       expect(isNodeVisibleAtLod(makeNode(t), 4), `${t} should be visible at LOD 4`).toBe(true)
+    }
+  })
+
+  it('LOD 4 returns false for leaf types', () => {
+    for (const t of LEAF_TYPES) {
+      expect(isNodeVisibleAtLod(makeNode(t), 4), `${t} should NOT be visible at LOD 4`).toBe(false)
+    }
+  })
+
+  it('LOD 5 returns true for all node types', () => {
+    const allTypes: NodeType[] = [
+      ...TOP_CONTAINER_TYPES,
+      ...OTHER_CONTAINER_TYPES,
+      ...STRUCTURAL_ONLY_TYPES,
+      ...LEAF_TYPES,
+    ]
+    for (const t of allTypes) {
+      expect(isNodeVisibleAtLod(makeNode(t), 5), `${t} should be visible at LOD 5`).toBe(true)
     }
   })
 })
