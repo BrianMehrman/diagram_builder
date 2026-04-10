@@ -441,10 +441,9 @@ describe('Basic3DView', () => {
         useCanvasStore.setState({ layoutState: 'ready' })
         render(<Basic3DView />)
         const calls = mockBasic3DNode.mock.calls
-        if (calls.length > 0) {
-          for (const [props] of calls) {
-            expect(props.showLabel, `LOD ${lod} should have showLabel=true`).toBe(true)
-          }
+        expect(calls.length, `LOD ${lod} should have rendered at least one node`).toBeGreaterThan(0)
+        for (const [props] of calls) {
+          expect(props.showLabel, `LOD ${lod} should have showLabel=true`).toBe(true)
         }
       }
     })
