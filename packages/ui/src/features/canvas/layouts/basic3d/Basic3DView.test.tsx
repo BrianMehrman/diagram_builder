@@ -140,7 +140,7 @@ beforeEach(() => {
   useCanvasStore.setState({ layoutState: 'ready' })
 
   setupLayout(makeEmptyGraph())
-  useCanvasStore.getState().setLodLevel(4) // was 3 — file nodes visible at LOD 4 now
+  useCanvasStore.getState().setLodLevel(4) // default keeps non-LOD tests neutral; LOD-specific tests call setLodLevel() explicitly
 })
 
 // ---------------------------------------------------------------------------
