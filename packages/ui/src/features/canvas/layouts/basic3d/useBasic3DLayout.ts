@@ -225,6 +225,9 @@ export function useBasic3DLayout(): Basic3DLayoutResult {
   // ---------------------------------------------------------------------------
 
   return {
+    // NOTE: positionsRef.current is a ref value — not reactive. Callers must also
+    // subscribe to layoutState from the store and re-read positions when it transitions
+    // to 'ready'. Basic3DView does this correctly; any new consumer must do the same.
     positions: positionsRef.current,
     graph,
     maxDepth,
