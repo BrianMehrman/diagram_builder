@@ -3,6 +3,7 @@ import {
   calculateLodFromDistance,
   calculateLodWithHysteresis,
   cameraDistanceToOrigin,
+  cameraDistanceToTarget,
   LOD_THRESHOLDS,
   HYSTERESIS_FACTOR,
 } from './lodCalculatorUtils'
@@ -68,4 +69,25 @@ describe('cameraDistanceToOrigin', () => {
     expect(cameraDistanceToOrigin(3, 4, 0)).toBeCloseTo(5))
   it('returns correct distance for (1, 1, 1)', () =>
     expect(cameraDistanceToOrigin(1, 1, 1)).toBeCloseTo(Math.sqrt(3)))
+})
+
+describe('cameraDistanceToTarget', () => {
+  it('returns 0 when camera is at target', () => {
+    expect(cameraDistanceToTarget(5, 3, 1, 5, 3, 1)).toBe(0)
+  })
+
+  it('matches cameraDistanceToOrigin when target is origin', () => {
+    expect(cameraDistanceToTarget(3, 4, 0, 0, 0, 0)).toBeCloseTo(5)
+  })
+
+  it('computes distance relative to non-origin target', () => {
+    // Camera at (250, 0, 0), target at (200, 0, 0) → distance = 50
+    expect(cameraDistanceToTarget(250, 0, 0, 200, 0, 0)).toBeCloseTo(50)
+  })
+
+  it('uses target distance for LOD — far from origin but close to target → LOD 4', () => {
+    // Camera 50 units from target (in LOD 4 range: 25-60) but 250 units from origin
+    const dist = cameraDistanceToTarget(250, 0, 0, 200, 0, 0)
+    expect(calculateLodFromDistance(dist)).toBe(4)
+  })
 })

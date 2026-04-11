@@ -11,7 +11,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useCanvasStore } from '../store'
-import { cameraDistanceToOrigin, calculateLodWithHysteresis } from './lodCalculatorUtils'
+import { cameraDistanceToTarget, calculateLodWithHysteresis } from './lodCalculatorUtils'
 
 /**
  * Hook that automatically updates lodLevel in the store based on
@@ -25,7 +25,15 @@ export function useLodCalculator(): void {
     // Skip auto-update when the user has locked LOD manually
     if (useCanvasStore.getState().lodManualOverride) return
 
-    const distance = cameraDistanceToOrigin(camera.position.x, camera.position.y, camera.position.z)
+    const { target } = useCanvasStore.getState().camera
+    const distance = cameraDistanceToTarget(
+      camera.position.x,
+      camera.position.y,
+      camera.position.z,
+      target.x,
+      target.y,
+      target.z
+    )
 
     const newLod = calculateLodWithHysteresis(distance, currentLodRef.current)
 

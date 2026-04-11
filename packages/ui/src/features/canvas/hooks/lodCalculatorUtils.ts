@@ -90,3 +90,22 @@ function getThresholdForLod(lod: number): number {
 export function cameraDistanceToOrigin(x: number, y: number, z: number): number {
   return Math.sqrt(x * x + y * y + z * z)
 }
+
+/**
+ * Calculate euclidean distance from camera position to a target point.
+ * Use this instead of cameraDistanceToOrigin when the scene has a non-origin
+ * focal point (e.g. after flying to a cluster centroid).
+ */
+export function cameraDistanceToTarget(
+  camX: number,
+  camY: number,
+  camZ: number,
+  targetX: number,
+  targetY: number,
+  targetZ: number
+): number {
+  const dx = camX - targetX
+  const dy = camY - targetY
+  const dz = camZ - targetZ
+  return Math.sqrt(dx * dx + dy * dy + dz * dz)
+}
