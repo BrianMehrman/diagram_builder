@@ -146,16 +146,16 @@ describe('isAbstractNode', () => {
 })
 
 describe('isNodeVisibleAtLod', () => {
-  const TOP_CONTAINER_TYPES: NodeType[] = ['repository', 'package']
+  const TOP_CONTAINER_TYPES: NodeType[] = ['repository', 'package', 'file']
   const OTHER_CONTAINER_TYPES: NodeType[] = ['namespace', 'module', 'directory']
-  const STRUCTURAL_ONLY_TYPES: NodeType[] = ['file', 'class', 'interface', 'type']
+  const CLASS_STRUCTURAL_TYPES: NodeType[] = ['class', 'interface', 'type']
   const LEAF_TYPES: NodeType[] = ['function', 'method', 'variable', 'enum']
 
   it('LOD 1 returns false for all node types', () => {
     const allTypes: NodeType[] = [
       ...TOP_CONTAINER_TYPES,
       ...OTHER_CONTAINER_TYPES,
-      ...STRUCTURAL_ONLY_TYPES,
+      ...CLASS_STRUCTURAL_TYPES,
       ...LEAF_TYPES,
     ]
     for (const t of allTypes) {
@@ -163,7 +163,7 @@ describe('isNodeVisibleAtLod', () => {
     }
   })
 
-  it('LOD 2 returns true for top container types (repository, package)', () => {
+  it('LOD 2 returns true for top container types (repository, package, file)', () => {
     for (const t of TOP_CONTAINER_TYPES) {
       expect(isNodeVisibleAtLod(makeNode(t), 2), `${t} should be visible at LOD 2`).toBe(true)
     }
@@ -175,26 +175,26 @@ describe('isNodeVisibleAtLod', () => {
     }
   })
 
-  it('LOD 2 returns false for structural and leaf types', () => {
-    for (const t of [...STRUCTURAL_ONLY_TYPES, ...LEAF_TYPES]) {
+  it('LOD 2 returns false for class-structural and leaf types', () => {
+    for (const t of [...CLASS_STRUCTURAL_TYPES, ...LEAF_TYPES]) {
       expect(isNodeVisibleAtLod(makeNode(t), 2), `${t} should NOT be visible at LOD 2`).toBe(false)
     }
   })
 
-  it('LOD 3 returns true for all container types', () => {
+  it('LOD 3 returns true for all container types including file', () => {
     for (const t of [...TOP_CONTAINER_TYPES, ...OTHER_CONTAINER_TYPES]) {
       expect(isNodeVisibleAtLod(makeNode(t), 3), `${t} should be visible at LOD 3`).toBe(true)
     }
   })
 
-  it('LOD 3 returns false for structural-only and leaf types', () => {
-    for (const t of [...STRUCTURAL_ONLY_TYPES, ...LEAF_TYPES]) {
+  it('LOD 3 returns false for class-structural and leaf types', () => {
+    for (const t of [...CLASS_STRUCTURAL_TYPES, ...LEAF_TYPES]) {
       expect(isNodeVisibleAtLod(makeNode(t), 3), `${t} should NOT be visible at LOD 3`).toBe(false)
     }
   })
 
   it('LOD 4 returns true for all container + structural types', () => {
-    for (const t of [...TOP_CONTAINER_TYPES, ...OTHER_CONTAINER_TYPES, ...STRUCTURAL_ONLY_TYPES]) {
+    for (const t of [...TOP_CONTAINER_TYPES, ...OTHER_CONTAINER_TYPES, ...CLASS_STRUCTURAL_TYPES]) {
       expect(isNodeVisibleAtLod(makeNode(t), 4), `${t} should be visible at LOD 4`).toBe(true)
     }
   })
@@ -209,7 +209,7 @@ describe('isNodeVisibleAtLod', () => {
     const allTypes: NodeType[] = [
       ...TOP_CONTAINER_TYPES,
       ...OTHER_CONTAINER_TYPES,
-      ...STRUCTURAL_ONLY_TYPES,
+      ...CLASS_STRUCTURAL_TYPES,
       ...LEAF_TYPES,
     ]
     for (const t of allTypes) {

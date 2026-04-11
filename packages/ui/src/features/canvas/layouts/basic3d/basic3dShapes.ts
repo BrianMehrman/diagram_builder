@@ -90,22 +90,33 @@ export function isAbstractNode(node: IVMNode): boolean {
 // LOD visibility
 // =============================================================================
 
-/** Repository and package — the top-level containers visible at LOD 2 (approach). */
-const TOP_CONTAINER_TYPES = new Set<NodeType>(['repository', 'package'])
+/**
+ * Top-level container types + file — visible at LOD 2 (approach).
+ *
+ * Includes `file` so that typical TypeScript codebases (which produce no
+ * explicit repository/package nodes) still render something at LOD 2.
+ */
+const TOP_CONTAINER_TYPES = new Set<NodeType>(['repository', 'package', 'file'])
 
-/** All container types — visible at LOD 3 (district). */
+/**
+ * All container types + file — visible at LOD 3 (district).
+ * Superset of TOP_CONTAINER_TYPES.
+ */
 export const CONTAINER_TYPES = new Set<NodeType>([
   'repository',
   'package',
   'namespace',
   'module',
   'directory',
+  'file',
 ])
 
-/** Container + structural types — visible at LOD 4 (neighborhood). */
+/**
+ * Container + class-structural types — visible at LOD 4 (neighborhood).
+ * `file` is inherited via CONTAINER_TYPES; only class-level types added here.
+ */
 export const STRUCTURAL_TYPES = new Set<NodeType>([
   ...CONTAINER_TYPES,
-  'file',
   'class',
   'interface',
   'type',
@@ -115,9 +126,9 @@ export const STRUCTURAL_TYPES = new Set<NodeType>([
  * Returns true if a node should be rendered as an individual node at the given LOD level.
  *
  * LOD 1: no individual nodes (cluster layer only)
- * LOD 2: top-level containers only (repository, package)
- * LOD 3: all container nodes (+ namespace, module, directory)
- * LOD 4: container + structural nodes (+ file, class, interface, type) — labels visible
+ * LOD 2: top containers + file (repository, package, file)
+ * LOD 3: all container nodes (+ namespace, module, directory) + file
+ * LOD 4: container + structural nodes (+ class, interface, type) — labels visible
  * LOD 5: all node types
  */
 export function isNodeVisibleAtLod(node: IVMNode, lod: number): boolean {
