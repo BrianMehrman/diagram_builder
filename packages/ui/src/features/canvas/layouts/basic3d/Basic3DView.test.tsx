@@ -217,7 +217,7 @@ describe('Basic3DView', () => {
       expect(queryAllByTestId('cluster-layer')).toHaveLength(1)
     })
 
-    it('LOD 2: renders only repository and package nodes', () => {
+    it('LOD 2: renders top containers and file nodes, hides other containers and leaves', () => {
       const nodes = [
         createNode('repo', 'repository'),
         createNode('pkg', 'package'),
@@ -233,8 +233,8 @@ describe('Basic3DView', () => {
       const rendered = getAllByTestId('basic3d-node').map((el) => el.getAttribute('data-node-id'))
       expect(rendered).toContain('repo')
       expect(rendered).toContain('pkg')
+      expect(rendered).toContain('file-a')
       expect(rendered).not.toContain('mod')
-      expect(rendered).not.toContain('file-a')
       expect(rendered).not.toContain('fn-a')
     })
 
@@ -261,7 +261,7 @@ describe('Basic3DView', () => {
       expect(getAllByTestId('basic3d-edge')).toHaveLength(1)
     })
 
-    it('LOD 3: renders all container nodes', () => {
+    it('LOD 3: renders all container nodes and file nodes, hides leaf types', () => {
       const nodes = [
         createNode('repo', 'repository'),
         createNode('mod', 'module'),
@@ -278,7 +278,7 @@ describe('Basic3DView', () => {
       expect(rendered).toContain('repo')
       expect(rendered).toContain('mod')
       expect(rendered).toContain('dir')
-      expect(rendered).not.toContain('file-a')
+      expect(rendered).toContain('file-a')
       expect(rendered).not.toContain('fn-a')
     })
 
@@ -418,7 +418,7 @@ describe('Basic3DView', () => {
     })
 
     it('passes showLabel=false at LOD 2 and 3', () => {
-      const nodes = [createNode('mod', 'module')]
+      const nodes = [createNode('file-a', 'file')]
       setupLayout(makeGraph(nodes))
       for (const lod of [2, 3]) {
         vi.clearAllMocks()
@@ -426,6 +426,7 @@ describe('Basic3DView', () => {
         useCanvasStore.setState({ layoutState: 'ready' })
         render(<Basic3DView />)
         const calls = mockBasic3DNode.mock.calls
+        expect(calls.length, `LOD ${lod} should have rendered at least one node`).toBeGreaterThan(0)
         for (const [props] of calls) {
           expect(props.showLabel, `LOD ${lod} should have showLabel=false`).toBe(false)
         }
