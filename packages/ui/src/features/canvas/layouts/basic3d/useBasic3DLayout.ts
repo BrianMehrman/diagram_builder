@@ -114,6 +114,9 @@ export function useBasic3DLayout(): Basic3DLayoutResult {
       positionsRef.current = new Map()
       maxDepthRef.current = 0
       setMaxDepth(0)
+      setLayoutPositions(new Map())
+      setClusters(new Map())
+      setLayoutProgress(0)
       setLayoutState('idle')
       return
     }
