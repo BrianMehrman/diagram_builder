@@ -11,11 +11,11 @@
 import { useCanvasStore } from './store'
 
 const LOD_LEVELS = [
-  { value: 0, label: 'Files only' },
-  { value: 1, label: 'Files + Classes' },
-  { value: 2, label: '+ Functions' },
-  { value: 3, label: '+ Methods' },
-  { value: 4, label: 'All details' },
+  { value: 1, label: 'City (clusters)' },
+  { value: 2, label: 'Region (top containers)' },
+  { value: 3, label: 'District (all containers)' },
+  { value: 4, label: 'Block (structural nodes)' },
+  { value: 5, label: 'Street (all nodes)' },
 ]
 
 export function LodControls() {
@@ -74,7 +74,9 @@ export function LodControls() {
       </div>
 
       {/* Level label */}
-      <p className="text-gray-500 text-xs">{LOD_LEVELS[lodLevel]?.label ?? ''}</p>
+      <p className="text-gray-500 text-xs">
+        {LOD_LEVELS.find((l) => l.value === lodLevel)?.label ?? ''}
+      </p>
     </div>
   )
 }
