@@ -5,7 +5,7 @@
  */
 
 import React, { useRef } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { withSpan } from '../../lib/telemetry'
 import { OrbitControls, FlyControls, Grid, PerspectiveCamera } from '@react-three/drei'
 import { useCanvasStore } from './store'
@@ -95,6 +95,24 @@ function CameraController() {
       target: { x: centerX, y: centerY, z: centerZ },
     })
   }, [layoutPositions, parseResult, setCamera, setCameraTarget])
+
+  // Sync FlyControls camera position to store each frame.
+  // OrbitControls uses onChange for this; FlyControls has no equivalent event.
+  // Only update when position has meaningfully changed to avoid unnecessary re-renders.
+  useFrame(({ camera: threeCamera }) => {
+    if (controlMode !== 'fly') return
+    const current = useCanvasStore.getState().camera.position
+    const x = threeCamera.position.x
+    const y = threeCamera.position.y
+    const z = threeCamera.position.z
+    if (
+      Math.abs(x - current.x) > 0.01 ||
+      Math.abs(y - current.y) > 0.01 ||
+      Math.abs(z - current.z) > 0.01
+    ) {
+      setCameraPosition({ x, y, z })
+    }
+  })
 
   return (
     <>
