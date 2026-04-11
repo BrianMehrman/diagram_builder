@@ -6,7 +6,7 @@
  *                        Edges visible only when source/target is selected
  * LOD 3 (60–120 units):  All container nodes (+ namespace, module, directory), no labels
  *                        Edges visible only when source/target is selected
- * LOD 4 (25–60 units):   + Structural nodes (file, class, interface, type), labels visible
+ * LOD 4 (25–60 units):   + class, interface, type nodes (file visible from LOD 2), labels visible
  *                        Edges visible when selected or via proximity (60 unit sphere)
  * LOD 5 (≤ 25 units):    All nodes + labels
  *                        Edges visible when selected or via proximity
@@ -27,15 +27,7 @@ export function Basic3DView() {
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
   const lodLevel = useCanvasStore((s) => s.lodLevel)
   const layoutState = useCanvasStore((s) => s.layoutState)
-  const cameraPosition = useCanvasStore((s) =>
-    s.layoutState === 'computing' || s.lodLevel <= 1
-      ? null
-      : {
-          x: s.camera.position.x,
-          y: s.camera.position.y,
-          z: s.camera.position.z,
-        }
-  )
+  const cameraPosition = useCanvasStore((s) => s.camera.position)
 
   const { positions, graph } = useBasic3DLayout()
 
