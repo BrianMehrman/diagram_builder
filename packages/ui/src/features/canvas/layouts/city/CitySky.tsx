@@ -56,9 +56,16 @@ export function CitySky({ graph }: CitySkyProps) {
   // gated by the crossDistrict tier toggle.
   // Structural edges (imports, inherits, depends_on) route underground via CityUnderground.
   const edgesToRender = isV2
-    ? visibleEdges.filter(
-        (e) => classifyEdgeRouting(e.type) === 'overhead' && edgeTierVisibility.crossDistrict
-      )
+    ? visibleEdges.filter((e) => {
+        // Always include edges connected to the selected node, regardless of routing
+        if (
+          selectedNodeId !== null &&
+          (e.source === selectedNodeId || e.target === selectedNodeId)
+        ) {
+          return true
+        }
+        return classifyEdgeRouting(e.type) === 'overhead' && edgeTierVisibility.crossDistrict
+      })
     : visibleEdges
 
   return (
