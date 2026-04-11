@@ -19,7 +19,7 @@ import { GroundShadow } from '../../components/GroundShadow'
 import { useCityLayout } from './useCityLayout'
 import { useCityFiltering } from './useCityFiltering'
 import { useCanvasStore } from '../../store'
-import { classifyEdgeRouting } from '../../views/wireUtils'
+import { classifyEdgeRouting, isEdgeVisibleForLod } from '../../views/wireUtils'
 import { getContainmentHeight, getBuildingHeight, KIOSK_HEIGHT } from '../../views/heightUtils'
 import type { IVMGraph, IVMNode } from '../../../../shared/types'
 
@@ -49,24 +49,38 @@ export function CitySky({ graph }: CitySkyProps) {
   const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion)
   const edgeTierVisibility = useCanvasStore((s) => s.citySettings.edgeTierVisibility)
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
+  const lodLevel = useCanvasStore((s) => s.lodLevel)
+  const cameraPosition = useCanvasStore((s) => s.camera.position)
 
   const isV2 = cityVersion === 'v2'
 
   // In v2 mode: CitySky renders only overhead edges (method calls, composition),
   // gated by the crossDistrict tier toggle.
   // Structural edges (imports, inherits, depends_on) route underground via CityUnderground.
-  const edgesToRender = isV2
-    ? visibleEdges.filter((e) => {
-        // Always include edges connected to the selected node, regardless of routing
-        if (
-          selectedNodeId !== null &&
-          (e.source === selectedNodeId || e.target === selectedNodeId)
-        ) {
-          return true
-        }
-        return classifyEdgeRouting(e.type) === 'overhead' && edgeTierVisibility.crossDistrict
-      })
-    : visibleEdges
+  const edgesToRender = (
+    isV2
+      ? visibleEdges.filter((e) => {
+          // Always include edges connected to the selected node, regardless of routing
+          if (
+            selectedNodeId !== null &&
+            (e.source === selectedNodeId || e.target === selectedNodeId)
+          ) {
+            return true
+          }
+          return classifyEdgeRouting(e.type) === 'overhead' && edgeTierVisibility.crossDistrict
+        })
+      : visibleEdges
+  ).filter((e) =>
+    isEdgeVisibleForLod(
+      e.source,
+      e.target,
+      selectedNodeId,
+      lodLevel,
+      positions.get(e.source),
+      positions.get(e.target),
+      cameraPosition
+    )
+  )
 
   return (
     <>
