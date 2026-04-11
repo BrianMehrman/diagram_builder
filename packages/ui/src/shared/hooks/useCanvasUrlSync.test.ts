@@ -13,6 +13,7 @@ describe('useCanvasUrlSync', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     useCanvasStore.getState().reset()
+    useCanvasStore.getState().setActiveLayout('city') // explicit reset — store reset includes activeLayout but be explicit for clarity
 
     vi.spyOn(window.history, 'replaceState').mockImplementation(() => {})
   })

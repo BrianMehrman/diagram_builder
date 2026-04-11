@@ -72,7 +72,10 @@ export function useCanvasUrlSync(): void {
       }
       timerRef.current = setTimeout(() => {
         const url = buildUrlParams(state.activeLayout, state.camera.position, state.camera.target)
-        history.replaceState(null, '', url)
+        const currentUrl = `${window.location.pathname}${window.location.search}`
+        if (url !== currentUrl) {
+          history.replaceState(null, '', url)
+        }
         timerRef.current = null
       }, DEBOUNCE_MS)
     })

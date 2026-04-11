@@ -524,5 +524,6 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       visibleLayers: { aboveGround: true, underground: true },
       citySettings: { ...DEFAULT_CITY_SETTINGS },
       nearestNodeId: null,
+      activeLayout: 'city',
     }),
 }))
