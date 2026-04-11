@@ -19,7 +19,11 @@ import { MiniMap } from '../features/minimap'
 import { Navigation, SearchBarModal, useCameraFlight } from '../features/navigation'
 import { LeftPanel, RightPanel } from '../features/panels'
 import { HUD } from '../features/navigation/HUD'
-import { useGlobalSearchShortcut, useGlobalKeyboardShortcuts } from '../shared/hooks'
+import {
+  useGlobalSearchShortcut,
+  useGlobalKeyboardShortcuts,
+  useCanvasUrlSync,
+} from '../shared/hooks'
 import { useUIStore } from '../shared/stores/uiStore'
 import { useExportStore } from '../features/export/store'
 import { workspaces, codebases, graph } from '../shared/api/endpoints'
@@ -61,6 +65,9 @@ export function WorkspacePage() {
 
   // Global search shortcut (⌘K / Ctrl+K)
   useGlobalSearchShortcut()
+
+  // Sync camera position and active layout to/from URL
+  useCanvasUrlSync()
 
   // Camera flight animation for search results
   const { flyToNode } = useCameraFlight()

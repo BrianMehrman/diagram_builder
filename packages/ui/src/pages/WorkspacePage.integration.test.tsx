@@ -56,6 +56,7 @@ vi.mock('../features/navigation/HUD', () => ({
 vi.mock('../shared/hooks', () => ({
   useGlobalSearchShortcut: vi.fn(),
   useGlobalKeyboardShortcuts: vi.fn(),
+  useCanvasUrlSync: vi.fn(),
 }))
 
 vi.mock('../shared/stores/uiStore', () => ({
