@@ -3,10 +3,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { renderHook, waitFor } from '@testing-library/react'
+import { renderHook, act, waitFor } from '@testing-library/react'
 import { io, Socket } from 'socket.io-client'
 import useWebSocket from './useWebSocket'
 import { useCollaborationStore } from './store'
+import { useCanvasStore } from '../canvas/store'
 
 vi.mock('socket.io-client')
 
@@ -15,6 +16,7 @@ describe('useWebSocket', () => {
 
   beforeEach(() => {
     useCollaborationStore.getState().reset()
+    useCanvasStore.getState().reset()
 
     mockSocket = {
       on: vi.fn((_event: string, _callback: unknown) => mockSocket as Socket),
@@ -82,6 +84,25 @@ describe('useWebSocket', () => {
 
     await waitFor(() => {
       expect(mockSocket.disconnect).toHaveBeenCalled()
+    })
+  })
+
+  it('emits position.update with current camera coordinates when position changes', async () => {
+    useCollaborationStore.getState().joinSession('session-123', 'user-1', 'Alice')
+    mockSocket.connected = true
+
+    renderHook(() => useWebSocket('session-123'))
+    await waitFor(() => expect(io).toHaveBeenCalled())
+
+    act(() => {
+      useCanvasStore.getState().setCameraPosition({ x: 5, y: 10, z: 15 })
+    })
+
+    // 50ms throttle fires — waitFor polls until emit is called
+    await waitFor(() => {
+      expect(mockSocket.emit).toHaveBeenCalledWith('position.update', {
+        position: { x: 5, y: 10, z: 15 },
+      })
     })
   })
 

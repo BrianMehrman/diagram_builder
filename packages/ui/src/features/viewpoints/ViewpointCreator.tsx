@@ -21,7 +21,9 @@ export function ViewpointCreator({ className = '', onViewpointCreated }: Viewpoi
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
 
-  const camera = useCanvasStore((state) => state.camera)
+  const cameraPosX = useCanvasStore((s) => s.camera.position.x)
+  const cameraPosY = useCanvasStore((s) => s.camera.position.y)
+  const cameraPosZ = useCanvasStore((s) => s.camera.position.z)
   const lodLevel = useCanvasStore((state) => state.lodLevel)
   const selectedNodeId = useCanvasStore((state) => state.selectedNodeId)
   const createViewpoint = useViewpointStore((state) => state.createViewpoint)
@@ -31,10 +33,11 @@ export function ViewpointCreator({ className = '', onViewpointCreated }: Viewpoi
       return
     }
 
+    const { position, target } = useCanvasStore.getState().camera
     const data = {
       name: name.trim(),
-      cameraPosition: camera.position,
-      cameraTarget: camera.target,
+      cameraPosition: position,
+      cameraTarget: target,
       filters: {
         lodLevel,
       },
@@ -125,8 +128,7 @@ export function ViewpointCreator({ className = '', onViewpointCreated }: Viewpoi
           <div className="font-medium text-gray-700 mb-2">Captured State:</div>
           <div className="space-y-1 text-gray-600">
             <div>
-              Camera: ({camera.position.x.toFixed(1)}, {camera.position.y.toFixed(1)},{' '}
-              {camera.position.z.toFixed(1)})
+              Camera: ({cameraPosX.toFixed(1)}, {cameraPosY.toFixed(1)}, {cameraPosZ.toFixed(1)})
             </div>
             <div>LOD Level: {lodLevel}</div>
             {selectedNodeId && <div>Selected Node: {selectedNodeId}</div>}

@@ -32,16 +32,19 @@ export function useWebSocket(sessionId: string | null, events?: WebSocketEvents)
   const removeUser = useCollaborationStore((state) => state.removeUser)
   const updateUserPosition = useCollaborationStore((state) => state.updateUserPosition)
 
-  const camera = useCanvasStore((state) => state.camera)
+  const cameraPosX = useCanvasStore((s) => s.camera.position.x)
+  const cameraPosY = useCanvasStore((s) => s.camera.position.y)
+  const cameraPosZ = useCanvasStore((s) => s.camera.position.z)
 
-  // Broadcast position updates (throttled to 50ms)
+  // Broadcast position updates (throttled to 50ms).
+  // Reads camera position at call time via getState() so the callback remains
+  // stable — no camera position dep, no recreation every frame.
   const broadcastPosition = useCallback(() => {
     if (!socketRef.current || !currentUserId) return
 
-    socketRef.current.emit('position.update', {
-      position: camera.position,
-    })
-  }, [camera.position, currentUserId])
+    const { position } = useCanvasStore.getState().camera
+    socketRef.current.emit('position.update', { position })
+  }, [currentUserId])
 
   // Connect to WebSocket server
   useEffect(() => {
@@ -151,7 +154,7 @@ export function useWebSocket(sessionId: string | null, events?: WebSocketEvents)
         clearTimeout(positionTimerRef.current)
       }
     }
-  }, [camera.position, broadcastPosition, currentUserId])
+  }, [cameraPosX, cameraPosY, cameraPosZ, broadcastPosition, currentUserId])
 
   return {
     socket: socketRef.current,

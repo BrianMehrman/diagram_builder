@@ -33,7 +33,12 @@ interface Canvas3DProps {
  * Syncs Three.js camera with Zustand store
  */
 function CameraController() {
-  const camera = useCanvasStore((state) => state.camera)
+  const cameraPosX = useCanvasStore((s) => s.camera.position.x)
+  const cameraPosY = useCanvasStore((s) => s.camera.position.y)
+  const cameraPosZ = useCanvasStore((s) => s.camera.position.z)
+  const cameraTargetX = useCanvasStore((s) => s.camera.target.x)
+  const cameraTargetY = useCanvasStore((s) => s.camera.target.y)
+  const cameraTargetZ = useCanvasStore((s) => s.camera.target.z)
   const setCamera = useCanvasStore((state) => state.setCamera)
   const setCameraTarget = useCanvasStore((state) => state.setCameraTarget)
   const setCameraPosition = useCanvasStore((state) => state.setCameraPosition)
@@ -118,14 +123,14 @@ function CameraController() {
     <>
       <PerspectiveCamera
         makeDefault
-        position={[camera.position.x, camera.position.y, camera.position.z]}
+        position={[cameraPosX, cameraPosY, cameraPosZ]}
         fov={75}
         near={0.1}
         far={10000}
       />
       {controlMode === 'orbit' ? (
         <OrbitControls
-          target={[camera.target.x, camera.target.y, camera.target.z]}
+          target={[cameraTargetX, cameraTargetY, cameraTargetZ]}
           enableDamping
           dampingFactor={0.05}
           minDistance={0.1}

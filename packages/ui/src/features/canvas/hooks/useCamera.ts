@@ -27,7 +27,13 @@ export interface UseCameraReturn {
  * Hook for camera state and controls
  */
 export function useCamera(): UseCameraReturn {
-  const camera = useCanvasStore((state) => state.camera)
+  const posX = useCanvasStore((s) => s.camera.position.x)
+  const posY = useCanvasStore((s) => s.camera.position.y)
+  const posZ = useCanvasStore((s) => s.camera.position.z)
+  const targetX = useCanvasStore((s) => s.camera.target.x)
+  const targetY = useCanvasStore((s) => s.camera.target.y)
+  const targetZ = useCanvasStore((s) => s.camera.target.z)
+  const zoom = useCanvasStore((s) => s.camera.zoom)
   const setCameraPosition = useCanvasStore((state) => state.setCameraPosition)
   const setCameraTarget = useCanvasStore((state) => state.setCameraTarget)
   const setZoom = useCanvasStore((state) => state.setZoom)
@@ -65,9 +71,9 @@ export function useCamera(): UseCameraReturn {
   )
 
   return {
-    position: camera.position,
-    target: camera.target,
-    zoom: camera.zoom,
+    position: { x: posX, y: posY, z: posZ },
+    target: { x: targetX, y: targetY, z: targetZ },
+    zoom,
     setPosition,
     setTarget,
     setZoom,
