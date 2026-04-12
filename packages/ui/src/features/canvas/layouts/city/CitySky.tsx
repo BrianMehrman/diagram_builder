@@ -50,7 +50,10 @@ export function CitySky({ graph }: CitySkyProps) {
   const edgeTierVisibility = useCanvasStore((s) => s.citySettings.edgeTierVisibility)
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
   const lodLevel = useCanvasStore((s) => s.lodLevel)
-  const cameraPosition = useCanvasStore((s) => s.camera.position)
+  const cameraPosX = useCanvasStore((s) => s.camera.position.x)
+  const cameraPosY = useCanvasStore((s) => s.camera.position.y)
+  const cameraPosZ = useCanvasStore((s) => s.camera.position.z)
+  const cameraPosition = { x: cameraPosX, y: cameraPosY, z: cameraPosZ }
 
   const isV2 = cityVersion === 'v2'
 

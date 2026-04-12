@@ -111,7 +111,9 @@ export function useCityLayout(): CityLayoutResult & { graph: IVMGraph } {
   // Centroid computation: determine closest module group to camera and set focusedGroupId
   const setFocusedGroupId = useCanvasStore((s) => s.setFocusedGroupId)
   const parseResult = useCanvasStore((s) => s.parseResult)
-  const cameraPosition = useCanvasStore((s) => s.camera.position)
+  const cameraPosX = useCanvasStore((s) => s.camera.position.x)
+  const cameraPosY = useCanvasStore((s) => s.camera.position.y)
+  const cameraPosZ = useCanvasStore((s) => s.camera.position.z)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -124,6 +126,7 @@ export function useCityLayout(): CityLayoutResult & { graph: IVMGraph } {
         return root.children.flatMap(getModuleGroups)
       }
 
+      const cameraPosition = { x: cameraPosX, y: cameraPosY, z: cameraPosZ }
       const moduleGroups = getModuleGroups(parseResult.hierarchy.root)
       let closestId: string | null = null
       let closestDist = Infinity
@@ -155,7 +158,7 @@ export function useCityLayout(): CityLayoutResult & { graph: IVMGraph } {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-  }, [layout.flatPositions, parseResult, cameraPosition, setFocusedGroupId])
+  }, [layout.flatPositions, parseResult, cameraPosX, cameraPosY, cameraPosZ, setFocusedGroupId])
 
   const groundWidth = layout.bounds.max.x - layout.bounds.min.x
   const groundDepth = layout.bounds.max.z - layout.bounds.min.z
