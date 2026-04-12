@@ -60,7 +60,7 @@ export function isEdgeVisibleForLod(
   lodLevel: number,
   sourcePos: { x: number; y: number; z: number } | undefined,
   targetPos: { x: number; y: number; z: number } | undefined,
-  cameraPos: { x: number; y: number; z: number }
+  cameraPos: { x: number; y: number; z: number } | null
 ): boolean {
   // Selection override: show at any LOD >= 2 if either endpoint is selected
   if (
@@ -75,6 +75,8 @@ export function isEdgeVisibleForLod(
   if (lodLevel < 4) return false
 
   if (!sourcePos || !targetPos) return false
+
+  if (cameraPos === null) return false
 
   const srcDx = sourcePos.x - cameraPos.x
   const srcDy = sourcePos.y - cameraPos.y

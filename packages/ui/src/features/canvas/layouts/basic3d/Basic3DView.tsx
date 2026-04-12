@@ -27,7 +27,13 @@ export function Basic3DView() {
   const selectedNodeId = useCanvasStore((s) => s.selectedNodeId)
   const lodLevel = useCanvasStore((s) => s.lodLevel)
   const layoutState = useCanvasStore((s) => s.layoutState)
-  const cameraPosition = useCanvasStore((s) => s.camera.position)
+  const cameraPosX = useCanvasStore((s) => s.camera.position.x)
+  const cameraPosY = useCanvasStore((s) => s.camera.position.y)
+  const cameraPosZ = useCanvasStore((s) => s.camera.position.z)
+  const cameraPosition =
+    layoutState === 'computing' || lodLevel <= 1
+      ? null
+      : { x: cameraPosX, y: cameraPosY, z: cameraPosZ }
 
   const { positions, graph } = useBasic3DLayout()
 

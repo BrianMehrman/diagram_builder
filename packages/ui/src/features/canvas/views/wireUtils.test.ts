@@ -101,3 +101,17 @@ describe('isEdgeVisibleForLod', () => {
     expect(isEdgeVisibleForLod('src', 'tgt', 'src', 5, FAR_POS, FAR_POS, CAMERA)).toBe(true)
   })
 })
+
+describe('isEdgeVisibleForLod with null cameraPos', () => {
+  it('returns true for selected-node edge when cameraPos is null', () => {
+    const from = { x: 0, y: 0, z: 0 }
+    const to = { x: 10, y: 0, z: 0 }
+    expect(isEdgeVisibleForLod('a', 'b', 'a', 4, from, to, null)).toBe(true)
+  })
+
+  it('returns false for proximity edge when cameraPos is null', () => {
+    const from = { x: 0, y: 0, z: 0 }
+    const to = { x: 10, y: 0, z: 0 }
+    expect(isEdgeVisibleForLod('a', 'b', null, 4, from, to, null)).toBe(false)
+  })
+})
