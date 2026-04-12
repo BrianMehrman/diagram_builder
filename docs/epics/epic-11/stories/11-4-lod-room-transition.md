@@ -1,6 +1,6 @@
 # Story 11.4: LOD Transition — Floor Bands to Method Rooms
 
-Status: review
+Status: done
 
 ## Story
 

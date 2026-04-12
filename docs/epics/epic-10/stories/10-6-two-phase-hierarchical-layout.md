@@ -1,6 +1,6 @@
 # Story 10.6: Implement Two-Phase Hierarchical Layout
 
-Status: review
+Status: done
 
 ## Story
 

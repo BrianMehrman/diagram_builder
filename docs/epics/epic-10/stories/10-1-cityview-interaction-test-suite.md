@@ -1,6 +1,6 @@
 # Story 10.1: CityView Interaction Test Suite
 
-Status: review
+Status: done
 
 ## Story
 

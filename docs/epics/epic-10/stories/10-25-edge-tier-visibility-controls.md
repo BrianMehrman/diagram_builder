@@ -1,6 +1,6 @@
 # Story 10.25: Add Edge Tier Visibility Controls
 
-Status: review
+Status: done
 
 ## Story
 

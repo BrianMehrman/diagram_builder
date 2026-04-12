@@ -1,6 +1,6 @@
 # Story 10.8: Implement Floor Band Rendering
 
-Status: not-started
+Status: done
 
 ## Story
 

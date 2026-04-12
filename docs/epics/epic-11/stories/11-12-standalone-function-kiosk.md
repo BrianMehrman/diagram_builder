@@ -1,6 +1,6 @@
 # Story 11.12: Standalone Function Kiosk Component
 
-Status: review
+Status: done
 
 ## Story
 

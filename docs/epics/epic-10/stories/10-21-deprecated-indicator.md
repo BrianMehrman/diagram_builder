@@ -1,6 +1,6 @@
 # Story 10.21: Create Deprecated Indicator
 
-Status: review
+Status: done
 
 ## Story
 

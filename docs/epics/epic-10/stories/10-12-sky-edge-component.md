@@ -1,6 +1,6 @@
 # Story 10.12: Create SkyEdge Component
 
-Status: not-started
+Status: done
 
 ## Story
 

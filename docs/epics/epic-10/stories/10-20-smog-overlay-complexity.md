@@ -1,6 +1,6 @@
 # Story 10.20: Create SmogOverlay Indicator
 
-Status: review
+Status: done
 
 ## Story
 

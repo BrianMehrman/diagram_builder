@@ -1,6 +1,6 @@
 # Story 10.17: Update CitySky Orchestrator
 
-Status: review
+Status: done
 
 ## Story
 

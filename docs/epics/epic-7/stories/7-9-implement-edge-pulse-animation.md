@@ -1,6 +1,6 @@
 # Story 7.9: Implement Edge Pulse Animation on Arrival
 
-Status: review
+Status: done
 
 ## Story
 
