@@ -20,7 +20,9 @@ export function HUD({ nodes = [], className = '' }: HUDProps) {
   const selectedNodeId = useCanvasStore((state) => state.selectedNodeId)
   const hoveredNodeId = useCanvasStore((state) => state.hoveredNodeId)
   const controlMode = useCanvasStore((state) => state.controlMode)
-  const camera = useCanvasStore((state) => state.camera)
+  const cameraPosX = useCanvasStore((s) => s.camera.position.x)
+  const cameraPosY = useCanvasStore((s) => s.camera.position.y)
+  const cameraPosZ = useCanvasStore((s) => s.camera.position.z)
   const lodLevel = useCanvasStore((state) => state.lodLevel)
   const layoutPositions = useCanvasStore((state) => state.layoutPositions)
   const [fps, setFps] = useState(0)
@@ -104,8 +106,7 @@ export function HUD({ nodes = [], className = '' }: HUDProps) {
       <div className="border-t border-gray-600 mt-2 pt-2">
         <div className="text-gray-400 text-[10px] uppercase tracking-wide mb-1">Camera</div>
         <div className="font-mono text-[10px] text-gray-300">
-          {camera.position.x.toFixed(2)}, {camera.position.y.toFixed(2)},{' '}
-          {camera.position.z.toFixed(2)}
+          {cameraPosX.toFixed(2)}, {cameraPosY.toFixed(2)}, {cameraPosZ.toFixed(2)}
         </div>
       </div>
 

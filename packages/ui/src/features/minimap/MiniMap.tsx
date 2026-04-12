@@ -38,7 +38,12 @@ export function MiniMap({ nodes = [], className = '' }: MiniMapProps) {
 
   const selectedNodeId = useCanvasStore((state) => state.selectedNodeId)
   const selectNode = useCanvasStore((state) => state.selectNode)
-  const camera = useCanvasStore((state) => state.camera)
+  const cameraPosX = useCanvasStore((s) => s.camera.position.x)
+  const cameraPosY = useCanvasStore((s) => s.camera.position.y)
+  const cameraPosZ = useCanvasStore((s) => s.camera.position.z)
+  const cameraTargetX = useCanvasStore((s) => s.camera.target.x)
+  const cameraTargetY = useCanvasStore((s) => s.camera.target.y)
+  const cameraTargetZ = useCanvasStore((s) => s.camera.target.z)
 
   const { flyToNode } = useCameraFlight()
 
@@ -130,8 +135,8 @@ export function MiniMap({ nodes = [], className = '' }: MiniMapProps) {
               <SpatialOverview
                 nodes={nodes}
                 selectedNodeId={selectedNodeId}
-                cameraPosition={camera.position}
-                cameraTarget={camera.target}
+                cameraPosition={{ x: cameraPosX, y: cameraPosY, z: cameraPosZ }}
+                cameraTarget={{ x: cameraTargetX, y: cameraTargetY, z: cameraTargetZ }}
                 onNodeClick={handleNodeClick}
               />
             )}
