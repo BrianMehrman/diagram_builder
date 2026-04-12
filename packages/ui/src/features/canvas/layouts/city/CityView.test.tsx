@@ -612,6 +612,8 @@ describe('CityView', () => {
     it('renders CityEdge for each visible edge', () => {
       const graph = createTestGraph()
       setupPositions(graph)
+      // LOD 4+ required for proximity-based edge visibility (isEdgeVisibleForLod gate)
+      useCanvasStore.getState().setLodLevel(4)
 
       const { getAllByTestId } = render(<CityView />)
       const edges = getAllByTestId(/^city-edge-/)
@@ -627,6 +629,8 @@ describe('CityView', () => {
       mockPositions.set('file-a', { x: 0, y: 0, z: 0 })
       mockPositions.set('util-d', { x: 10, y: 0, z: 10 })
       // class-b and iface-e have no positions
+      // LOD 4+ required for proximity-based edge visibility (isEdgeVisibleForLod gate)
+      useCanvasStore.getState().setLodLevel(4)
 
       const { queryAllByTestId } = render(<CityView />)
       const edges = queryAllByTestId(/^city-edge-/)
@@ -639,6 +643,8 @@ describe('CityView', () => {
       // Add a contains edge
       graph.edges.push(createEdge('file-a', 'class-b', 'contains'))
       setupPositions(graph)
+      // LOD 4+ required for proximity-based edge visibility (isEdgeVisibleForLod gate)
+      useCanvasStore.getState().setLodLevel(4)
 
       const { queryAllByTestId } = render(<CityView />)
       const edges = queryAllByTestId(/^city-edge-/)

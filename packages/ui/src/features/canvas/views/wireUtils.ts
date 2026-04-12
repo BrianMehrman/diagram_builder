@@ -42,6 +42,53 @@ export function isWireVisible(lodLevel: number): boolean {
   return lodLevel >= WIRE_LOD_MIN
 }
 
+/** Squared proximity radius for LOD 4 edge culling (60 world units). */
+const EDGE_PROXIMITY_SQ = 60 * 60
+
+/**
+ * Shared edge visibility rule used by both City and Basic3D layouts.
+ *
+ * - LOD 1         → never show (cluster view only)
+ * - LOD 2+ with selection → show if either endpoint is the selected node
+ * - LOD < 4, no selection → never show
+ * - LOD 4+, no selection → show if either endpoint is within 60 units of camera
+ */
+export function isEdgeVisibleForLod(
+  sourceId: string,
+  targetId: string,
+  selectedNodeId: string | null,
+  lodLevel: number,
+  sourcePos: { x: number; y: number; z: number } | undefined,
+  targetPos: { x: number; y: number; z: number } | undefined,
+  cameraPos: { x: number; y: number; z: number } | null
+): boolean {
+  // Selection override: show at any LOD >= 2 if either endpoint is selected
+  if (
+    lodLevel >= 2 &&
+    selectedNodeId !== null &&
+    (sourceId === selectedNodeId || targetId === selectedNodeId)
+  ) {
+    return true
+  }
+
+  // No selection: require LOD 4+ for proximity-based edges
+  if (lodLevel < 4) return false
+
+  if (!sourcePos || !targetPos) return false
+
+  if (cameraPos === null) return false
+
+  const srcDx = sourcePos.x - cameraPos.x
+  const srcDy = sourcePos.y - cameraPos.y
+  const srcDz = sourcePos.z - cameraPos.z
+  if (srcDx * srcDx + srcDy * srcDy + srcDz * srcDz <= EDGE_PROXIMITY_SQ) return true
+
+  const tgtDx = targetPos.x - cameraPos.x
+  const tgtDy = targetPos.y - cameraPos.y
+  const tgtDz = targetPos.z - cameraPos.z
+  return tgtDx * tgtDx + tgtDy * tgtDy + tgtDz * tgtDz <= EDGE_PROXIMITY_SQ
+}
+
 export function getWireColor(edgeType: string): string {
   return WIRE_COLORS[edgeType] ?? WIRE_DEFAULT_COLOR
 }

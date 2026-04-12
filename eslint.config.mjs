@@ -28,10 +28,13 @@ const browserGlobals = {
   CustomEvent: 'readonly',
   KeyboardEvent: 'readonly',
   MouseEvent: 'readonly',
+  MessageEvent: 'readonly',
+  ErrorEvent: 'readonly',
   PointerEvent: 'readonly',
   InputEvent: 'readonly',
   FocusEvent: 'readonly',
   EventTarget: 'readonly',
+  EventListenerOrEventListenerObject: 'readonly',
   FrameRequestCallback: 'readonly',
   // Timers / animation
   requestAnimationFrame: 'readonly',
@@ -61,6 +64,10 @@ const browserGlobals = {
   MutationObserver: 'readonly',
   ResizeObserver: 'readonly',
   IntersectionObserver: 'readonly',
+  // Web Workers
+  self: 'readonly',
+  Worker: 'readonly',
+  SharedWorker: 'readonly',
   // Fetch API types
   RequestInit: 'readonly',
   RequestInfo: 'readonly',
@@ -103,6 +110,7 @@ const vitestGlobals = {
   beforeAll: 'readonly',
   afterAll: 'readonly',
   suite: 'readonly',
+  structuredClone: 'readonly',
 }
 
 export default [

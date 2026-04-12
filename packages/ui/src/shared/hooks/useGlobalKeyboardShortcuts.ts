@@ -50,8 +50,9 @@ function isTypingInInput(event: KeyboardEvent): boolean {
  * Generate a shareable viewpoint link from current camera state
  */
 function generateViewpointLink(): string {
-  const { camera, selectedNodeId, lodLevel } = useCanvasStore.getState()
+  const { camera, selectedNodeId, lodLevel, activeLayout } = useCanvasStore.getState()
   const params = new URLSearchParams()
+  params.set('layout', activeLayout)
 
   // Camera position
   params.set('cx', camera.position.x.toFixed(2))

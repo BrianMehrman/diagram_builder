@@ -7,6 +7,7 @@
  */
 
 import type { IVMNode, Position3D } from '@diagram-builder/core'
+import { Text, Billboard } from '@react-three/drei'
 import { useCanvasStore } from '../../store'
 import { getShapeForType, getColorForType, isAbstractNode } from './basic3dShapes'
 
@@ -14,6 +15,7 @@ export interface Basic3DNodeProps {
   node: IVMNode
   position: Position3D
   isSelected: boolean
+  showLabel?: boolean
 }
 
 function renderGeometry(shape: ReturnType<typeof getShapeForType>) {
@@ -45,7 +47,7 @@ function renderGeometry(shape: ReturnType<typeof getShapeForType>) {
   }
 }
 
-export function Basic3DNode({ node, position, isSelected }: Basic3DNodeProps) {
+export function Basic3DNode({ node, position, isSelected, showLabel = false }: Basic3DNodeProps) {
   const selectNode = useCanvasStore((s) => s.selectNode)
   const setHoveredNode = useCanvasStore((s) => s.setHoveredNode)
 
@@ -83,6 +85,13 @@ export function Basic3DNode({ node, position, isSelected }: Basic3DNodeProps) {
           emissiveIntensity={isSelected ? 0.3 : 0}
         />
       </mesh>
+      {showLabel && (
+        <Billboard>
+          <Text position={[0, -2, 0]} fontSize={1.2} color="#FFFFFF" anchorX="center" anchorY="top">
+            {node.metadata.label}
+          </Text>
+        </Billboard>
+      )}
     </group>
   )
 }

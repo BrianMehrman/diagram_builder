@@ -469,3 +469,56 @@ describe('canvas store — ParseResult', () => {
     expect(useCanvasStore.getState().activeLayout).toBe('basic3d')
   })
 })
+
+describe('store — layout async state', () => {
+  beforeEach(() => useCanvasStore.getState().reset())
+
+  it('layoutState defaults to idle', () => {
+    expect(useCanvasStore.getState().layoutState).toBe('idle')
+  })
+
+  it('setLayoutState updates layoutState', () => {
+    useCanvasStore.getState().setLayoutState('computing')
+    expect(useCanvasStore.getState().layoutState).toBe('computing')
+  })
+
+  it('layoutProgress defaults to 0', () => {
+    expect(useCanvasStore.getState().layoutProgress).toBe(0)
+  })
+
+  it('setLayoutProgress updates layoutProgress', () => {
+    useCanvasStore.getState().setLayoutProgress(0.5)
+    expect(useCanvasStore.getState().layoutProgress).toBe(0.5)
+  })
+
+  it('clusters defaults to empty Map', () => {
+    expect(useCanvasStore.getState().clusters.size).toBe(0)
+  })
+
+  it('setClusters replaces clusters', () => {
+    const c = new Map([
+      [
+        'cluster:auth',
+        {
+          id: 'cluster:auth',
+          label: 'auth (3)',
+          nodeIds: ['a', 'b', 'c'],
+          centroid: { x: 0, y: 0, z: 0 },
+          radius: 10,
+          dominantType: 'file',
+        },
+      ],
+    ])
+    useCanvasStore.getState().setClusters(c)
+    expect(useCanvasStore.getState().clusters.size).toBe(1)
+  })
+
+  it('reset clears layoutState to idle and layoutProgress to 0', () => {
+    useCanvasStore.getState().setLayoutState('computing')
+    useCanvasStore.getState().setLayoutProgress(0.7)
+    useCanvasStore.getState().reset()
+    expect(useCanvasStore.getState().layoutState).toBe('idle')
+    expect(useCanvasStore.getState().layoutProgress).toBe(0)
+    expect(useCanvasStore.getState().clusters.size).toBe(0)
+  })
+})

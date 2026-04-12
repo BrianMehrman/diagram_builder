@@ -8,6 +8,7 @@ import { create } from 'zustand'
 import { createViewResolver } from '@diagram-builder/core'
 import type { ParseResult, ViewResolver } from '@diagram-builder/core'
 import type { Position3D, IVMNode } from '../../shared/types'
+import type { ClusterData } from './layouts/basic3d/clusterBuilder'
 
 /**
  * Camera state
@@ -17,6 +18,14 @@ export interface CameraState {
   target: Position3D
   zoom: number
 }
+
+// Re-export ClusterData for store consumers
+export type { ClusterData }
+
+/**
+ * Layout computation state for async worker flow
+ */
+export type LayoutState = 'idle' | 'computing' | 'ready' | 'error'
 
 /**
  * Control mode
@@ -168,6 +177,14 @@ interface CanvasState {
   // Layout positions (computed by view renderers)
   layoutPositions: Map<string, Position3D>
   setLayoutPositions: (positions: Map<string, Position3D>) => void
+
+  // Async layout state (worker flow)
+  layoutState: LayoutState
+  setLayoutState: (state: LayoutState) => void
+  layoutProgress: number
+  setLayoutProgress: (progress: number) => void
+  clusters: Map<string, ClusterData>
+  setClusters: (clusters: Map<string, ClusterData>) => void
 
   // X-ray mode
   isXRayMode: boolean
@@ -376,6 +393,14 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   layoutPositions: new Map<string, Position3D>(),
   setLayoutPositions: (positions) => set({ layoutPositions: positions }),
 
+  // Async layout state
+  layoutState: 'idle' as LayoutState,
+  setLayoutState: (state) => set({ layoutState: state }),
+  layoutProgress: 0,
+  setLayoutProgress: (progress) => set({ layoutProgress: progress }),
+  clusters: new Map<string, ClusterData>(),
+  setClusters: (clusters) => set({ clusters }),
+
   // X-ray mode
   isXRayMode: false,
   xrayOpacity: 0.05,
@@ -488,6 +513,9 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       focusedNodeId: null,
       focusHistory: [],
       layoutPositions: new Map<string, Position3D>(),
+      layoutState: 'idle' as LayoutState,
+      layoutProgress: 0,
+      clusters: new Map<string, ClusterData>(),
       isXRayMode: false,
       xrayOpacity: 0.05,
       isUndergroundMode: false,
@@ -496,5 +524,6 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       visibleLayers: { aboveGround: true, underground: true },
       citySettings: { ...DEFAULT_CITY_SETTINGS },
       nearestNodeId: null,
+      activeLayout: 'city',
     }),
 }))

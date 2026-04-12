@@ -13,10 +13,10 @@ describe('LodControls', () => {
     useCanvasStore.getState().reset()
   })
 
-  it('renders level buttons 0–4', () => {
+  it('renders level buttons 1–5', () => {
     render(<LodControls />)
 
-    for (let i = 0; i <= 4; i++) {
+    for (let i = 1; i <= 5; i++) {
       expect(screen.getByRole('button', { name: new RegExp(`LOD ${i}`) })).toBeDefined()
     }
   })
@@ -31,10 +31,10 @@ describe('LodControls', () => {
     render(<LodControls />)
 
     act(() => {
-      screen.getByRole('button', { name: /LOD 0/ }).click()
+      screen.getByRole('button', { name: /LOD 2/ }).click()
     })
 
-    expect(useCanvasStore.getState().lodLevel).toBe(0)
+    expect(useCanvasStore.getState().lodLevel).toBe(2)
     expect(useCanvasStore.getState().lodManualOverride).toBe(true)
     expect(screen.getByRole('button', { name: /toggle manual lod/i }).textContent).toBe('Manual')
   })
@@ -66,7 +66,7 @@ describe('LodControls', () => {
   it('shows level label below buttons', () => {
     render(<LodControls />)
 
-    // Default level 1 = 'Files + Classes'
-    expect(screen.getByText('Files + Classes')).toBeDefined()
+    // Default level 1 = 'City (clusters)'
+    expect(screen.getByText('City (clusters)')).toBeDefined()
   })
 })

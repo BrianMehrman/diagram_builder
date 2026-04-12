@@ -85,3 +85,56 @@ export function getColorForType(type: NodeType): string {
 export function isAbstractNode(node: IVMNode): boolean {
   return node.metadata?.properties?.['isAbstract'] === true
 }
+
+// =============================================================================
+// LOD visibility
+// =============================================================================
+
+/**
+ * Top-level container types + file — visible at LOD 2 (approach).
+ *
+ * Includes `file` so that typical TypeScript codebases (which produce no
+ * explicit repository/package nodes) still render something at LOD 2.
+ */
+const TOP_CONTAINER_TYPES = new Set<NodeType>(['repository', 'package', 'file'])
+
+/**
+ * All container types + file — visible at LOD 3 (district).
+ * Superset of TOP_CONTAINER_TYPES.
+ */
+export const CONTAINER_TYPES = new Set<NodeType>([
+  'repository',
+  'package',
+  'namespace',
+  'module',
+  'directory',
+  'file',
+])
+
+/**
+ * Container + class-structural types — visible at LOD 4 (neighborhood).
+ * `file` is inherited via CONTAINER_TYPES; only class-level types added here.
+ */
+export const STRUCTURAL_TYPES = new Set<NodeType>([
+  ...CONTAINER_TYPES,
+  'class',
+  'interface',
+  'type',
+])
+
+/**
+ * Returns true if a node should be rendered as an individual node at the given LOD level.
+ *
+ * LOD 1: no individual nodes (cluster layer only)
+ * LOD 2: top containers + file (repository, package, file)
+ * LOD 3: all container nodes (+ namespace, module, directory) + file
+ * LOD 4: container + structural nodes (+ class, interface, type) — labels visible
+ * LOD 5: all node types
+ */
+export function isNodeVisibleAtLod(node: IVMNode, lod: number): boolean {
+  if (lod >= 5) return true
+  if (lod === 4) return STRUCTURAL_TYPES.has(node.type)
+  if (lod === 3) return CONTAINER_TYPES.has(node.type)
+  if (lod === 2) return TOP_CONTAINER_TYPES.has(node.type)
+  return false // LOD 1: cluster layer only
+}

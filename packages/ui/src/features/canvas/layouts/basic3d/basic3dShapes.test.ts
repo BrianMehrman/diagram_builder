@@ -9,6 +9,7 @@ import {
   getShapeForType,
   getColorForType,
   isAbstractNode,
+  isNodeVisibleAtLod,
   type Basic3DShape,
 } from './basic3dShapes'
 import type { NodeType, IVMNode, NodeMetadata } from '@diagram-builder/core'
@@ -141,5 +142,78 @@ describe('isAbstractNode', () => {
   it('returns true for interface with isAbstract === true', () => {
     const node = makeNode('interface', { isAbstract: true })
     expect(isAbstractNode(node)).toBe(true)
+  })
+})
+
+describe('isNodeVisibleAtLod', () => {
+  const TOP_CONTAINER_TYPES: NodeType[] = ['repository', 'package', 'file']
+  const OTHER_CONTAINER_TYPES: NodeType[] = ['namespace', 'module', 'directory']
+  const CLASS_STRUCTURAL_TYPES: NodeType[] = ['class', 'interface', 'type']
+  const LEAF_TYPES: NodeType[] = ['function', 'method', 'variable', 'enum']
+
+  it('LOD 1 returns false for all node types', () => {
+    const allTypes: NodeType[] = [
+      ...TOP_CONTAINER_TYPES,
+      ...OTHER_CONTAINER_TYPES,
+      ...CLASS_STRUCTURAL_TYPES,
+      ...LEAF_TYPES,
+    ]
+    for (const t of allTypes) {
+      expect(isNodeVisibleAtLod(makeNode(t), 1), `${t} should not be visible at LOD 1`).toBe(false)
+    }
+  })
+
+  it('LOD 2 returns true for top container types (repository, package, file)', () => {
+    for (const t of TOP_CONTAINER_TYPES) {
+      expect(isNodeVisibleAtLod(makeNode(t), 2), `${t} should be visible at LOD 2`).toBe(true)
+    }
+  })
+
+  it('LOD 2 returns false for other container types (namespace, module, directory)', () => {
+    for (const t of OTHER_CONTAINER_TYPES) {
+      expect(isNodeVisibleAtLod(makeNode(t), 2), `${t} should NOT be visible at LOD 2`).toBe(false)
+    }
+  })
+
+  it('LOD 2 returns false for class-structural and leaf types', () => {
+    for (const t of [...CLASS_STRUCTURAL_TYPES, ...LEAF_TYPES]) {
+      expect(isNodeVisibleAtLod(makeNode(t), 2), `${t} should NOT be visible at LOD 2`).toBe(false)
+    }
+  })
+
+  it('LOD 3 returns true for all container types including file', () => {
+    for (const t of [...TOP_CONTAINER_TYPES, ...OTHER_CONTAINER_TYPES]) {
+      expect(isNodeVisibleAtLod(makeNode(t), 3), `${t} should be visible at LOD 3`).toBe(true)
+    }
+  })
+
+  it('LOD 3 returns false for class-structural and leaf types', () => {
+    for (const t of [...CLASS_STRUCTURAL_TYPES, ...LEAF_TYPES]) {
+      expect(isNodeVisibleAtLod(makeNode(t), 3), `${t} should NOT be visible at LOD 3`).toBe(false)
+    }
+  })
+
+  it('LOD 4 returns true for all container + structural types', () => {
+    for (const t of [...TOP_CONTAINER_TYPES, ...OTHER_CONTAINER_TYPES, ...CLASS_STRUCTURAL_TYPES]) {
+      expect(isNodeVisibleAtLod(makeNode(t), 4), `${t} should be visible at LOD 4`).toBe(true)
+    }
+  })
+
+  it('LOD 4 returns false for leaf types', () => {
+    for (const t of LEAF_TYPES) {
+      expect(isNodeVisibleAtLod(makeNode(t), 4), `${t} should NOT be visible at LOD 4`).toBe(false)
+    }
+  })
+
+  it('LOD 5 returns true for all node types', () => {
+    const allTypes: NodeType[] = [
+      ...TOP_CONTAINER_TYPES,
+      ...OTHER_CONTAINER_TYPES,
+      ...CLASS_STRUCTURAL_TYPES,
+      ...LEAF_TYPES,
+    ]
+    for (const t of allTypes) {
+      expect(isNodeVisibleAtLod(makeNode(t), 5), `${t} should be visible at LOD 5`).toBe(true)
+    }
   })
 })
