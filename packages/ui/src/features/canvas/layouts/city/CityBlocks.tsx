@@ -41,7 +41,10 @@ const XRAY_DETAIL_DISTANCE = 30
 export function CityBlocks({ graph }: CityBlocksProps) {
   const isXRayMode = useCanvasStore((s) => s.isXRayMode)
   const xrayOpacity = useCanvasStore((s) => s.xrayOpacity)
-  const cameraPosition = useCanvasStore((s) => s.camera.position)
+  const cameraPosX = useCanvasStore((s) => s.camera.position.x)
+  const cameraPosY = useCanvasStore((s) => s.camera.position.y)
+  const cameraPosZ = useCanvasStore((s) => s.camera.position.z)
+  const cameraPosition = { x: cameraPosX, y: cameraPosY, z: cameraPosZ }
   const lodLevel = useCanvasStore((s) => s.lodLevel)
   const cityVersion = useCanvasStore((s) => s.citySettings.cityVersion)
   const heightEncoding = useCanvasStore((s) => s.citySettings.heightEncoding)

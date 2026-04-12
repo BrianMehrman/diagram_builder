@@ -727,6 +727,56 @@ describe('CityView', () => {
   })
 
   // =========================================================================
+  // =========================================================================
+  // CitySky: camera position used in edge proximity filtering
+  // =========================================================================
+
+  describe('CitySky camera position path', () => {
+    it('renders edges at LOD 4 when camera is near nodes', () => {
+      const graph = createTestGraph()
+      setupPositions(graph)
+      // Place camera at node positions centroid — all nodes within 60-unit radius
+      useCanvasStore.getState().setLodLevel(4)
+      useCanvasStore.getState().setCameraPosition({ x: 5, y: 0, z: 3 })
+
+      const { getAllByTestId } = render(<CityView />)
+      const edges = getAllByTestId(/^city-edge-/)
+      expect(edges.length).toBe(2)
+    })
+
+    it('hides edges at LOD 4 when camera is far from all nodes', () => {
+      const graph = createTestGraph()
+      setupPositions(graph)
+      // Nodes are at (i*5, 0, i*3) for i=0..4 — max position is (20, 0, 12).
+      // Camera at (1000, 0, 0) puts all nodes > 60 units away → no edges visible.
+      useCanvasStore.getState().setLodLevel(4)
+      useCanvasStore.getState().setCameraPosition({ x: 1000, y: 0, z: 0 })
+
+      const { queryAllByTestId } = render(<CityView />)
+      const edges = queryAllByTestId(/^city-edge-/)
+      expect(edges.length).toBe(0)
+    })
+  })
+
+  // =========================================================================
+  // CityBlocks: camera position used in x-ray distance calculations
+  // =========================================================================
+
+  describe('CityBlocks x-ray camera position path', () => {
+    it('renders XRayBuilding for internal nodes when x-ray mode is active', () => {
+      const graph = createTestGraph()
+      setupPositions(graph)
+      // Enable x-ray mode — CityBlocks reads cameraPosition to compute wall opacity/detail
+      useCanvasStore.getState().toggleXRay()
+
+      const { getAllByTestId } = render(<CityView />)
+      // At least one XRayBuilding should render for internal nodes
+      const xrayBuildings = getAllByTestId(/^xray-building-/)
+      expect(xrayBuildings.length).toBeGreaterThan(0)
+    })
+  })
+
+  // =========================================================================
   // Layer visibility
   // =========================================================================
 

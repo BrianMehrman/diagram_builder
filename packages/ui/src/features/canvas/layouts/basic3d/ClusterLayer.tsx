@@ -7,9 +7,7 @@
  * Clicking a cluster flies the camera to its centroid (into LOD 3 range).
  */
 
-import { useRef } from 'react'
 import { Text, Billboard } from '@react-three/drei'
-import * as THREE from 'three'
 import { useCanvasStore } from '../../store'
 import type { ClusterData } from './clusterBuilder'
 
@@ -38,7 +36,6 @@ interface ClusterProxyProps {
 }
 
 function ClusterProxy({ cluster }: ClusterProxyProps) {
-  const meshRef = useRef<THREE.Mesh>(null)
   const setCameraPosition = useCanvasStore((s) => s.setCameraPosition)
   const setCameraTarget = useCanvasStore((s) => s.setCameraTarget)
   const color = clusterColor(cluster.dominantType)
@@ -58,7 +55,7 @@ function ClusterProxy({ cluster }: ClusterProxyProps) {
   return (
     <group position={[centroid.x, centroid.y, centroid.z]}>
       {/* Translucent bounding sphere */}
-      <mesh ref={meshRef} onClick={handleClick} data-testid="cluster-sphere">
+      <mesh onClick={handleClick} data-testid="cluster-sphere">
         <sphereGeometry args={[radius, 16, 16]} />
         <meshStandardMaterial color={color} transparent opacity={0.25} depthWrite={false} />
       </mesh>
