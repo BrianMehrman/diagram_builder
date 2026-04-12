@@ -1,6 +1,6 @@
 # Story 10.23: Add Height Encoding Selector UI
 
-Status: review
+Status: done
 
 ## Story
 

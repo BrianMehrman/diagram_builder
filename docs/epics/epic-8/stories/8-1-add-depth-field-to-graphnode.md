@@ -1,6 +1,6 @@
 # Story 8.1: Add Depth Field to GraphNode
 
-Status: review
+Status: done
 
 ## Story
 

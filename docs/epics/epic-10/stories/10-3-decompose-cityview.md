@@ -1,6 +1,6 @@
 # Story 10.3: Decompose CityView into Sub-Orchestrators
 
-Status: not-started
+Status: done
 
 ## Story
 

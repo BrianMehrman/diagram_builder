@@ -1,6 +1,6 @@
 # Story 10.19: Create Lighting System for Test Coverage
 
-Status: review
+Status: done
 
 ## Story
 

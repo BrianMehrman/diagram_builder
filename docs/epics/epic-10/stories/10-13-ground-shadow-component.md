@@ -1,6 +1,6 @@
 # Story 10.13: Create GroundShadow Component
 
-Status: review
+Status: done
 
 ## Story
 

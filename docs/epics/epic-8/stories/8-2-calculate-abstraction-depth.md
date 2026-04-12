@@ -1,6 +1,6 @@
 # Story 8.2: Calculate Abstraction Depth
 
-Status: review
+Status: done
 
 ## Story
 

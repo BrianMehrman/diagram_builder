@@ -1,6 +1,6 @@
 # Story 11.1: Containment-Driven Building Height
 
-Status: review
+Status: done
 
 ## Story
 

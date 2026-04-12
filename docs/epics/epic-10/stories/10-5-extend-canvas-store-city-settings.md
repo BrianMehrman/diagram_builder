@@ -1,6 +1,6 @@
 # Story 10.5: Extend Canvas Store with City Settings
 
-Status: review
+Status: done
 
 ## Story
 

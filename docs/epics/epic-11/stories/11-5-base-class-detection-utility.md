@@ -1,6 +1,6 @@
 # Story 11.5: Base Class Detection Utility
 
-Status: review
+Status: done
 
 ## Story
 

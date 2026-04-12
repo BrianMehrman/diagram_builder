@@ -1,6 +1,6 @@
 # Story 10.2: Extract Shared Hooks from CityView
 
-Status: review
+Status: done
 
 ## Story
 

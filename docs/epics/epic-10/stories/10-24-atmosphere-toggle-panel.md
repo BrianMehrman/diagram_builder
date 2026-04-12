@@ -1,6 +1,6 @@
 # Story 10.24: Add Atmosphere Toggle Panel
 
-Status: review
+Status: done
 
 ## Story
 

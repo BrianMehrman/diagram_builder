@@ -1,6 +1,6 @@
 # Story 11.7: Mid-Chain Inheritance Visual Treatment
 
-Status: review
+Status: done
 
 ## Story
 

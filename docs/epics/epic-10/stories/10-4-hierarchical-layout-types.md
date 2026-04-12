@@ -1,6 +1,6 @@
 # Story 10.4: Extend Layout Types for Hierarchical Output
 
-Status: not-started
+Status: done
 
 ## Story
 

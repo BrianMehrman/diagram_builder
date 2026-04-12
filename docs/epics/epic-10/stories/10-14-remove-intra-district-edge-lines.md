@@ -1,6 +1,6 @@
 # Story 10.14: Remove Intra-District Edge Lines
 
-Status: review
+Status: done
 
 ## Story
 

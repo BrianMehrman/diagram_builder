@@ -1,6 +1,6 @@
 # Story 10.18: Create ConstructionCrane Indicator
 
-Status: review
+Status: done
 
 ## Story
 

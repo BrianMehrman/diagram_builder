@@ -1,6 +1,6 @@
 # Story 11.6: Base Class Building Component
 
-Status: review
+Status: done
 
 ## Story
 

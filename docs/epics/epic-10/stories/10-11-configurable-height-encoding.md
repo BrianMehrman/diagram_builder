@@ -1,6 +1,6 @@
 # Story 10.11: Implement Configurable Height Encoding
 
-Status: review
+Status: done
 
 ## Story
 

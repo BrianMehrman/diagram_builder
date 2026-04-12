@@ -1,6 +1,6 @@
 # Story 10.22: Update CityAtmosphere Orchestrator
 
-Status: review
+Status: done
 
 ## Story
 

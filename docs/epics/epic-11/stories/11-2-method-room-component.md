@@ -1,6 +1,6 @@
 # Story 11.2: Method Room Component
 
-Status: review
+Status: done
 
 ## Story
 
