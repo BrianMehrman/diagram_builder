@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>One World, Two Skins — Interactive Mockup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #0e1117; --panel: #161b24cc; --border: #2a3140;
+    --text: #e6e9ef; --muted: #9aa3b2; --accent: #5eead4; --gold: #e8c37a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  #scene { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; }
+  .panel { position: fixed; background: var(--panel); backdrop-filter: blur(8px);
+    border: 1px solid var(--border); border-radius: 12px; }
+  #header { top: 16px; left: 16px; padding: 12px 18px; max-width: 350px; }
+  #header h1 { font-size: 16px; margin: 0 0 2px; }
+  #header p { font-size: 12.5px; color: var(--muted); margin: 0; }
+  #toggle { top: 16px; right: 460px; padding: 10px; display: flex; gap: 8px; }
+  #toggle button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: transparent; color: var(--muted); font-size: 13.5px; cursor: pointer; }
+  #toggle button.active { border-color: var(--accent); color: var(--accent);
+    background: #5eead41a; }
+
+  /* code panel */
+  #code { top: 16px; right: 16px; bottom: 16px; width: 430px; padding: 14px 0 10px;
+    display: flex; flex-direction: column; }
+  #code h2 { font-size: 12px; margin: 0 16px 10px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .06em; }
+  #code .filename { color: var(--accent); text-transform: none; letter-spacing: 0; }
+  #codebox { flex: 1; overflow: auto; margin: 0; padding: 0 16px 8px;
+    font: 12px/1.75 "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    white-space: pre; color: #b8c2d4; }
+  .cm { color: #5f6b7d; }
+  .kw { color: #c792ea; }
+  .str { color: #a5d6a7; }
+  .tok { border-bottom: 1.5px dotted #4a5a7a; border-radius: 3px;
+    padding: 1px 2px; cursor: pointer; }
+  .tok:hover, .tok.hl { background: #ffe9a026; border-bottom-color: var(--gold);
+    color: #ffe9a0; }
+  #factbar { margin: 6px 16px 0; padding: 8px 10px; min-height: 38px; font-size: 12px;
+    border: 1px solid var(--border); border-radius: 8px; color: var(--muted); }
+  #factbar b { color: var(--text); }
+  #factbar .city { color: #8fb0ff; } #factbar .org { color: #7fd67f; }
+
+  /* legend */
+  #legend { bottom: 16px; left: 16px; padding: 10px 6px 10px 10px; width: 316px;
+    max-height: 44vh; overflow-y: auto; }
+  #legend h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--muted); margin: 2px 8px 8px; }
+  .row { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 6px; padding: 5px 8px;
+    border-radius: 7px; font-size: 12px; cursor: pointer; align-items: center; }
+  .row:hover, .row.hl { background: #223047; }
+  .row .fact { font-weight: 600; }
+  .row .city { color: #8fb0ff; }
+  .row .org { color: #7fd67f; }
+  .row.head { cursor: default; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--muted); }
+  .row.head:hover { background: transparent; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<div class="panel" id="header">
+  <h1>One World, Two Skins</h1>
+  <p>The code on the right IS the scene. Hover any underlined token — or a legend row — to spotlight it in 3D; click to fly there. Toggle skins: nothing moves, only the language changes.</p>
+</div>
+
+<div class="panel" id="toggle">
+  <button id="btn-architect" class="active">🏙 Architect</button>
+  <button id="btn-gardener">🌳 Gardener</button>
+</div>
+
+<div class="panel" id="code">
+  <h2>source · <span class="filename">src/payments/payments.ts</span></h2>
+  <pre id="codebox"><span class="cm">// <span class="tok" data-fact="module">src/payments/</span> — one folder, one district</span>
+<span class="kw">import</span> { BaseService } <span class="kw">from</span> <span class="str">'<span class="tok" data-fact="import">../core/BaseService</span>'</span>
+
+<span class="cm">/* ⚡ 14 commits in the last 30 days */</span>
+<span class="kw">export class</span> <span class="tok" data-fact="churn">PaymentService</span> <span class="kw">extends</span> <span class="tok" data-fact="baseClass">BaseService</span> {
+  charge(card: Card) {
+    <span class="tok" data-fact="call">fraud.scan(card)</span>   <span class="cm">// cross-file call</span>
+    <span class="cm">/* … */</span>
+  }
+  <span class="tok" data-fact="methods">refund(id: string) { /* … */ }
+  capture(id: string) { /* … */ }
+  private retry(op: Op) { /* … */ }</span>
+}
+
+<span class="kw">export class</span> <span class="tok" data-fact="class">Invoice</span> {
+  <span class="tok" data-fact="export">total</span>(): Money { <span class="cm">/* … */</span> }
+}
+
+<span class="cm">/** @deprecated use PaymentService */</span>
+<span class="kw">export class</span> <span class="tok" data-fact="deprecated">LegacyGateway</span> { <span class="cm">/* … */</span> }
+
+<span class="cm">/* ✓ covered — 92% line coverage */</span>
+<span class="kw">export class</span> <span class="tok" data-fact="coverage">CardValidator</span> { <span class="cm">/* … */</span> }
+
+<span class="kw">export function</span> <span class="tok" data-fact="function">formatAmount</span>(n: number) { <span class="cm">/* … */</span> }
+
+<span class="cm">/* ⚠ cyclomatic complexity: 24 */</span>
+<span class="kw">export class</span> <span class="tok" data-fact="complexity">FraudChecker</span> {
+  scan(card: Card) { <span class="cm">/* … */</span> }
+}</pre>
+  <div id="factbar">Hover a token to see how it renders in each skin.</div>
+</div>
+
+<div class="panel" id="legend">
+  <h2>Code facts</h2>
+  <div class="row head"><span>Fact</span><span>Architect</span><span>Gardener</span></div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ============ setup ============ */
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0e1117);
+scene.fog = new THREE.Fog(0x0e1117, 55, 110);
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 500);
+camera.position.set(27, 15, 17);
+const controls = new OrbitControls(camera, canvas);
+controls.target.set(3, 2, 3);
+controls.enableDamping = true;
+controls.maxDistance = 70;
+scene.add(new THREE.AmbientLight(0xffffff, 0.68));
+const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+sun.position.set(14, 24, 10);
+scene.add(sun);
+
+const architect = new THREE.Group();
+const gardener = new THREE.Group();
+gardener.visible = false;
+scene.add(architect, gardener);
+
+function rng(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+const up = new THREE.Vector3(0, 1, 0);
+
+/* ============ shared layout ============ */
+// One arc of exemplars — each is a named thing from the code panel and sits at
+// the SAME position in both skins.
+const R = 12;
+const exemplars = {
+  class:      { angle: -1.15, h: 3.2 },  // Invoice
+  baseClass:  { angle: -0.72, h: 3.6 },  // BaseService
+  churn:      { angle: -0.30, h: 5.0 },  // PaymentService (4 methods → tall)
+  coverage:   { angle:  0.12, h: 4.2 },  // CardValidator
+  complexity: { angle:  0.55, h: 6.4 },  // FraudChecker
+  deprecated: { angle:  0.98, h: 3.2 },  // LegacyGateway
+  function:   { angle:  1.40, h: 1.2 },  // formatAmount()
+};
+for (const e of Object.values(exemplars)) {
+  e.pos = new THREE.Vector3(Math.cos(e.angle) * R, 0, Math.sin(e.angle) * R);
+}
+
+/* ============ spotlight ring + fly-to ============ */
+const ring = new THREE.Mesh(
+  new THREE.TorusGeometry(2.1, 0.08, 8, 48),
+  new THREE.MeshBasicMaterial({ color: 0xffe9a0, transparent: true, opacity: 0.95 })
+);
+ring.rotation.x = Math.PI / 2;
+ring.visible = false;
+scene.add(ring);
+let flyTarget = null;
+
+/* ============ architect helpers ============ */
+function box(w, h, d, color, opts = {}) {
+  return new THREE.Mesh(new THREE.BoxGeometry(w, h, d),
+    new THREE.MeshStandardMaterial({ color, roughness: opts.roughness ?? 0.6 }));
+}
+function stripedTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d');
+  g.fillStyle = '#3a3f4a'; g.fillRect(0, 0, 64, 64);
+  g.strokeStyle = '#181b22'; g.lineWidth = 9;
+  for (let i = -64; i < 128; i += 22) {
+    g.beginPath(); g.moveTo(i, 64); g.lineTo(i + 64, 0); g.stroke();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1, 2);
+  return t;
+}
+function smogSprite() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d');
+  const gr = g.createRadialGradient(64, 64, 8, 64, 64, 64);
+  gr.addColorStop(0, 'rgba(140,135,125,0.55)');
+  gr.addColorStop(1, 'rgba(140,135,125,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  return new THREE.Sprite(new THREE.SpriteMaterial({
+    map: new THREE.CanvasTexture(c), depthWrite: false }));
+}
+function crane(h) {
+  const g = new THREE.Group();
+  const mast = box(0.16, h + 2.5, 0.16, 0xd6a13a, { roughness: 0.5 });
+  mast.position.y = (h + 2.5) / 2;
+  const jib = box(3.4, 0.14, 0.14, 0xd6a13a, { roughness: 0.5 });
+  jib.position.set(1.4, h + 2.4, 0);
+  const cable = box(0.04, 1.6, 0.04, 0x999999);
+  cable.position.set(2.8, h + 1.6, 0);
+  const load = box(0.4, 0.4, 0.4, 0x8fb0ff);
+  load.position.set(2.8, h + 0.7, 0);
+  g.add(mast, jib, cable, load);
+  return g;
+}
+function windows(bw, bh, bd, litRatio) {
+  const g = new THREE.Group();
+  const lit = new THREE.MeshBasicMaterial({ color: 0xffe9a0 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x222835 });
+  const r2 = rng(55);
+  for (let y = 0.7; y < bh - 0.3; y += 0.75) {
+    for (let x = -bw / 2 + 0.45; x < bw / 2 - 0.2; x += 0.6) {
+      const w = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.4), r2() < litRatio ? lit : dark);
+      w.position.set(x, y, bd / 2 + 0.01);
+      g.add(w);
+    }
+  }
+  return g;
+}
+
+/* ============ gardener helpers ============ */
+function tree(opts) {
+  const g = new THREE.Group();
+  const r2 = rng(opts.seed ?? 9);
+  const trunkCol = opts.bare ? 0x6a6a6a : (opts.old ? 0x7a5b41 : 0x6b4f3a);
+  const wood = new THREE.MeshStandardMaterial({ color: trunkCol, roughness: 0.9 });
+  const scale = opts.scale ?? 1;
+  function limb(from, dir, len, radius, depth) {
+    const to = from.clone().addScaledVector(dir, len);
+    const cyl = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.68, radius, len, 6), wood);
+    cyl.position.copy(from.clone().lerp(to, 0.5));
+    cyl.quaternion.setFromUnitVectors(up, dir.clone().normalize());
+    g.add(cyl);
+    if (depth === 0) {
+      if (opts.bare) return;
+      const n = 2 + Math.floor(r2() * 3);
+      for (let i = 0; i < n; i++) {
+        let col = 0x47975a;
+        if (opts.blight) col = r2() < 0.6 ? 0x8a6f3a : 0x5a6a42;
+        else if (opts.bright && r2() < 0.45) col = 0xa2e8a2;
+        const leaf = new THREE.Mesh(
+          new THREE.SphereGeometry((0.38 + r2() * 0.33) * scale, 9, 9),
+          new THREE.MeshStandardMaterial({ color: col, roughness: 0.75 }));
+        leaf.position.copy(to).add(new THREE.Vector3(
+          (r2() - .5) * 1.7 * scale, (r2() - .2) * 1.3 * scale, (r2() - .5) * 1.7 * scale));
+        g.add(leaf);
+        if (opts.fruit && r2() < 0.4) {
+          const fr = new THREE.Mesh(new THREE.SphereGeometry(0.16 * scale, 8, 8),
+            new THREE.MeshStandardMaterial({ color: 0xe8b84b, emissive: 0x6a4d12 }));
+          fr.position.copy(leaf.position).add(new THREE.Vector3(0, -0.55 * scale, 0));
+          g.add(fr);
+        }
+      }
+      return;
+    }
+    const kids = 2 + Math.floor(r2() * 2);
+    for (let i = 0; i < kids; i++) {
+      const nd = dir.clone().add(new THREE.Vector3(
+        (r2() - .5) * 1.45, 0.5 + r2() * 0.4, (r2() - .5) * 1.45)).normalize();
+      limb(to, nd, len * 0.65, radius * 0.6, depth - 1);
+    }
+  }
+  const trunkLen = opts.sapling ? 0.9 : (opts.h ?? 4) * 0.5;
+  const trunkRad = (opts.sapling ? 0.09 : 0.3) * (opts.old ? 1.9 : 1) * scale;
+  limb(new THREE.Vector3(0, 0, 0), up.clone(), trunkLen, trunkRad, opts.sapling ? 1 : 2);
+  if (opts.fireflies) {
+    const pts = [];
+    const fr2 = rng(31);
+    for (let i = 0; i < 45; i++) {
+      pts.push((fr2() - .5) * 5, (opts.h ?? 4) * 0.55 + (fr2() - .3) * 3.5, (fr2() - .5) * 5);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    g.add(new THREE.Points(geo, new THREE.PointsMaterial({
+      color: 0xffe9a0, size: 0.16, transparent: true, opacity: 0.95 })));
+  }
+  return g;
+}
+
+/* ============ ground + module (folder) ============ */
+{
+  const plaza = new THREE.Mesh(new THREE.CylinderGeometry(26, 26, 0.4, 56),
+    new THREE.MeshStandardMaterial({ color: 0x141b2e }));
+  plaza.position.y = -0.2;
+  architect.add(plaza);
+  const arc = new THREE.Mesh(new THREE.RingGeometry(8, 17, 40, 1, -1.55, 3.4),
+    new THREE.MeshStandardMaterial({ color: 0x4a5a8a, transparent: true, opacity: 0.25, side: THREE.DoubleSide }));
+  arc.rotation.x = -Math.PI / 2; arc.position.y = 0.05;
+  architect.add(arc);
+}
+{
+  const meadow = new THREE.Mesh(new THREE.CylinderGeometry(26, 26, 0.4, 56),
+    new THREE.MeshStandardMaterial({ color: 0x1c2e20, transparent: true, opacity: 0.6 }));
+  meadow.position.y = -0.2;
+  gardener.add(meadow);
+  const bed = new THREE.Mesh(new THREE.RingGeometry(8, 17, 40, 1, -1.55, 3.4),
+    new THREE.MeshStandardMaterial({ color: 0x3e5a34, transparent: true, opacity: 0.4, side: THREE.DoubleSide }));
+  bed.rotation.x = -Math.PI / 2; bed.position.y = 0.05;
+  gardener.add(bed);
+}
+
+/* ============ exemplars ============ */
+function place(group, pos, obj) { obj.position.set(pos.x, obj.position.y, pos.z); group.add(obj); return obj; }
+
+// Invoice — plain class, exported member → sign / fruit
+{
+  const e = exemplars.class;
+  const b = box(2.2, e.h, 2.2, 0x4a5a8a);
+  b.position.y = e.h / 2;
+  place(architect, e.pos, b);
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.5),
+    new THREE.MeshBasicMaterial({ color: 0x5eead4, side: THREE.DoubleSide }));
+  sign.position.set(e.pos.x, e.h + 0.6, e.pos.z);
+  architect.add(sign);
+  const t = tree({ h: e.h, seed: 5, fruit: true });
+  t.position.set(e.pos.x, 0, e.pos.z);
+  gardener.add(t);
+}
+// BaseService — base class
+{
+  const e = exemplars.baseClass;
+  const b = box(4.4, e.h, 4.4, 0xc9a35c, { roughness: 0.75 });
+  b.position.y = e.h / 2;
+  place(architect, e.pos, b);
+  const t = tree({ h: e.h + 1.5, seed: 8, old: true, scale: 1.35 });
+  t.position.set(e.pos.x, 0, e.pos.z);
+  gardener.add(t);
+}
+// PaymentService — churn (4 methods → tallest of the plain classes)
+{
+  const e = exemplars.churn;
+  const b = box(2.2, e.h, 2.2, 0x556aa5);
+  b.position.y = e.h / 2;
+  place(architect, e.pos, b);
+  const c = crane(e.h);
+  c.position.set(e.pos.x - 1.6, 0, e.pos.z);
+  architect.add(c);
+  const t = tree({ h: e.h, seed: 13, bright: true });
+  t.position.set(e.pos.x, 0, e.pos.z);
+  gardener.add(t);
+}
+// CardValidator — coverage
+{
+  const e = exemplars.coverage;
+  const b = box(2.4, e.h, 2.4, 0x3d4c75);
+  b.position.y = e.h / 2;
+  place(architect, e.pos, b);
+  const w = windows(2.4, e.h, 2.4, 0.75);
+  w.position.set(e.pos.x, 0, e.pos.z);
+  w.lookAt(new THREE.Vector3(0, 0, 0));
+  w.rotateY(Math.PI); // face outward, toward the default camera
+  w.position.y = 0;
+  architect.add(w);
+  const t = tree({ h: e.h, seed: 17, fireflies: true });
+  t.position.set(e.pos.x, 0, e.pos.z);
+  gardener.add(t);
+}
+// FraudChecker — complexity hotspot
+{
+  const e = exemplars.complexity;
+  const b = box(2.6, e.h, 2.6, 0x465684);
+  b.position.y = e.h / 2;
+  place(architect, e.pos, b);
+  for (let i = 0; i < 3; i++) {
+    const s = smogSprite();
+    s.scale.setScalar(2.8 + i * 0.7);
+    s.position.set(e.pos.x + (i - 1) * 1.0, e.h + 1.1 + i * 0.5, e.pos.z);
+    architect.add(s);
+  }
+  const t = tree({ h: e.h, seed: 23, blight: true });
+  t.position.set(e.pos.x, 0, e.pos.z);
+  gardener.add(t);
+}
+// LegacyGateway — deprecated
+{
+  const e = exemplars.deprecated;
+  const b = new THREE.Mesh(new THREE.BoxGeometry(2.2, e.h, 2.2),
+    new THREE.MeshStandardMaterial({ map: stripedTexture(), roughness: 0.8 }));
+  b.position.y = e.h / 2;
+  place(architect, e.pos, b);
+  const t = tree({ h: e.h + 1.5, seed: 29, bare: true });
+  t.position.set(e.pos.x, 0, e.pos.z);
+  gardener.add(t);
+}
+// formatAmount() — standalone function
+{
+  const e = exemplars.function;
+  const k = box(1.3, e.h, 1.3, 0x3d6a6a);
+  k.position.y = e.h / 2;
+  place(architect, e.pos, k);
+  const awn = box(1.7, 0.1, 1.7, 0xd66a4a);
+  awn.position.set(e.pos.x, e.h + 0.12, e.pos.z);
+  architect.add(awn);
+  const t = tree({ sapling: true, h: 1.2, seed: 37 });
+  t.position.set(e.pos.x, 0, e.pos.z);
+  gardener.add(t);
+}
+
+/* ============ edges ============ */
+function arcCurve(a, b, lift) {
+  const mid = a.clone().lerp(b, 0.5); mid.y += lift;
+  return new THREE.QuadraticBezierCurve3(a, mid, b);
+}
+// call: PaymentService.charge() → FraudChecker.scan()  (sky wire / vine)
+const callA = exemplars.churn.pos.clone().setY(exemplars.churn.h);
+const callB = exemplars.complexity.pos.clone().setY(exemplars.complexity.h);
+{
+  architect.add(new THREE.Mesh(
+    new THREE.TubeGeometry(arcCurve(callA, callB, 4.5), 28, 0.06, 6),
+    new THREE.MeshBasicMaterial({ color: 0xe8c37a, transparent: true, opacity: 0.9 })));
+  const m1 = callA.clone().lerp(callB, 0.35); m1.y += 3.4; m1.x += 1.2;
+  const m2 = callA.clone().lerp(callB, 0.7); m2.y += 2.6; m2.z += 1.2;
+  gardener.add(new THREE.Mesh(
+    new THREE.TubeGeometry(new THREE.CatmullRomCurve3([callA, m1, m2, callB]), 32, 0.08, 6),
+    new THREE.MeshStandardMaterial({ color: 0x6fbf73, roughness: 0.6 })));
+}
+// import/inheritance: PaymentService extends BaseService  (subway / root)
+const impA = exemplars.churn.pos.clone().setY(-0.4);
+const impB = exemplars.baseClass.pos.clone().setY(-0.4);
+{
+  const mid = impA.clone().lerp(impB, 0.5); mid.y = -2.6;
+  const curve = new THREE.QuadraticBezierCurve3(impA, mid, impB);
+  architect.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.12, 6),
+    new THREE.MeshBasicMaterial({ color: 0x5eead4, transparent: true, opacity: 0.55 })));
+  gardener.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.12, 6),
+    new THREE.MeshBasicMaterial({ color: 0x8a7a9a, transparent: true, opacity: 0.6 })));
+}
+
+/* ============ facts: shared by legend + code tokens ============ */
+const centerOf = (a, b) => a.clone().lerp(b, 0.5);
+const facts = {
+  module:     { fact: 'Folder / module', city: 'district arc', org: 'soil bed',
+                code: 'src/payments/',
+                focus: new THREE.Vector3(Math.cos(0.1) * R, 0, Math.sin(0.1) * R), r: 6 },
+  class:      { fact: 'Class', city: 'building', org: 'tree',
+                code: 'class Invoice', focus: exemplars.class.pos, r: 2.1 },
+  methods:    { fact: 'Method count', city: 'height', org: 'canopy density',
+                code: 'PaymentService has 4 methods → tallest plain building',
+                focus: exemplars.churn.pos, r: 2.4 },
+  function:   { fact: 'Standalone function', city: 'kiosk', org: 'sapling',
+                code: 'function formatAmount()', focus: exemplars.function.pos, r: 1.6 },
+  baseClass:  { fact: 'Base class', city: 'sandstone, wide', org: 'old-growth',
+                code: 'class BaseService (extended by PaymentService)',
+                focus: exemplars.baseClass.pos, r: 3.2 },
+  export:     { fact: 'Export', city: 'rooftop sign', org: 'fruit',
+                code: 'Invoice.total() is exported', focus: exemplars.class.pos, r: 2.1 },
+  call:       { fact: 'Call edge', city: 'sky wire', org: 'vine',
+                code: 'charge() calls fraud.scan()',
+                focus: centerOf(callA, callB).setY(0), r: 2.5, lift: 7 },
+  import:     { fact: 'Import / inheritance', city: 'subway pipe', org: 'root',
+                code: "import { BaseService } from '../core/BaseService'",
+                focus: centerOf(impA, impB).setY(0), r: 2.5, sink: true },
+  churn:      { fact: 'Churn', city: 'crane', org: 'new growth',
+                code: 'PaymentService: 14 commits / 30 days', focus: exemplars.churn.pos, r: 2.6 },
+  deprecated: { fact: 'Deprecated', city: 'striped overlay', org: 'bare branches',
+                code: '@deprecated LegacyGateway', focus: exemplars.deprecated.pos, r: 2.1 },
+  coverage:   { fact: 'Test coverage', city: 'lit windows', org: 'fireflies',
+                code: 'CardValidator: 92% line coverage', focus: exemplars.coverage.pos, r: 2.3 },
+  complexity: { fact: 'Complexity hotspot', city: 'smog', org: 'blight',
+                code: 'FraudChecker: cyclomatic 24', focus: exemplars.complexity.pos, r: 2.6 },
+};
+
+const factbar = document.getElementById('factbar');
+function spotlight(key) {
+  const f = facts[key];
+  ring.visible = true;
+  ring.scale.setScalar(f.r / 2.1);
+  ring.position.set(f.focus.x, f.sink ? -0.3 : 0.15, f.focus.z);
+  factbar.innerHTML = `<b>${f.fact}</b> — ${f.code}<br>` +
+    `<span class="city">🏙 ${f.city}</span> · <span class="org">🌳 ${f.org}</span>`;
+  document.querySelectorAll(`.tok[data-fact="${key}"]`).forEach(el => el.classList.add('hl'));
+  document.querySelector(`.row[data-fact="${key}"]`)?.classList.add('hl');
+}
+function unspotlight(key) {
+  ring.visible = false;
+  document.querySelectorAll('.tok.hl, .row.hl').forEach(el => el.classList.remove('hl'));
+}
+function flyTo(key) {
+  const f = facts[key];
+  const dir = f.focus.clone().normalize();
+  const camPos = f.focus.clone().addScaledVector(dir, 9);
+  camPos.y = f.sink ? 4 : 8 + (f.lift ?? 0);
+  flyTarget = { cam: camPos, look: f.focus.clone().setY(f.sink ? -1.5 : 2 + (f.lift ?? 0) * 0.5) };
+}
+
+// legend rows
+const legend = document.getElementById('legend');
+for (const [key, f] of Object.entries(facts)) {
+  const div = document.createElement('div');
+  div.className = 'row';
+  div.dataset.fact = key;
+  div.innerHTML = `<span class="fact">${f.fact}</span><span class="city">${f.city}</span><span class="org">${f.org}</span>`;
+  div.addEventListener('mouseenter', () => spotlight(key));
+  div.addEventListener('mouseleave', () => unspotlight(key));
+  div.addEventListener('click', () => flyTo(key));
+  legend.appendChild(div);
+}
+// code tokens
+document.querySelectorAll('.tok').forEach(el => {
+  const key = el.dataset.fact;
+  el.addEventListener('mouseenter', () => spotlight(key));
+  el.addEventListener('mouseleave', () => unspotlight(key));
+  el.addEventListener('click', () => flyTo(key));
+});
+
+/* ============ skin toggle ============ */
+const btnA = document.getElementById('btn-architect');
+const btnG = document.getElementById('btn-gardener');
+function setSkin(which) {
+  architect.visible = which === 'a';
+  gardener.visible = which === 'g';
+  btnA.classList.toggle('active', which === 'a');
+  btnG.classList.toggle('active', which === 'g');
+}
+btnA.addEventListener('click', () => setSkin('a'));
+btnG.addEventListener('click', () => setSkin('g'));
+
+/* ============ loop ============ */
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (canvas.width !== Math.floor(w * Math.min(devicePixelRatio, 2))) {
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+}
+function animate() {
+  resize();
+  if (flyTarget) {
+    camera.position.lerp(flyTarget.cam, 0.06);
+    controls.target.lerp(flyTarget.look, 0.06);
+    if (camera.position.distanceTo(flyTarget.cam) < 0.3) flyTarget = null;
+  }
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>
