@@ -4,7 +4,7 @@
 
 project_name: diagram_builder
 sprint_start: "2025-12-29"
-current_phase: "Epics 10, 11, 12 complete. All stories done. Next: Epic 13 TBD."
+current_phase: "Epic 13: One World, Two Skins — planned (15 stories). Epics 10/11/12 done (statuses closed via PR #15). Gate: Story 13-1 verifies Phase A foundations. Spec: docs/specs/2026-07-07-one-world-two-skins-design.md"
 
 # Epic and Story Status Tracking
 development_status:
@@ -196,6 +196,28 @@ development_status:
   11-11-overhead-wire-component: done  # OverheadWire component, calculateWireArcPeak, isWireVisible, getWireColor - COMPLETE (2026-02-18)
   11-12-standalone-function-kiosk: done  # FunctionShop → kiosk box+awning, KIOSK_WIDTH/DEPTH/HEIGHT constants, buildingGeometry updated - COMPLETE (2026-02-18)
   11-13-wire-differentiation: done  # getWireMaterialType(), WIRE_DASHED_TYPES, LineDashedMaterial for composes, wire legend in LayerToggle - COMPLETE (2026-02-18)
+
+  # Epic 13: One World, Two Skins — single canonical layout, pluggable visual skins
+  epic-13: planned
+  # Epic 13-A: Skin Seam (zero visual change)
+  13-1-close-review-backlog: ready-for-dev  # Gate (rescoped): statuses already closed by PR #15; verify CI green + Epic 10-1 regression suite before refactoring on top
+  13-2-sceneskin-interface-registry: not-started  # SceneSkin type, skins registry, useSkin(), activeSkin store field
+  13-3-delete-cityversion-v1: not-started  # Remove cityVersion axis; v2 is the only city; delete UndergroundLayer
+  13-4-cityview-through-skin: not-started  # CityView renders via skin slots; zero visual diff; freeze basic3d
+  13-5-skin-conformance-harness: not-started  # Parameterized suite over Object.values(skins); architect baseline
+  # Epic 13-B: Deterministic Semantic Layout
+  13-6-deterministic-layout-ordering: not-started  # Path-sorted ordering + seeded PRNG; same repo → same city
+  13-7-coupling-proximity-default: not-started  # proximityRefinement becomes a standard pipeline stage
+  13-8-placement-stability-reparse: not-started  # PlacementMemory: unchanged nodes keep positions across re-parses
+  # Epic 13-C: Gardener Skin
+  13-9-gardener-node-components: not-started  # Trees/saplings/groves for every node kind; instancing-friendly
+  13-10-gardener-edge-components: not-started  # VineEdge (calls) + RootEdge (imports/inheritance); shared routing
+  13-11-gardener-indicators: not-started  # New growth/bare/fireflies/blight/fruit — parity with city indicators
+  13-12-skin-toggle-ui: not-started  # Toolbar toggle + S shortcut; camera/selection/URL preservation
+  # Epic 13-D: Continuous World
+  13-13-derived-viewmode: not-started  # viewMode derived from camera; delete BuildingView/CellView scene swap
+  13-14-membrane-interiors: not-started  # SceneSkin.Interior slot; membrane crossfade; x-ray reuses interiors
+  13-15-interior-camera-scaling: not-started  # Near-plane + move-speed ramp for walkable interiors
 
 # Status Definitions:
 # - not-started: Story exists but work hasn't begun
@@ -577,3 +599,37 @@ epics:
       - "UI logs forwarded via POST /api/logs → Loki under {app=diagram-builder-ui}"
       - "Parser metrics on :9465 (separate from API on :9464) — provider conflict avoided via direct provider.getMeter()"
 
+
+  epic-13:
+    name: "One World, Two Skins"
+    description: "Single canonical spatial layout with pluggable visual skins (Architect city / Gardener organism); deterministic semantic placement; continuous world with derived viewMode, membrane interiors, and camera scaling"
+    spec: "docs/specs/2026-07-07-one-world-two-skins-design.md"
+    plan: "docs/specs/2026-07-07-one-world-two-skins-plan.md"
+    mockup: "docs/mockups/one-world-two-skins.html"
+    stories:
+      # 13-A: Skin Seam
+      - 13-1-close-review-backlog
+      - 13-2-sceneskin-interface-registry
+      - 13-3-delete-cityversion-v1
+      - 13-4-cityview-through-skin
+      - 13-5-skin-conformance-harness
+      # 13-B: Deterministic Semantic Layout
+      - 13-6-deterministic-layout-ordering
+      - 13-7-coupling-proximity-default
+      - 13-8-placement-stability-reparse
+      # 13-C: Gardener Skin
+      - 13-9-gardener-node-components
+      - 13-10-gardener-edge-components
+      - 13-11-gardener-indicators
+      - 13-12-skin-toggle-ui
+      # 13-D: Continuous World
+      - 13-13-derived-viewmode
+      - 13-14-membrane-interiors
+      - 13-15-interior-camera-scaling
+    dependencies:
+      - "Epic 10/11 review backlog closed (Story 13-1 gate)"
+    notes:
+      - "4 sub-epics: 13-A (Skin Seam, zero visual change), 13-B (Deterministic Layout), 13-C (Gardener Skin), 13-D (Continuous World)"
+      - "Each sub-epic is independently shippable; 13-A is protected by the Epic 10-1 CityView interaction regression suite"
+      - "basic3d frozen in 13-4: debug-only, no new features; possible future rebirth as a wireframe skin"
+      - "Skin-conformance harness (13-5) is the objective definition of done for any skin"

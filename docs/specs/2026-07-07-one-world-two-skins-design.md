@@ -125,8 +125,10 @@ Lands in the shared layout layer, so both skins inherit it:
 
 Each phase is independently shippable.
 
-- **Phase 0 — prerequisite:** close the Epic 10/11 review backlog (~38 stories in `review`);
-  this epic builds directly on that code.
+- **Phase 0 — prerequisite:** verify the Epic 10/11 foundations this epic builds on — CI green
+  on main and the Epic 10-1 regression suite confirmed as adequate coverage. (Originally scoped
+  as closing the ~38-story review backlog; PR #15, merged 2026-04-13, had already flipped those
+  statuses to `done` — the planning session read a stale local main.)
 - **Phase 1 — skin seam:** extract the `SceneSkin` interface; move city rendering behind it;
   delete `cityVersion` v1 branches; freeze basic3d. **Zero visual change**, protected by the
   Epic 10-1 CityView interaction regression suite.
